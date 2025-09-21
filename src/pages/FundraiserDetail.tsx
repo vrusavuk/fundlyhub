@@ -197,7 +197,11 @@ export default function FundraiserDetail() {
           title: "Thank you!",
           description: "Your donation has been processed successfully.",
         });
-        fetchDonations(); // Refresh donations
+        // Refresh donations to update the display
+        await fetchDonations();
+        
+        // Trigger a page refresh event to update analytics across the site
+        window.dispatchEvent(new CustomEvent('donationMade'));
       }
     } catch (error: any) {
       toast({

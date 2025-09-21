@@ -75,6 +75,17 @@ export function useCampaignStats() {
     }
 
     fetchStats();
+    
+    // Listen for donation events to refresh stats
+    const handleDonationMade = () => {
+      fetchStats();
+    };
+    
+    window.addEventListener('donationMade', handleDonationMade);
+    
+    return () => {
+      window.removeEventListener('donationMade', handleDonationMade);
+    };
   }, []);
 
   return stats;
