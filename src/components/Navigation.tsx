@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Heart, User, Menu, Search, LogOut, UserCircle } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { EnhancedSearch } from "@/components/EnhancedSearch";
+import { SearchModal } from "@/components/SearchModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -113,26 +113,27 @@ export function Navigation() {
           </div>
         </div>
 
-        {/* Search Overlay */}
-        {isSearchOpen && (
-          <div className="hidden md:block absolute top-16 left-0 right-0 bg-background/95 backdrop-blur-sm border-b border-border p-4 z-40">
-            <div className="max-w-md mx-auto">
-              <EnhancedSearch 
-                placeholder="Search campaigns, users, organizations..."
-                onResultClick={() => setIsSearchOpen(false)}
-              />
-            </div>
-          </div>
-        )}
+        {/* Search Modal */}
+        <SearchModal 
+          isOpen={isSearchOpen}
+          onClose={() => setIsSearchOpen(false)}
+        />
 
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden border-t border-border py-4">
             <div className="flex flex-col space-y-3">
-              <EnhancedSearch 
-                placeholder="Search campaigns, users, organizations..."
-                onResultClick={() => setIsMenuOpen(false)}
-              />
+              <Button 
+                variant="outline" 
+                className="justify-start"
+                onClick={() => {
+                  setIsSearchOpen(true);
+                  setIsMenuOpen(false);
+                }}
+              >
+                <Search className="h-4 w-4 mr-2" />
+                Search
+              </Button>
               <Link to="/campaigns" className="text-foreground hover:text-primary transition-smooth py-2">
                 Fundlies
               </Link>
