@@ -80,7 +80,7 @@ export default function SearchResults() {
 
   return (
     <AppLayout>
-      <PageContainer maxWidth="lg">
+      <PageContainer>
         <PageHeader
           title="Search Results"
           description={`${filteredResults.length} results for "${query}"`}
