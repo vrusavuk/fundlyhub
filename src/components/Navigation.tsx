@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Heart, User, Menu, Search, LogOut, UserCircle } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { SearchModal } from "@/components/SearchModal";
+import { useGlobalSearch } from "@/contexts/SearchContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,8 +14,8 @@ import {
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const { openSearch } = useGlobalSearch();
 
   const handleSignOut = async () => {
     await signOut();
@@ -50,7 +50,7 @@ export function Navigation() {
               variant="ghost" 
               size="icon"
               className="hidden md:flex"
-              onClick={() => setIsSearchOpen(true)}
+              onClick={() => openSearch()}
             >
               <Search className="h-5 w-5" />
             </Button>
@@ -113,24 +113,18 @@ export function Navigation() {
           </div>
         </div>
 
-        {/* Search Modal */}
-        <SearchModal 
-          isOpen={isSearchOpen}
-          onClose={() => setIsSearchOpen(false)}
-        />
-
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden border-t border-border py-4">
             <div className="flex flex-col space-y-3">
-              <Button 
-                variant="outline" 
-                className="justify-start"
-                onClick={() => {
-                  setIsSearchOpen(true);
-                  setIsMenuOpen(false);
-                }}
-              >
+                <Button 
+                  variant="outline" 
+                  className="justify-start"
+                  onClick={() => {
+                    openSearch();
+                    setIsMenuOpen(false);
+                  }}
+                >
                 <Search className="h-4 w-4 mr-2" />
                 Search
               </Button>

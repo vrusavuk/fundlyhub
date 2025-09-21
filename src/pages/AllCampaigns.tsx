@@ -1,21 +1,21 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
-import { EnhancedSearch } from "@/components/EnhancedSearch";
 import { FundraiserGrid } from "@/components/fundraisers/FundraiserGrid";
 import { CategorySelector } from "@/components/fundraisers/CategorySelector";
 import { Button } from "@/components/ui/button";
-import { SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal, Search } from "lucide-react";
 import { useFundraisers } from "@/hooks/useFundraisers";
-import type { Fundraiser } from "@/types/fundraiser";
+import { useGlobalSearch } from "@/contexts/SearchContext";
 
 export default function AllCampaigns() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { openSearch } = useGlobalSearch();
 
-  // Get initial search term from URL parameters
+  // Get initial search term from URL parameters  
   const initialSearch = searchParams.get('search') || '';
 
   useEffect(() => {
@@ -75,12 +75,18 @@ export default function AllCampaigns() {
           </div>
         </div>
 
-        {/* Enhanced Search and Category Filters */}
+        {/* Search and Filters */}
         <div className="mb-6 space-y-4">
+          {/* Global Search Button */}
           <div className="max-w-2xl">
-            <EnhancedSearch 
-              placeholder="Search all campaigns, users, organizations..."
-            />
+            <Button
+              variant="outline"
+              className="w-full justify-start text-muted-foreground h-12"
+              onClick={() => openSearch(searchTerm)}
+            >
+              <Search className="h-4 w-4 mr-3" />
+              {initialSearch ? `Searching for: "${initialSearch}"` : "Search campaigns, users, organizations..."}
+            </Button>
           </div>
           
           {/* Category Filter */}
