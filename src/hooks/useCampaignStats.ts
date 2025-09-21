@@ -23,8 +23,19 @@ export function useCampaignStats() {
       try {
         setStats(prev => ({ ...prev, loading: true, error: null }));
 
-        // Get campaign counts and donations using the join approach
-        const [activeCountResult, closedCountResult, donationsResult] = await Promise.all([
+        // First get public fundraiser IDs, then use them to filter donations
+        const publicFundraisersResult = await supabase
+          .from('fundraisers')
+          .select('id')
+          .eq('visibility', 'public')
+          .in('status', ['active', 'closed']);
+
+        if (publicFundraisersResult.error) throw publicFundraisersResult.error;
+
+        const publicFundraiserIds = publicFundraisersResult.data?.map(f => f.id) || [];
+
+        // Get stats using separate queries
+        const [activeCountResult, closedCountResult] = await Promise.all([
           // Get active campaigns count
           supabase
             .from('fundraisers')
@@ -37,25 +48,27 @@ export function useCampaignStats() {
             .from('fundraisers')
             .select('*', { count: 'exact', head: true })
             .eq('status', 'closed')
-            .eq('visibility', 'public'),
-          
-          // Get donations using inner join to only include public campaigns
-          supabase
-            .from('donations')
-            .select('amount, fundraisers!inner(status, visibility)')
-            .eq('payment_status', 'paid')
-            .eq('fundraisers.visibility', 'public')
-            .in('fundraisers.status', ['active', 'closed'])
+            .eq('visibility', 'public')
         ]);
 
         if (activeCountResult.error) throw activeCountResult.error;
         if (closedCountResult.error) throw closedCountResult.error;
-        if (donationsResult.error) throw donationsResult.error;
 
-        // Calculate total funds raised from public campaigns
-        const totalRaised = donationsResult.data?.reduce((sum: number, item: any) => {
-          return sum + Number(item.amount);
-        }, 0) || 0;
+        // Get donations for public campaigns
+        let totalRaised = 0;
+        if (publicFundraiserIds.length > 0) {
+          const donationsResult = await supabase
+            .from('donations')
+            .select('amount')
+            .eq('payment_status', 'paid')
+            .in('fundraiser_id', publicFundraiserIds);
+
+          if (donationsResult.error) throw donationsResult.error;
+          
+          totalRaised = donationsResult.data?.reduce((sum: number, donation: any) => {
+            return sum + Number(donation.amount);
+          }, 0) || 0;
+        }
 
         setStats({
           activeCampaigns: activeCountResult.count || 0,
