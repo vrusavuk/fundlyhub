@@ -19,73 +19,135 @@ const Index = () => {
 
   return (
     <AppLayout fullWidth>
-      {/* Hero Section with enhanced design */}
-      <section className="relative overflow-hidden">
-        {/* Background with gradient overlay */}
-        <div className="absolute inset-0">
-          <img
-            src={heroImage}
-            alt="People coming together"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/70 to-transparent"></div>
+      {/* Hero Section - GoFundMe inspired design */}
+      <section className="relative bg-gradient-to-br from-background via-muted/20 to-accent/5 py-20 lg:py-28">
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-accent/5 rounded-full blur-3xl"></div>
         </div>
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8 text-white">
-              <div className="space-y-6">
-                <div className="flex items-center gap-2">
-                  <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                  <span className="text-yellow-100 text-sm font-medium">#1 Trusted Fundraising Platform</span>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Top banner */}
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-success/10 text-success-foreground px-4 py-2 rounded-full text-sm font-medium">
+              <Star className="h-4 w-4 fill-current" />
+              #1 crowdfunding platform
+            </div>
+          </div>
+          
+          {/* Main hero content */}
+          <div className="text-center space-y-8 max-w-4xl mx-auto">
+            <h1 className="text-5xl lg:text-7xl font-bold text-foreground leading-tight">
+              Successful
+              <span className="block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                fundraisers
+              </span>
+              <span className="block text-foreground">start here</span>
+            </h1>
+            
+            <div className="max-w-2xl mx-auto">
+              <p className="text-xl text-muted-foreground leading-relaxed">
+                Get started in just a few minutes — with helpful new tools, it's easier than ever to pick the perfect title, write a compelling story, and share it with the world.
+              </p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-6">
+              <Button 
+                variant="hero" 
+                size="lg" 
+                className="text-lg px-10 py-6 font-semibold shadow-lg hover:shadow-xl transition-all duration-300" 
+                asChild
+              >
+                <Link to="/create">
+                  Start a FundlyHub
+                </Link>
+              </Button>
+            </div>
+          </div>
+          
+          {/* Floating category circles - GoFundMe style */}
+          <div className="relative mt-20 lg:mt-24">
+            <div className="hidden lg:block">
+              {/* Left side circles */}
+              <div className="absolute top-0 left-1/4 transform -translate-x-1/2 animate-float" style={{animationDelay: '0s'}}>
+                <div className="relative">
+                  <div className="w-32 h-32 rounded-full border-4 border-primary/20 bg-background shadow-lg overflow-hidden">
+                    <img src={heroImage} alt="Your cause" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">
+                    Your cause
+                  </div>
                 </div>
-                
-                <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
-                  Turn your cause into a 
-                  <span className="block text-yellow-300"> successful movement</span>
-                </h1>
-                <p className="text-xl text-white/90 leading-relaxed">
-                  Join thousands of successful fundraisers. Start in minutes, reach millions of potential supporters, and make the impact that matters most.
-                </p>
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
-                  variant="secondary" 
-                  size="lg" 
-                  className="text-lg px-8 py-6 bg-white text-primary hover:bg-white/90" 
-                  asChild
-                >
-                  <Link to="/create">
-                    Start Your Fundraiser
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  className="text-lg px-8 py-6 border-white text-white hover:bg-white/10" 
-                  asChild
-                >
-                  <Link to="/">
-                    How It Works
-                  </Link>
-                </Button>
+              <div className="absolute top-24 left-12 animate-float" style={{animationDelay: '1s'}}>
+                <div className="relative">
+                  <div className="w-28 h-28 rounded-full border-4 border-accent/20 bg-background shadow-lg overflow-hidden">
+                    <img src={heroImage} alt="Medical" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-accent text-accent-foreground px-3 py-1 rounded-full text-sm font-medium">
+                    Medical
+                  </div>
+                </div>
               </div>
               
-              <div className="flex items-center gap-8 pt-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-white">$2.5M+</div>
-                  <div className="text-sm text-white/80">Raised</div>
+              <div className="absolute top-40 left-1/3 animate-float" style={{animationDelay: '2s'}}>
+                <div className="relative">
+                  <div className="w-24 h-24 rounded-full border-4 border-success/20 bg-background shadow-lg overflow-hidden">
+                    <img src={heroImage} alt="Emergency" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-success text-success-foreground px-2 py-1 rounded-full text-xs font-medium">
+                    Emergency
+                  </div>
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-white">15K+</div>
-                  <div className="text-sm text-white/80">Campaigns</div>
+              </div>
+              
+              {/* Right side circles */}
+              <div className="absolute top-0 right-1/4 transform translate-x-1/2 animate-float" style={{animationDelay: '0.5s'}}>
+                <div className="relative">
+                  <div className="w-32 h-32 rounded-full border-4 border-secondary/20 bg-background shadow-lg overflow-hidden">
+                    <img src={heroImage} alt="Education" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium">
+                    Education
+                  </div>
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-white">50K+</div>
-                  <div className="text-sm text-white/80">Happy Donors</div>
+              </div>
+              
+              <div className="absolute top-24 right-12 animate-float" style={{animationDelay: '1.5s'}}>
+                <div className="relative">
+                  <div className="w-28 h-28 rounded-full border-4 border-warning/20 bg-background shadow-lg overflow-hidden">
+                    <img src={heroImage} alt="Animal" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-warning text-warning-foreground px-3 py-1 rounded-full text-sm font-medium">
+                    Animal
+                  </div>
                 </div>
+              </div>
+              
+              <div className="absolute top-40 right-1/3 animate-float" style={{animationDelay: '2.5s'}}>
+                <div className="relative">
+                  <div className="w-24 h-24 rounded-full border-4 border-primary/20 bg-background shadow-lg overflow-hidden">
+                    <img src={heroImage} alt="Business" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs font-medium">
+                    Business
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Stats section */}
+          <div className="mt-32 lg:mt-40">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <h2 className="text-3xl font-bold text-foreground mb-4">
+                  More than $2.5 million is raised every week on FundlyHub.*
+                </h2>
+              </div>
+              <div className="text-muted-foreground text-lg leading-relaxed">
+                Get started in just a few minutes — with helpful new tools, it's easier than ever to pick the perfect title, write a compelling story, and share it with the world.
               </div>
             </div>
           </div>

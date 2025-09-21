@@ -117,6 +117,10 @@ export default {
         "scroll": {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(-50%)" }
+        },
+        "float": {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-10px)" }
         }
       },
       animation: {
@@ -127,6 +131,7 @@ export default {
         "scale-in": "scale-in 0.2s ease-out",
         "slide-in-right": "slide-in-right 0.3s ease-out",
         "scroll": "scroll 30s linear infinite",
+        "float": "float 3s ease-in-out infinite",
       },
     },
   },
