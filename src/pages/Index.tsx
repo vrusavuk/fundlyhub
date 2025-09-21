@@ -71,13 +71,13 @@ const Index = () => {
             </div>
           </div>
           
-          {/* Floating category circles - positioned higher in hero only */}
+          {/* Floating category circles - positioned to avoid all overlaps */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="hidden lg:block relative h-full">
-              {/* Left side circles - positioned higher */}
-              <div className="absolute top-16 left-8 animate-float" style={{animationDelay: '0s'}}>
+              {/* Left side circles - well spaced */}
+              <div className="absolute top-12 left-6 animate-float" style={{animationDelay: '0s'}}>
                 <div className="relative">
-                  <div className="w-24 h-24 rounded-full border-4 border-primary/30 bg-white shadow-xl overflow-hidden">
+                  <div className="w-20 h-20 rounded-full border-4 border-primary/30 bg-white shadow-xl overflow-hidden">
                     <img src={yourCauseImage} alt="Your cause" className="w-full h-full object-cover" />
                   </div>
                   <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs font-medium shadow-lg">
@@ -86,9 +86,9 @@ const Index = () => {
                 </div>
               </div>
               
-              <div className="absolute top-40 left-16 animate-float" style={{animationDelay: '1s'}}>
+              <div className="absolute top-48 left-20 animate-float" style={{animationDelay: '1s'}}>
                 <div className="relative">
-                  <div className="w-20 h-20 rounded-full border-4 border-accent/30 bg-white shadow-xl overflow-hidden">
+                  <div className="w-18 h-18 rounded-full border-4 border-accent/30 bg-white shadow-xl overflow-hidden">
                     <img src={medicalImage} alt="Medical" className="w-full h-full object-cover" />
                   </div>
                   <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-accent text-accent-foreground px-2 py-1 rounded-full text-xs font-medium shadow-lg">
@@ -97,7 +97,7 @@ const Index = () => {
                 </div>
               </div>
               
-              <div className="absolute top-44 left-4 animate-float" style={{animationDelay: '2s'}}>
+              <div className="absolute top-24 left-32 animate-float" style={{animationDelay: '2s'}}>
                 <div className="relative">
                   <div className="w-16 h-16 rounded-full border-4 border-success/30 bg-white shadow-xl overflow-hidden">
                     <img src={emergencyImage} alt="Emergency" className="w-full h-full object-cover" />
@@ -108,10 +108,10 @@ const Index = () => {
                 </div>
               </div>
               
-              {/* Right side circles - positioned higher */}
-              <div className="absolute top-16 right-8 animate-float" style={{animationDelay: '0.5s'}}>
+              {/* Right side circles - well spaced */}
+              <div className="absolute top-12 right-6 animate-float" style={{animationDelay: '0.5s'}}>
                 <div className="relative">
-                  <div className="w-24 h-24 rounded-full border-4 border-secondary/30 bg-white shadow-xl overflow-hidden">
+                  <div className="w-20 h-20 rounded-full border-4 border-secondary/30 bg-white shadow-xl overflow-hidden">
                     <img src={educationImage} alt="Education" className="w-full h-full object-cover" />
                   </div>
                   <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-secondary text-secondary-foreground px-2 py-1 rounded-full text-xs font-medium shadow-lg">
@@ -120,9 +120,9 @@ const Index = () => {
                 </div>
               </div>
               
-              <div className="absolute top-40 right-16 animate-float" style={{animationDelay: '1.5s'}}>
+              <div className="absolute top-48 right-20 animate-float" style={{animationDelay: '1.5s'}}>
                 <div className="relative">
-                  <div className="w-20 h-20 rounded-full border-4 border-warning/30 bg-white shadow-xl overflow-hidden">
+                  <div className="w-18 h-18 rounded-full border-4 border-warning/30 bg-white shadow-xl overflow-hidden">
                     <img src={animalImage} alt="Animal" className="w-full h-full object-cover" />
                   </div>
                   <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-warning text-warning-foreground px-2 py-1 rounded-full text-xs font-medium shadow-lg">
@@ -131,7 +131,7 @@ const Index = () => {
                 </div>
               </div>
               
-              <div className="absolute top-44 right-4 animate-float" style={{animationDelay: '2.5s'}}>
+              <div className="absolute top-24 right-32 animate-float" style={{animationDelay: '2.5s'}}>
                 <div className="relative">
                   <div className="w-16 h-16 rounded-full border-4 border-primary/30 bg-white shadow-xl overflow-hidden">
                     <img src={businessImage} alt="Business" className="w-full h-full object-cover" />
