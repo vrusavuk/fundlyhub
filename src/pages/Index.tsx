@@ -88,10 +88,10 @@ const Index = () => {
               
               <div className="absolute top-48 left-20 animate-float" style={{animationDelay: '1s'}}>
                 <div className="relative">
-                  <div className="w-18 h-18 rounded-full border-4 border-accent/30 bg-white shadow-xl overflow-hidden">
+                  <div className="w-16 h-16 rounded-full border-4 border-accent/30 bg-white shadow-xl overflow-hidden">
                     <img src={medicalImage} alt="Medical" className="w-full h-full object-cover" />
                   </div>
-                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-accent text-accent-foreground px-2 py-1 rounded-full text-xs font-medium shadow-lg">
+                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-accent text-accent-foreground px-1 py-0.5 rounded-full text-xs font-medium shadow-lg">
                     Medical
                   </div>
                 </div>
@@ -122,10 +122,10 @@ const Index = () => {
               
               <div className="absolute top-48 right-20 animate-float" style={{animationDelay: '1.5s'}}>
                 <div className="relative">
-                  <div className="w-18 h-18 rounded-full border-4 border-warning/30 bg-white shadow-xl overflow-hidden">
+                  <div className="w-16 h-16 rounded-full border-4 border-warning/30 bg-white shadow-xl overflow-hidden">
                     <img src={animalImage} alt="Animal" className="w-full h-full object-cover" />
                   </div>
-                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-warning text-warning-foreground px-2 py-1 rounded-full text-xs font-medium shadow-lg">
+                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-warning text-warning-foreground px-1 py-0.5 rounded-full text-xs font-medium shadow-lg">
                     Animal
                   </div>
                 </div>
