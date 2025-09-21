@@ -356,9 +356,14 @@ export function useSearch(options: UseSearchOptions) {
             
             let matchedSnippet = '';
             if (matchedIn === 'categories' && org.categories) {
-              matchedSnippet = `Categories: ${org.categories.join(', ')}`;
+              const categoriesText = org.categories.join(', ');
+              matchedSnippet = extractSnippet(`Categories: ${categoriesText}`, searchTerms);
             } else if (matchedIn === 'dba_name' && org.dba_name) {
-              matchedSnippet = `Also known as: ${org.dba_name}`;
+              matchedSnippet = highlightText(`Also known as: ${org.dba_name}`, searchTerms);
+            } else if (matchedIn === 'legal_name') {
+              matchedSnippet = highlightText(`Legal name: ${org.legal_name}`, searchTerms);
+            } else if (matchedIn === 'website' && org.website) {
+              matchedSnippet = highlightText(`Website: ${org.website}`, searchTerms);
             }
             
             newResults.push({
@@ -373,7 +378,7 @@ export function useSearch(options: UseSearchOptions) {
               matchedFields,
               highlightedTitle,
               highlightedSubtitle,
-              matchedSnippet,
+              matchedSnippet: highlightText(matchedSnippet, searchTerms),
               matchedIn
             });
           }
