@@ -28,8 +28,12 @@ export default function AllCampaigns() {
   const [fundraisers, setFundraisers] = useState<Fundraiser[]>([]);
   const [donations, setDonations] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [currentPage, setCurrentPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const ITEMS_PER_PAGE = 24;
   const navigate = useNavigate();
 
   const fetchFundraisers = async () => {
@@ -38,7 +42,10 @@ export default function AllCampaigns() {
       
       console.log('Fetching all fundraisers...');
       
-      // Fetch fundraisers with owner names
+      // Fetch fundraisers with owner names - implement pagination
+      const startRange = currentPage * ITEMS_PER_PAGE;
+      const endRange = startRange + ITEMS_PER_PAGE - 1;
+      
       const { data: fundraisersData, error: fundraisersError } = await supabase
         .from('fundraisers')
         .select(`
@@ -47,16 +54,31 @@ export default function AllCampaigns() {
         `)
         .eq('status', 'active')
         .eq('visibility', 'public')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(startRange, endRange);
 
-      console.log('All fundraisers query result:', { fundraisersData, fundraisersError });
+      console.log('Fundraisers query result:', { 
+        fundraisersData, 
+        fundraisersError,
+        count: fundraisersData?.length,
+        page: currentPage,
+        range: `${startRange}-${endRange}`
+      });
 
       if (fundraisersError) {
         console.error('Error fetching fundraisers:', fundraisersError);
         return;
       }
 
-      setFundraisers(fundraisersData || []);
+      // Append new fundraisers to existing ones for pagination
+      if (currentPage === 0) {
+        setFundraisers(fundraisersData || []);
+      } else {
+        setFundraisers(prev => [...prev, ...(fundraisersData || [])]);
+      }
+      
+      // Check if there are more items to load
+      setHasMore((fundraisersData?.length || 0) === ITEMS_PER_PAGE);
 
       // Fetch donation totals for all fundraisers
       const fundraiserIds = (fundraisersData || []).map(f => f.id);
@@ -83,8 +105,41 @@ export default function AllCampaigns() {
   };
 
   useEffect(() => {
+    setCurrentPage(0);
+    setFundraisers([]);
     fetchFundraisers();
   }, []);
+
+  const loadMoreFundraisers = async () => {
+    setLoadingMore(true);
+    const nextPage = currentPage + 1;
+    setCurrentPage(nextPage);
+    
+    try {
+      const startRange = nextPage * ITEMS_PER_PAGE;
+      const endRange = startRange + ITEMS_PER_PAGE - 1;
+      
+      const { data: fundraisersData, error: fundraisersError } = await supabase
+        .from('fundraisers')
+        .select(`
+          *,
+          profiles!fundraisers_owner_user_id_fkey(name)
+        `)
+        .eq('status', 'active')
+        .eq('visibility', 'public')
+        .order('created_at', { ascending: false })
+        .range(startRange, endRange);
+
+      if (!fundraisersError && fundraisersData) {
+        setFundraisers(prev => [...prev, ...fundraisersData]);
+        setHasMore(fundraisersData.length === ITEMS_PER_PAGE);
+      }
+    } catch (error) {
+      console.error('Error loading more fundraisers:', error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const handleCardClick = (slug: string) => {
     navigate(`/fundraiser/${slug}`);
@@ -201,6 +256,20 @@ export default function AllCampaigns() {
                 : "No campaigns are currently available"
               }
             </p>
+          </div>
+        )}
+
+        {/* Load More Button */}
+        {!loading && filteredFundraisers.length > 0 && hasMore && (
+          <div className="text-center mt-8">
+            <Button 
+              onClick={loadMoreFundraisers} 
+              disabled={loadingMore}
+              variant="outline"
+              size="lg"
+            >
+              {loadingMore ? "Loading..." : "Load More Campaigns"}
+            </Button>
           </div>
         )}
       </main>
