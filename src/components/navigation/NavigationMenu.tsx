@@ -12,7 +12,7 @@ interface NavigationMenuProps {
 
 const navigationItems = [
   { to: '/campaigns', label: 'Fundlies' },
-  { to: '/fundlypay', label: 'FundlyPay' },
+  { to: '/fundly-give', label: 'Fundly Give' },
 ] as const;
 
 export function NavigationMenu({ className, onNavigate, vertical = false }: NavigationMenuProps) {

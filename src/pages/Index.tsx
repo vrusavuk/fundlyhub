@@ -136,7 +136,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* FundlyPay Feature Section */}
+      {/* Fundly Give Feature Section */}
       <section className="py-20 bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -148,7 +148,7 @@ const Index = () => {
               
               <div className="space-y-6">
                 <h2 className="text-3xl lg:text-4xl font-bold">
-                  FundlyPay makes generosity 
+                  Fundly Give makes generosity 
                   <span className="text-primary"> automatic</span>
                 </h2>
                 <p className="text-lg text-muted-foreground leading-relaxed">
@@ -173,8 +173,8 @@ const Index = () => {
               
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button variant="hero" size="lg" asChild>
-                  <Link to="/fundlypay">
-                    Discover FundlyPay
+                  <Link to="/fundly-give">
+                    Discover Fundly Give
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>

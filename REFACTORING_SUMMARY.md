@@ -92,3 +92,13 @@ src/
 - Enhanced accessibility and SEO optimization
 
 This refactoring establishes a solid foundation for future development while maintaining backward compatibility and improving the overall developer experience.
+
+## Recent Updates
+
+### Brand Name Change: FundlyPay → Fundly Give
+- **Route Update**: `/fundlypay` → `/fundly-give` (with legacy redirect)
+- **Component Rename**: `FundlyPay.tsx` → `FundlyGive.tsx` 
+- **Content Updates**: All references to "FundlyPay" changed to "Fundly Give"
+- **Navigation**: Updated all navigation menus and links
+- **Constants**: Updated route constants and function names
+- **Backward Compatibility**: Added redirect from old route to maintain existing links

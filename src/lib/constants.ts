@@ -37,6 +37,6 @@ export const ROUTES = {
   campaigns: '/campaigns',
   auth: '/auth',
   create: '/create',
-  fundlyPay: '/fundlypay',
+  fundlyGive: '/fundly-give',
   fundraiser: (slug: string) => `/fundraiser/${slug}`,
 } as const;

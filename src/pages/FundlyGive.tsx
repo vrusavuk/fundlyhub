@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Zap, Shield, Receipt, TrendingUp, CheckCircle, Clock, DollarSign, Users, Target } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const FundlyPay = () => {
+const FundlyGive = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -16,11 +16,11 @@ const FundlyPay = () => {
           <div className="space-y-8">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-6 py-3 text-white">
               <Zap className="h-5 w-5" />
-              <span className="font-semibold">Introducing FundlyPay</span>
+              <span className="font-semibold">Introducing Fundly Give</span>
             </div>
             
             <h1 className="text-4xl lg:text-6xl font-bold text-white leading-tight">
-              FundlyPay makes generosity 
+              Fundly Give makes generosity 
               <span className="block text-yellow-300">automatic</span>
             </h1>
             
@@ -34,7 +34,7 @@ const FundlyPay = () => {
                 size="lg" 
                 className="text-lg px-8 py-6 bg-white text-primary hover:bg-white/90"
               >
-                Get Started with FundlyPay
+                Get Started with Fundly Give
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               <Button 
@@ -59,7 +59,7 @@ const FundlyPay = () => {
                   Turn Paychecks into Impact
                 </h2>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  With FundlyPay, every payday becomes an opportunity to make a difference. By integrating with leading U.S. payroll platforms, FundlyHub lets you set up automatic contributions that flow directly from your paycheck into the funds and nonprofits you care about most.
+                  With Fundly Give, every payday becomes an opportunity to make a difference. By integrating with leading U.S. payroll platforms, FundlyHub lets you set up automatic contributions that flow directly from your paycheck into the funds and nonprofits you care about most.
                 </p>
               </div>
               
@@ -100,7 +100,7 @@ const FundlyPay = () => {
                   </div>
                   <div>
                     <h3 className="font-semibold mb-2">Amplify your impact</h3>
-                    <p className="text-muted-foreground">Employer gift matching works seamlessly with FundlyPay.</p>
+                    <p className="text-muted-foreground">Employer gift matching works seamlessly with Fundly Give.</p>
                   </div>
                 </div>
                 
@@ -191,7 +191,7 @@ const FundlyPay = () => {
             </div>
             <div className="space-y-2">
               <div className="text-3xl font-bold text-accent">2,500+</div>
-              <div className="text-muted-foreground">Active FundlyPay users</div>
+              <div className="text-muted-foreground">Active Fundly Give users</div>
             </div>
             <div className="space-y-2">
               <div className="text-3xl font-bold text-success">98%</div>
@@ -209,7 +209,7 @@ const FundlyPay = () => {
               Trusted Payroll Partners
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              FundlyPay seamlessly integrates with leading payroll providers to make giving effortless for employees across thousands of organizations.
+              Fundly Give seamlessly integrates with leading payroll providers to make giving effortless for employees across thousands of organizations.
             </p>
           </div>
           
@@ -344,10 +344,10 @@ const FundlyPay = () => {
             Ready to automate your generosity?
           </h2>
           <p className="text-xl text-white/90 mb-8">
-            Join thousands of people making consistent impact through FundlyPay
+            Join thousands of people making consistent impact through Fundly Give
           </p>
           <Button variant="secondary" size="lg" className="text-lg px-8 py-6 bg-white text-primary hover:bg-white/90">
-            Start Your FundlyPay Setup
+            Start Your Fundly Give Setup
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
         </div>
@@ -376,4 +376,4 @@ const FundlyPay = () => {
   );
 };
 
-export default FundlyPay;
+export default FundlyGive;

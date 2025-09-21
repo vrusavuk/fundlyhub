@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { SearchProvider } from "@/contexts/SearchContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -11,7 +11,7 @@ import Auth from "./pages/Auth";
 import CreateFundraiser from "./pages/CreateFundraiser";
 import FundraiserDetail from "./pages/FundraiserDetail";
 import AllCampaigns from "./pages/AllCampaigns";
-import FundlyPay from "./pages/FundlyPay";
+import FundlyGive from "./pages/FundlyGive";
 import SearchResults from "./pages/SearchResults";
 import NotFound from "./pages/NotFound";
 
@@ -31,7 +31,9 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/campaigns" element={<AllCampaigns />} />
               <Route path="/search" element={<SearchResults />} />
-              <Route path="/fundlypay" element={<FundlyPay />} />
+              <Route path="/fundly-give" element={<FundlyGive />} />
+              {/* Legacy route redirect for backward compatibility */}
+              <Route path="/fundlypay" element={<Navigate to="/fundly-give" replace />} />
               <Route path="/create" element={
                 <ProtectedRoute>
                   <CreateFundraiser />
