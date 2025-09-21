@@ -97,12 +97,12 @@ const Index = () => {
                 </div>
               </div>
               
-              <div className="absolute top-52 left-12 animate-float" style={{animationDelay: '2s'}}>
+              <div className="absolute top-44 left-4 animate-float" style={{animationDelay: '2s'}}>
                 <div className="relative">
-                  <div className="w-18 h-18 rounded-full border-4 border-success/30 bg-white shadow-xl overflow-hidden">
+                  <div className="w-16 h-16 rounded-full border-4 border-success/30 bg-white shadow-xl overflow-hidden">
                     <img src={emergencyImage} alt="Emergency" className="w-full h-full object-cover" />
                   </div>
-                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-success text-success-foreground px-2 py-1 rounded-full text-xs font-medium shadow-lg">
+                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-success text-success-foreground px-1 py-0.5 rounded-full text-xs font-medium shadow-lg">
                     Emergency
                   </div>
                 </div>
@@ -131,12 +131,12 @@ const Index = () => {
                 </div>
               </div>
               
-              <div className="absolute top-52 right-12 animate-float" style={{animationDelay: '2.5s'}}>
+              <div className="absolute top-44 right-4 animate-float" style={{animationDelay: '2.5s'}}>
                 <div className="relative">
-                  <div className="w-18 h-18 rounded-full border-4 border-primary/30 bg-white shadow-xl overflow-hidden">
+                  <div className="w-16 h-16 rounded-full border-4 border-primary/30 bg-white shadow-xl overflow-hidden">
                     <img src={businessImage} alt="Business" className="w-full h-full object-cover" />
                   </div>
-                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs font-medium shadow-lg">
+                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground px-1 py-0.5 rounded-full text-xs font-medium shadow-lg">
                     Business
                   </div>
                 </div>
