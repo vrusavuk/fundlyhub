@@ -4,6 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Zap, Shield, Receipt, CheckCircle, CreditCard, Building2, Users, Eye, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 
+// Partner logos
+import adpLogo from "@/assets/adp-logo.png";
+import paychexLogo from "@/assets/partners/paychex-logo.png";
+import workdayLogo from "@/assets/partners/workday-logo.png";
+import bamboohrLogo from "@/assets/partners/bamboohr-logo.png";
+import gustoLogo from "@/assets/partners/gusto-logo.png";
+import quickbooksLogo from "@/assets/partners/quickbooks-logo.png";
+import paylocityLogo from "@/assets/partners/paylocity-logo.png";
+import ultiproLogo from "@/assets/partners/ultipro-logo.png";
+
 const FundlyGive = () => {
   return (
     <div className="min-h-screen bg-background">
@@ -259,58 +269,42 @@ const FundlyGive = () => {
             <div className="flex gap-8 animate-scroll">
               {/* Partner logos with names */}
               <div className="flex-shrink-0 flex flex-col items-center gap-3 bg-background p-6 rounded-xl border shadow-sm min-w-[180px]">
-                <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center">
-                  <Building2 className="h-8 w-8 text-primary" />
-                </div>
+                <img src={adpLogo} alt="ADP" className="h-12 w-auto object-contain" />
                 <span className="font-semibold text-foreground">ADP Workforce</span>
               </div>
               
               <div className="flex-shrink-0 flex flex-col items-center gap-3 bg-background p-6 rounded-xl border shadow-sm min-w-[180px]">
-                <div className="w-16 h-16 bg-accent/10 rounded-xl flex items-center justify-center">
-                  <Users className="h-8 w-8 text-accent" />
-                </div>
+                <img src={paychexLogo} alt="Paychex" className="h-12 w-auto object-contain" />
                 <span className="font-semibold text-foreground">Paychex</span>
               </div>
               
               <div className="flex-shrink-0 flex flex-col items-center gap-3 bg-background p-6 rounded-xl border shadow-sm min-w-[180px]">
-                <div className="w-16 h-16 bg-success/10 rounded-xl flex items-center justify-center">
-                  <Shield className="h-8 w-8 text-success" />
-                </div>
+                <img src={workdayLogo} alt="Workday" className="h-12 w-auto object-contain" />
                 <span className="font-semibold text-foreground">Workday</span>
               </div>
               
               <div className="flex-shrink-0 flex flex-col items-center gap-3 bg-background p-6 rounded-xl border shadow-sm min-w-[180px]">
-                <div className="w-16 h-16 bg-warning/10 rounded-xl flex items-center justify-center">
-                  <Heart className="h-8 w-8 text-warning" />
-                </div>
+                <img src={bamboohrLogo} alt="BambooHR" className="h-12 w-auto object-contain" />
                 <span className="font-semibold text-foreground">BambooHR</span>
               </div>
               
               <div className="flex-shrink-0 flex flex-col items-center gap-3 bg-background p-6 rounded-xl border shadow-sm min-w-[180px]">
-                <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center">
-                  <CreditCard className="h-8 w-8 text-primary" />
-                </div>
+                <img src={paylocityLogo} alt="Paylocity" className="h-12 w-auto object-contain" />
                 <span className="font-semibold text-foreground">Paylocity</span>
               </div>
               
               <div className="flex-shrink-0 flex flex-col items-center gap-3 bg-background p-6 rounded-xl border shadow-sm min-w-[180px]">
-                <div className="w-16 h-16 bg-accent/10 rounded-xl flex items-center justify-center">
-                  <Building2 className="h-8 w-8 text-accent" />
-                </div>
+                <img src={ultiproLogo} alt="UltiPro" className="h-12 w-auto object-contain" />
                 <span className="font-semibold text-foreground">UltiPro</span>
               </div>
               
               <div className="flex-shrink-0 flex flex-col items-center gap-3 bg-background p-6 rounded-xl border shadow-sm min-w-[180px]">
-                <div className="w-16 h-16 bg-success/10 rounded-xl flex items-center justify-center">
-                  <Users className="h-8 w-8 text-success" />
-                </div>
+                <img src={gustoLogo} alt="Gusto" className="h-12 w-auto object-contain" />
                 <span className="font-semibold text-foreground">Gusto</span>
               </div>
               
               <div className="flex-shrink-0 flex flex-col items-center gap-3 bg-background p-6 rounded-xl border shadow-sm min-w-[180px]">
-                <div className="w-16 h-16 bg-warning/10 rounded-xl flex items-center justify-center">
-                  <Eye className="h-8 w-8 text-warning" />
-                </div>
+                <img src={quickbooksLogo} alt="QuickBooks" className="h-12 w-auto object-contain" />
                 <span className="font-semibold text-foreground">QuickBooks</span>
               </div>
             </div>
