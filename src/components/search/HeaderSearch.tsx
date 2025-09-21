@@ -51,11 +51,17 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
   const isOnSearchPage = location.pathname === '/search';
   const isOnIntegratedSearchPage = isOnCampaignsPage || isOnSearchPage;
   
-  // On campaigns page, show only non-campaign results in dropdown
+  // On campaigns page, show summary notifications instead of individual results
   // On search page, don't show dropdown at all since results are on the page
   const shouldShowDropdown = !isOnSearchPage;
+  
+  // Get counts for different result types
+  const campaignResults = results.filter(r => r.type === 'campaign');
+  const userResults = results.filter(r => r.type === 'user');
+  const organizationResults = results.filter(r => r.type === 'organization');
+  
   const dropdownResults = isOnCampaignsPage 
-    ? results.filter(r => r.type !== 'campaign').slice(0, 3)
+    ? [] // Don't show individual results on campaigns page
     : results.slice(0, 5);
 
   useEffect(() => {
@@ -198,59 +204,127 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
                   <div className="flex items-center justify-center py-8">
                     <LoadingSpinner />
                   </div>
-                ) : dropdownResults.length === 0 ? (
-                  <div className="p-4 text-center text-muted-foreground">
-                    {query.length < 2 ? "Type at least 2 characters to search" : "No results found"}
-                  </div>
                 ) : (
                   <div className="divide-y divide-border">
-                    {dropdownResults.map((result, index) => (
-                      <button
-                        key={`${result.type}-${result.id}-${index}`}
-                        onClick={() => handleResultClick(result)}
-                        className="w-full text-left p-4 hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="flex items-start gap-3">
-                          {result.image && (
-                            <Avatar className="h-8 w-8 flex-shrink-0">
-                              <AvatarImage src={result.image} alt={result.title} />
-                              <AvatarFallback className="text-xs">
-                                {getTypeIcon(result.type)}
-                              </AvatarFallback>
-                            </Avatar>
-                          )}
-                          
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Badge className={getTypeColor(result.type)} variant="secondary">
-                                {getTypeIcon(result.type)}
-                                <span className="ml-1 capitalize text-xs">{result.type}</span>
-                              </Badge>
+                    {/* For campaigns page, show summary notifications */}
+                    {isOnCampaignsPage ? (
+                      <div className="p-4 space-y-3">
+                        {(userResults.length > 0 || organizationResults.length > 0) ? (
+                          <>
+                            <div className="text-sm text-muted-foreground mb-3">
+                              Additional results found:
                             </div>
                             
-                            <h4 className="font-medium text-sm mb-1 truncate">
-                              <span dangerouslySetInnerHTML={{ __html: result.highlightedTitle || result.title }} />
-                            </h4>
-                            
-                            {result.subtitle && (
-                              <p 
-                                className="text-xs text-muted-foreground truncate"
-                                dangerouslySetInnerHTML={{ __html: result.highlightedSubtitle || result.subtitle }}
-                              />
+                            {userResults.length > 0 && (
+                              <button
+                                onClick={handleViewAllResults}
+                                className="w-full text-left p-3 bg-muted/30 hover:bg-muted/50 transition-colors rounded-md flex items-center gap-3"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <User className="h-4 w-4 text-primary" />
+                                  <Badge className="bg-primary/10 text-primary" variant="secondary">
+                                    User
+                                  </Badge>
+                                </div>
+                                <div className="flex-1">
+                                  <div className="text-sm font-medium">
+                                    {userResults.length} user{userResults.length > 1 ? 's' : ''} found
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    Click to view all search results
+                                  </div>
+                                </div>
+                                <ArrowRight className="h-4 w-4" />
+                              </button>
                             )}
+                            
+                            {organizationResults.length > 0 && (
+                              <button
+                                onClick={handleViewAllResults}
+                                className="w-full text-left p-3 bg-muted/30 hover:bg-muted/50 transition-colors rounded-md flex items-center gap-3"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Building2 className="h-4 w-4 text-secondary-foreground" />
+                                  <Badge className="bg-secondary text-secondary-foreground" variant="secondary">
+                                    Organization
+                                  </Badge>
+                                </div>
+                                <div className="flex-1">
+                                  <div className="text-sm font-medium">
+                                    {organizationResults.length} organization{organizationResults.length > 1 ? 's' : ''} found
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    Click to view all search results
+                                  </div>
+                                </div>
+                                <ArrowRight className="h-4 w-4" />
+                              </button>
+                            )}
+                          </>
+                        ) : (
+                          <div className="text-center text-muted-foreground text-sm py-4">
+                            {query.length < 2 ? "Type at least 2 characters to search" : "No users or organizations found"}
                           </div>
+                        )}
+                      </div>
+                    ) : (
+                      /* Regular dropdown for other pages */
+                      dropdownResults.length === 0 ? (
+                        <div className="p-4 text-center text-muted-foreground">
+                          {query.length < 2 ? "Type at least 2 characters to search" : "No results found"}
                         </div>
-                      </button>
-                    ))}
-                    
-                    {/* View All Results */}
-                    <button
-                      onClick={handleViewAllResults}
-                      className="w-full p-4 bg-muted/30 hover:bg-muted/50 transition-colors flex items-center justify-center gap-2 text-sm font-medium text-primary"
-                    >
-                      View all results for "{query}"
-                      <ArrowRight className="h-4 w-4" />
-                    </button>
+                      ) : (
+                        <>
+                          {dropdownResults.map((result, index) => (
+                            <button
+                              key={`${result.type}-${result.id}-${index}`}
+                              onClick={() => handleResultClick(result)}
+                              className="w-full text-left p-4 hover:bg-muted/50 transition-colors"
+                            >
+                              <div className="flex items-start gap-3">
+                                {result.image && (
+                                  <Avatar className="h-8 w-8 flex-shrink-0">
+                                    <AvatarImage src={result.image} alt={result.title} />
+                                    <AvatarFallback className="text-xs">
+                                      {getTypeIcon(result.type)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                )}
+                                
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <Badge className={getTypeColor(result.type)} variant="secondary">
+                                      {getTypeIcon(result.type)}
+                                      <span className="ml-1 capitalize text-xs">{result.type}</span>
+                                    </Badge>
+                                  </div>
+                                  
+                                  <h4 className="font-medium text-sm mb-1 truncate">
+                                    <span dangerouslySetInnerHTML={{ __html: result.highlightedTitle || result.title }} />
+                                  </h4>
+                                  
+                                  {result.subtitle && (
+                                    <p 
+                                      className="text-xs text-muted-foreground truncate"
+                                      dangerouslySetInnerHTML={{ __html: result.highlightedSubtitle || result.subtitle }}
+                                    />
+                                  )}
+                                </div>
+                              </div>
+                            </button>
+                          ))}
+                          
+                          {/* View All Results */}
+                          <button
+                            onClick={handleViewAllResults}
+                            className="w-full p-4 bg-muted/30 hover:bg-muted/50 transition-colors flex items-center justify-center gap-2 text-sm font-medium text-primary"
+                          >
+                            View all results for "{query}"
+                            <ArrowRight className="h-4 w-4" />
+                          </button>
+                        </>
+                      )
+                    )}
                   </div>
                 )}
               </CardContent>
