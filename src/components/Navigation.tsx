@@ -27,15 +27,12 @@ export function Navigation() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            <Link to="/" className="text-foreground hover:text-primary transition-smooth">
-              Home
-            </Link>
             <Link to="/campaigns" className="text-foreground hover:text-primary transition-smooth">
-              All Campaigns
+              Fundlies
             </Link>
-            <a href="#" className="text-foreground hover:text-primary transition-smooth">
-              How it works
-            </a>
+            <Link to="/fundlypay" className="text-foreground hover:text-primary transition-smooth">
+              FundlyPay
+            </Link>
           </div>
 
           {/* Enhanced Search Bar */}
@@ -95,15 +92,12 @@ export function Navigation() {
               placeholder="Search campaigns, users, organizations..."
               onResultClick={() => setIsMenuOpen(false)}
             />
-              <Link to="/" className="text-foreground hover:text-primary transition-smooth py-2">
-                Home
-              </Link>
               <Link to="/campaigns" className="text-foreground hover:text-primary transition-smooth py-2">
-                All Campaigns
+                Fundlies
               </Link>
-              <a href="#" className="text-foreground hover:text-primary transition-smooth py-2">
-                How it works
-              </a>
+              <Link to="/fundlypay" className="text-foreground hover:text-primary transition-smooth py-2">
+                FundlyPay
+              </Link>
               {user ? (
                 <Button variant="outline" size="sm" className="justify-start" onClick={handleSignOut}>
                   <User className="h-4 w-4 mr-2" />

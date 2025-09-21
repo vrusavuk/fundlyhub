@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import CreateFundraiser from "./pages/CreateFundraiser";
 import FundraiserDetail from "./pages/FundraiserDetail";
 import AllCampaigns from "./pages/AllCampaigns";
+import FundlyPay from "./pages/FundlyPay";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/campaigns" element={<AllCampaigns />} />
+            <Route path="/fundlypay" element={<FundlyPay />} />
             <Route path="/create" element={
               <ProtectedRoute>
                 <CreateFundraiser />
