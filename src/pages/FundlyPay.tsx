@@ -213,23 +213,79 @@ const FundlyPay = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 items-center justify-items-center">
+          <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-6 items-center justify-items-center">
             {[
-              { name: "ADP", logo: "ADP" },
-              { name: "Paylocity", logo: "Paylocity" },
-              { name: "Gusto", logo: "Gusto" },
-              { name: "Paychex", logo: "Paychex" },
-              { name: "BambooHR", logo: "BambooHR" },
-              { name: "Workday", logo: "Workday" },
-              { name: "UltiPro", logo: "UltiPro" },
-              { name: "Paycom", logo: "Paycom" },
-              { name: "QuickBooks", logo: "QuickBooks" },
-              { name: "Ceridian", logo: "Ceridian" }
+              { name: "ADP", logoUrl: "https://logo.clearbit.com/adp.com" },
+              { name: "Paylocity", logoUrl: "https://logo.clearbit.com/paylocity.com" },
+              { name: "Gusto", logoUrl: "https://logo.clearbit.com/gusto.com" },
+              { name: "Paychex", logoUrl: "https://logo.clearbit.com/paychex.com" },
+              { name: "BambooHR", logoUrl: "https://logo.clearbit.com/bamboohr.com" },
+              { name: "Workday", logoUrl: "https://logo.clearbit.com/workday.com" },
+              { name: "UltiPro", logoUrl: "https://logo.clearbit.com/ultimatesoftware.com" },
+              { name: "Paycom", logoUrl: "https://logo.clearbit.com/paycom.com" },
+              { name: "QuickBooks Payroll", logoUrl: "https://logo.clearbit.com/intuit.com" },
+              { name: "Ceridian Dayforce", logoUrl: "https://logo.clearbit.com/ceridian.com" },
+              { name: "Rippling", logoUrl: "https://logo.clearbit.com/rippling.com" },
+              { name: "Justworks", logoUrl: "https://logo.clearbit.com/justworks.com" },
+              { name: "TriNet", logoUrl: "https://logo.clearbit.com/trinet.com" },
+              { name: "Namely", logoUrl: "https://logo.clearbit.com/namely.com" },
+              { name: "Zenefits", logoUrl: "https://logo.clearbit.com/zenefits.com" },
+              { name: "Square Payroll", logoUrl: "https://logo.clearbit.com/squareup.com" },
+              { name: "OnPay", logoUrl: "https://logo.clearbit.com/onpay.com" },
+              { name: "SurePayroll", logoUrl: "https://logo.clearbit.com/surepayroll.com" },
+              { name: "Patriot Payroll", logoUrl: "https://logo.clearbit.com/patriotsoftware.com" },
+              { name: "Wave Payroll", logoUrl: "https://logo.clearbit.com/waveapps.com" },
+              { name: "Sage Payroll", logoUrl: "https://logo.clearbit.com/sage.com" },
+              { name: "Kronos", logoUrl: "https://logo.clearbit.com/kronos.com" },
+              { name: "ADP Run", logoUrl: "https://logo.clearbit.com/adp.com" },
+              { name: "Paycor", logoUrl: "https://logo.clearbit.com/paycor.com" },
+              { name: "Paylocity", logoUrl: "https://logo.clearbit.com/paylocity.com" },
+              { name: "UKG", logoUrl: "https://logo.clearbit.com/ukg.com" },
+              { name: "isolved", logoUrl: "https://logo.clearbit.com/isolvedhcm.com" },
+              { name: "Heartland Payroll", logoUrl: "https://logo.clearbit.com/heartlandpaymentsystems.com" },
+              { name: "Payroll4Free", logoUrl: "https://logo.clearbit.com/payroll4free.com" },
+              { name: "Check", logoUrl: "https://logo.clearbit.com/checkhq.com" },
+              { name: "Wagepoint", logoUrl: "https://logo.clearbit.com/wagepoint.com" },
+              { name: "Workful", logoUrl: "https://logo.clearbit.com/workful.com" },
+              { name: "Deputy", logoUrl: "https://logo.clearbit.com/deputy.com" },
+              { name: "When I Work", logoUrl: "https://logo.clearbit.com/wheniwork.com" },
+              { name: "TSheets", logoUrl: "https://logo.clearbit.com/tsheets.com" },
+              { name: "ClockShark", logoUrl: "https://logo.clearbit.com/clockshark.com" },
+              { name: "Homebase", logoUrl: "https://logo.clearbit.com/joinhomebase.com" },
+              { name: "BambooHR", logoUrl: "https://logo.clearbit.com/bamboohr.com" },
+              { name: "Workday HCM", logoUrl: "https://logo.clearbit.com/workday.com" },
+              { name: "SuccessFactors", logoUrl: "https://logo.clearbit.com/successfactors.com" },
+              { name: "PeopleSoft", logoUrl: "https://logo.clearbit.com/oracle.com" },
+              { name: "ADP Workforce Now", logoUrl: "https://logo.clearbit.com/adp.com" },
+              { name: "Cornerstone OnDemand", logoUrl: "https://logo.clearbit.com/cornerstoneondemand.com" },
+              { name: "Cezanne HR", logoUrl: "https://logo.clearbit.com/cezannehr.com" },
+              { name: "Payroll Mate", logoUrl: "https://logo.clearbit.com/payrollmate.com" },
+              { name: "SentricHR", logoUrl: "https://logo.clearbit.com/sentrichr.com" },
+              { name: "ExakTime", logoUrl: "https://logo.clearbit.com/exaktime.com" },
+              { name: "TimeClock Plus", logoUrl: "https://logo.clearbit.com/timeclockplus.com" },
+              { name: "Replicon", logoUrl: "https://logo.clearbit.com/replicon.com" },
+              { name: "TempWorks", logoUrl: "https://logo.clearbit.com/tempworks.com" },
+              { name: "EPAY HCM", logoUrl: "https://logo.clearbit.com/epayhcm.com" },
+              { name: "PrimePay", logoUrl: "https://logo.clearbit.com/primepay.com" },
+              { name: "Dominion Payroll", logoUrl: "https://logo.clearbit.com/dominionpayroll.com" },
+              { name: "Complete Payroll", logoUrl: "https://logo.clearbit.com/completepayroll.com" },
+              { name: "Evolution Payroll", logoUrl: "https://logo.clearbit.com/evolutionpayroll.com" }
             ].map((partner, index) => (
               <div key={index} className="group">
-                <div className="w-32 h-20 bg-card rounded-lg border shadow-soft flex items-center justify-center hover:shadow-medium transition-all duration-300 group-hover:scale-105">
-                  <span className="text-lg font-semibold text-muted-foreground group-hover:text-foreground transition-colors">
-                    {partner.logo}
+                <div className="w-28 h-16 bg-card rounded-lg border shadow-soft flex items-center justify-center hover:shadow-medium transition-all duration-300 group-hover:scale-105 p-3">
+                  <img 
+                    src={partner.logoUrl} 
+                    alt={`${partner.name} logo`}
+                    className="max-w-full max-h-full object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const fallback = target.nextElementSibling as HTMLElement;
+                      if (fallback) fallback.style.display = 'block';
+                    }}
+                  />
+                  <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors hidden">
+                    {partner.name}
                   </span>
                 </div>
               </div>
