@@ -45,7 +45,7 @@ export default function CreateFundraiser() {
       .replace(/[^a-z0-9 -]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
-      .trim('-');
+      .replace(/^-+|-+$/g, ''); // Remove leading and trailing dashes
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
