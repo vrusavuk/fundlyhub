@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Navigation } from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
+import { EnhancedSearch } from "@/components/EnhancedSearch";
 import { EnhancedFundraiserCard } from "@/components/EnhancedFundraiserCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 
 interface Fundraiser {
   id: string;
@@ -34,7 +35,17 @@ export default function AllCampaigns() {
   const [currentPage, setCurrentPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const ITEMS_PER_PAGE = 24;
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  // Get initial search term from URL parameters
+  const initialSearch = searchParams.get('search') || '';
+
+  useEffect(() => {
+    if (initialSearch) {
+      setSearchTerm(initialSearch);
+    }
+  }, [initialSearch]);
 
   const fetchFundraisers = async () => {
     try {
@@ -176,16 +187,12 @@ export default function AllCampaigns() {
           </p>
         </div>
 
-        {/* Search and Filters */}
+        {/* Enhanced Search and Filters */}
         <div className="mb-8 space-y-4">
           <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Search campaigns..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+            <div className="flex-1">
+              <EnhancedSearch 
+                placeholder="Search all campaigns, users, organizations..."
               />
             </div>
             <Button variant="outline" className="md:w-auto">

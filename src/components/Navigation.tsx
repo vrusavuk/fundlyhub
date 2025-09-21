@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search, Heart, User, Menu } from "lucide-react";
+import { Heart, User, Menu } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { EnhancedSearch } from "@/components/EnhancedSearch";
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -38,15 +38,12 @@ export function Navigation() {
             </a>
           </div>
 
-          {/* Search Bar */}
+          {/* Enhanced Search Bar */}
           <div className="hidden md:flex items-center max-w-md flex-1 mx-8">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search fundraisers..." 
-                className="pl-10 bg-secondary/50 border-0"
-              />
-            </div>
+            <EnhancedSearch 
+              className="w-full"
+              placeholder="Search campaigns, users, organizations..."
+            />
           </div>
 
           {/* Action Buttons */}
@@ -93,14 +90,11 @@ export function Navigation() {
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden border-t border-border py-4">
-            <div className="flex flex-col space-y-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Search fundraisers..." 
-                  className="pl-10 bg-secondary/50 border-0"
-                />
-              </div>
+          <div className="flex flex-col space-y-3">
+            <EnhancedSearch 
+              placeholder="Search campaigns, users, organizations..."
+              onResultClick={() => setIsMenuOpen(false)}
+            />
               <Link to="/" className="text-foreground hover:text-primary transition-smooth py-2">
                 Home
               </Link>
