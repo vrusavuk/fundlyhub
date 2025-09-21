@@ -141,11 +141,8 @@ export const useMemoryMonitor = () => {
 // Bundle size analyzer (development only)
 export const logBundleInfo = () => {
   if (process.env.NODE_ENV === 'development') {
-    import('webpack-bundle-analyzer').then(({ BundleAnalyzerPlugin }) => {
-      console.log('Bundle analyzer available in development mode');
-    }).catch(() => {
-      console.log('Bundle analyzer not available');
-    });
+    console.log('Bundle analysis available in development mode');
+    console.log('Consider adding webpack-bundle-analyzer for detailed analysis');
   }
 };
 
