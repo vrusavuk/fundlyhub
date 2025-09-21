@@ -86,7 +86,7 @@ const Index = () => {
                 </div>
               </div>
               
-              <div className="absolute top-32 left-20 animate-float" style={{animationDelay: '1s'}}>
+              <div className="absolute top-40 left-16 animate-float" style={{animationDelay: '1s'}}>
                 <div className="relative">
                   <div className="w-20 h-20 rounded-full border-4 border-accent/30 bg-white shadow-xl overflow-hidden">
                     <img src={medicalImage} alt="Medical" className="w-full h-full object-cover" />
@@ -120,7 +120,7 @@ const Index = () => {
                 </div>
               </div>
               
-              <div className="absolute top-32 right-20 animate-float" style={{animationDelay: '1.5s'}}>
+              <div className="absolute top-40 right-16 animate-float" style={{animationDelay: '1.5s'}}>
                 <div className="relative">
                   <div className="w-20 h-20 rounded-full border-4 border-warning/30 bg-white shadow-xl overflow-hidden">
                     <img src={animalImage} alt="Animal" className="w-full h-full object-cover" />
