@@ -96,12 +96,7 @@ export default function AllCampaigns() {
               <span className="text-sm text-muted-foreground">
                 {filteredFundraisers.length} campaigns found
               </span>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="relative"
-              >
-                <SlidersHorizontal className="h-4 w-4 mr-2" />
+              <Button variant="outline" size="sm">
                 Sort
               </Button>
             </>

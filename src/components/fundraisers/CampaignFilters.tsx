@@ -95,68 +95,10 @@ export function CampaignFilters({
     <div className="border-b border-border bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         
-        {/* Compact Filter Bar */}
+        {/* Compact Filter Bar - Reordered: Filters, Categories, Location, Reset */}
         <div className="flex items-center gap-4 flex-wrap">
           
-          {/* Category Dropdown */}
-          <Select 
-            value={filters.categories.length === 1 ? filters.categories[0] : filters.categories.length > 1 ? 'multiple' : 'all'} 
-            onValueChange={(value) => {
-              if (value === 'all') {
-                handleFilterChange('categories', []);
-              } else if (value !== 'multiple') {
-                handleFilterChange('categories', [value]);
-              }
-            }}
-          >
-            <SelectTrigger className="w-[180px] bg-background border border-border">
-              <SelectValue placeholder="Category">
-                {filters.categories.length === 0 && "All Categories"}
-                {filters.categories.length === 1 && (
-                  <span className="flex items-center gap-1">
-                    {CATEGORIES.find(c => c.name === filters.categories[0])?.emoji}
-                    {filters.categories[0]}
-                  </span>
-                )}
-                {filters.categories.length > 1 && (
-                  <span className="flex items-center gap-1">
-                    Multiple ({filters.categories.length})
-                  </span>
-                )}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent className="bg-background border border-border z-50">
-              <SelectItem value="all">All Categories</SelectItem>
-              {CATEGORIES.map((category) => (
-                <SelectItem key={category.name} value={category.name}>
-                  <span className="flex items-center gap-2">
-                    {category.emoji} {category.name}
-                  </span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Location Dropdown */}
-          <Select value={filters.location} onValueChange={(value) => handleFilterChange('location', value)}>
-            <SelectTrigger className="w-[160px] bg-background border border-border">
-              <SelectValue>
-                <span className="flex items-center gap-1">
-                  <MapPin className="h-4 w-4" />
-                  {filters.location}
-                </span>
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent className="bg-background border border-border z-50">
-              {LOCATIONS.map((location) => (
-                <SelectItem key={location} value={location}>
-                  {location}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Advanced Filters Dialog */}
+          {/* Advanced Filters Dialog - FIRST */}
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="flex items-center gap-2 relative">
@@ -263,6 +205,76 @@ export function CampaignFilters({
               </div>
             </DialogContent>
           </Dialog>
+
+          {/* Category Dropdown - SECOND */}
+          <Select 
+            value={filters.categories.length === 1 ? filters.categories[0] : filters.categories.length > 1 ? 'multiple' : 'all'} 
+            onValueChange={(value) => {
+              if (value === 'all') {
+                handleFilterChange('categories', []);
+              } else if (value !== 'multiple') {
+                handleFilterChange('categories', [value]);
+              }
+            }}
+          >
+            <SelectTrigger className="w-[180px] bg-background border border-border">
+              <SelectValue placeholder="Category">
+                {filters.categories.length === 0 && "All Categories"}
+                {filters.categories.length === 1 && (
+                  <span className="flex items-center gap-1">
+                    {CATEGORIES.find(c => c.name === filters.categories[0])?.emoji}
+                    {filters.categories[0]}
+                  </span>
+                )}
+                {filters.categories.length > 1 && (
+                  <span className="flex items-center gap-1">
+                    Multiple ({filters.categories.length})
+                  </span>
+                )}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="bg-background border border-border z-50">
+              <SelectItem value="all">All Categories</SelectItem>
+              {CATEGORIES.map((category) => (
+                <SelectItem key={category.name} value={category.name}>
+                  <span className="flex items-center gap-2">
+                    {category.emoji} {category.name}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Location Dropdown - THIRD */}
+          <Select value={filters.location} onValueChange={(value) => handleFilterChange('location', value)}>
+            <SelectTrigger className="w-[160px] bg-background border border-border">
+              <SelectValue>
+                <span className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  {filters.location}
+                </span>
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="bg-background border border-border z-50">
+              {LOCATIONS.map((location) => (
+                <SelectItem key={location} value={location}>
+                  {location}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Reset Button - FOURTH */}
+          {getActiveFiltersCount() > 0 && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={clearAllFilters}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Reset filters
+            </Button>
+          )}
 
           {/* Active Filters Display */}
           {getActiveFiltersCount() > 0 && (
