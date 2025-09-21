@@ -44,7 +44,11 @@ export function useCampaignStats() {
         // Get all donations to calculate total funds raised
         const { data: allDonations, error: donationsError } = await supabase
           .from('donations')
-          .select('amount, fundraiser_id, fundraisers!inner(status, visibility)')
+          .select(`
+            amount,
+            fundraiser_id,
+            fundraisers!inner(status, visibility)
+          `)
           .eq('payment_status', 'paid')
           .eq('fundraisers.visibility', 'public')
           .in('fundraisers.status', ['active', 'closed']);
@@ -90,8 +94,9 @@ export function useCampaignStats() {
           console.log('Real-time donation received:', payload);
           // Add a small delay to ensure the database has processed the change
           setTimeout(() => {
+            console.log('Refreshing stats due to real-time update');
             fetchStats();
-          }, 500);
+          }, 1000);
         }
       )
       .subscribe((status) => {

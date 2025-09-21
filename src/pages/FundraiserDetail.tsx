@@ -205,11 +205,13 @@ export default function FundraiserDetail() {
         console.log('Dispatching donationMade event');
         window.dispatchEvent(new CustomEvent('donationMade'));
         
-        // Force a page reload after a short delay if real-time doesn't work
+        // Also force a manual refresh of the campaign stats page
         setTimeout(() => {
-          console.log('Forcing reload for analytics update');
-          window.location.reload();
-        }, 2000);
+          if (window.location.pathname === '/campaigns') {
+            console.log('On campaigns page, forcing reload');
+            window.location.reload();
+          }
+        }, 1500);
       }
     } catch (error: any) {
       toast({
