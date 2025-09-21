@@ -31,11 +31,8 @@ export function AllDonorsDialog({ isOpen, onClose, donations }: AllDonorsDialogP
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <span>All Donors ({donations.length})</span>
-            <Badge variant="secondary" className="text-sm">
-              {formatCurrency(totalAmount, donations[0]?.currency || 'USD')} total
-            </Badge>
+          <DialogTitle>
+            All Donors ({donations.length})
           </DialogTitle>
         </DialogHeader>
         
