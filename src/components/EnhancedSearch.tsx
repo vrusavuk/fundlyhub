@@ -68,6 +68,8 @@ export function EnhancedSearch({
       case 'campaign':
         if (result.slug) {
           navigate(`/fundraiser/${result.slug}`);
+        } else if (result.id) {
+          navigate(`/fundraiser/${result.id}`);
         }
         break;
       case 'user':

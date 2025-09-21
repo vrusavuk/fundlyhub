@@ -107,7 +107,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const handleResultClick = (result: any) => {
     saveSearchQuery(query);
     if (result.type === 'campaign') {
-      navigate(`/fundraiser/${result.id}`);
+      navigate(`/fundraiser/${result.slug || result.id}`);
     } else if (result.type === 'user') {
       navigate(`/profile/${result.id}`);
     } else if (result.type === 'organization') {
