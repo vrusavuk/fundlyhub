@@ -22,8 +22,9 @@ export function useCampaignStats() {
     async function fetchStats() {
       try {
         setStats(prev => ({ ...prev, loading: true, error: null }));
+        console.log('Fetching campaign stats...');
 
-        // Get campaign counts first
+        // Get campaign counts
         const [activeCountResult, closedCountResult] = await Promise.all([
           supabase
             .from('fundraisers')
@@ -38,62 +39,48 @@ export function useCampaignStats() {
             .eq('visibility', 'public')
         ]);
 
-        if (activeCountResult.error) {
-          console.error('Active count error:', activeCountResult.error);
-          throw activeCountResult.error;
-        }
-        if (closedCountResult.error) {
-          console.error('Closed count error:', closedCountResult.error);
-          throw closedCountResult.error;
-        }
+        console.log('Active campaigns:', activeCountResult.count);
+        console.log('Closed campaigns:', closedCountResult.count);
 
-        // Calculate total raised using a direct SQL approach via RPC or simple calculation
-        let totalRaised = 0;
-        
-        try {
-          // Try to get donations with a simpler approach
-          const donationsQuery = await supabase
+        if (activeCountResult.error) throw activeCountResult.error;
+        if (closedCountResult.error) throw closedCountResult.error;
+
+        // Get donations and calculate total raised
+        const [donationsResult, publicFundraisersResult] = await Promise.all([
+          supabase
             .from('donations')
-            .select('amount')
-            .eq('payment_status', 'paid');
+            .select('amount, fundraiser_id')
+            .eq('payment_status', 'paid'),
+          supabase
+            .from('fundraisers')
+            .select('id')
+            .eq('visibility', 'public')
+            .in('status', ['active', 'closed'])
+        ]);
 
-          if (!donationsQuery.error && donationsQuery.data) {
-            // Get all public fundraiser IDs
-            const publicFundraisersQuery = await supabase
-              .from('fundraisers')
-              .select('id')
-              .eq('visibility', 'public')
-              .in('status', ['active', 'closed']);
+        console.log('Donations count:', donationsResult.data?.length);
+        console.log('Public fundraisers count:', publicFundraisersResult.data?.length);
 
-            if (!publicFundraisersQuery.error && publicFundraisersQuery.data) {
-              const publicIds = new Set(publicFundraisersQuery.data.map(f => f.id));
-              
-              // Get donations for these fundraisers
-              const publicDonationsQuery = await supabase
-                .from('donations')
-                .select('amount, fundraiser_id')
-                .eq('payment_status', 'paid');
-
-              if (!publicDonationsQuery.error && publicDonationsQuery.data) {
-                totalRaised = publicDonationsQuery.data
-                  .filter(d => publicIds.has(d.fundraiser_id))
-                  .reduce((sum, d) => sum + Number(d.amount), 0);
-              }
-            }
-          }
-        } catch (donationError) {
-          console.error('Error calculating donations:', donationError);
-          // Fallback to 0 if there's an error
-          totalRaised = 0;
+        let totalRaised = 0;
+        if (!donationsResult.error && !publicFundraisersResult.error) {
+          const publicIds = new Set(publicFundraisersResult.data?.map(f => f.id) || []);
+          const publicDonations = donationsResult.data?.filter(d => publicIds.has(d.fundraiser_id)) || [];
+          
+          console.log('Public donations count:', publicDonations.length);
+          totalRaised = publicDonations.reduce((sum, d) => sum + Number(d.amount), 0);
+          console.log('Calculated total raised:', totalRaised);
         }
 
-        setStats({
+        const finalStats = {
           activeCampaigns: activeCountResult.count || 0,
           successfulCampaigns: closedCountResult.count || 0,
           totalFundsRaised: totalRaised,
           loading: false,
           error: null
-        });
+        };
+
+        console.log('Final stats:', finalStats);
+        setStats(finalStats);
 
       } catch (error) {
         console.error('Error fetching campaign stats:', error);
