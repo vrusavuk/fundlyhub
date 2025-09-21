@@ -165,8 +165,8 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="absolute top-0 left-0 right-0 z-50 bg-background border-b border-border shadow-lg">
-      <div className="container mx-auto px-4">
+    <div className="absolute top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border shadow-lg">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative" ref={dropdownRef}>
           {/* Search Input */}
           <form onSubmit={handleSubmit} className="flex items-center h-16 gap-4">
@@ -208,7 +208,7 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
 
           {/* Dropdown Results */}
           {showDropdown && (
-            <Card className="absolute top-full left-0 right-0 mt-1 max-h-96 overflow-y-auto shadow-xl border">
+            <Card className="absolute top-full left-0 right-0 mt-1 max-h-96 overflow-y-auto shadow-xl border z-50 bg-background">
               <CardContent className="p-0">
                 {loading ? (
                   <div className="flex items-center justify-center py-8">
