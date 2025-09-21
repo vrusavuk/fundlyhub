@@ -143,6 +143,15 @@
     @apply bg-background text-foreground;
   }
 
+  /* Hide scrollbar for webkit browsers */
+  .scrollbar-hide {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
   /* Search highlighting styles - consistent with search results page */
   mark,
   .search-highlight {

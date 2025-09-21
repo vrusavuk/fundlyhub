@@ -1,3 +1,4 @@
+import React, { useRef, useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +16,48 @@ import paylocityLogo from "@/assets/partners/paylocity-logo.png";
 import ultiproLogo from "@/assets/partners/ultipro-logo.png";
 
 const FundlyGive = () => {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    let pauseTimeout: NodeJS.Timeout;
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      setIsPaused(true);
+      container.scrollLeft += e.deltaY;
+      
+      clearTimeout(pauseTimeout);
+      pauseTimeout = setTimeout(() => {
+        setIsPaused(false);
+      }, 3000);
+    };
+
+    const handleMouseEnter = () => {
+      setIsPaused(true);
+    };
+
+    const handleMouseLeave = () => {
+      clearTimeout(pauseTimeout);
+      pauseTimeout = setTimeout(() => {
+        setIsPaused(false);
+      }, 1000);
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    container.addEventListener('mouseenter', handleMouseEnter);
+    container.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+      container.removeEventListener('mouseenter', handleMouseEnter);
+      container.removeEventListener('mouseleave', handleMouseLeave);
+      clearTimeout(pauseTimeout);
+    };
+  }, []);
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -266,7 +309,11 @@ const FundlyGive = () => {
           </div>
           
           <div className="relative overflow-hidden">
-            <div className="flex gap-8 animate-scroll">
+            <div 
+              ref={scrollContainerRef}
+              className={`flex gap-8 overflow-x-auto scrollbar-hide ${!isPaused ? 'animate-scroll' : ''}`}
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
               {/* Partner logos with names */}
               <div className="flex-shrink-0 flex flex-col items-center gap-3 bg-background p-6 rounded-xl border shadow-sm min-w-[180px]">
                 <img src={adpLogo} alt="ADP" className="h-12 w-auto object-contain" />
