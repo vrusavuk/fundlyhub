@@ -23,27 +23,14 @@ export function useCampaignStats() {
       try {
         setStats(prev => ({ ...prev, loading: true, error: null }));
 
-        // First get public fundraiser IDs, then use them to filter donations
-        const publicFundraisersResult = await supabase
-          .from('fundraisers')
-          .select('id')
-          .eq('visibility', 'public')
-          .in('status', ['active', 'closed']);
-
-        if (publicFundraisersResult.error) throw publicFundraisersResult.error;
-
-        const publicFundraiserIds = publicFundraisersResult.data?.map(f => f.id) || [];
-
-        // Get stats using separate queries
+        // Get campaign counts first
         const [activeCountResult, closedCountResult] = await Promise.all([
-          // Get active campaigns count
           supabase
             .from('fundraisers')
             .select('*', { count: 'exact', head: true })
             .eq('status', 'active')
             .eq('visibility', 'public'),
           
-          // Get closed campaigns count  
           supabase
             .from('fundraisers')
             .select('*', { count: 'exact', head: true })
@@ -51,23 +38,53 @@ export function useCampaignStats() {
             .eq('visibility', 'public')
         ]);
 
-        if (activeCountResult.error) throw activeCountResult.error;
-        if (closedCountResult.error) throw closedCountResult.error;
+        if (activeCountResult.error) {
+          console.error('Active count error:', activeCountResult.error);
+          throw activeCountResult.error;
+        }
+        if (closedCountResult.error) {
+          console.error('Closed count error:', closedCountResult.error);
+          throw closedCountResult.error;
+        }
 
-        // Get donations for public campaigns
+        // Calculate total raised using a direct SQL approach via RPC or simple calculation
         let totalRaised = 0;
-        if (publicFundraiserIds.length > 0) {
-          const donationsResult = await supabase
+        
+        try {
+          // Try to get donations with a simpler approach
+          const donationsQuery = await supabase
             .from('donations')
             .select('amount')
-            .eq('payment_status', 'paid')
-            .in('fundraiser_id', publicFundraiserIds);
+            .eq('payment_status', 'paid');
 
-          if (donationsResult.error) throw donationsResult.error;
-          
-          totalRaised = donationsResult.data?.reduce((sum: number, donation: any) => {
-            return sum + Number(donation.amount);
-          }, 0) || 0;
+          if (!donationsQuery.error && donationsQuery.data) {
+            // Get all public fundraiser IDs
+            const publicFundraisersQuery = await supabase
+              .from('fundraisers')
+              .select('id')
+              .eq('visibility', 'public')
+              .in('status', ['active', 'closed']);
+
+            if (!publicFundraisersQuery.error && publicFundraisersQuery.data) {
+              const publicIds = new Set(publicFundraisersQuery.data.map(f => f.id));
+              
+              // Get donations for these fundraisers
+              const publicDonationsQuery = await supabase
+                .from('donations')
+                .select('amount, fundraiser_id')
+                .eq('payment_status', 'paid');
+
+              if (!publicDonationsQuery.error && publicDonationsQuery.data) {
+                totalRaised = publicDonationsQuery.data
+                  .filter(d => publicIds.has(d.fundraiser_id))
+                  .reduce((sum, d) => sum + Number(d.amount), 0);
+              }
+            }
+          }
+        } catch (donationError) {
+          console.error('Error calculating donations:', donationError);
+          // Fallback to 0 if there's an error
+          totalRaised = 0;
         }
 
         setStats({
