@@ -8,6 +8,12 @@ import { TrustBadges } from "@/components/TrustBadges";
 import { ArrowRight, Star, Zap, CheckCircle, Heart } from "lucide-react";
 import { useFundraisers } from "@/hooks/useFundraisers";
 import heroImage from "@/assets/hero-image.jpg";
+import yourCauseImage from "@/assets/categories/your-cause.jpg";
+import medicalImage from "@/assets/categories/medical.jpg";
+import emergencyImage from "@/assets/categories/emergency.jpg";
+import educationImage from "@/assets/categories/education.jpg";
+import animalImage from "@/assets/categories/animal.jpg";
+import businessImage from "@/assets/categories/business.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -65,16 +71,14 @@ const Index = () => {
             </div>
           </div>
           
-          {/* Floating category circles - GoFundMe style */}
+          {/* Floating category circles - positioned away from text */}
           <div className="relative mt-20 lg:mt-24">
             <div className="hidden lg:block">
-              {/* Left side circles */}
-              <div className="absolute top-0 left-1/4 transform -translate-x-1/2 animate-float" style={{animationDelay: '0s'}}>
+              {/* Left side circles - positioned further left to avoid text */}
+              <div className="absolute top-20 left-8 animate-float" style={{animationDelay: '0s'}}>
                 <div className="relative">
-                  <div className="w-32 h-32 rounded-full border-4 border-primary/30 bg-white shadow-xl overflow-hidden">
-                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center">
-                      <Heart className="w-12 h-12 text-primary" />
-                    </div>
+                  <div className="w-28 h-28 rounded-full border-4 border-primary/30 bg-white shadow-xl overflow-hidden">
+                    <img src={yourCauseImage} alt="Your cause" className="w-full h-full object-cover" />
                   </div>
                   <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium shadow-lg">
                     Your cause
@@ -82,12 +86,10 @@ const Index = () => {
                 </div>
               </div>
               
-              <div className="absolute top-24 left-12 animate-float" style={{animationDelay: '1s'}}>
+              <div className="absolute top-48 left-16 animate-float" style={{animationDelay: '1s'}}>
                 <div className="relative">
-                  <div className="w-28 h-28 rounded-full border-4 border-accent/30 bg-white shadow-xl overflow-hidden">
-                    <div className="w-full h-full bg-gradient-to-br from-accent/20 to-accent/40 flex items-center justify-center">
-                      <Zap className="w-10 h-10 text-accent" />
-                    </div>
+                  <div className="w-24 h-24 rounded-full border-4 border-accent/30 bg-white shadow-xl overflow-hidden">
+                    <img src={medicalImage} alt="Medical" className="w-full h-full object-cover" />
                   </div>
                   <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-accent text-accent-foreground px-3 py-1 rounded-full text-sm font-medium shadow-lg">
                     Medical
@@ -95,12 +97,10 @@ const Index = () => {
                 </div>
               </div>
               
-              <div className="absolute top-40 left-1/3 animate-float" style={{animationDelay: '2s'}}>
+              <div className="absolute top-80 left-24 animate-float" style={{animationDelay: '2s'}}>
                 <div className="relative">
-                  <div className="w-24 h-24 rounded-full border-4 border-success/30 bg-white shadow-xl overflow-hidden">
-                    <div className="w-full h-full bg-gradient-to-br from-success/20 to-success/40 flex items-center justify-center">
-                      <CheckCircle className="w-8 h-8 text-success" />
-                    </div>
+                  <div className="w-20 h-20 rounded-full border-4 border-success/30 bg-white shadow-xl overflow-hidden">
+                    <img src={emergencyImage} alt="Emergency" className="w-full h-full object-cover" />
                   </div>
                   <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-success text-success-foreground px-2 py-1 rounded-full text-xs font-medium shadow-lg">
                     Emergency
@@ -108,13 +108,11 @@ const Index = () => {
                 </div>
               </div>
               
-              {/* Right side circles */}
-              <div className="absolute top-0 right-1/4 transform translate-x-1/2 animate-float" style={{animationDelay: '0.5s'}}>
+              {/* Right side circles - positioned further right to avoid text */}
+              <div className="absolute top-20 right-8 animate-float" style={{animationDelay: '0.5s'}}>
                 <div className="relative">
-                  <div className="w-32 h-32 rounded-full border-4 border-secondary/30 bg-white shadow-xl overflow-hidden">
-                    <div className="w-full h-full bg-gradient-to-br from-secondary/20 to-secondary/40 flex items-center justify-center">
-                      <Star className="w-12 h-12 text-secondary-foreground" />
-                    </div>
+                  <div className="w-28 h-28 rounded-full border-4 border-secondary/30 bg-white shadow-xl overflow-hidden">
+                    <img src={educationImage} alt="Education" className="w-full h-full object-cover" />
                   </div>
                   <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium shadow-lg">
                     Education
@@ -122,12 +120,10 @@ const Index = () => {
                 </div>
               </div>
               
-              <div className="absolute top-24 right-12 animate-float" style={{animationDelay: '1.5s'}}>
+              <div className="absolute top-48 right-16 animate-float" style={{animationDelay: '1.5s'}}>
                 <div className="relative">
-                  <div className="w-28 h-28 rounded-full border-4 border-warning/30 bg-white shadow-xl overflow-hidden">
-                    <div className="w-full h-full bg-gradient-to-br from-warning/20 to-warning/40 flex items-center justify-center">
-                      <Heart className="w-10 h-10 text-warning-foreground" />
-                    </div>
+                  <div className="w-24 h-24 rounded-full border-4 border-warning/30 bg-white shadow-xl overflow-hidden">
+                    <img src={animalImage} alt="Animal" className="w-full h-full object-cover" />
                   </div>
                   <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-warning text-warning-foreground px-3 py-1 rounded-full text-sm font-medium shadow-lg">
                     Animal
@@ -135,12 +131,10 @@ const Index = () => {
                 </div>
               </div>
               
-              <div className="absolute top-40 right-1/3 animate-float" style={{animationDelay: '2.5s'}}>
+              <div className="absolute top-80 right-24 animate-float" style={{animationDelay: '2.5s'}}>
                 <div className="relative">
-                  <div className="w-24 h-24 rounded-full border-4 border-primary/30 bg-white shadow-xl overflow-hidden">
-                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center">
-                      <ArrowRight className="w-8 h-8 text-primary" />
-                    </div>
+                  <div className="w-20 h-20 rounded-full border-4 border-primary/30 bg-white shadow-xl overflow-hidden">
+                    <img src={businessImage} alt="Business" className="w-full h-full object-cover" />
                   </div>
                   <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs font-medium shadow-lg">
                     Business
