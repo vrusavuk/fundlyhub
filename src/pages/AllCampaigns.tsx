@@ -35,16 +35,20 @@ export default function AllCampaigns() {
     try {
       setLoading(true);
       
+      console.log('Fetching all fundraisers...');
+      
       // Fetch fundraisers with owner names
       const { data: fundraisersData, error: fundraisersError } = await supabase
         .from('fundraisers')
         .select(`
           *,
-          profiles!fundraisers_owner_user_id_fkey(name)
+          profiles(name)
         `)
         .eq('status', 'active')
         .eq('visibility', 'public')
         .order('created_at', { ascending: false });
+
+      console.log('All fundraisers query result:', { fundraisersData, fundraisersError });
 
       if (fundraisersError) {
         console.error('Error fetching fundraisers:', fundraisersError);
