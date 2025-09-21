@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Heart, Share2, BookmarkPlus, MapPin, Clock, Users, Verified } from 'lucide-react';
+import { highlightSearchMatches } from '@/lib/utils/highlighting';
 
 interface EnhancedFundraiserCardProps {
   id: string;
@@ -23,6 +24,7 @@ interface EnhancedFundraiserCardProps {
   urgency?: 'high' | 'medium' | 'low';
   isOrganization?: boolean;
   avatarUrl?: string;
+  searchQuery?: string; // New prop for highlighting
   onClick?: () => void;
 }
 
@@ -43,6 +45,7 @@ export function EnhancedFundraiserCard({
   urgency,
   isOrganization = false,
   avatarUrl,
+  searchQuery,
   onClick,
 }: EnhancedFundraiserCardProps) {
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -55,6 +58,13 @@ export function EnhancedFundraiserCard({
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
+
+  // Get highlighted versions of text fields
+  const highlightedTitle = searchQuery ? highlightSearchMatches(title, searchQuery) : title;
+  const highlightedSummary = searchQuery ? highlightSearchMatches(summary, searchQuery) : summary;
+  const highlightedOrganizationName = searchQuery && organizationName 
+    ? highlightSearchMatches(organizationName, searchQuery) 
+    : organizationName;
 
   const getUrgencyColor = () => {
     switch (urgency) {
@@ -179,9 +189,12 @@ export function EnhancedFundraiserCard({
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1">
-                <p className="text-sm font-medium text-foreground truncate">
-                  {organizationName || 'Anonymous'}
-                </p>
+                <p 
+                  className="text-sm font-medium text-foreground truncate"
+                  dangerouslySetInnerHTML={{ 
+                    __html: highlightedOrganizationName || 'Anonymous' 
+                  }}
+                />
                 {isOrganization && (
                   <Badge variant="outline" className="text-xs px-1 py-0">Org</Badge>
                 )}
@@ -197,12 +210,14 @@ export function EnhancedFundraiserCard({
 
           {/* Title and description */}
           <div>
-            <h3 className="font-semibold text-lg line-clamp-2 mb-2 group-hover:text-primary transition-colors">
-              {title}
-            </h3>
-            <p className="text-muted-foreground text-sm line-clamp-2">
-              {summary}
-            </p>
+            <h3 
+              className="font-semibold text-lg line-clamp-2 mb-2 group-hover:text-primary transition-colors"
+              dangerouslySetInnerHTML={{ __html: highlightedTitle }}
+            />
+            <p 
+              className="text-muted-foreground text-sm line-clamp-2"
+              dangerouslySetInnerHTML={{ __html: highlightedSummary }}
+            />
           </div>
           
           {/* Progress section */}

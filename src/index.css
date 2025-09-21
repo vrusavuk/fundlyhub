@@ -128,8 +128,14 @@
   * {
     @apply border-border;
   }
-
+  
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Search highlighting styles */
+  mark {
+    @apply bg-accent/20 text-accent-foreground rounded px-1;
+    font-weight: inherit;
   }
 }

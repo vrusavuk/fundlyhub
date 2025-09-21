@@ -85,6 +85,7 @@ export default function AllCampaigns() {
           onLoadMore={loadMore}
           onCardClick={handleCardClick}
           onRetry={refresh}
+          searchQuery={searchQuery}
           emptyMessage={
             searchQuery || selectedCategory !== "All" 
               ? "Try adjusting your search or filters"

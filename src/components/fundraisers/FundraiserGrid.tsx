@@ -18,6 +18,7 @@ interface FundraiserGridProps {
   onCardClick: (slug: string) => void;
   onRetry?: () => void;
   emptyMessage?: string;
+  searchQuery?: string; // New prop for highlighting
 }
 
 export function FundraiserGrid({
@@ -29,7 +30,8 @@ export function FundraiserGrid({
   onLoadMore,
   onCardClick,
   onRetry,
-  emptyMessage = "No fundraisers available at the moment."
+  emptyMessage = "No fundraisers available at the moment.",
+  searchQuery
 }: FundraiserGridProps) {
   if (loading && fundraisers.length === 0) {
     return (
@@ -74,6 +76,7 @@ export function FundraiserGrid({
             urgency={index % 3 === 0 ? 'high' : index % 2 === 0 ? 'medium' : 'low'}
             isVerified={index % 4 === 0}
             isOrganization={index % 5 === 0}
+            searchQuery={searchQuery}
             onClick={() => onCardClick(fundraiser.slug)}
           />
         ))}
