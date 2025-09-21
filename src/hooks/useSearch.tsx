@@ -135,12 +135,13 @@ const checkFieldMatches = (searchTerms: string[], fields: Record<string, string>
   
   // Determine primary match location for display
   let matchedIn = '';
-  if (matches.includes('title')) matchedIn = 'title';
+  if (matches.includes('title') || matches.includes('dba_name') || matches.includes('legal_name')) matchedIn = 'title';
   else if (matches.includes('summary')) matchedIn = 'description';
   else if (matches.includes('story')) matchedIn = 'full description';
-  else if (matches.includes('category')) matchedIn = 'category';
+  else if (matches.includes('category') || matches.includes('categories')) matchedIn = 'categories';
   else if (matches.includes('location')) matchedIn = 'location';
   else if (matches.includes('owner')) matchedIn = 'creator';
+  else if (matches.includes('website')) matchedIn = 'website';
   
   return { matchedFields: matches, matchedIn };
 };
@@ -203,7 +204,7 @@ export function useSearch(query: string, enabled: boolean = true) {
       // Fetch organizations with pagination  
       const { data: organizations, error: organizationsError } = await supabase
         .from('organizations')
-        .select('id, legal_name, dba_name, website, categories')
+        .select('id, legal_name, dba_name, website, categories, country, address')
         .range(Math.floor(currentOffset / 3), Math.floor(currentOffset / 3) + Math.floor(BATCH_SIZE / 3) - 1);
 
       if (campaignsError) console.error('Campaigns search error:', campaignsError);
@@ -297,21 +298,43 @@ export function useSearch(query: string, enabled: boolean = true) {
           const legalNameScore = calculateRelevanceScore(searchTerms, org.legal_name || '', true);
           const dbaNameScore = calculateRelevanceScore(searchTerms, org.dba_name || '', true);
           const websiteScore = calculateRelevanceScore(searchTerms, org.website || '');
-          const categoriesScore = calculateRelevanceScore(searchTerms, Array.isArray(org.categories) ? org.categories.join(' ') : '');
+          const categoriesText = Array.isArray(org.categories) ? org.categories.join(' ') : '';
+          const categoriesScore = calculateRelevanceScore(searchTerms, categoriesText);
           
           const totalScore = legalNameScore + dbaNameScore + websiteScore + categoriesScore;
           
           if (totalScore > 0.5) {
+            const { matchedFields, matchedIn } = checkFieldMatches(searchTerms, {
+              legal_name: org.legal_name || '',
+              dba_name: org.dba_name || '',
+              website: org.website || '',
+              categories: categoriesText
+            });
+            
+            const orgTitle = org.dba_name || org.legal_name;
+            const orgSubtitle = categoriesText || org.website || 'Organization';
+            const highlightedTitle = highlightText(orgTitle, searchTerms);
+            const highlightedSubtitle = highlightText(orgSubtitle, searchTerms);
+            
+            let matchedSnippet = '';
+            if (matchedIn === 'categories' && categoriesText) {
+              matchedSnippet = extractSnippet(categoriesText, searchTerms);
+            } else if (matchedIn === 'website' && org.website) {
+              matchedSnippet = extractSnippet(org.website, searchTerms);
+            }
+            
             newResults.push({
               id: org.id,
               type: 'organization',
-              title: org.dba_name || org.legal_name,
-              subtitle: org.website || 'Organization',
+              title: orgTitle,
+              subtitle: orgSubtitle,
               image: undefined,
               relevanceScore: totalScore,
-              highlightedTitle: highlightText(org.dba_name || org.legal_name, searchTerms),
-              highlightedSubtitle: highlightText(org.website || 'Organization', searchTerms),
-              matchedIn: 'organization'
+              matchedFields,
+              highlightedTitle,
+              highlightedSubtitle,
+              matchedSnippet: highlightText(matchedSnippet, searchTerms),
+              matchedIn: matchedIn || 'organization'
             });
           }
         });
