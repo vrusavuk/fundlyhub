@@ -330,61 +330,6 @@ export function DonationWidget({
         )}
       </Card>
 
-      {/* Share card - Only show in summary view */}
-      {!showDonationForm && (
-        <Card className="animate-fade-in">
-          <CardContent className="p-4">
-            <div className="flex gap-2">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleShare('facebook')}
-                      className="flex items-center gap-2 hover-scale flex-1"
-                    >
-                      <Facebook className="h-4 w-4" />
-                      Share
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Share on Facebook</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleShare('twitter')}
-                      className="flex items-center gap-2 hover-scale flex-1"
-                    >
-                      <Twitter className="h-4 w-4" />
-                      Tweet
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Share on Twitter</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleShare()}
-                className="flex items-center gap-2 hover-scale"
-              >
-                {copied ? (
-                  <Check className="h-4 w-4 text-green-500" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
