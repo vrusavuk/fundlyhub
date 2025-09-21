@@ -99,6 +99,14 @@ export default function AllCampaigns() {
     return matchesSearch && matchesCategory;
   });
 
+  console.log('Filtering debug:', {
+    totalFundraisers: fundraisers.length,
+    searchTerm,
+    selectedCategory,
+    filteredCount: filteredFundraisers.length,
+    firstFewFiltered: filteredFundraisers.slice(0, 3).map(f => ({ title: f.title, category: f.category }))
+  });
+
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Navigation />
@@ -132,7 +140,7 @@ export default function AllCampaigns() {
           
           {/* Category Filter */}
           <div className="flex flex-wrap gap-2">
-            {["All", "Medical", "Education", "Community", "Emergency", "Animals", "Environment", "Housing", "Innovation"].map((category) => (
+            {["All", "Medical", "Education", "Community", "Emergency", "Animal", "Environment", "Sports", "Arts"].map((category) => (
               <Badge
                 key={category}
                 variant={selectedCategory === category ? "default" : "outline"}
