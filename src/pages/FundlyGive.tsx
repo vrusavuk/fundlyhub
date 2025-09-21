@@ -6,31 +6,44 @@ import { ArrowRight, Zap, Shield, Receipt, CheckCircle, CreditCard, Building2, U
 import { Link } from "react-router-dom";
 
 // Partner logos
-import adpLogo from "@/assets/partners/adp-logo.png";
+import adpLogo from "@/assets/partners/adp-official-logo.png";
 import paychexLogo from "@/assets/partners/paychex-logo.png";
 import workdayLogo from "@/assets/partners/workday-logo.png";
 import bamboohrLogo from "@/assets/partners/bamboohr-logo.png";
 import gustoLogo from "@/assets/partners/gusto-logo.png";
 import quickbooksLogo from "@/assets/partners/quickbooks-logo.png";
-import paylocityLogo from "@/assets/partners/paylocity-logo.png";
-import ultiproLogo from "@/assets/partners/ultipro-logo.png";
+import paylocityLogo from "@/assets/partners/paylocity-official-logo.png";
+import ukgLogo from "@/assets/partners/ukg-official-logo.png";
 
 const FundlyGive = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
+  const [isManualScrolling, setIsManualScrolling] = useState(false);
 
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
     let pauseTimeout: NodeJS.Timeout;
+    let scrollTimeout: NodeJS.Timeout;
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
+      e.stopPropagation();
+      
       setIsPaused(true);
-      container.scrollLeft += e.deltaY;
+      setIsManualScrolling(true);
+      
+      // Scroll horizontally with wheel
+      container.scrollLeft += e.deltaY * 2;
       
       clearTimeout(pauseTimeout);
+      clearTimeout(scrollTimeout);
+      
+      scrollTimeout = setTimeout(() => {
+        setIsManualScrolling(false);
+      }, 100);
+      
       pauseTimeout = setTimeout(() => {
         setIsPaused(false);
       }, 3000);
@@ -42,22 +55,60 @@ const FundlyGive = () => {
 
     const handleMouseLeave = () => {
       clearTimeout(pauseTimeout);
+      if (!isManualScrolling) {
+        pauseTimeout = setTimeout(() => {
+          setIsPaused(false);
+        }, 1000);
+      }
+    };
+
+    const handleScroll = () => {
+      setIsManualScrolling(true);
+      setIsPaused(true);
+      
+      clearTimeout(scrollTimeout);
+      clearTimeout(pauseTimeout);
+      
+      scrollTimeout = setTimeout(() => {
+        setIsManualScrolling(false);
+      }, 100);
+      
       pauseTimeout = setTimeout(() => {
         setIsPaused(false);
-      }, 1000);
+      }, 2000);
+    };
+
+    const handleTouchStart = () => {
+      setIsPaused(true);
+      setIsManualScrolling(true);
+    };
+
+    const handleTouchEnd = () => {
+      clearTimeout(pauseTimeout);
+      pauseTimeout = setTimeout(() => {
+        setIsPaused(false);
+        setIsManualScrolling(false);
+      }, 2000);
     };
 
     container.addEventListener('wheel', handleWheel, { passive: false });
     container.addEventListener('mouseenter', handleMouseEnter);
     container.addEventListener('mouseleave', handleMouseLeave);
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    container.addEventListener('touchstart', handleTouchStart, { passive: true });
+    container.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     return () => {
       container.removeEventListener('wheel', handleWheel);
       container.removeEventListener('mouseenter', handleMouseEnter);
       container.removeEventListener('mouseleave', handleMouseLeave);
+      container.removeEventListener('scroll', handleScroll);
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchend', handleTouchEnd);
       clearTimeout(pauseTimeout);
+      clearTimeout(scrollTimeout);
     };
-  }, []);
+  }, [isManualScrolling]);
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -308,16 +359,20 @@ const FundlyGive = () => {
             </p>
           </div>
           
-          <div className="relative overflow-hidden">
+          <div className="relative">
             <div 
               ref={scrollContainerRef}
-              className={`flex gap-8 overflow-x-auto scrollbar-hide ${!isPaused ? 'animate-scroll' : ''}`}
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              className={`flex gap-8 overflow-x-auto overflow-y-hidden scrollbar-hide pb-2 ${!isPaused ? 'animate-scroll' : ''}`}
+              style={{ 
+                scrollbarWidth: 'none', 
+                msOverflowStyle: 'none',
+                scrollBehavior: 'smooth'
+              }}
             >
               {/* Partner logos with names */}
               <div className="flex-shrink-0 flex flex-col items-center gap-3 bg-background p-6 rounded-xl border shadow-sm min-w-[180px]">
                 <img src={adpLogo} alt="ADP" className="h-12 w-auto object-contain" />
-                <span className="font-semibold text-foreground">ADP Workforce</span>
+                <span className="font-semibold text-foreground">ADP</span>
               </div>
               
               <div className="flex-shrink-0 flex flex-col items-center gap-3 bg-background p-6 rounded-xl border shadow-sm min-w-[180px]">
@@ -341,8 +396,8 @@ const FundlyGive = () => {
               </div>
               
               <div className="flex-shrink-0 flex flex-col items-center gap-3 bg-background p-6 rounded-xl border shadow-sm min-w-[180px]">
-                <img src={ultiproLogo} alt="UltiPro" className="h-12 w-auto object-contain" />
-                <span className="font-semibold text-foreground">UltiPro</span>
+                <img src={ukgLogo} alt="UKG" className="h-12 w-auto object-contain" />
+                <span className="font-semibold text-foreground">UKG</span>
               </div>
               
               <div className="flex-shrink-0 flex flex-col items-center gap-3 bg-background p-6 rounded-xl border shadow-sm min-w-[180px]">
