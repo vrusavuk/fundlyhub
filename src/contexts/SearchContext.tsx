@@ -10,6 +10,7 @@ interface SearchContextType {
   openHeaderSearch: () => void;
   closeHeaderSearch: () => void;
   setSearchQuery: (query: string) => void;
+  clearSearch: () => void;
   shouldUseIntegratedSearch: () => boolean;
 }
 
@@ -20,6 +21,14 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Clear search when navigating away from search-enabled pages
+  useEffect(() => {
+    const isSearchEnabledPage = location.pathname === '/campaigns' || location.pathname === '/search';
+    if (!isSearchEnabledPage && searchQuery) {
+      setSearchQuery('');
+    }
+  }, [location.pathname]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -59,12 +68,17 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     setIsHeaderSearchOpen(false);
   };
 
+  const clearSearch = () => {
+    setSearchQuery('');
+  };
+
   const value = {
     isHeaderSearchOpen,
     searchQuery,
     openHeaderSearch,
     closeHeaderSearch,
     setSearchQuery,
+    clearSearch,
     shouldUseIntegratedSearch,
   };
 

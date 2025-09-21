@@ -40,7 +40,7 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const { setSearchQuery } = useGlobalSearch();
+  const { setSearchQuery, clearSearch, searchQuery: globalSearchQuery } = useGlobalSearch();
 
   const { results, loading } = useSearch({
     query,
@@ -61,8 +61,12 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
   useEffect(() => {
     if (isOpen) {
       inputRef.current?.focus();
+      // Sync with global search query when opening
+      if (isOnIntegratedSearchPage && globalSearchQuery) {
+        setQuery(globalSearchQuery);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, isOnIntegratedSearchPage, globalSearchQuery]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -163,8 +167,23 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
                       ? "Search campaigns, users, organizations..."
                       : "Search campaigns, users, organizations..."
                 }
-                className="pl-10 pr-4 h-10 border-0 bg-muted/50 focus:bg-background transition-colors"
+                className="pl-10 pr-12 h-10 border-0 bg-muted/50 focus:bg-background transition-colors"
               />
+              {query && isOnIntegratedSearchPage && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setQuery('');
+                    clearSearch();
+                    setShowDropdown(false);
+                  }}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
             </div>
             <Button type="button" variant="ghost" size="sm" onClick={handleClose}>
               <X className="h-4 w-4" />
