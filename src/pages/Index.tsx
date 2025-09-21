@@ -29,7 +29,7 @@ const Index = () => {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Top banner */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-success/10 text-success-foreground px-4 py-2 rounded-full text-sm font-medium">
+            <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary px-6 py-3 rounded-full text-sm font-semibold shadow-sm">
               <Star className="h-4 w-4 fill-current" />
               #1 crowdfunding platform
             </div>
@@ -71,10 +71,12 @@ const Index = () => {
               {/* Left side circles */}
               <div className="absolute top-0 left-1/4 transform -translate-x-1/2 animate-float" style={{animationDelay: '0s'}}>
                 <div className="relative">
-                  <div className="w-32 h-32 rounded-full border-4 border-primary/20 bg-background shadow-lg overflow-hidden">
-                    <img src={heroImage} alt="Your cause" className="w-full h-full object-cover" />
+                  <div className="w-32 h-32 rounded-full border-4 border-primary/30 bg-white shadow-xl overflow-hidden">
+                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center">
+                      <Heart className="w-12 h-12 text-primary" />
+                    </div>
                   </div>
-                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">
+                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium shadow-lg">
                     Your cause
                   </div>
                 </div>
@@ -82,10 +84,12 @@ const Index = () => {
               
               <div className="absolute top-24 left-12 animate-float" style={{animationDelay: '1s'}}>
                 <div className="relative">
-                  <div className="w-28 h-28 rounded-full border-4 border-accent/20 bg-background shadow-lg overflow-hidden">
-                    <img src={heroImage} alt="Medical" className="w-full h-full object-cover" />
+                  <div className="w-28 h-28 rounded-full border-4 border-accent/30 bg-white shadow-xl overflow-hidden">
+                    <div className="w-full h-full bg-gradient-to-br from-accent/20 to-accent/40 flex items-center justify-center">
+                      <Zap className="w-10 h-10 text-accent" />
+                    </div>
                   </div>
-                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-accent text-accent-foreground px-3 py-1 rounded-full text-sm font-medium">
+                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-accent text-accent-foreground px-3 py-1 rounded-full text-sm font-medium shadow-lg">
                     Medical
                   </div>
                 </div>
@@ -93,10 +97,12 @@ const Index = () => {
               
               <div className="absolute top-40 left-1/3 animate-float" style={{animationDelay: '2s'}}>
                 <div className="relative">
-                  <div className="w-24 h-24 rounded-full border-4 border-success/20 bg-background shadow-lg overflow-hidden">
-                    <img src={heroImage} alt="Emergency" className="w-full h-full object-cover" />
+                  <div className="w-24 h-24 rounded-full border-4 border-success/30 bg-white shadow-xl overflow-hidden">
+                    <div className="w-full h-full bg-gradient-to-br from-success/20 to-success/40 flex items-center justify-center">
+                      <CheckCircle className="w-8 h-8 text-success" />
+                    </div>
                   </div>
-                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-success text-success-foreground px-2 py-1 rounded-full text-xs font-medium">
+                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-success text-success-foreground px-2 py-1 rounded-full text-xs font-medium shadow-lg">
                     Emergency
                   </div>
                 </div>
@@ -105,10 +111,12 @@ const Index = () => {
               {/* Right side circles */}
               <div className="absolute top-0 right-1/4 transform translate-x-1/2 animate-float" style={{animationDelay: '0.5s'}}>
                 <div className="relative">
-                  <div className="w-32 h-32 rounded-full border-4 border-secondary/20 bg-background shadow-lg overflow-hidden">
-                    <img src={heroImage} alt="Education" className="w-full h-full object-cover" />
+                  <div className="w-32 h-32 rounded-full border-4 border-secondary/30 bg-white shadow-xl overflow-hidden">
+                    <div className="w-full h-full bg-gradient-to-br from-secondary/20 to-secondary/40 flex items-center justify-center">
+                      <Star className="w-12 h-12 text-secondary-foreground" />
+                    </div>
                   </div>
-                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium">
+                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium shadow-lg">
                     Education
                   </div>
                 </div>
@@ -116,10 +124,12 @@ const Index = () => {
               
               <div className="absolute top-24 right-12 animate-float" style={{animationDelay: '1.5s'}}>
                 <div className="relative">
-                  <div className="w-28 h-28 rounded-full border-4 border-warning/20 bg-background shadow-lg overflow-hidden">
-                    <img src={heroImage} alt="Animal" className="w-full h-full object-cover" />
+                  <div className="w-28 h-28 rounded-full border-4 border-warning/30 bg-white shadow-xl overflow-hidden">
+                    <div className="w-full h-full bg-gradient-to-br from-warning/20 to-warning/40 flex items-center justify-center">
+                      <Heart className="w-10 h-10 text-warning-foreground" />
+                    </div>
                   </div>
-                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-warning text-warning-foreground px-3 py-1 rounded-full text-sm font-medium">
+                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-warning text-warning-foreground px-3 py-1 rounded-full text-sm font-medium shadow-lg">
                     Animal
                   </div>
                 </div>
@@ -127,10 +137,12 @@ const Index = () => {
               
               <div className="absolute top-40 right-1/3 animate-float" style={{animationDelay: '2.5s'}}>
                 <div className="relative">
-                  <div className="w-24 h-24 rounded-full border-4 border-primary/20 bg-background shadow-lg overflow-hidden">
-                    <img src={heroImage} alt="Business" className="w-full h-full object-cover" />
+                  <div className="w-24 h-24 rounded-full border-4 border-primary/30 bg-white shadow-xl overflow-hidden">
+                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center">
+                      <ArrowRight className="w-8 h-8 text-primary" />
+                    </div>
                   </div>
-                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs font-medium">
+                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs font-medium shadow-lg">
                     Business
                   </div>
                 </div>
