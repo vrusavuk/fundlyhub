@@ -4,6 +4,7 @@ import { Heart, User, Menu, Search, LogOut, UserCircle } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useGlobalSearch } from "@/contexts/SearchContext";
+import { useLocation } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,10 +16,18 @@ import {
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
-  const { openSearch } = useGlobalSearch();
+  const { openSearch, shouldUseIntegratedSearch } = useGlobalSearch();
+  const location = useLocation();
 
   const handleSignOut = async () => {
     await signOut();
+  };
+
+  const getSearchButtonText = () => {
+    if (location.pathname === '/campaigns') {
+      return 'Search campaigns';
+    }
+    return 'Search';
   };
 
   return (
@@ -51,6 +60,7 @@ export function Navigation() {
               size="icon"
               className="hidden md:flex"
               onClick={() => openSearch()}
+              title={getSearchButtonText()}
             >
               <Search className="h-5 w-5" />
             </Button>
@@ -125,9 +135,9 @@ export function Navigation() {
                     setIsMenuOpen(false);
                   }}
                 >
-                <Search className="h-4 w-4 mr-2" />
-                Search
-              </Button>
+                  <Search className="h-4 w-4 mr-2" />
+                  {getSearchButtonText()}
+                </Button>
               <Link to="/campaigns" className="text-foreground hover:text-primary transition-smooth py-2">
                 Fundlies
               </Link>

@@ -13,6 +13,7 @@ interface SearchContextType {
   closeSearch: () => void;
   setSearchQuery: (query: string) => void;
   navigateWithSearch: (query: string) => void;
+  shouldUseIntegratedSearch: () => boolean;
 }
 
 const SearchContext = createContext<SearchContextType | undefined>(undefined);
@@ -53,6 +54,20 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   }, [isSearchOpen]);
 
   const openSearch = (initialQuery?: string) => {
+    // Check if we should use integrated search instead of modal
+    if (shouldUseIntegratedSearch()) {
+      // Focus the integrated search input instead of opening modal
+      const searchInput = document.querySelector('input[placeholder*="Search campaigns"]') as HTMLInputElement;
+      if (searchInput) {
+        searchInput.focus();
+        if (initialQuery) {
+          searchInput.value = initialQuery;
+          searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      }
+      return;
+    }
+    
     setIsSearchOpen(true);
     if (initialQuery) {
       setSearchQuery(initialQuery);
@@ -80,6 +95,10 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     closeSearch();
   };
 
+  const shouldUseIntegratedSearch = () => {
+    return location.pathname === '/campaigns';
+  };
+
   const value = {
     isSearchOpen,
     searchQuery,
@@ -89,6 +108,7 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     closeSearch,
     setSearchQuery,
     navigateWithSearch,
+    shouldUseIntegratedSearch,
   };
 
   return (

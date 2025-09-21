@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { FundraiserGrid } from "@/components/fundraisers/FundraiserGrid";
-import { CategorySelector } from "@/components/fundraisers/CategorySelector";
+import { IntegratedCampaignSearch } from "@/components/search/IntegratedCampaignSearch";
 import { Button } from "@/components/ui/button";
-import { SlidersHorizontal, Search } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 import { useFundraisers } from "@/hooks/useFundraisers";
 import { useGlobalSearch } from "@/contexts/SearchContext";
 
@@ -17,12 +17,16 @@ export default function AllCampaigns() {
 
   // Get initial search term from URL parameters  
   const initialSearch = searchParams.get('search') || '';
+  const initialCategory = searchParams.get('category') || 'All';
 
   useEffect(() => {
     if (initialSearch) {
       setSearchTerm(initialSearch);
     }
-  }, [initialSearch]);
+    if (initialCategory) {
+      setSelectedCategory(initialCategory);
+    }
+  }, [initialSearch, initialCategory]);
 
   const { 
     fundraisers, 
@@ -33,25 +37,26 @@ export default function AllCampaigns() {
     loadMore,
     refresh 
   } = useFundraisers({ 
-    limit: 24,
-    category: selectedCategory !== 'All' ? selectedCategory : undefined,
-    searchTerm: searchTerm || undefined
+    limit: 24
   });
+
+  // Real-time filtering of fundraisers
+  const filteredFundraisers = useMemo(() => {
+    return fundraisers.filter((fundraiser) => {
+      const matchesSearch = !searchTerm || 
+        fundraiser.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        fundraiser.summary?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        fundraiser.profiles?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesCategory = selectedCategory === "All" || fundraiser.category === selectedCategory;
+      
+      return matchesSearch && matchesCategory;
+    });
+  }, [fundraisers, searchTerm, selectedCategory]);
 
   const handleCardClick = (slug: string) => {
     navigate(`/fundraiser/${slug}`);
   };
-
-  const filteredFundraisers = fundraisers.filter((fundraiser) => {
-    const matchesSearch = !searchTerm || 
-      fundraiser.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      fundraiser.summary?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      fundraiser.profiles?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesCategory = selectedCategory === "All" || fundraiser.category === selectedCategory;
-    
-    return matchesSearch && matchesCategory;
-  });
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -75,26 +80,15 @@ export default function AllCampaigns() {
           </div>
         </div>
 
-        {/* Search and Filters */}
-        <div className="mb-6 space-y-4">
-          {/* Global Search Button */}
-          <div className="max-w-2xl">
-            <Button
-              variant="outline"
-              className="w-full justify-start text-muted-foreground h-12"
-              onClick={() => openSearch(searchTerm)}
-            >
-              <Search className="h-4 w-4 mr-3" />
-              {initialSearch ? `Searching for: "${initialSearch}"` : "Search campaigns, users, organizations..."}
-            </Button>
-          </div>
-          
-          {/* Category Filter */}
-          <CategorySelector
-            selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
-          />
-        </div>
+        {/* Integrated Campaign Search */}
+        <IntegratedCampaignSearch
+          onSearchChange={setSearchTerm}
+          onCategoryChange={setSelectedCategory}
+          selectedCategory={selectedCategory}
+          resultCount={filteredFundraisers.length}
+          totalCount={fundraisers.length}
+          className="mb-6"
+        />
 
         {/* Campaign Grid */}
         <FundraiserGrid
