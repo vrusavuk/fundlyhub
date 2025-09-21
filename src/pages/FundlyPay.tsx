@@ -213,7 +213,7 @@ const FundlyPay = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-6 items-center justify-items-center">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-8">
             {[
               { name: "ADP", logoUrl: "https://logo.clearbit.com/adp.com" },
               { name: "Paylocity", logoUrl: "https://logo.clearbit.com/paylocity.com" },
@@ -237,13 +237,10 @@ const FundlyPay = () => {
               { name: "Wave Payroll", logoUrl: "https://logo.clearbit.com/waveapps.com" },
               { name: "Sage Payroll", logoUrl: "https://logo.clearbit.com/sage.com" },
               { name: "Kronos", logoUrl: "https://logo.clearbit.com/kronos.com" },
-              { name: "ADP Run", logoUrl: "https://logo.clearbit.com/adp.com" },
               { name: "Paycor", logoUrl: "https://logo.clearbit.com/paycor.com" },
-              { name: "Paylocity", logoUrl: "https://logo.clearbit.com/paylocity.com" },
               { name: "UKG", logoUrl: "https://logo.clearbit.com/ukg.com" },
               { name: "isolved", logoUrl: "https://logo.clearbit.com/isolvedhcm.com" },
               { name: "Heartland Payroll", logoUrl: "https://logo.clearbit.com/heartlandpaymentsystems.com" },
-              { name: "Payroll4Free", logoUrl: "https://logo.clearbit.com/payroll4free.com" },
               { name: "Check", logoUrl: "https://logo.clearbit.com/checkhq.com" },
               { name: "Wagepoint", logoUrl: "https://logo.clearbit.com/wagepoint.com" },
               { name: "Workful", logoUrl: "https://logo.clearbit.com/workful.com" },
@@ -252,15 +249,10 @@ const FundlyPay = () => {
               { name: "TSheets", logoUrl: "https://logo.clearbit.com/tsheets.com" },
               { name: "ClockShark", logoUrl: "https://logo.clearbit.com/clockshark.com" },
               { name: "Homebase", logoUrl: "https://logo.clearbit.com/joinhomebase.com" },
-              { name: "BambooHR", logoUrl: "https://logo.clearbit.com/bamboohr.com" },
-              { name: "Workday HCM", logoUrl: "https://logo.clearbit.com/workday.com" },
               { name: "SuccessFactors", logoUrl: "https://logo.clearbit.com/successfactors.com" },
               { name: "PeopleSoft", logoUrl: "https://logo.clearbit.com/oracle.com" },
-              { name: "ADP Workforce Now", logoUrl: "https://logo.clearbit.com/adp.com" },
               { name: "Cornerstone OnDemand", logoUrl: "https://logo.clearbit.com/cornerstoneondemand.com" },
               { name: "Cezanne HR", logoUrl: "https://logo.clearbit.com/cezannehr.com" },
-              { name: "Payroll Mate", logoUrl: "https://logo.clearbit.com/payrollmate.com" },
-              { name: "SentricHR", logoUrl: "https://logo.clearbit.com/sentrichr.com" },
               { name: "ExakTime", logoUrl: "https://logo.clearbit.com/exaktime.com" },
               { name: "TimeClock Plus", logoUrl: "https://logo.clearbit.com/timeclockplus.com" },
               { name: "Replicon", logoUrl: "https://logo.clearbit.com/replicon.com" },
@@ -269,24 +261,32 @@ const FundlyPay = () => {
               { name: "PrimePay", logoUrl: "https://logo.clearbit.com/primepay.com" },
               { name: "Dominion Payroll", logoUrl: "https://logo.clearbit.com/dominionpayroll.com" },
               { name: "Complete Payroll", logoUrl: "https://logo.clearbit.com/completepayroll.com" },
-              { name: "Evolution Payroll", logoUrl: "https://logo.clearbit.com/evolutionpayroll.com" }
+              { name: "Evolution Payroll", logoUrl: "https://logo.clearbit.com/evolutionpayroll.com" },
+              { name: "Insperity", logoUrl: "https://logo.clearbit.com/insperity.com" },
+              { name: "Payroll Network", logoUrl: "https://logo.clearbit.com/payrollnetwork.com" }
             ].map((partner, index) => (
-              <div key={index} className="group">
-                <div className="w-28 h-16 bg-card rounded-lg border shadow-soft flex items-center justify-center hover:shadow-medium transition-all duration-300 group-hover:scale-105 p-3">
-                  <img 
-                    src={partner.logoUrl} 
-                    alt={`${partner.name} logo`}
-                    className="max-w-full max-h-full object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const fallback = target.nextElementSibling as HTMLElement;
-                      if (fallback) fallback.style.display = 'block';
-                    }}
-                  />
-                  <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors hidden">
-                    {partner.name}
-                  </span>
+              <div key={index} className="group text-center">
+                <div className="relative mb-3">
+                  <div className="w-16 h-16 mx-auto bg-background border border-border rounded-xl flex items-center justify-center p-3 group-hover:border-primary/30 group-hover:bg-primary/5 transition-all duration-200">
+                    <img 
+                      src={partner.logoUrl} 
+                      alt={`${partner.name} logo`}
+                      className="max-w-full max-h-full object-contain opacity-70 group-hover:opacity-100 transition-opacity duration-200"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const fallback = target.parentElement?.querySelector('.fallback-text') as HTMLElement;
+                        if (fallback) {
+                          fallback.style.display = 'flex';
+                          fallback.textContent = partner.name.charAt(0);
+                        }
+                      }}
+                    />
+                    <div className="fallback-text hidden w-full h-full items-center justify-center text-xs font-bold text-muted-foreground bg-muted/30 rounded-lg"></div>
+                  </div>
+                </div>
+                <div className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors duration-200 leading-tight">
+                  {partner.name}
                 </div>
               </div>
             ))}
