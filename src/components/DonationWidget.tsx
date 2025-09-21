@@ -119,7 +119,7 @@ export function DonationWidget({
                 </div>
               </div>
               
-              <div className="text-center space-y-2">
+              <div className="text-center space-y-3">
                 <div className="text-3xl font-bold text-primary">
                   {formatAmount(raisedAmount)}
                 </div>
@@ -132,9 +132,24 @@ export function DonationWidget({
                     style={{ width: `${Math.min(progressPercentage, 100)}%` }}
                   />
                 </div>
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>{donorCount} donors</span>
-                  <span>{Math.round(progressPercentage)}% funded</span>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="text-center">
+                    <div className="font-semibold text-foreground">{donorCount}</div>
+                    <div className="text-muted-foreground">donors</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="font-semibold text-foreground">{Math.round(progressPercentage)}%</div>
+                    <div className="text-muted-foreground">funded</div>
+                  </div>
+                </div>
+                {/* Additional stats */}
+                <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground pt-2 border-t">
+                  <div className="text-center">
+                    <div className="font-medium">30 days left</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="font-medium">24 shares</div>
+                  </div>
                 </div>
               </div>
             </CardHeader>
@@ -181,7 +196,7 @@ export function DonationWidget({
               </div>
               
               <div className="text-center space-y-2">
-                <div className="text-2xl font-bold text-primary">
+                <div className="text-3xl font-bold text-primary">
                   {formatAmount(raisedAmount)}
                 </div>
                 <div className="text-sm text-muted-foreground">
