@@ -12,7 +12,6 @@ import { useGlobalSearch } from "@/contexts/SearchContext";
 
 export default function AllCampaigns() {
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [isFiltersExpanded, setIsFiltersExpanded] = useState(true);
   const [activeFilters, setActiveFilters] = useState({
     categories: [],
     location: 'All locations',
@@ -100,23 +99,17 @@ export default function AllCampaigns() {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
                 className="relative"
               >
                 <SlidersHorizontal className="h-4 w-4 mr-2" />
-                Filters
-                {getActiveFiltersCount() > 0 && (
-                  <span className="absolute -top-1 -right-1 h-2 w-2 bg-primary rounded-full" />
-                )}
+                Sort
               </Button>
             </>
           }
         />
 
-        {/* Enhanced Filters Section */}
+        {/* Compact Filters Section */}
         <CampaignFilters
-          isExpanded={isFiltersExpanded}
-          onToggleExpanded={() => setIsFiltersExpanded(!isFiltersExpanded)}
           onFiltersChange={handleFiltersChange}
           activeFiltersCount={getActiveFiltersCount()}
         />

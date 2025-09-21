@@ -1,16 +1,12 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   SlidersHorizontal, 
-  ChevronUp, 
-  ChevronDown, 
   MapPin, 
   Clock,
   X
@@ -26,8 +22,6 @@ interface FilterState {
 }
 
 interface CampaignFiltersProps {
-  isExpanded: boolean;
-  onToggleExpanded: () => void;
   onFiltersChange: (filters: FilterState) => void;
   activeFiltersCount: number;
 }
@@ -50,11 +44,10 @@ const TIME_PERIODS = [
 ];
 
 export function CampaignFilters({ 
-  isExpanded, 
-  onToggleExpanded, 
   onFiltersChange, 
   activeFiltersCount 
 }: CampaignFiltersProps) {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     categories: [],
     location: 'All locations',
@@ -100,74 +93,117 @@ export function CampaignFilters({
 
   return (
     <div className="border-b border-border bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Filter Toggle Header */}
-        <div className="flex items-center justify-between py-4">
-          <Collapsible open={isExpanded} onOpenChange={onToggleExpanded}>
-            <CollapsibleTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        
+        {/* Compact Filter Bar */}
+        <div className="flex items-center gap-4 flex-wrap">
+          
+          {/* Category Dropdown */}
+          <Select 
+            value={filters.categories.length === 1 ? filters.categories[0] : filters.categories.length > 1 ? 'multiple' : 'all'} 
+            onValueChange={(value) => {
+              if (value === 'all') {
+                handleFilterChange('categories', []);
+              } else if (value !== 'multiple') {
+                handleFilterChange('categories', [value]);
+              }
+            }}
+          >
+            <SelectTrigger className="w-[180px] bg-background border border-border">
+              <SelectValue placeholder="Category">
+                {filters.categories.length === 0 && "All Categories"}
+                {filters.categories.length === 1 && (
+                  <span className="flex items-center gap-1">
+                    {CATEGORIES.find(c => c.name === filters.categories[0])?.emoji}
+                    {filters.categories[0]}
+                  </span>
+                )}
+                {filters.categories.length > 1 && (
+                  <span className="flex items-center gap-1">
+                    Multiple ({filters.categories.length})
+                  </span>
+                )}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="bg-background border border-border z-50">
+              <SelectItem value="all">All Categories</SelectItem>
+              {CATEGORIES.map((category) => (
+                <SelectItem key={category.name} value={category.name}>
+                  <span className="flex items-center gap-2">
+                    {category.emoji} {category.name}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Location Dropdown */}
+          <Select value={filters.location} onValueChange={(value) => handleFilterChange('location', value)}>
+            <SelectTrigger className="w-[160px] bg-background border border-border">
+              <SelectValue>
+                <span className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  {filters.location}
+                </span>
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="bg-background border border-border z-50">
+              {LOCATIONS.map((location) => (
+                <SelectItem key={location} value={location}>
+                  {location}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Advanced Filters Dialog */}
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2 relative">
                 <SlidersHorizontal className="h-4 w-4" />
                 Filters
                 {getActiveFiltersCount() > 0 && (
-                  <Badge variant="secondary" className="ml-1">
+                  <Badge variant="secondary" className="ml-1 px-1 py-0 text-xs min-w-[1.2rem] h-5">
                     {getActiveFiltersCount()}
                   </Badge>
                 )}
-                {isExpanded ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
               </Button>
-            </CollapsibleTrigger>
-          </Collapsible>
-
-          {getActiveFiltersCount() > 0 && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={clearAllFilters}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Clear all filters
-              <X className="h-4 w-4 ml-1" />
-            </Button>
-          )}
-        </div>
-
-        {/* Filter Content - Simplified like GoFundMe */}
-        <Collapsible open={isExpanded} onOpenChange={onToggleExpanded}>
-          <CollapsibleContent className="pb-6">
-            <div className="space-y-6">
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>Filter Campaigns</DialogTitle>
+              </DialogHeader>
               
-              {/* Top row - Location and Quick filters */}
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="space-y-6 py-4">
                 
-                {/* Location Filter */}
-                <div className="flex-1">
-                  <Label className="text-sm font-medium mb-2 block flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    Location
-                  </Label>
-                  <Select value={filters.location} onValueChange={(value) => handleFilterChange('location', value)}>
-                    <SelectTrigger className="bg-background border border-border">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background border border-border z-50">
-                      {LOCATIONS.map((location) => (
-                        <SelectItem key={location} value={location}>
-                          {location}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                {/* Categories Section */}
+                <div>
+                  <Label className="text-base font-medium mb-3 block">Categories</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {CATEGORIES.map((category) => (
+                      <div key={category.name} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`dialog-${category.name}`}
+                          checked={filters.categories.includes(category.name)}
+                          onCheckedChange={() => handleCategoryToggle(category.name)}
+                        />
+                        <Label 
+                          htmlFor={`dialog-${category.name}`} 
+                          className="text-sm flex items-center gap-2 cursor-pointer"
+                        >
+                          <span>{category.emoji}</span>
+                          {category.name}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
-                {/* Time Period Filter */}
-                <div className="flex-1">
-                  <Label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                {/* Time Period */}
+                <div>
+                  <Label className="text-base font-medium mb-3 block flex items-center gap-2">
                     <Clock className="h-4 w-4" />
-                    Time period
+                    Time Period
                   </Label>
                   <Select value={filters.timePeriod} onValueChange={(value) => handleFilterChange('timePeriod', value)}>
                     <SelectTrigger className="bg-background border border-border">
@@ -183,148 +219,85 @@ export function CampaignFilters({
                   </Select>
                 </div>
 
-                {/* Quick Filter Toggles */}
-                <div className="flex gap-4 items-end">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="nonprofits"
-                      checked={filters.nonprofitsOnly}
-                      onCheckedChange={(checked) => handleFilterChange('nonprofitsOnly', checked)}
-                    />
-                    <Label htmlFor="nonprofits" className="text-sm cursor-pointer">
-                      Nonprofits
-                    </Label>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="closeToGoal"
-                      checked={filters.closeToGoal}
-                      onCheckedChange={(checked) => handleFilterChange('closeToGoal', checked)}
-                    />
-                    <Label htmlFor="closeToGoal" className="text-sm cursor-pointer">
-                      Close to goal
-                    </Label>
+                {/* Quick Filters */}
+                <div>
+                  <Label className="text-base font-medium mb-3 block">Quick Filters</Label>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="dialog-nonprofits"
+                        checked={filters.nonprofitsOnly}
+                        onCheckedChange={(checked) => handleFilterChange('nonprofitsOnly', checked)}
+                      />
+                      <Label htmlFor="dialog-nonprofits" className="text-sm cursor-pointer">
+                        Show only verified nonprofits
+                      </Label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="dialog-closeToGoal"
+                        checked={filters.closeToGoal}
+                        onCheckedChange={(checked) => handleFilterChange('closeToGoal', checked)}
+                      />
+                      <Label htmlFor="dialog-closeToGoal" className="text-sm cursor-pointer">
+                        Close to goal (80%+ funded)
+                      </Label>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Categories Section */}
-              <div>
-                <Label className="text-sm font-medium mb-3 block">
-                  Category
-                </Label>
-                <div className="space-y-2">
-                  <div className="text-xs text-muted-foreground mb-2">Choose one or more</div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-                    {CATEGORIES.map((category) => (
-                      <div key={category.name} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={category.name}
-                          checked={filters.categories.includes(category.name)}
-                          onCheckedChange={() => handleCategoryToggle(category.name)}
-                        />
-                        <Label 
-                          htmlFor={category.name} 
-                          className="text-sm flex items-center gap-1 cursor-pointer"
-                        >
-                          <span>{category.emoji}</span>
-                          {category.name}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {filters.categories.length > 0 && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => handleFilterChange('categories', [])}
-                      className="mt-2 text-xs"
-                    >
-                      Clear selection
-                    </Button>
-                  )}
-                </div>
-              </div>
-
-              {/* Reset Filters Button */}
-              {getActiveFiltersCount() > 0 && (
-                <div className="pt-4 border-t border-border">
+                {/* Action Buttons */}
+                <div className="flex justify-between pt-4 border-t">
                   <Button 
                     variant="outline" 
                     onClick={clearAllFilters}
-                    className="text-sm"
+                    disabled={getActiveFiltersCount() === 0}
                   >
-                    Reset filters
+                    Clear All
+                  </Button>
+                  <Button onClick={() => setIsDialogOpen(false)}>
+                    Apply Filters
                   </Button>
                 </div>
-              )}
+              </div>
+            </DialogContent>
+          </Dialog>
 
-              {/* Active Filters Display */}
-              {getActiveFiltersCount() > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {filters.categories.map((category) => (
-                    <Badge key={category} variant="secondary" className="flex items-center gap-1">
-                      {CATEGORIES.find(c => c.name === category)?.emoji}
-                      {category}
-                      <button
-                        onClick={() => handleCategoryToggle(category)}
-                        className="ml-1 hover:bg-secondary-foreground/20 rounded-full p-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                  {filters.location !== 'All locations' && (
-                    <Badge variant="secondary" className="flex items-center gap-1">
-                      📍 {filters.location}
-                      <button
-                        onClick={() => handleFilterChange('location', 'All locations')}
-                        className="ml-1 hover:bg-secondary-foreground/20 rounded-full p-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  )}
-                  {filters.timePeriod !== 'all' && (
-                    <Badge variant="secondary" className="flex items-center gap-1">
-                      {TIME_PERIODS.find(t => t.value === filters.timePeriod)?.label}
-                      <button
-                        onClick={() => handleFilterChange('timePeriod', 'all')}
-                        className="ml-1 hover:bg-secondary-foreground/20 rounded-full p-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  )}
-                  {filters.nonprofitsOnly && (
-                    <Badge variant="secondary" className="flex items-center gap-1">
-                      Nonprofits
-                      <button
-                        onClick={() => handleFilterChange('nonprofitsOnly', false)}
-                        className="ml-1 hover:bg-secondary-foreground/20 rounded-full p-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  )}
-                  {filters.closeToGoal && (
-                    <Badge variant="secondary" className="flex items-center gap-1">
-                      Close to goal
-                      <button
-                        onClick={() => handleFilterChange('closeToGoal', false)}
-                        className="ml-1 hover:bg-secondary-foreground/20 rounded-full p-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  )}
-                </div>
-              )}
+          {/* Active Filters Display */}
+          {getActiveFiltersCount() > 0 && (
+            <div className="flex items-center gap-2 ml-auto">
+              <span className="text-xs text-muted-foreground">Active:</span>
+              <div className="flex gap-1 flex-wrap">
+                {filters.categories.slice(0, 2).map((category) => (
+                  <Badge key={category} variant="secondary" className="text-xs py-0 px-2 h-6">
+                    {CATEGORIES.find(c => c.name === category)?.emoji} {category}
+                  </Badge>
+                ))}
+                {filters.categories.length > 2 && (
+                  <Badge variant="secondary" className="text-xs py-0 px-2 h-6">
+                    +{filters.categories.length - 2} more
+                  </Badge>
+                )}
+                {filters.location !== 'All locations' && (
+                  <Badge variant="secondary" className="text-xs py-0 px-2 h-6">
+                    📍 {filters.location}
+                  </Badge>
+                )}
+                {filters.nonprofitsOnly && (
+                  <Badge variant="secondary" className="text-xs py-0 px-2 h-6">
+                    Nonprofits
+                  </Badge>
+                )}
+                {filters.closeToGoal && (
+                  <Badge variant="secondary" className="text-xs py-0 px-2 h-6">
+                    Close to goal
+                  </Badge>
+                )}
+              </div>
             </div>
-          </CollapsibleContent>
-        </Collapsible>
+          )}
+        </div>
       </div>
     </div>
   );
