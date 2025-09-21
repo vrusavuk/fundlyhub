@@ -245,6 +245,79 @@ const FundlyGive = () => {
         </div>
       </section>
 
+      {/* Payroll Integration Partners */}
+      <section className="py-16 bg-secondary/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4">Trusted Payroll Partners</h2>
+            <p className="text-xl text-muted-foreground">
+              Seamlessly integrated with leading payroll providers
+            </p>
+          </div>
+          
+          <div className="relative overflow-hidden">
+            <div className="flex gap-8 animate-scroll">
+              {/* Partner logos with names */}
+              <div className="flex-shrink-0 flex flex-col items-center gap-3 bg-background p-6 rounded-xl border shadow-sm min-w-[180px]">
+                <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center">
+                  <Building2 className="h-8 w-8 text-primary" />
+                </div>
+                <span className="font-semibold text-foreground">ADP Workforce</span>
+              </div>
+              
+              <div className="flex-shrink-0 flex flex-col items-center gap-3 bg-background p-6 rounded-xl border shadow-sm min-w-[180px]">
+                <div className="w-16 h-16 bg-accent/10 rounded-xl flex items-center justify-center">
+                  <Users className="h-8 w-8 text-accent" />
+                </div>
+                <span className="font-semibold text-foreground">Paychex</span>
+              </div>
+              
+              <div className="flex-shrink-0 flex flex-col items-center gap-3 bg-background p-6 rounded-xl border shadow-sm min-w-[180px]">
+                <div className="w-16 h-16 bg-success/10 rounded-xl flex items-center justify-center">
+                  <Shield className="h-8 w-8 text-success" />
+                </div>
+                <span className="font-semibold text-foreground">Workday</span>
+              </div>
+              
+              <div className="flex-shrink-0 flex flex-col items-center gap-3 bg-background p-6 rounded-xl border shadow-sm min-w-[180px]">
+                <div className="w-16 h-16 bg-warning/10 rounded-xl flex items-center justify-center">
+                  <Heart className="h-8 w-8 text-warning" />
+                </div>
+                <span className="font-semibold text-foreground">BambooHR</span>
+              </div>
+              
+              <div className="flex-shrink-0 flex flex-col items-center gap-3 bg-background p-6 rounded-xl border shadow-sm min-w-[180px]">
+                <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center">
+                  <CreditCard className="h-8 w-8 text-primary" />
+                </div>
+                <span className="font-semibold text-foreground">Paylocity</span>
+              </div>
+              
+              <div className="flex-shrink-0 flex flex-col items-center gap-3 bg-background p-6 rounded-xl border shadow-sm min-w-[180px]">
+                <div className="w-16 h-16 bg-accent/10 rounded-xl flex items-center justify-center">
+                  <Building2 className="h-8 w-8 text-accent" />
+                </div>
+                <span className="font-semibold text-foreground">UltiPro</span>
+              </div>
+              
+              <div className="flex-shrink-0 flex flex-col items-center gap-3 bg-background p-6 rounded-xl border shadow-sm min-w-[180px]">
+                <div className="w-16 h-16 bg-success/10 rounded-xl flex items-center justify-center">
+                  <Users className="h-8 w-8 text-success" />
+                </div>
+                <span className="font-semibold text-foreground">Gusto</span>
+              </div>
+              
+              <div className="flex-shrink-0 flex flex-col items-center gap-3 bg-background p-6 rounded-xl border shadow-sm min-w-[180px]">
+                <div className="w-16 h-16 bg-warning/10 rounded-xl flex items-center justify-center">
+                  <Eye className="h-8 w-8 text-warning" />
+                </div>
+                <span className="font-semibold text-foreground">QuickBooks</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Stats Section */}
       <section className="py-16 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
