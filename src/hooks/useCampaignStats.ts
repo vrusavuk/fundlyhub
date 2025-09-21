@@ -86,21 +86,28 @@ export function useCampaignStats() {
           schema: 'public',
           table: 'donations'
         },
-        () => {
-          // Refresh stats when a new donation is made
-          fetchStats();
+        (payload) => {
+          console.log('Real-time donation received:', payload);
+          // Add a small delay to ensure the database has processed the change
+          setTimeout(() => {
+            fetchStats();
+          }, 500);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Real-time subscription status:', status);
+      });
     
     // Listen for donation events to refresh stats (fallback)
     const handleDonationMade = () => {
+      console.log('Custom donation event received');
       fetchStats();
     };
     
     window.addEventListener('donationMade', handleDonationMade);
     
     return () => {
+      console.log('Cleaning up real-time subscription');
       supabase.removeChannel(channel);
       window.removeEventListener('donationMade', handleDonationMade);
     };

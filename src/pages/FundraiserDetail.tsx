@@ -193,6 +193,7 @@ export default function FundraiserDetail() {
           variant: "destructive",
         });
       } else {
+        console.log('Donation successful, refreshing data and dispatching event');
         toast({
           title: "Thank you!",
           description: "Your donation has been processed successfully.",
@@ -201,7 +202,14 @@ export default function FundraiserDetail() {
         await fetchDonations();
         
         // Trigger a page refresh event to update analytics across the site
+        console.log('Dispatching donationMade event');
         window.dispatchEvent(new CustomEvent('donationMade'));
+        
+        // Force a page reload after a short delay if real-time doesn't work
+        setTimeout(() => {
+          console.log('Forcing reload for analytics update');
+          window.location.reload();
+        }, 2000);
       }
     } catch (error: any) {
       toast({
