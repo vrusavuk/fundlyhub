@@ -102,7 +102,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     selectedType === 'all' || result.type === selectedType
   );
 
-  const groupedResults = filteredResults.reduce((acc, result) => {
+  const groupedResults = results.reduce((acc, result) => {
     if (!acc[result.type]) acc[result.type] = [];
     acc[result.type].push(result);
     return acc;
@@ -212,20 +212,21 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
           </div>
 
           {/* Filter Tabs */}
-          {query.length >= 2 && (
+          {query.length >= 2 && results.length > 0 && (
             <div className="flex space-x-2 mb-6 justify-center">
               {[
-                { key: 'all', label: 'All' },
-                { key: 'campaign', label: 'Campaigns' },
-                { key: 'user', label: 'Users' },
-                { key: 'organization', label: 'Organizations' }
-              ].map(({ key, label }) => (
+                { key: 'all', label: `All (${results.length})` },
+                { key: 'campaign', label: `Campaigns (${groupedResults.campaign?.length || 0})` },
+                { key: 'user', label: `Users (${groupedResults.user?.length || 0})` },
+                { key: 'organization', label: `Organizations (${groupedResults.organization?.length || 0})` }
+              ].filter(tab => tab.key === 'all' || (groupedResults[tab.key as keyof typeof groupedResults]?.length || 0) > 0)
+              .map(({ key, label }) => (
                 <Button
                   key={key}
                   variant={selectedType === key ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setSelectedType(key as typeof selectedType)}
-                  className="rounded-full"
+                  className="rounded-full text-xs"
                 >
                   {label}
                 </Button>
@@ -288,17 +289,79 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               </div>
             ) : (
               <div className="p-4">
-                {Object.entries(groupedResults).map(([type, typeResults]) => (
-                  <div key={type} className="mb-6 last:mb-0">
-                    <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3 px-2">
-                      {type}s ({typeResults.length})
-                    </h3>
-                    <div className="space-y-1">
-                      {typeResults.slice(0, 5).map((result, index) => {
-                        const IconComponent = getTypeIcon(result.type);
-                        return (
+                {selectedType === 'all' ? (
+                  // Show all results grouped by type
+                  Object.entries(groupedResults).map(([type, typeResults]) => (
+                    <div key={type} className="mb-6 last:mb-0">
+                      <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3 px-2">
+                        {type}s ({typeResults.length})
+                      </h3>
+                      <div className="space-y-1">
+                        {typeResults.map((result, index) => {
+                          const IconComponent = getTypeIcon(result.type);
+                          return (
+                            <div
+                              key={`${type}-${index}`}
+                              onClick={() => handleResultClick(result)}
+                              className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent/50 cursor-pointer transition-colors group"
+                            >
+                              <div className={`p-2 rounded-lg ${getTypeColor(result.type)}`}>
+                                <IconComponent className="h-4 w-4" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center space-x-2 mb-1">
+                                  <h4 
+                                    className="font-medium text-foreground group-hover:text-primary transition-colors truncate"
+                                    dangerouslySetInnerHTML={{ 
+                                      __html: result.highlightedTitle || result.title 
+                                    }}
+                                  />
+                                  <Badge variant="outline" className="text-xs">
+                                    {result.type}
+                                  </Badge>
+                                  {result.matchedIn && result.matchedIn !== 'title' && (
+                                    <Badge variant="secondary" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                      found in {result.matchedIn}
+                                    </Badge>
+                                  )}
+                                </div>
+                                
+                                {result.matchedSnippet ? (
+                                  <p 
+                                    className="text-sm text-muted-foreground line-clamp-2 mb-1"
+                                    dangerouslySetInnerHTML={{ 
+                                      __html: result.matchedSnippet 
+                                    }}
+                                  />
+                                ) : result.subtitle && (
+                                  <p 
+                                    className="text-sm text-muted-foreground truncate mb-1"
+                                    dangerouslySetInnerHTML={{ 
+                                      __html: result.highlightedSubtitle || result.subtitle 
+                                    }}
+                                  />
+                                )}
+                                
+                                {result.location && (
+                                  <p className="text-xs text-muted-foreground truncate">
+                                    {result.location}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  // Show filtered results for selected type
+                  <div className="space-y-1">
+                    {filteredResults.map((result, index) => {
+                      const IconComponent = getTypeIcon(result.type);
+                      return (
                         <div
-                          key={index}
+                          key={`${result.type}-${index}`}
                           onClick={() => handleResultClick(result)}
                           className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent/50 cursor-pointer transition-colors group"
                         >
@@ -346,11 +409,10 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             )}
                           </div>
                         </div>
-                        );
-                      })}
-                    </div>
+                      );
+                    })}
                   </div>
-                ))}
+                )}
                 
                 {/* Infinite scroll loader */}
                 {hasMore && (
@@ -362,7 +424,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 
                 {!hasMore && filteredResults.length > 0 && (
                   <div className="p-4 text-center text-sm text-muted-foreground border-t border-border">
-                    <p>End of search results ({filteredResults.length} total)</p>
+                    <p>End of search results ({selectedType === 'all' ? results.length : filteredResults.length} total)</p>
                   </div>
                 )}
               </div>
