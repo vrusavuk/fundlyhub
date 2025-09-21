@@ -213,12 +213,23 @@ export function useSearch(options: UseSearchOptions) {
         .select('id, name, email, avatar')
         .range(currentOffset, currentOffset + BATCH_SIZE - 1);
 
-      // Fetch organizations (if you have them)
-      // For now, we'll simulate organizations with a placeholder
-      const organizations: any[] = [];
+      // Fetch organizations with pagination
+      const { data: organizations, error: organizationsError } = await supabase
+        .from('organizations')
+        .select(`
+          id,
+          legal_name,
+          dba_name,
+          website,
+          categories,
+          country,
+          verification_status
+        `)
+        .range(currentOffset, currentOffset + BATCH_SIZE - 1);
 
       if (campaignsError) throw campaignsError;
       if (usersError) throw usersError;
+      if (organizationsError) throw organizationsError;
 
       const newResults: SearchResult[] = [];
 
@@ -305,48 +316,69 @@ export function useSearch(options: UseSearchOptions) {
         });
       }
 
-      // Process organizations (placeholder for future expansion)
-      organizations.forEach(org => {
-        const fields = {
-          name: org.name,
-          description: org.description,
-          location: org.location
-        };
-        
-        const { matchedFields, scores } = checkFieldMatches(searchTerms, fields);
-        
-        if (matchedFields.length > 0) {
-          const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
+      // Process organizations
+      if (organizations) {
+        organizations.forEach(org => {
+          const fields = {
+            legal_name: org.legal_name,
+            dba_name: org.dba_name,
+            website: org.website,
+            categories: org.categories?.join(' '),
+            country: org.country
+          };
           
-          let matchedIn = 'name';
-          if (scores.description > (scores.name || 0)) matchedIn = 'description';
+          const { matchedFields, scores } = checkFieldMatches(searchTerms, fields);
           
-          const highlightedTitle = highlightText(org.name, searchTerms);
-          const subtitle = org.description ? org.description.substring(0, 100) + '...' : '';
-          const highlightedSubtitle = highlightText(subtitle, searchTerms);
-          
-          let matchedSnippet = '';
-          if (matchedIn === 'description') {
-            matchedSnippet = extractSnippet(org.description, searchTerms);
+          if (matchedFields.length > 0) {
+            const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
+            
+            // Determine what was matched for better UX
+            let matchedIn = 'name';
+            if (scores.dba_name > (scores.legal_name || 0)) matchedIn = 'dba_name';
+            if (scores.categories > Math.max(scores.legal_name || 0, scores.dba_name || 0)) matchedIn = 'categories';
+            
+            const displayName = org.dba_name || org.legal_name;
+            const highlightedTitle = highlightText(displayName, searchTerms);
+            
+            let subtitle = '';
+            if (org.dba_name && org.legal_name !== org.dba_name) {
+              subtitle = `Legal: ${org.legal_name}`;
+            }
+            if (org.country) {
+              subtitle = subtitle ? `${subtitle} • ${org.country}` : org.country;
+            }
+            if (org.categories && org.categories.length > 0) {
+              const categoryText = org.categories.slice(0, 2).join(', ');
+              subtitle = subtitle ? `${subtitle} • ${categoryText}` : categoryText;
+            }
+            
+            const highlightedSubtitle = highlightText(subtitle, searchTerms);
+            
+            let matchedSnippet = '';
+            if (matchedIn === 'categories' && org.categories) {
+              matchedSnippet = `Categories: ${org.categories.join(', ')}`;
+            } else if (matchedIn === 'dba_name' && org.dba_name) {
+              matchedSnippet = `Also known as: ${org.dba_name}`;
+            }
+            
+            newResults.push({
+              id: org.id,
+              type: 'organization',
+              title: displayName,
+              subtitle,
+              image: undefined,
+              link: `/organization/${org.id}`,
+              snippet: matchedSnippet,
+              relevanceScore: totalScore,
+              matchedFields,
+              highlightedTitle,
+              highlightedSubtitle,
+              matchedSnippet,
+              matchedIn
+            });
           }
-          
-          newResults.push({
-            id: org.id,
-            type: 'organization',
-            title: org.name,
-            subtitle,
-            image: undefined,
-            link: `/organization/${org.id}`,
-            snippet: matchedSnippet,
-            relevanceScore: totalScore,
-            matchedFields,
-            highlightedTitle,
-            highlightedSubtitle,
-            matchedSnippet,
-            matchedIn
-          });
-        }
-      });
+        });
+      }
 
       // Sort by relevance score
       newResults.sort((a, b) => (b.relevanceScore || 0) - (a.relevanceScore || 0));
