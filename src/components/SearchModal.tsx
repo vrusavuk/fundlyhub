@@ -86,30 +86,18 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   const modalContent = (
     <>
-      {/* Full Screen Backdrop - TESTING WITH RED BACKGROUND */}
+      {/* Full Screen Backdrop */}
       <div 
-        className="fixed inset-0 z-[9999] bg-red-500/50 backdrop-blur-md"
-        onClick={(e) => {
-          console.log('BACKDROP CLICKED - CLOSING');
-          onClose();
-        }}
-        style={{ 
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 9999
-        }}
+        className="fixed inset-0 z-[9999] bg-black/30 backdrop-blur-md"
+        onClick={onClose}
       />
       
       {/* Search Content */}
       <div 
         className="fixed inset-0 z-[10000] flex items-start justify-center pt-[10vh] pointer-events-none"
-        style={{ zIndex: 10000 }}
       >
         <div 
-          className="w-full max-w-2xl mx-4 pointer-events-auto bg-yellow-200 p-4 rounded-lg"
+          className="w-full max-w-2xl mx-4 pointer-events-auto"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Search Header */}
