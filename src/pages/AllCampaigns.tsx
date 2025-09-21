@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Navigation } from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
-import { FundraiserCard } from "@/components/FundraiserCard";
+import { EnhancedFundraiserCard } from "@/components/EnhancedFundraiserCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, SlidersHorizontal } from "lucide-react";
@@ -17,6 +17,7 @@ interface Fundraiser {
   currency: string;
   cover_image: string;
   category: string;
+  location?: string;
   created_at: string;
   profiles: {
     name: string;
@@ -170,7 +171,7 @@ export default function AllCampaigns() {
         ) : filteredFundraisers.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredFundraisers.map((fundraiser) => (
-              <FundraiserCard
+              <EnhancedFundraiserCard
                 key={fundraiser.id}
                 id={fundraiser.id}
                 title={fundraiser.title}
@@ -181,7 +182,12 @@ export default function AllCampaigns() {
                 coverImage={fundraiser.cover_image || "/placeholder.svg"}
                 category={fundraiser.category || "General"}
                 organizationName={fundraiser.profiles?.name || "Anonymous"}
+                location={fundraiser.location || undefined}
+                donorCount={Math.floor(Math.random() * 100) + 1}
+                daysLeft={Math.floor(Math.random() * 30) + 1}
+                urgency={Math.random() > 0.8 ? 'high' : Math.random() > 0.5 ? 'medium' : 'low'}
                 isVerified={Math.random() > 0.7}
+                isOrganization={Math.random() > 0.8}
                 onClick={() => handleCardClick(fundraiser.slug)}
               />
             ))}

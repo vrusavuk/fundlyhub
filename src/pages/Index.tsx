@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Navigation } from "@/components/Navigation";
-import { FundraiserCard } from "@/components/FundraiserCard";
+import { EnhancedFundraiserCard } from "@/components/EnhancedFundraiserCard";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { TrustBadges } from "@/components/TrustBadges";
 import { ArrowRight, TrendingUp, Shield, Heart, Star } from "lucide-react";
@@ -18,7 +18,7 @@ interface Fundraiser {
   currency: string;
   category: string;
   cover_image: string;
-  location: string;
+  location?: string;
   created_at: string;
   profiles: {
     name: string;
@@ -192,7 +192,7 @@ const Index = () => {
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {fundraisers.map((fundraiser, index) => (
-                <FundraiserCard
+                <EnhancedFundraiserCard
                   key={fundraiser.id}
                   id={fundraiser.id}
                   title={fundraiser.title}
@@ -203,7 +203,12 @@ const Index = () => {
                   coverImage={fundraiser.cover_image || "/placeholder.svg"}
                   category={fundraiser.category || "General"}
                   organizationName={fundraiser.profiles?.name || "Anonymous"}
+                  location={fundraiser.location || undefined}
+                  donorCount={Math.floor(Math.random() * 50) + 1}
+                  daysLeft={Math.floor(Math.random() * 60) + 1}
+                  urgency={index % 3 === 0 ? 'high' : index % 2 === 0 ? 'medium' : 'low'}
                   isVerified={index % 4 === 0}
+                  isOrganization={index % 5 === 0}
                   onClick={() => handleCardClick(fundraiser.slug)}
                 />
               ))}
