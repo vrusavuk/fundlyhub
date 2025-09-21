@@ -10,7 +10,7 @@ import adpLogo from "@/assets/partners/adp-official-logo.png";
 import paychexLogo from "@/assets/partners/paychex-logo.png";
 import workdayLogo from "@/assets/partners/workday-logo.png";
 import bamboohrLogo from "@/assets/partners/bamboohr-logo.png";
-import gustoLogo from "@/assets/partners/gusto-wikipedia-logo.png";
+import gustoLogo from "@/assets/partners/gusto-official-logo.png";
 import quickbooksLogo from "@/assets/partners/quickbooks-logo.png";
 import paylocityLogo from "@/assets/partners/paylocity-correct-logo.png";
 import ukgLogo from "@/assets/partners/ukg-official-logo.png";
