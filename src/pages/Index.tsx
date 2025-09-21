@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Navigation } from "@/components/Navigation";
-import { EnhancedFundraiserCard } from "@/components/EnhancedFundraiserCard";
+import { FundraiserCard } from "@/components/FundraiserCard";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { TrustBadges } from "@/components/TrustBadges";
 import { ArrowRight, TrendingUp, Shield, Heart, Star } from "lucide-react";
@@ -192,23 +192,18 @@ const Index = () => {
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {fundraisers.map((fundraiser, index) => (
-                <EnhancedFundraiserCard
+                <FundraiserCard
                   key={fundraiser.id}
                   id={fundraiser.id}
                   title={fundraiser.title}
-                  summary={fundraiser.summary}
+                  summary={fundraiser.summary || ""}
                   goalAmount={fundraiser.goal_amount}
                   raisedAmount={donations[fundraiser.id] || 0}
                   currency={fundraiser.currency}
-                  coverImage={fundraiser.cover_image}
-                  category={fundraiser.category}
-                  organizationName={fundraiser.profiles?.name}
-                  location={fundraiser.location}
-                  donorCount={Math.floor(Math.random() * 50) + 1} // Mock data
-                  daysLeft={Math.floor(Math.random() * 60) + 1} // Mock data
-                  urgency={index % 3 === 0 ? 'high' : index % 2 === 0 ? 'medium' : 'low'}
-                  isVerified={index % 4 === 0} // Mock verification
-                  isOrganization={index % 5 === 0} // Mock organization
+                  coverImage={fundraiser.cover_image || "/placeholder.svg"}
+                  category={fundraiser.category || "General"}
+                  organizationName={fundraiser.profiles?.name || "Anonymous"}
+                  isVerified={index % 4 === 0}
                   onClick={() => handleCardClick(fundraiser.slug)}
                 />
               ))}
