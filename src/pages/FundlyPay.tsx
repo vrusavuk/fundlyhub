@@ -201,6 +201,86 @@ const FundlyPay = () => {
         </div>
       </section>
 
+      {/* Payroll Partners Section */}
+      <section className="py-20 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-6">
+              Trusted Payroll Partners
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              FundlyPay seamlessly integrates with leading payroll providers to make giving effortless for employees across thousands of organizations.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 items-center justify-items-center">
+            {[
+              { name: "ADP", logo: "ADP" },
+              { name: "Paylocity", logo: "Paylocity" },
+              { name: "Gusto", logo: "Gusto" },
+              { name: "Paychex", logo: "Paychex" },
+              { name: "BambooHR", logo: "BambooHR" },
+              { name: "Workday", logo: "Workday" },
+              { name: "UltiPro", logo: "UltiPro" },
+              { name: "Paycom", logo: "Paycom" },
+              { name: "QuickBooks", logo: "QuickBooks" },
+              { name: "Ceridian", logo: "Ceridian" }
+            ].map((partner, index) => (
+              <div key={index} className="group">
+                <div className="w-32 h-20 bg-card rounded-lg border shadow-soft flex items-center justify-center hover:shadow-medium transition-all duration-300 group-hover:scale-105">
+                  <span className="text-lg font-semibold text-muted-foreground group-hover:text-foreground transition-colors">
+                    {partner.logo}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="mt-16 bg-gradient-to-r from-primary/5 via-accent/5 to-secondary/5 rounded-2xl p-8">
+            <div className="grid md:grid-cols-3 gap-8 text-center">
+              <div className="space-y-4">
+                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto">
+                  <Shield className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="font-semibold">Enterprise Security</h3>
+                <p className="text-sm text-muted-foreground">
+                  SOC 2 compliant integrations with bank-level encryption
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mx-auto">
+                  <Zap className="h-6 w-6 text-accent" />
+                </div>
+                <h3 className="font-semibold">Quick Setup</h3>
+                <p className="text-sm text-muted-foreground">
+                  Connect your payroll in under 5 minutes with guided setup
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center mx-auto">
+                  <Users className="h-6 w-6 text-success" />
+                </div>
+                <h3 className="font-semibold">HR Approved</h3>
+                <p className="text-sm text-muted-foreground">
+                  Trusted by HR teams at Fortune 500 companies
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-center mt-12">
+            <p className="text-muted-foreground mb-6">
+              Don't see your payroll provider? We're constantly adding new partners.
+            </p>
+            <Button variant="outline" size="lg">
+              Request Integration
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 bg-gradient-hero">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
