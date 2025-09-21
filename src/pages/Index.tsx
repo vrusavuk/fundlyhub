@@ -1,6 +1,7 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Navigation } from "@/components/Navigation";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { PageContainer } from "@/components/ui/PageContainer";
 import { FundraiserGrid } from "@/components/fundraisers/FundraiserGrid";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { TrustBadges } from "@/components/TrustBadges";
@@ -17,9 +18,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      
+    <AppLayout fullWidth>
       {/* Hero Section with enhanced design */}
       <section className="relative overflow-hidden">
         {/* Background with gradient overlay */}
@@ -286,7 +285,7 @@ const Index = () => {
           </div>
         </div>
       </footer>
-    </div>
+    </AppLayout>
   );
 };
 

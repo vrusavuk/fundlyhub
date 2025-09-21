@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { PageContainer } from '@/components/ui/PageContainer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +13,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DonationWidget } from '@/components/DonationWidget';
 import { RecentDonors } from '@/components/fundraisers/RecentDonors';
-import { Navigation } from '@/components/Navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -281,10 +282,8 @@ export default function FundraiserDetail() {
   const progressPercentage = Math.min((totalRaised / fundraiser.goal_amount) * 100, 100);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      
-      <div className="container mx-auto px-4 py-8">
+    <AppLayout>
+      <PageContainer>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
@@ -516,7 +515,7 @@ export default function FundraiserDetail() {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </PageContainer>
+    </AppLayout>
   );
 }

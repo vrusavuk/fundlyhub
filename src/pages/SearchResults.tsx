@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import { Navigation } from "@/components/Navigation";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { PageContainer } from "@/components/ui/PageContainer";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -59,10 +61,9 @@ export default function SearchResults() {
 
   if (!query) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <main className="container mx-auto px-4 py-8">
-          <div className="max-w-2xl mx-auto text-center">
+      <AppLayout>
+        <PageContainer maxWidth="md">
+          <div className="text-center">
             <h1 className="text-2xl font-bold mb-4">Search Results</h1>
             <p className="text-muted-foreground">No search query provided</p>
             <Button asChild className="mt-4">
@@ -72,153 +73,140 @@ export default function SearchResults() {
               </Link>
             </Button>
           </div>
-        </main>
-      </div>
+        </PageContainer>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      
-      <main className="container mx-auto px-4 py-6">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="flex items-center gap-4 mb-6">
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
-              </Link>
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold">Search Results</h1>
-              <p className="text-muted-foreground">
-                {filteredResults.length} results for "{query}"
-              </p>
-            </div>
-          </div>
+    <AppLayout>
+      <PageContainer maxWidth="lg">
+        <PageHeader
+          title="Search Results"
+          description={`${filteredResults.length} results for "${query}"`}
+          showBackButton
+          backTo="/"
+        />
 
-          {/* Type Filter */}
-          {resultTypes.length > 1 && (
-            <div className="flex gap-2 mb-6">
-              {resultTypes.map((type) => (
-                <Button
-                  key={type}
-                  variant={selectedType === type ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedType(type)}
-                  className="capitalize"
-                >
-                  {type === 'all' ? 'All' : `${type}s`}
-                  {type !== 'all' && (
-                    <Badge variant="secondary" className="ml-2">
-                      {results.filter(r => r.type === type).length}
-                    </Badge>
-                  )}
-                </Button>
-              ))}
-            </div>
-          )}
-
-          {/* Results */}
-          {loading && results.length === 0 ? (
-            <div className="flex justify-center py-12">
-              <LoadingSpinner />
-            </div>
-          ) : error ? (
-            <ErrorMessage message={error} />
-          ) : filteredResults.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No results found for "{query}"</p>
-              <Button asChild className="mt-4">
-                <Link to="/campaigns">Browse All Campaigns</Link>
+        {/* Type Filter */}
+        {resultTypes.length > 1 && (
+          <div className="flex gap-2 mb-6">
+            {resultTypes.map((type) => (
+              <Button
+                key={type}
+                variant={selectedType === type ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedType(type)}
+                className="capitalize"
+              >
+                {type === 'all' ? 'All' : `${type}s`}
+                {type !== 'all' && (
+                  <Badge variant="secondary" className="ml-2">
+                    {results.filter(r => r.type === type).length}
+                  </Badge>
+                )}
               </Button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {filteredResults.map((result, index) => (
-                <Card key={`${result.type}-${result.id}-${index}`} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      {result.image && (
-                        <Avatar className="h-12 w-12 flex-shrink-0">
-                          <AvatarImage src={result.image} alt={result.title} />
-                          <AvatarFallback>
-                            {getTypeIcon(result.type)}
-                          </AvatarFallback>
-                        </Avatar>
-                      )}
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Badge className={getTypeColor(result.type)} variant="secondary">
-                                {getTypeIcon(result.type)}
-                                <span className="ml-1 capitalize">{result.type}</span>
-                              </Badge>
-                              {result.relevanceScore && (
-                                <span className="text-xs text-muted-foreground">
-                                  {Math.round(result.relevanceScore * 100)}% match
-                                </span>
-                              )}
-                            </div>
-                            
-                            <h3 className="font-semibold text-lg mb-1">
-                              <Link 
-                                to={result.link} 
-                                className="hover:text-primary transition-colors"
-                              >
-                                <HighlightedText
-                                  text={result.title}
-                                  searchQuery={query}
-                                  className="font-semibold text-lg"
-                                />
-                              </Link>
-                            </h3>
-                            
-                            {result.subtitle && (
-                              <HighlightedText
-                                text={result.subtitle}
-                                searchQuery={query}
-                                className="text-sm text-muted-foreground mb-2"
-                                as="p"
-                              />
-                            )}
-                            
-                            {result.snippet && (
-                              <HighlightedText
-                                text={result.snippet}
-                                searchQuery={query}
-                                className="text-sm text-foreground line-clamp-2"
-                                as="p"
-                              />
+            ))}
+          </div>
+        )}
+
+        {/* Results */}
+        {loading && results.length === 0 ? (
+          <div className="flex justify-center py-12">
+            <LoadingSpinner />
+          </div>
+        ) : error ? (
+          <ErrorMessage message={error} />
+        ) : filteredResults.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No results found for "{query}"</p>
+            <Button asChild className="mt-4">
+              <Link to="/campaigns">Browse All Campaigns</Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredResults.map((result, index) => (
+              <Card key={`${result.type}-${result.id}-${index}`} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    {result.image && (
+                      <Avatar className="h-12 w-12 flex-shrink-0">
+                        <AvatarImage src={result.image} alt={result.title} />
+                        <AvatarFallback>
+                          {getTypeIcon(result.type)}
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Badge className={getTypeColor(result.type)} variant="secondary">
+                              {getTypeIcon(result.type)}
+                              <span className="ml-1 capitalize">{result.type}</span>
+                            </Badge>
+                            {result.relevanceScore && (
+                              <span className="text-xs text-muted-foreground">
+                                {Math.round(result.relevanceScore * 100)}% match
+                              </span>
                             )}
                           </div>
+                          
+                          <h3 className="font-semibold text-lg mb-1">
+                            <Link 
+                              to={result.link} 
+                              className="hover:text-primary transition-colors"
+                            >
+                              <HighlightedText
+                                text={result.title}
+                                searchQuery={query}
+                                className="font-semibold text-lg"
+                              />
+                            </Link>
+                          </h3>
+                          
+                          {result.subtitle && (
+                            <HighlightedText
+                              text={result.subtitle}
+                              searchQuery={query}
+                              className="text-sm text-muted-foreground mb-2"
+                              as="p"
+                            />
+                          )}
+                          
+                          {result.snippet && (
+                            <HighlightedText
+                              text={result.snippet}
+                              searchQuery={query}
+                              className="text-sm text-foreground line-clamp-2"
+                              as="p"
+                            />
+                          )}
                         </div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-              
-              {hasMore && (
-                <div className="text-center py-6">
-                  <Button 
-                    onClick={loadMore} 
-                    disabled={loading}
-                    variant="outline"
-                  >
-                    {loading ? <LoadingSpinner className="mr-2" /> : null}
-                    Load More Results
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </main>
-    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            
+            {hasMore && (
+              <div className="text-center py-6">
+                <Button 
+                  onClick={loadMore} 
+                  disabled={loading}
+                  variant="outline"
+                >
+                  {loading ? <LoadingSpinner className="mr-2" /> : null}
+                  Load More Results
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+      </PageContainer>
+    </AppLayout>
   );
 }

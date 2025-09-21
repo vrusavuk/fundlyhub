@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { PageContainer } from '@/components/ui/PageContainer';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -118,13 +121,14 @@ export default function CreateFundraiser() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">Create New Fundraiser</CardTitle>
-            </CardHeader>
+    <AppLayout>
+      <PageContainer maxWidth="md">
+        <PageHeader 
+          title="Create New Fundraiser"
+          showBackButton
+          backTo="/campaigns"
+        />
+        <Card>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
@@ -249,11 +253,10 @@ export default function CreateFundraiser() {
                     )}
                   </Button>
                 </div>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
+          </form>
+        </CardContent>
+      </Card>
+      </PageContainer>
+    </AppLayout>
   );
 }

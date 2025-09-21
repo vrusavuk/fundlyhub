@@ -8,15 +8,22 @@ import { Navigation } from '../navigation/Navigation';
 interface AppLayoutProps {
   children: ReactNode;
   className?: string;
+  fullWidth?: boolean;
 }
 
-export function AppLayout({ children, className }: AppLayoutProps) {
+export function AppLayout({ children, className, fullWidth = false }: AppLayoutProps) {
   return (
     <div className={`min-h-screen bg-gradient-subtle ${className || ''}`}>
       <Navigation />
-      <main className="relative">
-        {children}
-      </main>
+      {fullWidth ? (
+        children
+      ) : (
+        <main className="relative">
+          <div className="container mx-auto px-4 py-6">
+            {children}
+          </div>
+        </main>
+      )}
     </div>
   );
 }

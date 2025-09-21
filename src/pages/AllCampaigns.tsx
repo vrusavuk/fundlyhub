@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Navigation } from "@/components/Navigation";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { PageContainer } from "@/components/ui/PageContainer";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { FundraiserGrid } from "@/components/fundraisers/FundraiserGrid";
 import { Button } from "@/components/ui/button";
 import { SlidersHorizontal } from "lucide-react";
@@ -53,27 +55,23 @@ export default function AllCampaigns() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
-      <Navigation />
-      
-      <main className="container mx-auto px-4 py-6">
-        {/* Compact Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">All Campaigns</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Discover and support amazing causes from around the world
-            </p>
-          </div>
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <span>{filteredFundraisers.length} campaigns found</span>
-            <Button variant="outline" size="sm">
-              <SlidersHorizontal className="h-4 w-4 mr-2" />
-              Filters
-            </Button>
-          </div>
-        </div>
-
+    <AppLayout>
+      <PageContainer>
+        <PageHeader
+          title="All Campaigns"
+          description="Discover and support amazing causes from around the world"
+          actions={
+            <>
+              <span className="text-sm text-muted-foreground">
+                {filteredFundraisers.length} campaigns found
+              </span>
+              <Button variant="outline" size="sm">
+                <SlidersHorizontal className="h-4 w-4 mr-2" />
+                Filters
+              </Button>
+            </>
+          }
+        />
 
         {/* Campaign Grid */}
         <FundraiserGrid
@@ -92,7 +90,7 @@ export default function AllCampaigns() {
               : "No campaigns are currently available"
           }
         />
-      </main>
-    </div>
+      </PageContainer>
+    </AppLayout>
   );
 }
