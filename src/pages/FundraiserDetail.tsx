@@ -452,6 +452,7 @@ export default function FundraiserDetail() {
               currency={fundraiser.currency}
               onDonate={handleDonate}
               loading={donating}
+              isFloating={true}
             />
 
             {/* Recent Donations */}
