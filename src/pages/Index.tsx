@@ -177,7 +177,7 @@ const Index = () => {
       <section className="py-20 bg-secondary/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-4">Featured campaigns</h2>
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4">Featured Fundlies</h2>
             <p className="text-xl text-muted-foreground">Support these urgent causes making a difference right now</p>
           </div>
           
@@ -226,7 +226,7 @@ const Index = () => {
           
           <div className="text-center mt-12">
             <Button variant="outline" size="lg" asChild>
-              <Link to="/">
+              <Link to="/campaigns">
                 View All Campaigns
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
