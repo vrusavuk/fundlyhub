@@ -35,22 +35,20 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   }, [isOpen]);
 
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isOpen]);
 
+  useEffect(() => {
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   const handleResultClick = (result: any) => {
     if (result.type === 'campaign') {
@@ -219,14 +217,6 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
             )}
           </div>
 
-          {/* Search Tips */}
-          {query.length < 2 && (
-            <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                <kbd className="px-2 py-1 text-xs bg-muted rounded">ESC</kbd> to close
-              </p>
-            </div>
-          )}
         </div>
       </div>
     </div>
