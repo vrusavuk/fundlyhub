@@ -92,7 +92,6 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
 
   const handleInputChange = (value: string) => {
     setQuery(value);
-    setShowDropdown(value.length >= 2 && shouldShowDropdown);
     
     // Update global search context for integrated search pages
     if (isOnIntegratedSearchPage) {
@@ -106,6 +105,16 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
         }
       }
     }
+    
+    // On campaigns page, only show dropdown if there are user/org results
+    // Use a timeout to ensure results are calculated first
+    setTimeout(() => {
+      const showDropdownCondition = isOnCampaignsPage 
+        ? value.length >= 2 && shouldShowDropdown && (userResults.length > 0 || organizationResults.length > 0)
+        : value.length >= 2 && shouldShowDropdown;
+      
+      setShowDropdown(showDropdownCondition);
+    }, 100);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
