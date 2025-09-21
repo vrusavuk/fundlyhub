@@ -119,10 +119,10 @@ export function CampaignFilters({
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button 
-                  variant={hasCustomFilters() ? "default" : "outline"} 
+                  variant="outline" 
                   className={`flex items-center gap-2 relative transition-all duration-200 ${
                     hasCustomFilters() 
-                      ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/20" 
+                      ? "bg-accent text-accent-foreground border-accent-foreground/20" 
                       : ""
                   }`}
                 >
@@ -130,7 +130,7 @@ export function CampaignFilters({
                   Filters
                   {getActiveFiltersCount() > 0 && (
                     <Badge 
-                      variant={hasCustomFilters() ? "secondary" : "secondary"} 
+                      variant="secondary" 
                       className="ml-1 px-1 py-0 text-xs min-w-[1.2rem] h-5"
                     >
                       {getActiveFiltersCount()}
@@ -281,7 +281,7 @@ export function CampaignFilters({
               <SelectTrigger 
                 className={`w-[180px] transition-all duration-200 ${
                   hasCategoryFilters() 
-                    ? "bg-primary text-primary-foreground border-primary shadow-md ring-2 ring-primary/20" 
+                    ? "bg-accent text-accent-foreground border-accent-foreground/20" 
                     : "bg-background border border-border"
                 }`}
               >
@@ -317,7 +317,7 @@ export function CampaignFilters({
               <SelectTrigger 
                 className={`w-[160px] transition-all duration-200 ${
                   (filters.location !== 'All locations' || filters.locationInput.trim() !== '') 
-                    ? "bg-primary text-primary-foreground border-primary shadow-md ring-2 ring-primary/20" 
+                    ? "bg-accent text-accent-foreground border-accent-foreground/20" 
                     : "bg-background border border-border"
                 }`}
               >
