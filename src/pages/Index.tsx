@@ -44,7 +44,7 @@ const Index = () => {
         .from('fundraisers')
         .select(`
           *,
-          profiles(name)
+          profiles!fundraisers_owner_user_id_fkey(name)
         `)
         .eq('status', 'active')
         .eq('visibility', 'public')
