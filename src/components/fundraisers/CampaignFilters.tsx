@@ -95,6 +95,20 @@ export function CampaignFilters({
     return count;
   };
 
+  // Check if custom filters (non-category) are active
+  const hasCustomFilters = () => {
+    return filters.location !== 'All locations' || 
+           filters.locationInput.trim() !== '' ||
+           filters.timePeriod !== 'all' ||
+           filters.nonprofitsOnly ||
+           filters.closeToGoal;
+  };
+
+  // Check if categories are selected
+  const hasCategoryFilters = () => {
+    return filters.categories.length > 0;
+  };
+
   return (
     <div className="border-b border-border bg-background -mx-4 mb-6">
       <div className="px-4 py-4">
@@ -104,11 +118,21 @@ export function CampaignFilters({
             {/* Advanced Filters Dialog - FIRST */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2 relative">
+                <Button 
+                  variant={hasCustomFilters() ? "default" : "outline"} 
+                  className={`flex items-center gap-2 relative transition-all duration-200 ${
+                    hasCustomFilters() 
+                      ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/20" 
+                      : ""
+                  }`}
+                >
                   <SlidersHorizontal className="h-4 w-4" />
                   Filters
                   {getActiveFiltersCount() > 0 && (
-                    <Badge variant="secondary" className="ml-1 px-1 py-0 text-xs min-w-[1.2rem] h-5">
+                    <Badge 
+                      variant={hasCustomFilters() ? "secondary" : "secondary"} 
+                      className="ml-1 px-1 py-0 text-xs min-w-[1.2rem] h-5"
+                    >
                       {getActiveFiltersCount()}
                     </Badge>
                   )}
@@ -254,7 +278,13 @@ export function CampaignFilters({
                 }
               }}
             >
-              <SelectTrigger className="w-[180px] bg-background border border-border">
+              <SelectTrigger 
+                className={`w-[180px] transition-all duration-200 ${
+                  hasCategoryFilters() 
+                    ? "bg-primary text-primary-foreground border-primary shadow-md ring-2 ring-primary/20" 
+                    : "bg-background border border-border"
+                }`}
+              >
                 <SelectValue placeholder="Category">
                   {filters.categories.length === 0 && "All Categories"}
                   {filters.categories.length === 1 && (
@@ -284,7 +314,13 @@ export function CampaignFilters({
 
             {/* Location Dropdown - THIRD */}
             <Select value={filters.location} onValueChange={(value) => handleFilterChange('location', value)}>
-              <SelectTrigger className="w-[160px] bg-background border border-border">
+              <SelectTrigger 
+                className={`w-[160px] transition-all duration-200 ${
+                  (filters.location !== 'All locations' || filters.locationInput.trim() !== '') 
+                    ? "bg-primary text-primary-foreground border-primary shadow-md ring-2 ring-primary/20" 
+                    : "bg-background border border-border"
+                }`}
+              >
                 <SelectValue>
                   <span className="flex items-center gap-1">
                     <MapPin className="h-4 w-4" />
