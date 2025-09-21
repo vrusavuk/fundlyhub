@@ -94,31 +94,26 @@ export default function AllCampaigns() {
           title="All Campaigns"
           description="Discover and support amazing causes from around the world"
           actions={
-            <>
-              <span className="text-sm text-muted-foreground">
-                {filteredFundraisers.length} campaigns found
-              </span>
-              <div className="flex items-center gap-4 text-sm">
-                <div className="flex flex-col items-end">
-                  <span className="font-medium text-green-600">
-                    {campaignStats.loading ? '...' : campaignStats.activeCampaigns.toLocaleString()} Active
-                  </span>
-                  <span className="text-xs text-muted-foreground">campaigns</span>
-                </div>
-                <div className="flex flex-col items-end">
-                  <span className="font-medium text-blue-600">
-                    {campaignStats.loading ? '...' : campaignStats.successfulCampaigns.toLocaleString()} Closed
-                  </span>
-                  <span className="text-xs text-muted-foreground">campaigns</span>
-                </div>
-                <div className="flex flex-col items-end">
-                  <span className="font-medium text-primary">
-                    {campaignStats.loading ? '...' : `$${campaignStats.totalFundsRaised.toLocaleString()}`}
-                  </span>
-                  <span className="text-xs text-muted-foreground">total raised</span>
-                </div>
+            <div className="flex items-center gap-4 text-sm">
+              <div className="flex flex-col items-end">
+                <span className="font-medium text-green-600">
+                  {campaignStats.loading ? '...' : campaignStats.activeCampaigns.toLocaleString()} Active
+                </span>
+                <span className="text-xs text-muted-foreground">campaigns</span>
               </div>
-            </>
+              <div className="flex flex-col items-end">
+                <span className="font-medium text-blue-600">
+                  {campaignStats.loading ? '...' : campaignStats.successfulCampaigns.toLocaleString()} Closed
+                </span>
+                <span className="text-xs text-muted-foreground">campaigns</span>
+              </div>
+              <div className="flex flex-col items-end">
+                <span className="font-medium text-primary">
+                  {campaignStats.loading ? '...' : `$${campaignStats.totalFundsRaised.toLocaleString()}`}
+                </span>
+                <span className="text-xs text-muted-foreground">total raised</span>
+              </div>
+            </div>
           }
         />
 

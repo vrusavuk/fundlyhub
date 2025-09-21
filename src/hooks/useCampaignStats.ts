@@ -41,41 +41,24 @@ export function useCampaignStats() {
 
         if (closedError) throw closedError;
 
-        // Get all fundraisers (active and closed) with their donation totals
-        const { data: fundraisers, error: fundraisersError } = await supabase
-          .from('fundraisers')
-          .select('id, goal_amount, status')
-          .in('status', ['active', 'closed'])
-          .eq('visibility', 'public');
-
-        if (fundraisersError) throw fundraisersError;
-
-        // Get all donations for these fundraisers
-        const { data: donations, error: donationsError } = await supabase
+        // Get all donations to calculate total funds raised
+        const { data: allDonations, error: donationsError } = await supabase
           .from('donations')
-          .select('fundraiser_id, amount')
+          .select('amount, fundraiser_id, fundraisers!inner(status, visibility)')
           .eq('payment_status', 'paid')
-          .in('fundraiser_id', fundraisers?.map(f => f.id) || []);
+          .eq('fundraisers.visibility', 'public')
+          .in('fundraisers.status', ['active', 'closed']);
 
         if (donationsError) throw donationsError;
 
-        // Calculate totals
-        const fundraiserTotals = new Map<string, number>();
-        donations?.forEach(donation => {
-          const currentTotal = fundraiserTotals.get(donation.fundraiser_id) || 0;
-          fundraiserTotals.set(donation.fundraiser_id, currentTotal + Number(donation.amount));
-        });
-
-        // Calculate total funds raised from all campaigns
-        let totalRaised = 0;
-        fundraisers?.forEach(fundraiser => {
-          const raised = fundraiserTotals.get(fundraiser.id) || 0;
-          totalRaised += raised;
-        });
+        // Calculate total funds raised across all campaigns
+        const totalRaised = allDonations?.reduce((sum, donation) => {
+          return sum + Number(donation.amount);
+        }, 0) || 0;
 
         setStats({
           activeCampaigns: activeCount || 0,
-          successfulCampaigns: closedCount || 0, // Show closed campaigns instead of successful ones
+          successfulCampaigns: closedCount || 0,
           totalFundsRaised: totalRaised,
           loading: false,
           error: null
