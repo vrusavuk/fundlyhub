@@ -20,36 +20,61 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   
   const { results, loading, error } = useSearch(query);
 
-  // Load search history and last query from localStorage
+  // Load search history on component mount
   useEffect(() => {
     const savedHistory = localStorage.getItem('searchHistory');
-    const lastQuery = localStorage.getItem('lastSearchQuery');
-    
     if (savedHistory) {
-      setSearchHistory(JSON.parse(savedHistory));
+      try {
+        setSearchHistory(JSON.parse(savedHistory));
+      } catch (error) {
+        console.error('Error parsing search history:', error);
+        localStorage.removeItem('searchHistory');
+      }
     }
-    if (lastQuery && isOpen) {
-      setQuery(lastQuery);
+  }, []);
+
+  // Restore last search query when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      const lastQuery = localStorage.getItem('lastSearchQuery');
+      if (lastQuery) {
+        setQuery(lastQuery);
+      }
+      // Focus input when modal opens
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
     }
   }, [isOpen]);
+
+  // Save current query to localStorage whenever it changes (if it's a valid search)
+  useEffect(() => {
+    if (query.trim() && query.length >= 2) {
+      localStorage.setItem('lastSearchQuery', query);
+    }
+  }, [query]);
 
   // Save search query to localStorage and history
   const saveSearchQuery = (searchQuery: string) => {
     if (searchQuery.trim() && searchQuery.length >= 2) {
-      localStorage.setItem('lastSearchQuery', searchQuery);
-      
-      const savedHistory = localStorage.getItem('searchHistory');
-      let history = savedHistory ? JSON.parse(savedHistory) : [];
-      
-      // Remove if already exists and add to beginning
-      history = history.filter((item: string) => item !== searchQuery);
-      history.unshift(searchQuery);
-      
-      // Keep only last 10 searches
-      history = history.slice(0, 10);
-      
-      localStorage.setItem('searchHistory', JSON.stringify(history));
-      setSearchHistory(history);
+      try {
+        const savedHistory = localStorage.getItem('searchHistory');
+        let history = savedHistory ? JSON.parse(savedHistory) : [];
+        
+        // Remove if already exists and add to beginning
+        history = history.filter((item: string) => item !== searchQuery);
+        history.unshift(searchQuery);
+        
+        // Keep only last 10 searches
+        history = history.slice(0, 10);
+        
+        localStorage.setItem('searchHistory', JSON.stringify(history));
+        setSearchHistory(history);
+      } catch (error) {
+        console.error('Error saving search history:', error);
+      }
     }
   };
   
@@ -62,12 +87,6 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     acc[result.type].push(result);
     return acc;
   }, {} as Record<string, typeof results>);
-
-  useEffect(() => {
-    if (isOpen && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
