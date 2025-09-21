@@ -133,9 +133,15 @@
     @apply bg-background text-foreground;
   }
 
-  /* Search highlighting styles */
-  mark {
-    @apply bg-accent/20 text-accent-foreground rounded px-1;
+  /* Search highlighting styles - consistent with search results page */
+  mark,
+  .search-highlight {
+    @apply bg-yellow-200 text-yellow-900 rounded-sm px-0.5;
     font-weight: inherit;
+  }
+
+  .dark mark,
+  .dark .search-highlight {
+    @apply bg-yellow-800/30 text-yellow-200;
   }
 }

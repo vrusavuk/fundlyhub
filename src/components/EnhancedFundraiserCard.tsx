@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Heart, Share2, BookmarkPlus, MapPin, Clock, Users, Verified } from 'lucide-react';
-import { highlightSearchMatches } from '@/lib/utils/highlighting';
+import { HighlightedTitle, HighlightedDescription, HighlightedLabel } from '@/components/search/HighlightedText';
 
 interface EnhancedFundraiserCardProps {
   id: string;
@@ -59,12 +59,7 @@ export function EnhancedFundraiserCard({
     maximumFractionDigits: 0,
   }).format(amount);
 
-  // Get highlighted versions of text fields
-  const highlightedTitle = searchQuery ? highlightSearchMatches(title, searchQuery) : title;
-  const highlightedSummary = searchQuery ? highlightSearchMatches(summary, searchQuery) : summary;
-  const highlightedOrganizationName = searchQuery && organizationName 
-    ? highlightSearchMatches(organizationName, searchQuery) 
-    : organizationName;
+  // Clean up the highlighting logic - components will handle it internally
 
   const getUrgencyColor = () => {
     switch (urgency) {
@@ -189,11 +184,10 @@ export function EnhancedFundraiserCard({
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1">
-                <p 
+                <HighlightedLabel
+                  text={organizationName || 'Anonymous'}
+                  searchQuery={searchQuery || ''}
                   className="text-sm font-medium text-foreground truncate"
-                  dangerouslySetInnerHTML={{ 
-                    __html: highlightedOrganizationName || 'Anonymous' 
-                  }}
                 />
                 {isOrganization && (
                   <Badge variant="outline" className="text-xs px-1 py-0">Org</Badge>
@@ -210,13 +204,15 @@ export function EnhancedFundraiserCard({
 
           {/* Title and description */}
           <div>
-            <h3 
-              className="font-semibold text-lg line-clamp-2 mb-2 group-hover:text-primary transition-colors"
-              dangerouslySetInnerHTML={{ __html: highlightedTitle }}
+            <HighlightedTitle
+              text={title}
+              searchQuery={searchQuery || ''}
+              className="text-lg line-clamp-2 mb-2 group-hover:text-primary transition-colors"
             />
-            <p 
-              className="text-muted-foreground text-sm line-clamp-2"
-              dangerouslySetInnerHTML={{ __html: highlightedSummary }}
+            <HighlightedDescription
+              text={summary}
+              searchQuery={searchQuery || ''}
+              className="text-sm line-clamp-2"
             />
           </div>
           

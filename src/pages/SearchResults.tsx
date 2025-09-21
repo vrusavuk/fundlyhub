@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ErrorMessage } from "@/components/common/ErrorMessage";
+import { HighlightedText } from "@/components/search/HighlightedText";
 import { useSearch } from "@/hooks/useSearch";
 import { useGlobalSearch } from "@/contexts/SearchContext";
 import { Heart, User, Building2, ArrowLeft } from "lucide-react";
@@ -168,21 +169,30 @@ export default function SearchResults() {
                               <Link 
                                 to={result.link} 
                                 className="hover:text-primary transition-colors"
-                                dangerouslySetInnerHTML={{ __html: result.highlightedTitle || result.title }}
-                              />
+                              >
+                                <HighlightedText
+                                  text={result.title}
+                                  searchQuery={query}
+                                  className="font-semibold text-lg"
+                                />
+                              </Link>
                             </h3>
                             
                             {result.subtitle && (
-                              <p 
+                              <HighlightedText
+                                text={result.subtitle}
+                                searchQuery={query}
                                 className="text-sm text-muted-foreground mb-2"
-                                dangerouslySetInnerHTML={{ __html: result.highlightedSubtitle || result.subtitle }}
+                                as="p"
                               />
                             )}
                             
                             {result.snippet && (
-                              <p 
+                              <HighlightedText
+                                text={result.snippet}
+                                searchQuery={query}
                                 className="text-sm text-foreground line-clamp-2"
-                                dangerouslySetInnerHTML={{ __html: result.snippet }}
+                                as="p"
                               />
                             )}
                           </div>

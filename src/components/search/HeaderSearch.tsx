@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { HighlightedText } from "@/components/search/HighlightedText";
 import { useSearch } from "@/hooks/useSearch";
 import { useGlobalSearch } from "@/contexts/SearchContext";
 import { Search, X, ArrowRight, Heart, User, Building2 } from "lucide-react";
@@ -307,17 +308,23 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
                                       <span className="ml-1 capitalize text-xs">{result.type}</span>
                                     </Badge>
                                   </div>
-                                  
-                                  <h4 className="font-medium text-sm mb-1 truncate">
-                                    <span dangerouslySetInnerHTML={{ __html: result.highlightedTitle || result.title }} />
-                                  </h4>
-                                  
-                                  {result.subtitle && (
-                                    <p 
-                                      className="text-xs text-muted-foreground truncate"
-                                      dangerouslySetInnerHTML={{ __html: result.highlightedSubtitle || result.subtitle }}
-                                    />
-                                  )}
+                            
+                            <h4 className="font-medium text-sm mb-1 truncate">
+                              <HighlightedText
+                                text={result.title}
+                                searchQuery={query}
+                                className="font-medium text-sm"
+                              />
+                            </h4>
+                            
+                            {result.subtitle && (
+                              <HighlightedText
+                                text={result.subtitle}
+                                searchQuery={query}
+                                className="text-xs text-muted-foreground truncate"
+                                as="p"
+                              />
+                            )}
                                 </div>
                               </div>
                             </button>
