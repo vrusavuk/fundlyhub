@@ -10,6 +10,11 @@ export interface SearchResult {
   slug?: string;
   location?: string;
   relevanceScore?: number;
+  matchedFields?: string[];
+  highlightedTitle?: string;
+  highlightedSubtitle?: string;
+  matchedSnippet?: string;
+  matchedIn?: string;
 }
 
 // Smart search utilities
@@ -75,6 +80,69 @@ const normalizeQuery = (query: string): string[] => {
     .replace(/[^\w\s]/g, ' ')
     .split(/\s+/)
     .filter(term => term.length > 1);
+};
+
+// Text highlighting utilities
+const highlightText = (text: string, searchTerms: string[]): string => {
+  if (!text || !searchTerms.length) return text;
+  
+  let highlightedText = text;
+  
+  searchTerms.forEach(term => {
+    const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    highlightedText = highlightedText.replace(regex, '<mark class="bg-yellow-200 px-1 rounded">$1</mark>');
+  });
+  
+  return highlightedText;
+};
+
+const extractSnippet = (text: string, searchTerms: string[], maxLength: number = 150): string => {
+  if (!text || !searchTerms.length) return text.slice(0, maxLength) + (text.length > maxLength ? '...' : '');
+  
+  const textLower = text.toLowerCase();
+  let bestMatch = { index: -1, term: '' };
+  
+  // Find the earliest match
+  searchTerms.forEach(term => {
+    const index = textLower.indexOf(term.toLowerCase());
+    if (index !== -1 && (bestMatch.index === -1 || index < bestMatch.index)) {
+      bestMatch = { index, term };
+    }
+  });
+  
+  if (bestMatch.index === -1) return text.slice(0, maxLength) + (text.length > maxLength ? '...' : '');
+  
+  // Extract snippet around the match
+  const start = Math.max(0, bestMatch.index - 50);
+  const end = Math.min(text.length, start + maxLength);
+  let snippet = text.slice(start, end);
+  
+  // Add ellipsis if needed
+  if (start > 0) snippet = '...' + snippet;
+  if (end < text.length) snippet = snippet + '...';
+  
+  return snippet;
+};
+
+const checkFieldMatches = (searchTerms: string[], fields: Record<string, string>): { matchedFields: string[], matchedIn: string } => {
+  const matches: string[] = [];
+  
+  Object.entries(fields).forEach(([fieldName, fieldValue]) => {
+    if (fieldValue && searchTerms.some(term => fieldValue.toLowerCase().includes(term.toLowerCase()))) {
+      matches.push(fieldName);
+    }
+  });
+  
+  // Determine primary match location for display
+  let matchedIn = '';
+  if (matches.includes('title')) matchedIn = 'title';
+  else if (matches.includes('summary')) matchedIn = 'description';
+  else if (matches.includes('story')) matchedIn = 'full description';
+  else if (matches.includes('category')) matchedIn = 'category';
+  else if (matches.includes('location')) matchedIn = 'location';
+  else if (matches.includes('owner')) matchedIn = 'creator';
+  
+  return { matchedFields: matches, matchedIn };
 };
 
 export function useSearch(query: string, enabled: boolean = true) {
@@ -148,15 +216,43 @@ export function useSearch(query: string, enabled: boolean = true) {
             
             // Only include results with a minimum relevance score
             if (totalScore > 0.5) {
+              // Check which fields matched
+              const { matchedFields, matchedIn } = checkFieldMatches(searchTerms, {
+                title: campaign.title,
+                summary: campaign.summary,
+                story: storyText,
+                category: campaign.category,
+                location: campaign.location || '',
+                owner: campaign.profiles?.name || ''
+              });
+              
+              // Generate highlighted content and snippets
+              const highlightedTitle = highlightText(campaign.title, searchTerms);
+              const subtitle = `${campaign.category} • by ${campaign.profiles?.name || 'Anonymous'}`;
+              const highlightedSubtitle = highlightText(subtitle, searchTerms);
+              
+              // Generate snippet from the best matching field
+              let matchedSnippet = '';
+              if (matchedIn === 'description') {
+                matchedSnippet = extractSnippet(campaign.summary, searchTerms);
+              } else if (matchedIn === 'full description') {
+                matchedSnippet = extractSnippet(storyText, searchTerms);
+              }
+              
               searchResults.push({
                 id: campaign.id,
                 type: 'campaign',
                 title: campaign.title,
-                subtitle: `${campaign.category} • by ${campaign.profiles?.name || 'Anonymous'}`,
+                subtitle,
                 image: campaign.cover_image,
                 slug: campaign.slug,
                 location: campaign.location,
-                relevanceScore: totalScore
+                relevanceScore: totalScore,
+                matchedFields,
+                highlightedTitle,
+                highlightedSubtitle,
+                matchedSnippet: highlightText(matchedSnippet, searchTerms),
+                matchedIn
               });
             }
           });

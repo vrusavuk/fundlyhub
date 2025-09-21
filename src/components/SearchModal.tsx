@@ -277,35 +277,55 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       {typeResults.slice(0, 5).map((result, index) => {
                         const IconComponent = getTypeIcon(result.type);
                         return (
-                          <div
-                            key={index}
-                            onClick={() => handleResultClick(result)}
-                            className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent/50 cursor-pointer transition-colors group"
-                          >
-                            <div className={`p-2 rounded-lg ${getTypeColor(result.type)}`}>
-                              <IconComponent className="h-4 w-4" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center space-x-2">
-                                <h4 className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
-                                  {result.title}
-                                </h4>
-                                <Badge variant="outline" className="text-xs">
-                                  {result.type}
-                                </Badge>
-                              </div>
-                              {result.subtitle && (
-                                <p className="text-sm text-muted-foreground truncate">
-                                  {result.subtitle}
-                                </p>
-                              )}
-                              {result.location && (
-                                <p className="text-xs text-muted-foreground truncate">
-                                  {result.location}
-                                </p>
-                              )}
-                            </div>
+                        <div
+                          key={index}
+                          onClick={() => handleResultClick(result)}
+                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent/50 cursor-pointer transition-colors group"
+                        >
+                          <div className={`p-2 rounded-lg ${getTypeColor(result.type)}`}>
+                            <IconComponent className="h-4 w-4" />
                           </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <h4 
+                                className="font-medium text-foreground group-hover:text-primary transition-colors truncate"
+                                dangerouslySetInnerHTML={{ 
+                                  __html: result.highlightedTitle || result.title 
+                                }}
+                              />
+                              <Badge variant="outline" className="text-xs">
+                                {result.type}
+                              </Badge>
+                              {result.matchedIn && result.matchedIn !== 'title' && (
+                                <Badge variant="secondary" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                  found in {result.matchedIn}
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            {result.matchedSnippet ? (
+                              <p 
+                                className="text-sm text-muted-foreground line-clamp-2 mb-1"
+                                dangerouslySetInnerHTML={{ 
+                                  __html: result.matchedSnippet 
+                                }}
+                              />
+                            ) : result.subtitle && (
+                              <p 
+                                className="text-sm text-muted-foreground truncate mb-1"
+                                dangerouslySetInnerHTML={{ 
+                                  __html: result.highlightedSubtitle || result.subtitle 
+                                }}
+                              />
+                            )}
+                            
+                            {result.location && (
+                              <p className="text-xs text-muted-foreground truncate">
+                                {result.location}
+                              </p>
+                            )}
+                          </div>
+                        </div>
                         );
                       })}
                     </div>

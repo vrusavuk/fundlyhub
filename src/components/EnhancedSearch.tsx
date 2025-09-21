@@ -262,16 +262,34 @@ export function EnhancedSearch({
                               Active
                             </Badge>
                           )}
+                          {result.matchedIn && result.matchedIn !== 'title' && (
+                            <Badge variant="secondary" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                              found in {result.matchedIn}
+                            </Badge>
+                          )}
                         </div>
                         
-                        <h4 className="font-semibold text-base md:text-lg line-clamp-2 mb-1 group-hover:text-primary transition-colors">
-                          {result.title}
-                        </h4>
+                        <h4 
+                          className="font-semibold text-base md:text-lg line-clamp-2 mb-1 group-hover:text-primary transition-colors"
+                          dangerouslySetInnerHTML={{ 
+                            __html: result.highlightedTitle || result.title 
+                          }}
+                        />
                         
-                        {result.subtitle && (
-                          <p className="text-sm md:text-base text-muted-foreground line-clamp-2 mb-2">
-                            {result.subtitle}
-                          </p>
+                        {result.matchedSnippet ? (
+                          <p 
+                            className="text-sm md:text-base text-muted-foreground line-clamp-2 mb-2"
+                            dangerouslySetInnerHTML={{ 
+                              __html: result.matchedSnippet 
+                            }}
+                          />
+                        ) : result.subtitle && (
+                          <p 
+                            className="text-sm md:text-base text-muted-foreground line-clamp-2 mb-2"
+                            dangerouslySetInnerHTML={{ 
+                              __html: result.highlightedSubtitle || result.subtitle 
+                            }}
+                          />
                         )}
                         
                         {result.location && (
