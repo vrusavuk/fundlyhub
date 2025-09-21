@@ -84,9 +84,9 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm" onClick={onClose}>
       <div className="fixed inset-0 flex items-start justify-center pt-[10vh]">
-        <div className="w-full max-w-2xl mx-4">
+        <div className="w-full max-w-2xl mx-4" onClick={(e) => e.stopPropagation()}>
           {/* Search Header */}
           <div className="relative mb-6">
             <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
@@ -98,12 +98,12 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search campaigns, users, organizations..."
-              className="w-full h-14 pl-12 pr-12 text-lg bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent shadow-lg"
+              className="w-full h-14 pl-12 pr-14 text-lg bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent shadow-lg"
             />
             <Button
               variant="ghost"
               size="icon"
-              className="absolute inset-y-0 right-2 flex items-center"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 w-10"
               onClick={onClose}
             >
               <X className="h-5 w-5" />

@@ -117,7 +117,7 @@ export function EnhancedSearch({
       {isOpen && query.length >= 2 && (
         <>
           {/* Backdrop */}
-          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40" />
+          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40" onClick={() => setIsOpen(false)} />
           
           {/* Dropdown Container */}
           <div
