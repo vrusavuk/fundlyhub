@@ -10,6 +10,7 @@ interface SearchContextType {
   openHeaderSearch: () => void;
   closeHeaderSearch: () => void;
   setSearchQuery: (query: string) => void;
+  shouldUseIntegratedSearch: () => boolean;
 }
 
 const SearchContext = createContext<SearchContextType | undefined>(undefined);
@@ -38,7 +39,19 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isHeaderSearchOpen]);
 
+  const shouldUseIntegratedSearch = () => {
+    return location.pathname === '/campaigns' || location.pathname === '/search';
+  };
+
   const openHeaderSearch = () => {
+    // If we're on a page that uses integrated search, focus the search input instead
+    if (shouldUseIntegratedSearch()) {
+      const searchInput = document.querySelector('input[placeholder*="Search"]') as HTMLInputElement;
+      if (searchInput) {
+        searchInput.focus();
+        return;
+      }
+    }
     setIsHeaderSearchOpen(true);
   };
 
@@ -52,6 +65,7 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     openHeaderSearch,
     closeHeaderSearch,
     setSearchQuery,
+    shouldUseIntegratedSearch,
   };
 
   return (

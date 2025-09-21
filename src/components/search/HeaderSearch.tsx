@@ -48,8 +48,12 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
   });
 
   const isOnCampaignsPage = location.pathname === '/campaigns';
+  const isOnSearchPage = location.pathname === '/search';
+  const isOnIntegratedSearchPage = isOnCampaignsPage || isOnSearchPage;
   
   // On campaigns page, show only non-campaign results in dropdown
+  // On search page, don't show dropdown at all since results are on the page
+  const shouldShowDropdown = !isOnSearchPage;
   const dropdownResults = isOnCampaignsPage 
     ? results.filter(r => r.type !== 'campaign').slice(0, 3)
     : results.slice(0, 5);
@@ -78,19 +82,35 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
 
   const handleInputChange = (value: string) => {
     setQuery(value);
-    setShowDropdown(value.length >= 2);
+    setShowDropdown(value.length >= 2 && shouldShowDropdown);
     
-    // Update global search context for campaigns page
-    if (isOnCampaignsPage) {
+    // Update global search context for integrated search pages
+    if (isOnIntegratedSearchPage) {
       setSearchQuery(value);
+      
+      // Update URL for search page
+      if (isOnSearchPage && value.trim()) {
+        const newUrl = `/search?q=${encodeURIComponent(value.trim())}`;
+        if (window.location.pathname + window.location.search !== newUrl) {
+          window.history.replaceState({}, '', newUrl);
+        }
+      }
     }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
-      navigate(`/search?q=${encodeURIComponent(query.trim())}`);
-      handleClose();
+      if (isOnSearchPage) {
+        // Already on search page, just update the query
+        setSearchQuery(query);
+        const newUrl = `/search?q=${encodeURIComponent(query.trim())}`;
+        window.history.replaceState({}, '', newUrl);
+      } else {
+        // Navigate to search page
+        navigate(`/search?q=${encodeURIComponent(query.trim())}`);
+        handleClose();
+      }
     }
   };
 
@@ -101,15 +121,24 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
 
   const handleViewAllResults = () => {
     if (query.trim()) {
-      navigate(`/search?q=${encodeURIComponent(query.trim())}`);
-      handleClose();
+      if (isOnSearchPage) {
+        // Already on search page, just close the header search
+        handleClose();
+      } else {
+        navigate(`/search?q=${encodeURIComponent(query.trim())}`);
+        handleClose();
+      }
     }
   };
 
   const handleClose = () => {
-    setQuery("");
+    if (!isOnIntegratedSearchPage) {
+      setQuery("");
+    }
     setShowDropdown(false);
-    setSearchQuery("");
+    if (!isOnIntegratedSearchPage) {
+      setSearchQuery("");
+    }
     onClose();
   };
 
@@ -127,7 +156,13 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
                 ref={inputRef}
                 value={query}
                 onChange={(e) => handleInputChange(e.target.value)}
-                placeholder={isOnCampaignsPage ? "Search campaigns..." : "Search campaigns, users, organizations..."}
+                placeholder={
+                  isOnCampaignsPage 
+                    ? "Search campaigns..." 
+                    : isOnSearchPage 
+                      ? "Search campaigns, users, organizations..."
+                      : "Search campaigns, users, organizations..."
+                }
                 className="pl-10 pr-4 h-10 border-0 bg-muted/50 focus:bg-background transition-colors"
               />
             </div>

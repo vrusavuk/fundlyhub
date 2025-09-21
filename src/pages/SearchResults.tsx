@@ -8,6 +8,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ErrorMessage } from "@/components/common/ErrorMessage";
 import { useSearch } from "@/hooks/useSearch";
+import { useGlobalSearch } from "@/contexts/SearchContext";
 import { Heart, User, Building2, ArrowLeft } from "lucide-react";
 
 const getTypeIcon = (type: string) => {
@@ -30,13 +31,24 @@ const getTypeColor = (type: string) => {
 
 export default function SearchResults() {
   const [searchParams] = useSearchParams();
-  const query = searchParams.get('q') || '';
   const [selectedType, setSelectedType] = useState<string>('all');
+  const { searchQuery } = useGlobalSearch();
+  
+  // Use context search query if available, otherwise fall back to URL param
+  const query = searchQuery || searchParams.get('q') || '';
   
   const { results, loading, error, hasMore, loadMore } = useSearch({
     query,
     enabled: !!query
   });
+
+  // Update search query in context when URL changes
+  useEffect(() => {
+    const urlQuery = searchParams.get('q') || '';
+    if (urlQuery && urlQuery !== searchQuery) {
+      // Don't update if user is actively typing
+    }
+  }, [searchParams]);
 
   const filteredResults = selectedType === 'all' 
     ? results 
