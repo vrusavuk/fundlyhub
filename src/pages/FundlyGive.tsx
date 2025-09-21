@@ -1,7 +1,7 @@
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, Zap, Shield, Receipt, TrendingUp, CheckCircle, Clock, DollarSign, Users, Target } from "lucide-react";
+import { ArrowRight, Zap, Shield, Receipt, CheckCircle, CreditCard, Building2, Users, Eye, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const FundlyGive = () => {
@@ -52,129 +52,193 @@ const FundlyGive = () => {
       {/* Feature Description Section */}
       <section className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="space-y-8">
-              <div className="space-y-6">
-                <h2 className="text-3xl lg:text-4xl font-bold">
-                  The simplest, smartest way to give
-                </h2>
-                <p className="text-lg text-muted-foreground leading-relaxed">
-                  Fundly Give is the simplest, smartest way to make tax-deductible donations to the causes you care about most. Whether you prefer the convenience of payroll giving, the flexibility of a credit card, or the consistency of ACH recurring payments, FundlyHub makes sure your generosity is always documented and impactful.
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-6">
+              The simplest, smartest way to give
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
+              Fundly Give is the simplest, smartest way to make tax-deductible donations to the causes you care about most. Whether you prefer the convenience of payroll giving, the flexibility of a credit card, or the consistency of ACH recurring payments, FundlyHub makes sure your generosity is always documented and impactful.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works - Three Payment Methods */}
+      <section className="py-20 bg-secondary/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-6">How It Works</h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Choose your preferred giving method and start making an impact today
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-20">
+            {/* Payroll Giving */}
+            <Card className="relative group hover:shadow-lg transition-all duration-300">
+              <CardHeader className="text-center pb-4">
+                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Building2 className="h-8 w-8 text-primary" />
+                </div>
+                <CardTitle className="text-xl">Payroll Giving Integration</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-muted-foreground mb-6">
+                  Connect FundlyHub with your employer's payroll system and set automatic donations right from your paycheck. Every pay cycle, your chosen amount goes straight to the nonprofit you select—effortless and consistent.
                 </p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2 justify-center">
+                    <CheckCircle className="h-4 w-4 text-success" />
+                    <span>Automatic deductions</span>
+                  </div>
+                  <div className="flex items-center gap-2 justify-center">
+                    <CheckCircle className="h-4 w-4 text-success" />
+                    <span>Employer matching eligible</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card Payments */}
+            <Card className="relative group hover:shadow-lg transition-all duration-300 border-primary/20">
+              <CardHeader className="text-center pb-4">
+                <div className="w-16 h-16 bg-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-accent/20 transition-colors">
+                  <CreditCard className="h-8 w-8 text-accent" />
+                </div>
+                <CardTitle className="text-xl">Card Payments</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-muted-foreground mb-6">
+                  Make quick one-time or recurring donations using your debit or credit card. Perfect for spontaneous giving or topping up your monthly impact.
+                </p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2 justify-center">
+                    <CheckCircle className="h-4 w-4 text-success" />
+                    <span>Instant donations</span>
+                  </div>
+                  <div className="flex items-center gap-2 justify-center">
+                    <CheckCircle className="h-4 w-4 text-success" />
+                    <span>Flexible scheduling</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* ACH Recurring */}
+            <Card className="relative group hover:shadow-lg transition-all duration-300">
+              <CardHeader className="text-center pb-4">
+                <div className="w-16 h-16 bg-success/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-success/20 transition-colors">
+                  <Shield className="h-8 w-8 text-success" />
+                </div>
+                <CardTitle className="text-xl">ACH Recurring Payments</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-muted-foreground mb-6">
+                  Link your bank account to set up steady, low-fee recurring donations. Ideal for sustained support of your favorite causes.
+                </p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2 justify-center">
+                    <CheckCircle className="h-4 w-4 text-success" />
+                    <span>Low processing fees</span>
+                  </div>
+                  <div className="flex items-center gap-2 justify-center">
+                    <CheckCircle className="h-4 w-4 text-success" />
+                    <span>Consistent support</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Fundly Give Stands Out */}
+      <section className="py-20 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-6">Why Fundly Give Stands Out</h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 mb-20">
+            <div className="flex gap-4">
+              <div className="w-12 h-12 bg-success/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Receipt className="h-6 w-6 text-success" />
               </div>
-              
-              <div className="grid gap-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <Zap className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Effortless giving</h3>
-                    <p className="text-muted-foreground">Once you set it up, your donations run on autopilot.</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center">
-                    <Users className="h-6 w-6 text-accent" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Built for nonprofits and personal causes</h3>
-                    <p className="text-muted-foreground">Support verified charities or community fundraisers with ease.</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center">
-                    <Receipt className="h-6 w-6 text-success" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Tax-ready receipts</h3>
-                    <p className="text-muted-foreground">For qualified charities, FundlyHub generates IRS-compliant donation receipts and year-end summaries.</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="h-6 w-6 text-secondary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Amplify your impact</h3>
-                    <p className="text-muted-foreground">Employer gift matching works seamlessly with Fundly Give.</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <Shield className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Transparent tracking</h3>
-                    <p className="text-muted-foreground">View your giving history and progress anytime in your FundlyHub dashboard.</p>
-                  </div>
-                </div>
+              <div>
+                <h3 className="font-semibold mb-2">Always tax-deductible</h3>
+                <p className="text-muted-foreground">Every donation to a qualified nonprofit through Fundly Give generates an IRS-compliant receipt, plus an annual giving summary for your records.</p>
               </div>
             </div>
             
-            {/* Visual representation */}
-            <div className="relative">
-              <div className="bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5 rounded-2xl p-8">
-                <div className="space-y-6">
-                  <Card className="shadow-soft">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="flex items-center gap-2 text-sm">
-                        <Clock className="h-4 w-4" />
-                        Payroll Integration
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Monthly Contribution</span>
-                        <span className="font-semibold">$50.00</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <div className="flex justify-center">
-                    <ArrowRight className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                  
-                  <Card className="shadow-soft">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="flex items-center gap-2 text-sm">
-                        <Target className="h-4 w-4" />
-                        Your Chosen Cause
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <div className="text-sm font-medium">Emergency Housing Fund</div>
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <span>This month's impact</span>
-                          <span className="font-semibold text-success">$200 raised</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <div className="flex justify-center">
-                    <ArrowRight className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                  
-                  <Card className="shadow-soft">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="flex items-center gap-2 text-sm">
-                        <CheckCircle className="h-4 w-4 text-success" />
-                        Tax Receipt Ready
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-xs text-muted-foreground">
-                        IRS-compliant documentation generated automatically
-                      </div>
-                    </CardContent>
-                  </Card>
+            <div className="flex gap-4">
+              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                <CreditCard className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">Flexibility built in</h3>
+                <p className="text-muted-foreground">Choose how you give—payroll, card, or ACH—and change it anytime.</p>
+              </div>
+            </div>
+            
+            <div className="flex gap-4">
+              <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Shield className="h-6 w-6 text-accent" />
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">Verified impact</h3>
+                <p className="text-muted-foreground">All nonprofits are verified for eligibility, so you can give with confidence.</p>
+              </div>
+            </div>
+            
+            <div className="flex gap-4">
+              <div className="w-12 h-12 bg-warning/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Eye className="h-6 w-6 text-warning" />
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">Transparency</h3>
+                <p className="text-muted-foreground">Track every dollar donated through your FundlyHub dashboard.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Visual Process Flow */}
+      <section className="py-20 bg-secondary/10">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-6">Simple 3-Step Process</h2>
+            <p className="text-xl text-muted-foreground">From setup to impact in minutes</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="relative mb-6">
+                <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-white">1</span>
                 </div>
+                <h3 className="text-xl font-semibold mb-2">Choose Your Method</h3>
+                <p className="text-muted-foreground">Select payroll, card, or ACH based on your preference</p>
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <div className="relative mb-6">
+                <div className="w-20 h-20 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-white">2</span>
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Pick Your Cause</h3>
+                <p className="text-muted-foreground">Browse verified nonprofits and campaigns</p>
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <div className="relative mb-6">
+                <div className="w-20 h-20 bg-success rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-white">3</span>
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Start Giving</h3>
+                <p className="text-muted-foreground">Set your amount and schedule—we handle the rest</p>
               </div>
             </div>
           </div>
@@ -182,157 +246,21 @@ const FundlyGive = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-secondary/20">
+      <section className="py-16 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-8 text-center">
             <div className="space-y-2">
-              <div className="text-3xl font-bold text-primary">$1.2M+</div>
-              <div className="text-muted-foreground">Contributed through payroll</div>
+              <div className="text-3xl font-bold text-primary">$2.8M+</div>
+              <div className="text-muted-foreground">Total donations processed</div>
             </div>
             <div className="space-y-2">
-              <div className="text-3xl font-bold text-accent">2,500+</div>
+              <div className="text-3xl font-bold text-accent">5,200+</div>
               <div className="text-muted-foreground">Active Fundly Give users</div>
             </div>
             <div className="space-y-2">
-              <div className="text-3xl font-bold text-success">98%</div>
-              <div className="text-muted-foreground">User satisfaction rate</div>
+              <div className="text-3xl font-bold text-success">850+</div>
+              <div className="text-muted-foreground">Verified nonprofit partners</div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Payroll Partners Section */}
-      <section className="py-20 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-6">
-              Trusted Payroll Partners
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Fundly Give seamlessly integrates with leading payroll providers to make giving effortless for employees across thousands of organizations.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-8">
-            {[
-              { name: "ADP", logoUrl: "https://logo.clearbit.com/adp.com" },
-              { name: "Paylocity", logoUrl: "https://logo.clearbit.com/paylocity.com" },
-              { name: "Gusto", logoUrl: "https://logo.clearbit.com/gusto.com" },
-              { name: "Paychex", logoUrl: "https://logo.clearbit.com/paychex.com" },
-              { name: "BambooHR", logoUrl: "https://logo.clearbit.com/bamboohr.com" },
-              { name: "Workday", logoUrl: "https://logo.clearbit.com/workday.com" },
-              { name: "UltiPro", logoUrl: "https://logo.clearbit.com/ultimatesoftware.com" },
-              { name: "Paycom", logoUrl: "https://logo.clearbit.com/paycom.com" },
-              { name: "QuickBooks Payroll", logoUrl: "https://logo.clearbit.com/intuit.com" },
-              { name: "Ceridian Dayforce", logoUrl: "https://logo.clearbit.com/ceridian.com" },
-              { name: "Rippling", logoUrl: "https://logo.clearbit.com/rippling.com" },
-              { name: "Justworks", logoUrl: "https://logo.clearbit.com/justworks.com" },
-              { name: "TriNet", logoUrl: "https://logo.clearbit.com/trinet.com" },
-              { name: "Namely", logoUrl: "https://logo.clearbit.com/namely.com" },
-              { name: "Zenefits", logoUrl: "https://logo.clearbit.com/zenefits.com" },
-              { name: "Square Payroll", logoUrl: "https://logo.clearbit.com/squareup.com" },
-              { name: "OnPay", logoUrl: "https://logo.clearbit.com/onpay.com" },
-              { name: "SurePayroll", logoUrl: "https://logo.clearbit.com/surepayroll.com" },
-              { name: "Patriot Payroll", logoUrl: "https://logo.clearbit.com/patriotsoftware.com" },
-              { name: "Wave Payroll", logoUrl: "https://logo.clearbit.com/waveapps.com" },
-              { name: "Sage Payroll", logoUrl: "https://logo.clearbit.com/sage.com" },
-              { name: "Kronos", logoUrl: "https://logo.clearbit.com/kronos.com" },
-              { name: "Paycor", logoUrl: "https://logo.clearbit.com/paycor.com" },
-              { name: "UKG", logoUrl: "https://logo.clearbit.com/ukg.com" },
-              { name: "isolved", logoUrl: "https://logo.clearbit.com/isolvedhcm.com" },
-              { name: "Heartland Payroll", logoUrl: "https://logo.clearbit.com/heartlandpaymentsystems.com" },
-              { name: "Check", logoUrl: "https://logo.clearbit.com/checkhq.com" },
-              { name: "Wagepoint", logoUrl: "https://logo.clearbit.com/wagepoint.com" },
-              { name: "Workful", logoUrl: "https://logo.clearbit.com/workful.com" },
-              { name: "Deputy", logoUrl: "https://logo.clearbit.com/deputy.com" },
-              { name: "When I Work", logoUrl: "https://logo.clearbit.com/wheniwork.com" },
-              { name: "TSheets", logoUrl: "https://logo.clearbit.com/tsheets.com" },
-              { name: "ClockShark", logoUrl: "https://logo.clearbit.com/clockshark.com" },
-              { name: "Homebase", logoUrl: "https://logo.clearbit.com/joinhomebase.com" },
-              { name: "SuccessFactors", logoUrl: "https://logo.clearbit.com/successfactors.com" },
-              { name: "PeopleSoft", logoUrl: "https://logo.clearbit.com/oracle.com" },
-              { name: "Cornerstone OnDemand", logoUrl: "https://logo.clearbit.com/cornerstoneondemand.com" },
-              { name: "Cezanne HR", logoUrl: "https://logo.clearbit.com/cezannehr.com" },
-              { name: "ExakTime", logoUrl: "https://logo.clearbit.com/exaktime.com" },
-              { name: "TimeClock Plus", logoUrl: "https://logo.clearbit.com/timeclockplus.com" },
-              { name: "Replicon", logoUrl: "https://logo.clearbit.com/replicon.com" },
-              { name: "TempWorks", logoUrl: "https://logo.clearbit.com/tempworks.com" },
-              { name: "EPAY HCM", logoUrl: "https://logo.clearbit.com/epayhcm.com" },
-              { name: "PrimePay", logoUrl: "https://logo.clearbit.com/primepay.com" },
-              { name: "Dominion Payroll", logoUrl: "https://logo.clearbit.com/dominionpayroll.com" },
-              { name: "Complete Payroll", logoUrl: "https://logo.clearbit.com/completepayroll.com" },
-              { name: "Evolution Payroll", logoUrl: "https://logo.clearbit.com/evolutionpayroll.com" },
-              { name: "Insperity", logoUrl: "https://logo.clearbit.com/insperity.com" },
-              { name: "Payroll Network", logoUrl: "https://logo.clearbit.com/payrollnetwork.com" }
-            ].map((partner, index) => (
-              <div key={index} className="group text-center">
-                <div className="relative mb-3">
-                  <div className="w-16 h-16 mx-auto bg-background border border-border rounded-xl flex items-center justify-center p-3 group-hover:border-primary/30 group-hover:bg-primary/5 transition-all duration-200">
-                    <img 
-                      src={partner.logoUrl} 
-                      alt={`${partner.name} logo`}
-                      className="max-w-full max-h-full object-contain opacity-70 group-hover:opacity-100 transition-opacity duration-200"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        const fallback = target.parentElement?.querySelector('.fallback-text') as HTMLElement;
-                        if (fallback) {
-                          fallback.style.display = 'flex';
-                          fallback.textContent = partner.name.charAt(0);
-                        }
-                      }}
-                    />
-                    <div className="fallback-text hidden w-full h-full items-center justify-center text-xs font-bold text-muted-foreground bg-muted/30 rounded-lg"></div>
-                  </div>
-                </div>
-                <div className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors duration-200 leading-tight">
-                  {partner.name}
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <div className="mt-16 bg-gradient-to-r from-primary/5 via-accent/5 to-secondary/5 rounded-2xl p-8">
-            <div className="grid md:grid-cols-3 gap-8 text-center">
-              <div className="space-y-4">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto">
-                  <Shield className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-semibold">Enterprise Security</h3>
-                <p className="text-sm text-muted-foreground">
-                  SOC 2 compliant integrations with bank-level encryption
-                </p>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mx-auto">
-                  <Zap className="h-6 w-6 text-accent" />
-                </div>
-                <h3 className="font-semibold">Quick Setup</h3>
-                <p className="text-sm text-muted-foreground">
-                  Connect your payroll in under 5 minutes with guided setup
-                </p>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center mx-auto">
-                  <Users className="h-6 w-6 text-success" />
-                </div>
-                <h3 className="font-semibold">HR Approved</h3>
-                <p className="text-sm text-muted-foreground">
-                  Trusted by HR teams at Fortune 500 companies
-                </p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="text-center mt-12">
-            <p className="text-muted-foreground mb-6">
-              Don't see your payroll provider? We're constantly adding new partners.
-            </p>
-            <Button variant="outline" size="lg">
-              Request Integration
-            </Button>
           </div>
         </div>
       </section>
@@ -341,7 +269,7 @@ const FundlyGive = () => {
       <section className="py-20 bg-gradient-hero">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">
-            Ready to automate your generosity?
+            Ready to make giving effortless?
           </h2>
           <p className="text-xl text-white/90 mb-8">
             Join thousands of people making consistent impact through Fundly Give
@@ -359,26 +287,6 @@ const FundlyGive = () => {
           </div>
         </div>
       </section>
-
-      {/* Compliance Note */}
-      <section className="py-8 bg-muted/30">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Payroll contributions are deducted after taxes. Donations to eligible nonprofits may be tax-deductible if you itemize. FundlyHub provides IRS-compliant receipts for all qualified donations.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-foreground/5 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <p className="text-muted-foreground">&copy; 2024 FundlyHub. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };
