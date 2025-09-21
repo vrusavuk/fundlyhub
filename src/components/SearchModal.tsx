@@ -84,16 +84,17 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div 
-      className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm" 
-      onClick={onClose}
-    >
+    <>
+      {/* Full Screen Backdrop */}
       <div 
-        className="fixed inset-0 flex items-start justify-center pt-[10vh]"
-        onClick={(e) => e.stopPropagation()}
-      >
+        className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-md"
+        onClick={onClose}
+      />
+      
+      {/* Search Content */}
+      <div className="fixed inset-0 z-[101] flex items-start justify-center pt-[10vh] pointer-events-none">
         <div 
-          className="w-full max-w-2xl mx-4"
+          className="w-full max-w-2xl mx-4 pointer-events-auto"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Search Header */}
@@ -230,6 +231,6 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
         </div>
       </div>
-    </div>
+    </>
   );
 }
