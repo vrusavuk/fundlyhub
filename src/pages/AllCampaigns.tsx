@@ -8,6 +8,7 @@ import { CampaignFilters } from "@/components/fundraisers/CampaignFilters";
 import { Button } from "@/components/ui/button";
 import { SlidersHorizontal } from "lucide-react";
 import { useFundraisers } from "@/hooks/useFundraisers";
+import { useCampaignStats } from "@/hooks/useCampaignStats";
 import { useGlobalSearch } from "@/contexts/SearchContext";
 
 export default function AllCampaigns() {
@@ -22,6 +23,7 @@ export default function AllCampaigns() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { searchQuery } = useGlobalSearch();
+  const campaignStats = useCampaignStats();
 
   // Get initial category from URL parameters  
   const initialCategory = searchParams.get('category') || 'All';
@@ -96,9 +98,26 @@ export default function AllCampaigns() {
               <span className="text-sm text-muted-foreground">
                 {filteredFundraisers.length} campaigns found
               </span>
-              <Button variant="outline" size="sm">
-                Sort
-              </Button>
+              <div className="flex items-center gap-4 text-sm">
+                <div className="flex flex-col items-end">
+                  <span className="font-medium text-green-600">
+                    {campaignStats.loading ? '...' : campaignStats.activeCampaigns.toLocaleString()} Active
+                  </span>
+                  <span className="text-xs text-muted-foreground">campaigns</span>
+                </div>
+                <div className="flex flex-col items-end">
+                  <span className="font-medium text-blue-600">
+                    {campaignStats.loading ? '...' : campaignStats.successfulCampaigns.toLocaleString()} Funded
+                  </span>
+                  <span className="text-xs text-muted-foreground">successful</span>
+                </div>
+                <div className="flex flex-col items-end">
+                  <span className="font-medium text-primary">
+                    {campaignStats.loading ? '...' : `$${campaignStats.totalFundsRaised.toLocaleString()}`}
+                  </span>
+                  <span className="text-xs text-muted-foreground">total raised</span>
+                </div>
+              </div>
             </>
           }
         />
