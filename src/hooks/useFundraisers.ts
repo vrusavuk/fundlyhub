@@ -36,37 +36,30 @@ export function useFundraisers(options: FundraiserQueryOptions = {}): UseFundrai
       setError(null);
 
       const currentOffset = isLoadMore ? offset : 0;
-      
-      // Fetch fundraisers and donations in parallel for consistency
-      const [fundraiserData, donationData] = await Promise.all([
-        fetchFundraisers({
-          ...options,
-          offset: currentOffset,
-          limit
-        }),
-        // Always fetch donations for all fundraisers to ensure consistency
-        supabase
-          .from('donations')
-          .select('fundraiser_id, amount')
-          .eq('payment_status', 'paid')
-      ]);
+      const data = await fetchFundraisers({
+        ...options,
+        offset: currentOffset,
+        limit
+      });
 
-      if (fundraiserData.length < limit) {
+      if (data.length < limit) {
         setHasMore(false);
       }
 
-      const newFundraisers = isLoadMore ? [...fundraisers, ...fundraiserData] : fundraiserData;
+      const newFundraisers = isLoadMore ? [...fundraisers, ...data] : data;
       setFundraisers(newFundraisers as Fundraiser[]);
 
-      // Calculate donation totals from the complete dataset
-      if (donationData.data) {
-        const donationTotals = donationData.data.reduce((totals, donation) => {
-          totals[donation.fundraiser_id] = 
-            (totals[donation.fundraiser_id] || 0) + Number(donation.amount);
-          return totals;
-        }, {} as Record<string, number>);
-        
-        setDonations(donationTotals);
+      // Fetch donation totals for the fundraisers we just loaded
+      const fundraiserIds = data.map(f => f.id);
+      if (fundraiserIds.length > 0) {
+        const donationTotals = await fetchDonationTotals(fundraiserIds);
+        if (isLoadMore) {
+          // Merge with existing donations
+          setDonations(prev => ({ ...prev, ...donationTotals }));
+        } else {
+          // Replace all donations
+          setDonations(donationTotals);
+        }
       }
 
       if (isLoadMore) {
@@ -75,11 +68,12 @@ export function useFundraisers(options: FundraiserQueryOptions = {}): UseFundrai
         setOffset(limit);
       }
     } catch (err) {
+      console.error('Error loading fundraisers:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
-  }, [options, offset, limit]);
+  }, [options, offset, limit, fundraisers]);
 
   const loadMore = useCallback(() => loadFundraisers(true), [loadFundraisers]);
 
@@ -103,11 +97,15 @@ export function useFundraisers(options: FundraiserQueryOptions = {}): UseFundrai
           schema: 'public',
           table: 'donations'
         },
-        () => {
-          // Refresh donation data when new donations are made
-          setTimeout(() => {
-            loadFundraisers(false);
-          }, 1000);
+        (payload) => {
+          console.log('New donation detected, updating fundraiser data');
+          // Refresh donation data for the affected fundraiser
+          const newDonation = payload.new as any;
+          if (newDonation?.fundraiser_id) {
+            fetchDonationTotals([newDonation.fundraiser_id]).then(totals => {
+              setDonations(prev => ({ ...prev, ...totals }));
+            });
+          }
         }
       )
       .subscribe();
