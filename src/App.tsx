@@ -15,6 +15,7 @@ import FundlyPay from "./pages/FundlyPay";
 import SearchResults from "./pages/SearchResults";
 import NotFound from "./pages/NotFound";
 
+// Query client for React Query
 const queryClient = new QueryClient();
 
 const App = () => (
