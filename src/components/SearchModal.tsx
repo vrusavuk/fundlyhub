@@ -18,7 +18,27 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   
-  const { results, loading, error } = useSearch(query);
+  const { results, loading, error, hasMore, loadMore } = useSearch(query);
+
+  // Intersection Observer for infinite scrolling
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasMore, loading, loadMore]);
 
   // Load search history on component mount
   useEffect(() => {
@@ -332,18 +352,17 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   </div>
                 ))}
                 
-                {filteredResults.length > 15 && (
-                  <div className="pt-4 border-t border-border text-center">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        navigate(`/search?q=${encodeURIComponent(query)}&type=${selectedType}`);
-                        onClose();
-                      }}
-                      className="w-full"
-                    >
-                      View all {filteredResults.length} results
-                    </Button>
+                {/* Infinite scroll loader */}
+                {hasMore && (
+                  <div ref={loadMoreRef} className="p-4 text-center">
+                    <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full mx-auto" />
+                    <p className="text-sm text-muted-foreground mt-2">Loading more results...</p>
+                  </div>
+                )}
+                
+                {!hasMore && filteredResults.length > 0 && (
+                  <div className="p-4 text-center text-sm text-muted-foreground border-t border-border">
+                    <p>End of search results ({filteredResults.length} total)</p>
                   </div>
                 )}
               </div>

@@ -23,9 +23,28 @@ export function EnhancedSearch({
   const [selectedType, setSelectedType] = useState<'all' | 'campaign' | 'user' | 'organization'>('all');
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  const { results, loading, error } = useSearch(query, isOpen);
+  const { results, loading, error, hasMore, loadMore } = useSearch(query, isOpen);
+
+  // Intersection Observer for infinite scrolling
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasMore, loading, loadMore]);
 
   // Filter results by selected type
   const filteredResults = selectedType === 'all' 
@@ -320,33 +339,42 @@ export function EnhancedSearch({
                 );
               })}
             </div>
-          )}
-        </div>
-
-        {/* Enhanced Footer */}
-        {results.length > 0 && (
-          <div className="border-t border-border p-4 bg-muted/30">
-            <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-              <div className="text-sm text-muted-foreground">
-                Showing {filteredResults.length} of {results.length} results for "{query}"
-              </div>
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => {
-                  navigate(`/campaigns?search=${encodeURIComponent(query)}`);
-                  setIsOpen(false);
-                  setQuery('');
-                  onResultClick?.();
-                }}
-                className="w-full sm:w-auto"
-              >
-                <Search className="h-4 w-4 mr-2" />
-                View all results
-              </Button>
-            </div>
+            )}
           </div>
-        )}
+
+          {/* Infinite scroll loader */}
+          {hasMore && (
+            <div ref={loadMoreRef} className="p-4 text-center border-t border-border">
+              <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full mx-auto" />
+              <p className="text-sm text-muted-foreground mt-2">Loading more results...</p>
+            </div>
+          )}
+
+          {/* Enhanced Footer */}
+          {results.length > 0 && (
+            <div className="border-t border-border p-4 bg-muted/30">
+              <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
+                <div className="text-sm text-muted-foreground">
+                  Showing {filteredResults.length} results for "{query}"
+                  {!hasMore && " (all results loaded)"}
+                </div>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => {
+                    navigate(`/campaigns?search=${encodeURIComponent(query)}`);
+                    setIsOpen(false);
+                    setQuery('');
+                    onResultClick?.();
+                  }}
+                  className="w-full sm:w-auto"
+                >
+                  <Search className="h-4 w-4 mr-2" />
+                  View all results
+                </Button>
+              </div>
+            </div>
+          )}
       </div>
       </>
       )}

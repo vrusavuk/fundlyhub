@@ -149,175 +149,203 @@ export function useSearch(query: string, enabled: boolean = true) {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const BATCH_SIZE = 20;
 
+  // Reset results when query changes
   useEffect(() => {
     if (!query.trim() || query.length < 2 || !enabled) {
       setResults([]);
+      setHasMore(false);
+      setOffset(0);
       return;
     }
 
-    const searchDelayTimer = setTimeout(async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const searchTerms = normalizeQuery(query);
-        
-        // Fetch a broader set of campaigns for smart filtering
-        const { data: campaigns, error: campaignsError } = await supabase
-          .from('fundraisers')
-          .select(`
-            id,
-            title,
-            summary,
-            slug,
-            cover_image,
-            location,
-            category,
-            story_html,
-            profiles!fundraisers_owner_user_id_fkey(name)
-          `)
-          .eq('status', 'active')
-          .eq('visibility', 'public')
-          .limit(50); // Get more results for better filtering
-
-        // Fetch users
-        const { data: users, error: usersError } = await supabase
-          .from('profiles')
-          .select('id, name, email, avatar')
-          .limit(20);
-
-        // Fetch organizations
-        const { data: organizations, error: organizationsError } = await supabase
-          .from('organizations')
-          .select('id, legal_name, dba_name, website, categories')
-          .limit(20);
-
-        if (campaignsError) console.error('Campaigns search error:', campaignsError);
-        if (usersError) console.error('Users search error:', usersError);
-        if (organizationsError) console.error('Organizations search error:', organizationsError);
-
-        const searchResults: SearchResult[] = [];
-
-        // Smart campaign filtering with relevance scoring
-        if (campaigns) {
-          campaigns.forEach(campaign => {
-            const titleScore = calculateRelevanceScore(searchTerms, campaign.title, true);
-            const summaryScore = calculateRelevanceScore(searchTerms, campaign.summary);
-            const categoryScore = calculateRelevanceScore(searchTerms, campaign.category);
-            const locationScore = calculateRelevanceScore(searchTerms, campaign.location || '');
-            const ownerScore = calculateRelevanceScore(searchTerms, campaign.profiles?.name || '');
-            
-            // Extract text from HTML story
-            const storyText = campaign.story_html?.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ') || '';
-            const storyScore = calculateRelevanceScore(searchTerms, storyText) * 0.3; // Lower weight for story
-            
-            const totalScore = titleScore + summaryScore + categoryScore + locationScore + ownerScore + storyScore;
-            
-            // Only include results with a minimum relevance score
-            if (totalScore > 0.5) {
-              // Check which fields matched
-              const { matchedFields, matchedIn } = checkFieldMatches(searchTerms, {
-                title: campaign.title,
-                summary: campaign.summary,
-                story: storyText,
-                category: campaign.category,
-                location: campaign.location || '',
-                owner: campaign.profiles?.name || ''
-              });
-              
-              // Generate highlighted content and snippets
-              const highlightedTitle = highlightText(campaign.title, searchTerms);
-              const subtitle = `${campaign.category} • by ${campaign.profiles?.name || 'Anonymous'}`;
-              const highlightedSubtitle = highlightText(subtitle, searchTerms);
-              
-              // Generate snippet from the best matching field
-              let matchedSnippet = '';
-              if (matchedIn === 'description') {
-                matchedSnippet = extractSnippet(campaign.summary, searchTerms);
-              } else if (matchedIn === 'full description') {
-                matchedSnippet = extractSnippet(storyText, searchTerms);
-              }
-              
-              searchResults.push({
-                id: campaign.id,
-                type: 'campaign',
-                title: campaign.title,
-                subtitle,
-                image: campaign.cover_image,
-                slug: campaign.slug,
-                location: campaign.location,
-                relevanceScore: totalScore,
-                matchedFields,
-                highlightedTitle,
-                highlightedSubtitle,
-                matchedSnippet: highlightText(matchedSnippet, searchTerms),
-                matchedIn
-              });
-            }
-          });
-        }
-
-        // Smart user filtering
-        if (users) {
-          users.forEach(user => {
-            const nameScore = calculateRelevanceScore(searchTerms, user.name || '', true);
-            const emailScore = calculateRelevanceScore(searchTerms, user.email || '');
-            
-            const totalScore = nameScore + emailScore;
-            
-            if (totalScore > 0.5) {
-              searchResults.push({
-                id: user.id,
-                type: 'user',
-                title: user.name || 'Anonymous User',
-                subtitle: user.email,
-                image: user.avatar,
-                relevanceScore: totalScore
-              });
-            }
-          });
-        }
-
-        // Smart organization filtering
-        if (organizations) {
-          organizations.forEach(org => {
-            const legalNameScore = calculateRelevanceScore(searchTerms, org.legal_name || '', true);
-            const dbaNameScore = calculateRelevanceScore(searchTerms, org.dba_name || '', true);
-            const websiteScore = calculateRelevanceScore(searchTerms, org.website || '');
-            const categoriesScore = calculateRelevanceScore(searchTerms, Array.isArray(org.categories) ? org.categories.join(' ') : '');
-            
-            const totalScore = legalNameScore + dbaNameScore + websiteScore + categoriesScore;
-            
-            if (totalScore > 0.5) {
-              searchResults.push({
-                id: org.id,
-                type: 'organization',
-                title: org.dba_name || org.legal_name,
-                subtitle: org.website || 'Organization',
-                image: undefined,
-                relevanceScore: totalScore
-              });
-            }
-          });
-        }
-
-        // Sort by relevance score (highest first) and limit results
-        const sortedResults = searchResults
-          .sort((a, b) => (b.relevanceScore || 0) - (a.relevanceScore || 0))
-          .slice(0, 15);
-
-        setResults(sortedResults);
-      } catch (err) {
-        console.error('Search error:', err);
-        setError('Search failed. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    }, 300); // Debounce for 300ms
-
-    return () => clearTimeout(searchDelayTimer);
+    // Reset for new query
+    setOffset(0);
+    performSearch(query, 0, true);
   }, [query, enabled]);
 
-  return { results, loading, error };
+  const performSearch = async (searchQuery: string, currentOffset: number, isNewSearch: boolean = false) => {
+    if (isNewSearch) {
+      setLoading(true);
+    }
+    setError(null);
+
+    try {
+      const searchTerms = normalizeQuery(searchQuery);
+      
+      // Fetch campaigns with pagination
+      const { data: campaigns, error: campaignsError } = await supabase
+        .from('fundraisers')
+        .select(`
+          id,
+          title,
+          summary,
+          slug,
+          cover_image,
+          location,
+          category,
+          story_html,
+          profiles!fundraisers_owner_user_id_fkey(name)
+        `)
+        .eq('status', 'active')
+        .eq('visibility', 'public')
+        .range(currentOffset, currentOffset + BATCH_SIZE - 1);
+
+      // Fetch users with pagination
+      const { data: users, error: usersError } = await supabase
+        .from('profiles')
+        .select('id, name, email, avatar')
+        .range(Math.floor(currentOffset / 3), Math.floor(currentOffset / 3) + Math.floor(BATCH_SIZE / 3) - 1);
+
+      // Fetch organizations with pagination  
+      const { data: organizations, error: organizationsError } = await supabase
+        .from('organizations')
+        .select('id, legal_name, dba_name, website, categories')
+        .range(Math.floor(currentOffset / 3), Math.floor(currentOffset / 3) + Math.floor(BATCH_SIZE / 3) - 1);
+
+      if (campaignsError) console.error('Campaigns search error:', campaignsError);
+      if (usersError) console.error('Users search error:', usersError);
+      if (organizationsError) console.error('Organizations search error:', organizationsError);
+
+      const newResults: SearchResult[] = [];
+
+      // Smart campaign filtering with relevance scoring
+      if (campaigns) {
+        campaigns.forEach(campaign => {
+          const titleScore = calculateRelevanceScore(searchTerms, campaign.title, true);
+          const summaryScore = calculateRelevanceScore(searchTerms, campaign.summary);
+          const categoryScore = calculateRelevanceScore(searchTerms, campaign.category);
+          const locationScore = calculateRelevanceScore(searchTerms, campaign.location || '');
+          const ownerScore = calculateRelevanceScore(searchTerms, campaign.profiles?.name || '');
+          
+          // Extract text from HTML story
+          const storyText = campaign.story_html?.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ') || '';
+          const storyScore = calculateRelevanceScore(searchTerms, storyText) * 0.3;
+          
+          const totalScore = titleScore + summaryScore + categoryScore + locationScore + ownerScore + storyScore;
+          
+          if (totalScore > 0.5) {
+            const { matchedFields, matchedIn } = checkFieldMatches(searchTerms, {
+              title: campaign.title,
+              summary: campaign.summary,
+              story: storyText,
+              category: campaign.category,
+              location: campaign.location || '',
+              owner: campaign.profiles?.name || ''
+            });
+            
+            const highlightedTitle = highlightText(campaign.title, searchTerms);
+            const subtitle = `${campaign.category} • by ${campaign.profiles?.name || 'Anonymous'}`;
+            const highlightedSubtitle = highlightText(subtitle, searchTerms);
+            
+            let matchedSnippet = '';
+            if (matchedIn === 'description') {
+              matchedSnippet = extractSnippet(campaign.summary, searchTerms);
+            } else if (matchedIn === 'full description') {
+              matchedSnippet = extractSnippet(storyText, searchTerms);
+            }
+            
+            newResults.push({
+              id: campaign.id,
+              type: 'campaign',
+              title: campaign.title,
+              subtitle,
+              image: campaign.cover_image,
+              slug: campaign.slug,
+              location: campaign.location,
+              relevanceScore: totalScore,
+              matchedFields,
+              highlightedTitle,
+              highlightedSubtitle,
+              matchedSnippet: highlightText(matchedSnippet, searchTerms),
+              matchedIn
+            });
+          }
+        });
+      }
+
+      // Smart user filtering
+      if (users) {
+        users.forEach(user => {
+          const nameScore = calculateRelevanceScore(searchTerms, user.name || '', true);
+          const emailScore = calculateRelevanceScore(searchTerms, user.email || '');
+          
+          const totalScore = nameScore + emailScore;
+          
+          if (totalScore > 0.5) {
+            newResults.push({
+              id: user.id,
+              type: 'user',
+              title: user.name || 'Anonymous User',
+              subtitle: user.email,
+              image: user.avatar,
+              relevanceScore: totalScore,
+              highlightedTitle: highlightText(user.name || 'Anonymous User', searchTerms),
+              highlightedSubtitle: highlightText(user.email || '', searchTerms),
+              matchedIn: 'name'
+            });
+          }
+        });
+      }
+
+      // Smart organization filtering
+      if (organizations) {
+        organizations.forEach(org => {
+          const legalNameScore = calculateRelevanceScore(searchTerms, org.legal_name || '', true);
+          const dbaNameScore = calculateRelevanceScore(searchTerms, org.dba_name || '', true);
+          const websiteScore = calculateRelevanceScore(searchTerms, org.website || '');
+          const categoriesScore = calculateRelevanceScore(searchTerms, Array.isArray(org.categories) ? org.categories.join(' ') : '');
+          
+          const totalScore = legalNameScore + dbaNameScore + websiteScore + categoriesScore;
+          
+          if (totalScore > 0.5) {
+            newResults.push({
+              id: org.id,
+              type: 'organization',
+              title: org.dba_name || org.legal_name,
+              subtitle: org.website || 'Organization',
+              image: undefined,
+              relevanceScore: totalScore,
+              highlightedTitle: highlightText(org.dba_name || org.legal_name, searchTerms),
+              highlightedSubtitle: highlightText(org.website || 'Organization', searchTerms),
+              matchedIn: 'organization'
+            });
+          }
+        });
+      }
+
+      // Sort by relevance score
+      const sortedResults = newResults.sort((a, b) => (b.relevanceScore || 0) - (a.relevanceScore || 0));
+
+      if (isNewSearch) {
+        setResults(sortedResults);
+      } else {
+        setResults(prev => [...prev, ...sortedResults]);
+      }
+
+      // Check if there are more results
+      const totalFetched = (campaigns?.length || 0) + (users?.length || 0) + (organizations?.length || 0);
+      setHasMore(totalFetched === BATCH_SIZE);
+      setOffset(currentOffset + BATCH_SIZE);
+
+    } catch (err) {
+      console.error('Search error:', err);
+      setError('Search failed. Please try again.');
+    } finally {
+      if (isNewSearch) {
+        setLoading(false);
+      }
+    }
+  };
+
+  const loadMore = () => {
+    if (!loading && hasMore && query.trim() && query.length >= 2) {
+      performSearch(query, offset, false);
+    }
+  };
+
+  return { results, loading, error, hasMore, loadMore };
 }
