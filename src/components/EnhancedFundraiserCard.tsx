@@ -58,25 +58,25 @@ export function EnhancedFundraiserCard({
 
   const getUrgencyColor = () => {
     switch (urgency) {
-      case 'high': return 'bg-red-500';
-      case 'medium': return 'bg-orange-500';
-      case 'low': return 'bg-green-500';
-      default: return 'bg-blue-500';
+      case 'high': return 'bg-destructive text-destructive-foreground';
+      case 'medium': return 'bg-warning text-warning-foreground';
+      case 'low': return 'bg-success text-success-foreground';
+      default: return 'bg-primary text-primary-foreground';
     }
   };
 
   const getCategoryColor = () => {
     const colors: Record<string, string> = {
-      'Medical': 'bg-red-50 text-red-700 border-red-200',
-      'Emergency': 'bg-orange-50 text-orange-700 border-orange-200',
-      'Education': 'bg-blue-50 text-blue-700 border-blue-200',
-      'Community': 'bg-green-50 text-green-700 border-green-200',
-      'Animal': 'bg-purple-50 text-purple-700 border-purple-200',
-      'Environment': 'bg-emerald-50 text-emerald-700 border-emerald-200',
-      'Sports': 'bg-indigo-50 text-indigo-700 border-indigo-200',
-      'Arts': 'bg-pink-50 text-pink-700 border-pink-200',
+      'Medical': 'bg-destructive/10 text-destructive border-destructive/20',
+      'Emergency': 'bg-warning/10 text-warning border-warning/20',
+      'Education': 'bg-primary/10 text-primary border-primary/20',
+      'Community': 'bg-success/10 text-success border-success/20',
+      'Animal': 'bg-accent/10 text-accent border-accent/20',
+      'Environment': 'bg-success/10 text-success border-success/20',
+      'Sports': 'bg-primary/10 text-primary border-primary/20',
+      'Arts': 'bg-accent/10 text-accent border-accent/20',
     };
-    return colors[category] || 'bg-gray-50 text-gray-700 border-gray-200';
+    return colors[category] || 'bg-muted text-muted-foreground border-border';
   };
 
   const handleShare = (e: React.MouseEvent) => {
@@ -120,15 +120,15 @@ export function EnhancedFundraiserCard({
             <Button
               size="sm"
               variant="secondary"
-              className="bg-white/90 hover:bg-white"
+              className="bg-background/90 hover:bg-background"
               onClick={handleLike}
             >
-              <Heart className={`h-4 w-4 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
+              <Heart className={`h-4 w-4 ${isLiked ? 'fill-destructive text-destructive' : ''}`} />
             </Button>
             <Button
               size="sm"
               variant="secondary"
-              className="bg-white/90 hover:bg-white"
+              className="bg-background/90 hover:bg-background"
               onClick={handleShare}
             >
               <Share2 className="h-4 w-4" />
@@ -136,10 +136,10 @@ export function EnhancedFundraiserCard({
             <Button
               size="sm"
               variant="secondary"
-              className="bg-white/90 hover:bg-white"
+              className="bg-background/90 hover:bg-background"
               onClick={handleBookmark}
             >
-              <BookmarkPlus className={`h-4 w-4 ${isBookmarked ? 'fill-blue-500 text-blue-500' : ''}`} />
+              <BookmarkPlus className={`h-4 w-4 ${isBookmarked ? 'fill-primary text-primary' : ''}`} />
             </Button>
           </div>
         </div>
@@ -159,7 +159,7 @@ export function EnhancedFundraiserCard({
         {/* Verification badge */}
         {isVerified && (
           <div className="absolute top-3 right-3">
-            <Badge className="bg-blue-500 text-white border-0 flex items-center gap-1">
+            <Badge className="bg-primary text-primary-foreground border-0 flex items-center gap-1">
               <Verified className="h-3 w-3" />
               Verified
             </Badge>

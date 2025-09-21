@@ -1,90 +1,16 @@
-import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Navigation } from "@/components/Navigation";
-import { EnhancedFundraiserCard } from "@/components/EnhancedFundraiserCard";
+import { FundraiserGrid } from "@/components/fundraisers/FundraiserGrid";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { TrustBadges } from "@/components/TrustBadges";
-import { ArrowRight, TrendingUp, Shield, Heart, Star, Zap, CheckCircle } from "lucide-react";
-import { supabase } from '@/integrations/supabase/client';
+import { ArrowRight, Star, Zap, CheckCircle, Heart } from "lucide-react";
+import { useFundraisers } from "@/hooks/useFundraisers";
 import heroImage from "@/assets/hero-image.jpg";
 
-interface Fundraiser {
-  id: string;
-  title: string;
-  slug: string;
-  summary: string;
-  goal_amount: number;
-  currency: string;
-  category: string;
-  cover_image: string;
-  location?: string;
-  created_at: string;
-  profiles: {
-    name: string;
-  } | null;
-}
-
 const Index = () => {
-  const [fundraisers, setFundraisers] = useState<Fundraiser[]>([]);
-  const [donations, setDonations] = useState<Record<string, number>>({});
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    fetchFundraisers();
-  }, []);
-
-  const fetchFundraisers = async () => {
-    try {
-      console.log('Fetching fundraisers...');
-      
-      // Fetch active fundraisers
-      const { data: fundraisersData, error: fundraisersError } = await supabase
-        .from('fundraisers')
-        .select(`
-          *,
-          profiles!fundraisers_owner_user_id_fkey(name)
-        `)
-        .eq('status', 'active')
-        .eq('visibility', 'public')
-        .order('created_at', { ascending: false })
-        .limit(6);
-
-      console.log('Fundraisers query result:', { fundraisersData, fundraisersError });
-
-      if (fundraisersError) {
-        console.error('Error fetching fundraisers:', fundraisersError);
-        setLoading(false);
-        return;
-      }
-
-      setFundraisers(fundraisersData || []);
-
-      // Fetch donation totals for each fundraiser
-      if (fundraisersData && fundraisersData.length > 0) {
-        const fundraiserIds = fundraisersData.map(f => f.id);
-        const { data: donationsData, error: donationsError } = await supabase
-          .from('donations')
-          .select('fundraiser_id, amount')
-          .in('fundraiser_id', fundraiserIds)
-          .eq('payment_status', 'paid');
-
-        if (!donationsError && donationsData) {
-          const donationTotals: Record<string, number> = {};
-          donationsData.forEach(donation => {
-            donationTotals[donation.fundraiser_id] = 
-              (donationTotals[donation.fundraiser_id] || 0) + Number(donation.amount);
-          });
-          setDonations(donationTotals);
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { fundraisers, donations, loading, error, refresh } = useFundraisers({ limit: 6 });
 
   const handleCardClick = (slug: string) => {
     navigate(`/fundraiser/${slug}`);
@@ -181,43 +107,18 @@ const Index = () => {
             <p className="text-xl text-muted-foreground">Support these urgent causes making a difference right now</p>
           </div>
           
-          {loading ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="bg-muted rounded-lg h-64"></div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {fundraisers.map((fundraiser, index) => (
-                <EnhancedFundraiserCard
-                  key={fundraiser.id}
-                  id={fundraiser.id}
-                  title={fundraiser.title}
-                  summary={fundraiser.summary || ""}
-                  goalAmount={fundraiser.goal_amount}
-                  raisedAmount={donations[fundraiser.id] || 0}
-                  currency={fundraiser.currency}
-                  coverImage={fundraiser.cover_image || "/placeholder.svg"}
-                  category={fundraiser.category || "General"}
-                  organizationName={fundraiser.profiles?.name || "Anonymous"}
-                  location={fundraiser.location || undefined}
-                  donorCount={Math.floor(Math.random() * 50) + 1}
-                  daysLeft={Math.floor(Math.random() * 60) + 1}
-                  urgency={index % 3 === 0 ? 'high' : index % 2 === 0 ? 'medium' : 'low'}
-                  isVerified={index % 4 === 0}
-                  isOrganization={index % 5 === 0}
-                  onClick={() => handleCardClick(fundraiser.slug)}
-                />
-              ))}
-            </div>
-          )}
+          <FundraiserGrid
+            fundraisers={fundraisers}
+            donations={donations}
+            loading={loading}
+            error={error}
+            onCardClick={handleCardClick}
+            onRetry={refresh}
+            emptyMessage="No fundraisers available at the moment."
+          />
           
-          {!loading && fundraisers.length === 0 && (
+          {!loading && fundraisers.length === 0 && !error && (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">No fundraisers available at the moment.</p>
               <Button className="mt-4" asChild>
                 <Link to="/create">Be the first to create one!</Link>
               </Button>

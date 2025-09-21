@@ -92,12 +92,10 @@ export function EnhancedSearch({
         }
         break;
       case 'user':
-        // Navigate to user profile when that page exists
-        console.log('Navigate to user:', result.id);
+        // TODO: Navigate to user profile when that page exists
         break;
       case 'organization':
-        // Navigate to organization page when that exists
-        console.log('Navigate to organization:', result.id);
+        // TODO: Navigate to organization page when that exists
         break;
     }
   };
