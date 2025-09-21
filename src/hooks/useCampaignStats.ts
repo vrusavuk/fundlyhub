@@ -76,7 +76,24 @@ export function useCampaignStats() {
 
     fetchStats();
     
-    // Listen for donation events to refresh stats
+    // Set up real-time subscription for donations
+    const channel = supabase
+      .channel('donations-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'donations'
+        },
+        () => {
+          // Refresh stats when a new donation is made
+          fetchStats();
+        }
+      )
+      .subscribe();
+    
+    // Listen for donation events to refresh stats (fallback)
     const handleDonationMade = () => {
       fetchStats();
     };
@@ -84,6 +101,7 @@ export function useCampaignStats() {
     window.addEventListener('donationMade', handleDonationMade);
     
     return () => {
+      supabase.removeChannel(channel);
       window.removeEventListener('donationMade', handleDonationMade);
     };
   }, []);
