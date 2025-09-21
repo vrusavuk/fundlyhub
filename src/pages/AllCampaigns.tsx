@@ -2,31 +2,25 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { FundraiserGrid } from "@/components/fundraisers/FundraiserGrid";
-import { IntegratedCampaignSearch } from "@/components/search/IntegratedCampaignSearch";
 import { Button } from "@/components/ui/button";
 import { SlidersHorizontal } from "lucide-react";
 import { useFundraisers } from "@/hooks/useFundraisers";
 import { useGlobalSearch } from "@/contexts/SearchContext";
 
 export default function AllCampaigns() {
-  const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { openSearch } = useGlobalSearch();
+  const { searchQuery } = useGlobalSearch();
 
-  // Get initial search term from URL parameters  
-  const initialSearch = searchParams.get('search') || '';
+  // Get initial category from URL parameters  
   const initialCategory = searchParams.get('category') || 'All';
 
   useEffect(() => {
-    if (initialSearch) {
-      setSearchTerm(initialSearch);
-    }
     if (initialCategory) {
       setSelectedCategory(initialCategory);
     }
-  }, [initialSearch, initialCategory]);
+  }, [initialCategory]);
 
   const { 
     fundraisers, 
@@ -43,16 +37,16 @@ export default function AllCampaigns() {
   // Real-time filtering of fundraisers
   const filteredFundraisers = useMemo(() => {
     return fundraisers.filter((fundraiser) => {
-      const matchesSearch = !searchTerm || 
-        fundraiser.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        fundraiser.summary?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        fundraiser.profiles?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = !searchQuery || 
+        fundraiser.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        fundraiser.summary?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        fundraiser.profiles?.name?.toLowerCase().includes(searchQuery.toLowerCase());
       
       const matchesCategory = selectedCategory === "All" || fundraiser.category === selectedCategory;
       
       return matchesSearch && matchesCategory;
     });
-  }, [fundraisers, searchTerm, selectedCategory]);
+  }, [fundraisers, searchQuery, selectedCategory]);
 
   const handleCardClick = (slug: string) => {
     navigate(`/fundraiser/${slug}`);
@@ -80,15 +74,6 @@ export default function AllCampaigns() {
           </div>
         </div>
 
-        {/* Integrated Campaign Search */}
-        <IntegratedCampaignSearch
-          onSearchChange={setSearchTerm}
-          onCategoryChange={setSelectedCategory}
-          selectedCategory={selectedCategory}
-          resultCount={filteredFundraisers.length}
-          totalCount={fundraisers.length}
-          className="mb-6"
-        />
 
         {/* Campaign Grid */}
         <FundraiserGrid
@@ -101,7 +86,7 @@ export default function AllCampaigns() {
           onCardClick={handleCardClick}
           onRetry={refresh}
           emptyMessage={
-            searchTerm || selectedCategory !== "All" 
+            searchQuery || selectedCategory !== "All" 
               ? "Try adjusting your search or filters"
               : "No campaigns are currently available"
           }

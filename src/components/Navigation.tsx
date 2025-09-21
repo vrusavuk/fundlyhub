@@ -4,7 +4,7 @@ import { Heart, User, Menu, Search, LogOut, UserCircle } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useGlobalSearch } from "@/contexts/SearchContext";
-import { useLocation } from "react-router-dom";
+import { HeaderSearch } from "@/components/search/HeaderSearch";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,24 +16,19 @@ import {
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
-  const { openSearch, shouldUseIntegratedSearch } = useGlobalSearch();
-  const location = useLocation();
+  const { isHeaderSearchOpen, openHeaderSearch, closeHeaderSearch } = useGlobalSearch();
 
   const handleSignOut = async () => {
     await signOut();
   };
 
-  const getSearchButtonText = () => {
-    if (location.pathname === '/campaigns') {
-      return 'Search campaigns';
-    }
-    return 'Search';
-  };
 
   return (
-    <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <>
+      <HeaderSearch isOpen={isHeaderSearchOpen} onClose={closeHeaderSearch} />
+      <nav className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
@@ -59,8 +54,8 @@ export function Navigation() {
               variant="ghost" 
               size="icon"
               className="hidden md:flex"
-              onClick={() => openSearch()}
-              title={getSearchButtonText()}
+              onClick={openHeaderSearch}
+              title="Search"
             >
               <Search className="h-5 w-5" />
             </Button>
@@ -131,12 +126,12 @@ export function Navigation() {
                   variant="outline" 
                   className="justify-start"
                   onClick={() => {
-                    openSearch();
+                    openHeaderSearch();
                     setIsMenuOpen(false);
                   }}
                 >
                   <Search className="h-4 w-4 mr-2" />
-                  {getSearchButtonText()}
+                  Search
                 </Button>
               <Link to="/campaigns" className="text-foreground hover:text-primary transition-smooth py-2">
                 Fundlies
@@ -167,5 +162,6 @@ export function Navigation() {
         )}
       </div>
     </nav>
+    </>
   );
 }

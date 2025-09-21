@@ -6,13 +6,13 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { SearchProvider } from "@/contexts/SearchContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { GlobalSearchModal } from "@/components/search/GlobalSearchModal";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import CreateFundraiser from "./pages/CreateFundraiser";
 import FundraiserDetail from "./pages/FundraiserDetail";
 import AllCampaigns from "./pages/AllCampaigns";
 import FundlyPay from "./pages/FundlyPay";
+import SearchResults from "./pages/SearchResults";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +29,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/campaigns" element={<AllCampaigns />} />
+              <Route path="/search" element={<SearchResults />} />
               <Route path="/fundlypay" element={<FundlyPay />} />
               <Route path="/create" element={
                 <ProtectedRoute>
@@ -39,7 +40,6 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-            <GlobalSearchModal />
           </SearchProvider>
         </BrowserRouter>
       </TooltipProvider>
