@@ -12,7 +12,7 @@ import workdayLogo from "@/assets/partners/workday-logo.png";
 import bamboohrLogo from "@/assets/partners/bamboohr-logo.png";
 import gustoLogo from "@/assets/partners/gusto-logo.png";
 import quickbooksLogo from "@/assets/partners/quickbooks-logo.png";
-import paylocityLogo from "@/assets/partners/paylocity-official-logo.png";
+import paylocityLogo from "@/assets/partners/paylocity-correct-logo.png";
 import ukgLogo from "@/assets/partners/ukg-official-logo.png";
 
 const FundlyGive = () => {
