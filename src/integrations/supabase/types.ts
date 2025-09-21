@@ -382,7 +382,13 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      fundraiser_status: "draft" | "active" | "paused" | "ended"
+      fundraiser_status:
+        | "draft"
+        | "active"
+        | "paused"
+        | "ended"
+        | "closed"
+        | "pending"
       org_member_role: "owner" | "admin" | "editor" | "viewer"
       payment_status: "paid" | "refunded" | "failed"
       user_role: "visitor" | "creator" | "org_admin" | "admin"
@@ -515,7 +521,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      fundraiser_status: ["draft", "active", "paused", "ended"],
+      fundraiser_status: [
+        "draft",
+        "active",
+        "paused",
+        "ended",
+        "closed",
+        "pending",
+      ],
       org_member_role: ["owner", "admin", "editor", "viewer"],
       payment_status: ["paid", "refunded", "failed"],
       user_role: ["visitor", "creator", "org_admin", "admin"],
