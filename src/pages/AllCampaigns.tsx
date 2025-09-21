@@ -103,13 +103,15 @@ export default function AllCampaigns() {
           }
         />
 
-        {/* Compact Filters Section */}
+        {/* Compact Filters Section - Inside PageContainer for proper alignment */}
         <CampaignFilters
           onFiltersChange={handleFiltersChange}
           activeFiltersCount={getActiveFiltersCount()}
         />
-
-        {/* Campaign Grid */}
+      </PageContainer>
+      
+      {/* Campaign Grid */}
+      <PageContainer>
         <FundraiserGrid
           fundraisers={filteredFundraisers}
           donations={donations}

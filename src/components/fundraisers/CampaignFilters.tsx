@@ -92,10 +92,9 @@ export function CampaignFilters({
   };
 
   return (
-    <div className="border-b border-border bg-background">
-      <div className="container mx-auto px-4 max-w-7xl">
-        <div className="py-4">
-          {/* Compact Filter Bar - Reordered: Filters, Categories, Location, Reset */}
+    <div className="border-b border-border bg-background -mx-4 mb-6">
+      <div className="px-4 py-4">
+        {/* Compact Filter Bar - Reordered: Filters, Categories, Location, Reset */}
           <div className="flex items-center gap-4 flex-wrap">
             
             {/* Advanced Filters Dialog - FIRST */}
@@ -309,7 +308,6 @@ export function CampaignFilters({
                 </div>
               </div>
             )}
-          </div>
         </div>
       </div>
     </div>
