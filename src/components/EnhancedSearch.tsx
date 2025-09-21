@@ -39,10 +39,11 @@ export function EnhancedSearch({
     organizations: results.filter(r => r.type === 'organization')
   };
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking outside or on backdrop
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
+        isOpen &&
         dropdownRef.current && 
         !dropdownRef.current.contains(event.target as Node) &&
         !inputRef.current?.contains(event.target as Node)
@@ -51,9 +52,12 @@ export function EnhancedSearch({
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [isOpen]);
 
   const handleResultClick = (result: SearchResult) => {
     setIsOpen(false);
@@ -115,13 +119,21 @@ export function EnhancedSearch({
 
       {/* Search Results Dropdown */}
       {isOpen && query.length >= 2 && (
-        <div
-          ref={dropdownRef}
-          className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border border-border rounded-lg shadow-2xl 
-                     w-full md:w-[600px] lg:w-[800px] xl:w-[900px] 
-                     max-h-[80vh] md:max-h-[600px] 
-                     overflow-hidden"
-        >
+        <>
+          {/* Full screen backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40" 
+            onClick={() => setIsOpen(false)}
+          />
+          
+          {/* Dropdown Container */}
+          <div
+            ref={dropdownRef}
+            className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border border-border rounded-lg shadow-2xl 
+                       w-full md:w-[600px] lg:w-[800px] xl:w-[900px] 
+                       max-h-[80vh] md:max-h-[600px] 
+                       overflow-hidden"
+          >
           {/* Header with Search Info */}
           <div className="p-4 border-b border-border bg-muted/30">
             <div className="flex items-center justify-between mb-3">
@@ -316,6 +328,7 @@ export function EnhancedSearch({
           </div>
         )}
       </div>
+      </>
       )}
     </div>
   );
