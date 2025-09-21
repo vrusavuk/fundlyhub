@@ -1,12 +1,20 @@
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Heart, User, Menu } from "lucide-react";
+import { Heart, User, Menu, Search, LogOut, UserCircle } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { EnhancedSearch } from "@/components/EnhancedSearch";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { user, signOut } = useAuth();
 
   const handleSignOut = async () => {
@@ -35,39 +43,60 @@ export function Navigation() {
             </Link>
           </div>
 
-          {/* Enhanced Search Bar */}
-          <div className="hidden md:flex items-center max-w-md flex-1 mx-8">
-            <EnhancedSearch 
-              className="w-full"
-              placeholder="Search campaigns, users, organizations..."
-            />
-          </div>
-
           {/* Action Buttons */}
           <div className="flex items-center space-x-3">
+            {/* Search Button */}
+            <Button 
+              variant="ghost" 
+              size="icon"
+              className="hidden md:flex"
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+            >
+              <Search className="h-5 w-5" />
+            </Button>
+
             {user ? (
               <>
-                <span className="hidden md:inline text-sm text-muted-foreground">
-                  Welcome, {user.user_metadata?.name || user.email}
-                </span>
-                <Button variant="outline" size="sm" className="hidden md:inline-flex" onClick={handleSignOut}>
-                  <User className="h-4 w-4 mr-2" />
-                  Sign Out
-                </Button>
                 <Button variant="hero" size="sm" asChild>
                   <Link to="/create">Start Fundraiser</Link>
                 </Button>
+                
+                {/* User Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="hidden md:flex">
+                      <UserCircle className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem disabled>
+                      <UserCircle className="mr-2 h-4 w-4" />
+                      <span className="truncate">{user.user_metadata?.name || user.email}</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile">
+                        <User className="mr-2 h-4 w-4" />
+                        Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleSignOut}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             ) : (
               <>
+                <Button variant="hero" size="sm" asChild>
+                  <Link to="/create">Start Fundraiser</Link>
+                </Button>
                 <Button variant="outline" size="sm" className="hidden md:inline-flex" asChild>
                   <Link to="/auth">
                     <User className="h-4 w-4 mr-2" />
                     Sign In
                   </Link>
-                </Button>
-                <Button variant="hero" size="sm" asChild>
-                  <Link to="/create">Start Fundraiser</Link>
                 </Button>
               </>
             )}
@@ -84,14 +113,26 @@ export function Navigation() {
           </div>
         </div>
 
+        {/* Search Overlay */}
+        {isSearchOpen && (
+          <div className="hidden md:block absolute top-16 left-0 right-0 bg-background/95 backdrop-blur-sm border-b border-border p-4 z-40">
+            <div className="max-w-md mx-auto">
+              <EnhancedSearch 
+                placeholder="Search campaigns, users, organizations..."
+                onResultClick={() => setIsSearchOpen(false)}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden border-t border-border py-4">
-          <div className="flex flex-col space-y-3">
-            <EnhancedSearch 
-              placeholder="Search campaigns, users, organizations..."
-              onResultClick={() => setIsMenuOpen(false)}
-            />
+            <div className="flex flex-col space-y-3">
+              <EnhancedSearch 
+                placeholder="Search campaigns, users, organizations..."
+                onResultClick={() => setIsMenuOpen(false)}
+              />
               <Link to="/campaigns" className="text-foreground hover:text-primary transition-smooth py-2">
                 Fundlies
               </Link>
@@ -99,10 +140,15 @@ export function Navigation() {
                 FundlyPay
               </Link>
               {user ? (
-                <Button variant="outline" size="sm" className="justify-start" onClick={handleSignOut}>
-                  <User className="h-4 w-4 mr-2" />
-                  Sign Out
-                </Button>
+                <>
+                  <Link to="/profile" className="text-foreground hover:text-primary transition-smooth py-2">
+                    Profile
+                  </Link>
+                  <Button variant="outline" size="sm" className="justify-start" onClick={handleSignOut}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </>
               ) : (
                 <Button variant="outline" size="sm" className="justify-start" asChild>
                   <Link to="/auth">
