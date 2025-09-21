@@ -4,6 +4,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { PageContainer } from "@/components/ui/PageContainer";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { FundraiserGrid } from "@/components/fundraisers/FundraiserGrid";
+import { CampaignFilters } from "@/components/fundraisers/CampaignFilters";
 import { Button } from "@/components/ui/button";
 import { SlidersHorizontal } from "lucide-react";
 import { useFundraisers } from "@/hooks/useFundraisers";
@@ -11,6 +12,15 @@ import { useGlobalSearch } from "@/contexts/SearchContext";
 
 export default function AllCampaigns() {
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [isFiltersExpanded, setIsFiltersExpanded] = useState(true);
+  const [activeFilters, setActiveFilters] = useState({
+    categories: [],
+    location: 'Worldwide',
+    goalRange: [0, 100000] as [number, number],
+    sortBy: 'recent',
+    timeframe: 'all',
+    status: []
+  });
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { searchQuery } = useGlobalSearch();
@@ -36,7 +46,7 @@ export default function AllCampaigns() {
     limit: 24
   });
 
-  // Real-time filtering of fundraisers
+  // Enhanced filtering of fundraisers
   const filteredFundraisers = useMemo(() => {
     return fundraisers.filter((fundraiser) => {
       const matchesSearch = !searchQuery || 
@@ -44,11 +54,35 @@ export default function AllCampaigns() {
         fundraiser.summary?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         fundraiser.profiles?.name?.toLowerCase().includes(searchQuery.toLowerCase());
       
-      const matchesCategory = selectedCategory === "All" || fundraiser.category === selectedCategory;
+      const matchesCategory = selectedCategory === "All" || 
+        fundraiser.category === selectedCategory ||
+        activeFilters.categories.length === 0 ||
+        activeFilters.categories.includes(fundraiser.category || '');
       
-      return matchesSearch && matchesCategory;
+      const matchesGoalRange = fundraiser.goal_amount >= activeFilters.goalRange[0] && 
+        fundraiser.goal_amount <= activeFilters.goalRange[1];
+      
+      const matchesLocation = activeFilters.location === 'Worldwide' || 
+        fundraiser.location?.toLowerCase().includes(activeFilters.location.toLowerCase());
+      
+      return matchesSearch && matchesCategory && matchesGoalRange && matchesLocation;
     });
-  }, [fundraisers, searchQuery, selectedCategory]);
+  }, [fundraisers, searchQuery, selectedCategory, activeFilters]);
+
+  const handleFiltersChange = (filters: any) => {
+    setActiveFilters(filters);
+  };
+
+  const getActiveFiltersCount = () => {
+    let count = 0;
+    if (activeFilters.categories.length > 0) count++;
+    if (activeFilters.location !== 'Worldwide') count++;
+    if (activeFilters.goalRange[0] > 0 || activeFilters.goalRange[1] < 100000) count++;
+    if (activeFilters.sortBy !== 'recent') count++;
+    if (activeFilters.timeframe !== 'all') count++;
+    if (activeFilters.status.length > 0) count++;
+    return count;
+  };
 
   const handleCardClick = (slug: string) => {
     navigate(`/fundraiser/${slug}`);
@@ -65,12 +99,28 @@ export default function AllCampaigns() {
               <span className="text-sm text-muted-foreground">
                 {filteredFundraisers.length} campaigns found
               </span>
-              <Button variant="outline" size="sm">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
+                className="relative"
+              >
                 <SlidersHorizontal className="h-4 w-4 mr-2" />
                 Filters
+                {getActiveFiltersCount() > 0 && (
+                  <span className="absolute -top-1 -right-1 h-2 w-2 bg-primary rounded-full" />
+                )}
               </Button>
             </>
           }
+        />
+
+        {/* Enhanced Filters Section */}
+        <CampaignFilters
+          isExpanded={isFiltersExpanded}
+          onToggleExpanded={() => setIsFiltersExpanded(!isFiltersExpanded)}
+          onFiltersChange={handleFiltersChange}
+          activeFiltersCount={getActiveFiltersCount()}
         />
 
         {/* Campaign Grid */}
