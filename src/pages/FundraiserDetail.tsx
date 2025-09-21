@@ -8,9 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { DonationWidget } from '@/components/DonationWidget';
+import { Navigation } from '@/components/Navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Heart, Share2, Flag, Calendar, Users, MapPin, Verified, Clock } from 'lucide-react';
 
 interface Fundraiser {
   id: string;
@@ -56,7 +60,6 @@ export default function FundraiserDetail() {
   const [donations, setDonations] = useState<Donation[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
   const [totalRaised, setTotalRaised] = useState(0);
-  const [donationAmount, setDonationAmount] = useState('');
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
   const [donating, setDonating] = useState(false);
@@ -154,11 +157,9 @@ export default function FundraiserDetail() {
     setComments(data || []);
   };
 
-  const handleDonate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleDonate = async (amount: number, tipAmount: number = 0) => {
     if (!fundraiser || !user) return;
     
-    const amount = parseFloat(donationAmount);
     if (isNaN(amount) || amount <= 0) {
       toast({
         title: "Invalid amount",
@@ -178,6 +179,7 @@ export default function FundraiserDetail() {
           donor_user_id: user.id,
           amount: amount,
           currency: 'USD',
+          tip_amount: tipAmount,
           payment_status: 'paid', // In real app, this would be handled by payment processor
           payment_provider: 'stripe',
         });
@@ -193,7 +195,6 @@ export default function FundraiserDetail() {
           title: "Thank you!",
           description: "Your donation has been processed successfully.",
         });
-        setDonationAmount('');
         fetchDonations(); // Refresh donations
       }
     } catch (error: any) {
@@ -279,13 +280,24 @@ export default function FundraiserDetail() {
   const progressPercentage = Math.min((totalRaised / fundraiser.goal_amount) * 100, 100);
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Breadcrumb */}
+            <div className="flex items-center text-sm text-muted-foreground">
+              <span>Fundraisers</span>
+              <span className="mx-2">→</span>
+              <span>{fundraiser.category}</span>
+              <span className="mx-2">→</span>
+              <span className="text-foreground font-medium">{fundraiser.title}</span>
+            </div>
+
             {/* Hero Image */}
-            <div className="aspect-video rounded-lg overflow-hidden">
+            <div className="aspect-video rounded-xl overflow-hidden shadow-lg">
               <img
                 src={fundraiser.cover_image}
                 alt={fundraiser.title}
@@ -295,22 +307,59 @@ export default function FundraiserDetail() {
 
             {/* Title and Info */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary">{fundraiser.category}</Badge>
+              <div className="flex items-center gap-3 flex-wrap">
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  {fundraiser.category}
+                </Badge>
                 {fundraiser.location && (
-                  <span className="text-muted-foreground">📍 {fundraiser.location}</span>
+                  <Badge variant="outline" className="flex items-center gap-1">
+                    <MapPin className="h-3 w-3" />
+                    {fundraiser.location}
+                  </Badge>
                 )}
+                <Badge variant="outline" className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  Created {formatDate(fundraiser.created_at)}
+                </Badge>
               </div>
               
-              <h1 className="text-3xl font-bold">{fundraiser.title}</h1>
+              <h1 className="text-3xl lg:text-4xl font-bold leading-tight">{fundraiser.title}</h1>
               
-              <p className="text-lg text-muted-foreground">{fundraiser.summary}</p>
+              <p className="text-lg text-muted-foreground leading-relaxed">{fundraiser.summary}</p>
               
-              <div className="flex items-center text-sm text-muted-foreground">
-                <span>By {fundraiser.profiles?.name || 'Anonymous'}</span>
-                <span className="mx-2">•</span>
-                <span>Created {formatDate(fundraiser.created_at)}</span>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-12 w-12">
+                    <AvatarFallback>{fundraiser.profiles?.name?.charAt(0) || 'A'}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{fundraiser.profiles?.name || 'Anonymous'}</span>
+                      <Badge variant="outline" className="text-xs">
+                        <Verified className="h-3 w-3 mr-1" />
+                        Verified
+                      </Badge>
+                    </div>
+                    <span className="text-sm text-muted-foreground">Organizer</span>
+                  </div>
+                </div>
               </div>
+            </div>
+
+            {/* Mobile donation widget */}
+            <div className="lg:hidden">
+              <DonationWidget
+                fundraiserId={fundraiser.id}
+                title={fundraiser.title}
+                creatorName={fundraiser.profiles?.name || 'Anonymous'}
+                goalAmount={fundraiser.goal_amount}
+                raisedAmount={totalRaised}
+                donorCount={donations.length}
+                progressPercentage={progressPercentage}
+                currency={fundraiser.currency}
+                onDonate={handleDonate}
+                loading={donating}
+              />
             </div>
 
             {/* Tabs for Story, Updates, Comments */}
@@ -390,95 +439,86 @@ export default function FundraiserDetail() {
             </Tabs>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Progress Card */}
-            <Card>
-              <CardContent className="p-6 space-y-4">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-primary">
-                    {formatAmount(totalRaised)}
-                  </div>
-                  <div className="text-muted-foreground">
-                    raised of {formatAmount(fundraiser.goal_amount)} goal
-                  </div>
-                </div>
-                
-                <Progress value={progressPercentage} className="h-3" />
-                
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>{donations.length} donations</span>
-                  <span>{Math.round(progressPercentage)}%</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Donation Form */}
-            {user ? (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Make a Donation</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleDonate} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="amount">Donation Amount (USD)</Label>
-                      <Input
-                        id="amount"
-                        type="number"
-                        placeholder="25"
-                        value={donationAmount}
-                        onChange={(e) => setDonationAmount(e.target.value)}
-                        min="1"
-                        step="0.01"
-                        required
-                      />
-                    </div>
-                    
-                    <Button
-                      type="submit"
-                      className="w-full"
-                      disabled={donating}
-                    >
-                      {donating ? 'Processing...' : 'Donate Now'}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <p className="text-muted-foreground mb-4">
-                    Sign in to make a donation
-                  </p>
-                  <Button className="w-full" onClick={() => window.location.href = '/auth'}>
-                    Sign In to Donate
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+          {/* Sidebar - Desktop Only */}
+          <div className="hidden lg:block space-y-6">
+            <DonationWidget
+              fundraiserId={fundraiser.id}
+              title={fundraiser.title}
+              creatorName={fundraiser.profiles?.name || 'Anonymous'}
+              goalAmount={fundraiser.goal_amount}
+              raisedAmount={totalRaised}
+              donorCount={donations.length}
+              progressPercentage={progressPercentage}
+              currency={fundraiser.currency}
+              onDonate={handleDonate}
+              loading={donating}
+            />
 
             {/* Recent Donations */}
             <Card>
               <CardHeader>
-                <CardTitle>Recent Donations</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Recent Donations ({donations.length})
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {donations.slice(0, 5).map((donation) => (
-                    <div key={donation.id} className="flex justify-between items-center">
-                      <span className="font-medium">{donation.profiles?.name || 'Anonymous'}</span>
-                      <span className="text-primary font-semibold">
-                        {formatAmount(donation.amount)}
-                      </span>
+                <div className="space-y-4">
+                  {donations.slice(0, 10).map((donation) => (
+                    <div key={donation.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarFallback className="text-xs">
+                            {donation.profiles?.name?.charAt(0) || 'A'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium text-sm">{donation.profiles?.name || 'Anonymous'}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {formatDate(donation.created_at)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-primary">
+                          {formatAmount(donation.amount)}
+                        </p>
+                      </div>
                     </div>
                   ))}
                   
                   {donations.length === 0 && (
-                    <p className="text-center text-muted-foreground">
-                      No donations yet. Be the first!
-                    </p>
+                    <div className="text-center py-8">
+                      <Heart className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+                      <p className="text-muted-foreground">No donations yet.</p>
+                      <p className="text-sm text-muted-foreground">Be the first to support this cause!</p>
+                    </div>
                   )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Campaign Stats */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Campaign Stats</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Created</span>
+                  <span>{formatDate(fundraiser.created_at)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Category</span>
+                  <Badge variant="outline">{fundraiser.category}</Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Donors</span>
+                  <span>{donations.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Shares</span>
+                  <span>0</span>
                 </div>
               </CardContent>
             </Card>
