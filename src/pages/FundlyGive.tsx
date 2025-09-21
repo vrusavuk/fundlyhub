@@ -5,7 +5,7 @@ import { ArrowRight, Zap, Shield, Receipt, CheckCircle, CreditCard, Building2, U
 import { Link } from "react-router-dom";
 
 // Partner logos
-import adpLogo from "@/assets/adp-logo.png";
+import adpLogo from "@/assets/partners/adp-logo.png";
 import paychexLogo from "@/assets/partners/paychex-logo.png";
 import workdayLogo from "@/assets/partners/workday-logo.png";
 import bamboohrLogo from "@/assets/partners/bamboohr-logo.png";
