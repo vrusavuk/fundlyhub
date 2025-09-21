@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import CreateFundraiser from "./pages/CreateFundraiser";
 import FundraiserDetail from "./pages/FundraiserDetail";
+import AllCampaigns from "./pages/AllCampaigns";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/campaigns" element={<AllCampaigns />} />
             <Route path="/create" element={
               <ProtectedRoute>
                 <CreateFundraiser />

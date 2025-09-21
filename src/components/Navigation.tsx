@@ -28,11 +28,11 @@ export function Navigation() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
             <Link to="/" className="text-foreground hover:text-primary transition-smooth">
-              Browse
+              Home
             </Link>
-            <a href="#" className="text-foreground hover:text-primary transition-smooth">
-              Categories
-            </a>
+            <Link to="/campaigns" className="text-foreground hover:text-primary transition-smooth">
+              All Campaigns
+            </Link>
             <a href="#" className="text-foreground hover:text-primary transition-smooth">
               How it works
             </a>
@@ -102,11 +102,11 @@ export function Navigation() {
                 />
               </div>
               <Link to="/" className="text-foreground hover:text-primary transition-smooth py-2">
-                Browse
+                Home
               </Link>
-              <a href="#" className="text-foreground hover:text-primary transition-smooth py-2">
-                Categories
-              </a>
+              <Link to="/campaigns" className="text-foreground hover:text-primary transition-smooth py-2">
+                All Campaigns
+              </Link>
               <a href="#" className="text-foreground hover:text-primary transition-smooth py-2">
                 How it works
               </a>
