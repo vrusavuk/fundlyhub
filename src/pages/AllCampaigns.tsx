@@ -15,11 +15,10 @@ export default function AllCampaigns() {
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(true);
   const [activeFilters, setActiveFilters] = useState({
     categories: [],
-    location: 'Worldwide',
-    goalRange: [0, 100000] as [number, number],
-    sortBy: 'recent',
-    timeframe: 'all',
-    status: []
+    location: 'All locations',
+    timePeriod: 'all',
+    nonprofitsOnly: false,
+    closeToGoal: false
   });
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -59,13 +58,13 @@ export default function AllCampaigns() {
         activeFilters.categories.length === 0 ||
         activeFilters.categories.includes(fundraiser.category || '');
       
-      const matchesGoalRange = fundraiser.goal_amount >= activeFilters.goalRange[0] && 
-        fundraiser.goal_amount <= activeFilters.goalRange[1];
-      
-      const matchesLocation = activeFilters.location === 'Worldwide' || 
+      const matchesLocation = activeFilters.location === 'All locations' || 
         fundraiser.location?.toLowerCase().includes(activeFilters.location.toLowerCase());
       
-      return matchesSearch && matchesCategory && matchesGoalRange && matchesLocation;
+      // Simple time period filtering (would need actual date logic in real implementation)
+      const matchesTimePeriod = activeFilters.timePeriod === 'all';
+      
+      return matchesSearch && matchesCategory && matchesLocation && matchesTimePeriod;
     });
   }, [fundraisers, searchQuery, selectedCategory, activeFilters]);
 
@@ -76,11 +75,10 @@ export default function AllCampaigns() {
   const getActiveFiltersCount = () => {
     let count = 0;
     if (activeFilters.categories.length > 0) count++;
-    if (activeFilters.location !== 'Worldwide') count++;
-    if (activeFilters.goalRange[0] > 0 || activeFilters.goalRange[1] < 100000) count++;
-    if (activeFilters.sortBy !== 'recent') count++;
-    if (activeFilters.timeframe !== 'all') count++;
-    if (activeFilters.status.length > 0) count++;
+    if (activeFilters.location !== 'All locations') count++;
+    if (activeFilters.timePeriod !== 'all') count++;
+    if (activeFilters.nonprofitsOnly) count++;
+    if (activeFilters.closeToGoal) count++;
     return count;
   };
 
