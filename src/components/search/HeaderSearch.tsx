@@ -6,8 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
-import { HighlightedText } from "@/components/search/HighlightedText";
-import { useSearch } from "@/hooks/useSearch";
+import { SearchResultItem } from "./SearchResultItem";
+import { useEnhancedSearch } from "@/hooks/useEnhancedSearch";
 import { useGlobalSearch } from "@/contexts/SearchContext";
 import { Search, X, ArrowRight, Heart, User, Building2 } from "lucide-react";
 
@@ -43,7 +43,7 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
   const location = useLocation();
   const { setSearchQuery, clearSearch, searchQuery: globalSearchQuery } = useGlobalSearch();
 
-  const { results, loading } = useSearch({
+  const { results, loading } = useEnhancedSearch({
     query,
     enabled: !!query && query.length >= 2
   });
@@ -286,48 +286,13 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
                       ) : (
                         <>
                           {dropdownResults.map((result, index) => (
-                            <button
+                            <SearchResultItem
                               key={`${result.type}-${result.id}-${index}`}
+                              result={result}
+                              searchQuery={query}
+                              variant="compact"
                               onClick={() => handleResultClick(result)}
-                              className="w-full text-left p-4 hover:bg-muted/50 transition-colors"
-                            >
-                              <div className="flex items-start gap-3">
-                                {result.image && (
-                                  <Avatar className="h-8 w-8 flex-shrink-0">
-                                    <AvatarImage src={result.image} alt={result.title} />
-                                    <AvatarFallback className="text-xs">
-                                      {getTypeIcon(result.type)}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                )}
-                                
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <Badge className={getTypeColor(result.type)} variant="secondary">
-                                      {getTypeIcon(result.type)}
-                                      <span className="ml-1 capitalize text-xs">{result.type}</span>
-                                    </Badge>
-                                  </div>
-                            
-                            <h4 className="font-medium text-sm mb-1 truncate">
-                              <HighlightedText
-                                text={result.title}
-                                searchQuery={query}
-                                className="font-medium text-sm"
-                              />
-                            </h4>
-                            
-                            {result.subtitle && (
-                              <HighlightedText
-                                text={result.subtitle}
-                                searchQuery={query}
-                                className="text-xs text-muted-foreground truncate"
-                                as="p"
-                              />
-                            )}
-                                </div>
-                              </div>
-                            </button>
+                            />
                           ))}
                           
                           {/* View All Results */}
