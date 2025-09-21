@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { FundraiserGrid } from "@/components/fundraisers/FundraiserGrid";
+import { IntegratedCampaignSearch } from "@/components/search/IntegratedCampaignSearch";
 import { Button } from "@/components/ui/button";
 import { SlidersHorizontal } from "lucide-react";
 import { useFundraisers } from "@/hooks/useFundraisers";
@@ -11,7 +12,7 @@ export default function AllCampaigns() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { searchQuery } = useGlobalSearch();
+  const { searchQuery, clearSearch } = useGlobalSearch();
 
   // Get initial category from URL parameters  
   const initialCategory = searchParams.get('category') || 'All';
@@ -34,19 +35,20 @@ export default function AllCampaigns() {
     limit: 24
   });
 
-  // Real-time filtering of fundraisers
+  // Real-time filtering of fundraisers using either local search or global search
+  const searchTerm = searchQuery || "";
   const filteredFundraisers = useMemo(() => {
     return fundraisers.filter((fundraiser) => {
-      const matchesSearch = !searchQuery || 
-        fundraiser.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        fundraiser.summary?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        fundraiser.profiles?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = !searchTerm || 
+        fundraiser.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        fundraiser.summary?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        fundraiser.profiles?.name?.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesCategory = selectedCategory === "All" || fundraiser.category === selectedCategory;
       
       return matchesSearch && matchesCategory;
     });
-  }, [fundraisers, searchQuery, selectedCategory]);
+  }, [fundraisers, searchTerm, selectedCategory]);
 
   const handleCardClick = (slug: string) => {
     navigate(`/fundraiser/${slug}`);
@@ -67,6 +69,14 @@ export default function AllCampaigns() {
           </div>
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <span>{filteredFundraisers.length} campaigns found</span>
+            {(searchQuery || selectedCategory !== "All") && (
+              <Button variant="outline" size="sm" onClick={() => {
+                clearSearch();
+                setSelectedCategory("All");
+              }}>
+                Clear Filters
+              </Button>
+            )}
             <Button variant="outline" size="sm">
               <SlidersHorizontal className="h-4 w-4 mr-2" />
               Filters
@@ -74,6 +84,15 @@ export default function AllCampaigns() {
           </div>
         </div>
 
+        {/* Integrated Campaign Search */}
+        <IntegratedCampaignSearch
+          onSearchChange={(query) => {}} // This will be handled by global context
+          onCategoryChange={setSelectedCategory}
+          selectedCategory={selectedCategory}
+          resultCount={filteredFundraisers.length}
+          totalCount={fundraisers.length}
+          className="mb-6"
+        />
 
         {/* Campaign Grid */}
         <FundraiserGrid
@@ -86,7 +105,7 @@ export default function AllCampaigns() {
           onCardClick={handleCardClick}
           onRetry={refresh}
           emptyMessage={
-            searchQuery || selectedCategory !== "All" 
+            searchTerm || selectedCategory !== "All" 
               ? "Try adjusting your search or filters"
               : "No campaigns are currently available"
           }
