@@ -333,24 +333,19 @@ export function DonationWidget({
       {/* Share card - Only show in summary view */}
       {!showDonationForm && (
         <Card className="animate-fade-in">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Share2 className="h-5 w-5" />
-              Share this fundraiser
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-3">
+          <CardContent className="p-4">
+            <div className="flex gap-2">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       variant="outline"
+                      size="sm"
                       onClick={() => handleShare('facebook')}
-                      className="flex items-center gap-2 hover-scale"
+                      className="flex items-center gap-2 hover-scale flex-1"
                     >
                       <Facebook className="h-4 w-4" />
-                      Facebook
+                      Share
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Share on Facebook</TooltipContent>
@@ -362,11 +357,12 @@ export function DonationWidget({
                   <TooltipTrigger asChild>
                     <Button
                       variant="outline"
+                      size="sm"
                       onClick={() => handleShare('twitter')}
-                      className="flex items-center gap-2 hover-scale"
+                      className="flex items-center gap-2 hover-scale flex-1"
                     >
                       <Twitter className="h-4 w-4" />
-                      Twitter
+                      Tweet
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Share on Twitter</TooltipContent>
@@ -375,19 +371,14 @@ export function DonationWidget({
 
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => handleShare()}
-                className="flex items-center gap-2 col-span-2 hover-scale"
+                className="flex items-center gap-2 hover-scale"
               >
                 {copied ? (
-                  <>
-                    <Check className="h-4 w-4 text-green-500" />
-                    Copied!
-                  </>
+                  <Check className="h-4 w-4 text-green-500" />
                 ) : (
-                  <>
-                    <Copy className="h-4 w-4" />
-                    Copy Link
-                  </>
+                  <Copy className="h-4 w-4" />
                 )}
               </Button>
             </div>

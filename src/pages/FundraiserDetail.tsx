@@ -14,7 +14,7 @@ import { Navigation } from '@/components/Navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Heart, Share2, Flag, Calendar, Users, MapPin, Verified, Clock } from 'lucide-react';
+import { Heart, Share2, Flag, Calendar, Users, MapPin, Verified, Clock, Facebook, Twitter, Copy } from 'lucide-react';
 
 interface Fundraiser {
   id: string;
@@ -362,6 +362,98 @@ export default function FundraiserDetail() {
               />
             </div>
 
+            {/* Share Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Share2 className="h-5 w-5" />
+                  Share this fundraiser
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const url = `${window.location.origin}/fundraiser/${fundraiser.slug}`;
+                      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+                    }}
+                    className="flex items-center gap-2 hover-scale"
+                  >
+                    <Facebook className="h-4 w-4" />
+                    Facebook
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const url = `${window.location.origin}/fundraiser/${fundraiser.slug}`;
+                      const text = `Help support: ${fundraiser.title}`;
+                      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+                    }}
+                    className="flex items-center gap-2 hover-scale"
+                  >
+                    <Twitter className="h-4 w-4" />
+                    Twitter
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(`${window.location.origin}/fundraiser/${fundraiser.slug}`);
+                        toast({ title: "Link copied!", description: "Fundraiser link copied to clipboard" });
+                      } catch (err) {
+                        toast({ title: "Failed to copy", variant: "destructive" });
+                      }
+                    }}
+                    className="flex items-center gap-2 hover-scale"
+                  >
+                    <Copy className="h-4 w-4" />
+                    Copy Link
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Recent Donors - Horizontal Scroll */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Recent Donors ({donations.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {donations.length > 0 ? (
+                  <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-track-muted scrollbar-thumb-muted-foreground">
+                    {donations.slice(0, 20).map((donation) => (
+                      <div key={donation.id} className="flex-shrink-0 text-center min-w-[80px]">
+                        <Avatar className="h-12 w-12 mx-auto mb-2">
+                          <AvatarFallback className="text-sm font-medium">
+                            {donation.profiles?.name?.charAt(0) || 'A'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <p className="text-xs font-medium truncate">{donation.profiles?.name || 'Anonymous'}</p>
+                        <p className="text-xs text-primary font-semibold">
+                          {formatAmount(donation.amount)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatDate(donation.created_at)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Heart className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+                    <p className="text-muted-foreground">No donations yet.</p>
+                    <p className="text-sm text-muted-foreground">Be the first to support this cause!</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Tabs for Story, Updates, Comments */}
             <Tabs defaultValue="story" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
@@ -437,10 +529,101 @@ export default function FundraiserDetail() {
                 </div>
               </TabsContent>
             </Tabs>
+            {/* Share Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Share2 className="h-5 w-5" />
+                  Share this fundraiser
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const url = `${window.location.origin}/fundraiser/${fundraiser.slug}`;
+                      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+                    }}
+                    className="flex items-center gap-2 hover-scale"
+                  >
+                    <Facebook className="h-4 w-4" />
+                    Facebook
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const url = `${window.location.origin}/fundraiser/${fundraiser.slug}`;
+                      const text = `Help support: ${fundraiser.title}`;
+                      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+                    }}
+                    className="flex items-center gap-2 hover-scale"
+                  >
+                    <Twitter className="h-4 w-4" />
+                    Twitter
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(`${window.location.origin}/fundraiser/${fundraiser.slug}`);
+                        toast({ title: "Link copied!", description: "Fundraiser link copied to clipboard" });
+                      } catch (err) {
+                        toast({ title: "Failed to copy", variant: "destructive" });
+                      }
+                    }}
+                    className="flex items-center gap-2 hover-scale"
+                  >
+                    <Copy className="h-4 w-4" />
+                    Copy Link
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Recent Donors - Horizontal Scroll */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Recent Donors ({donations.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {donations.length > 0 ? (
+                  <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-track-muted scrollbar-thumb-muted-foreground">
+                    {donations.slice(0, 20).map((donation) => (
+                      <div key={donation.id} className="flex-shrink-0 text-center min-w-[80px]">
+                        <Avatar className="h-12 w-12 mx-auto mb-2">
+                          <AvatarFallback className="text-sm font-medium">
+                            {donation.profiles?.name?.charAt(0) || 'A'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <p className="text-xs font-medium truncate">{donation.profiles?.name || 'Anonymous'}</p>
+                        <p className="text-xs text-primary font-semibold">
+                          {formatAmount(donation.amount)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatDate(donation.created_at)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Heart className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+                    <p className="text-muted-foreground">No donations yet.</p>
+                    <p className="text-sm text-muted-foreground">Be the first to support this cause!</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Sidebar - Desktop Only */}
-          <div className="hidden lg:block space-y-6">
+          {/* Sidebar - Desktop Only - Just Donation Widget */}
+          <div className="hidden lg:block">
             <DonationWidget
               fundraiserId={fundraiser.id}
               title={fundraiser.title}
@@ -454,75 +637,6 @@ export default function FundraiserDetail() {
               loading={donating}
               isFloating={true}
             />
-
-            {/* Recent Donations */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Recent Donations ({donations.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {donations.slice(0, 10).map((donation) => (
-                    <div key={donation.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback className="text-xs">
-                            {donation.profiles?.name?.charAt(0) || 'A'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium text-sm">{donation.profiles?.name || 'Anonymous'}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {formatDate(donation.created_at)}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-primary">
-                          {formatAmount(donation.amount)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {donations.length === 0 && (
-                    <div className="text-center py-8">
-                      <Heart className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
-                      <p className="text-muted-foreground">No donations yet.</p>
-                      <p className="text-sm text-muted-foreground">Be the first to support this cause!</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Campaign Stats */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Campaign Stats</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Created</span>
-                  <span>{formatDate(fundraiser.created_at)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Category</span>
-                  <Badge variant="outline">{fundraiser.category}</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Donors</span>
-                  <span>{donations.length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Shares</span>
-                  <span>0</span>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
