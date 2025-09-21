@@ -178,27 +178,30 @@ export default function AllCampaigns() {
     <div className="min-h-screen bg-gradient-subtle">
       <Navigation />
       
-      <main className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-4">All Campaigns</h1>
-          <p className="text-lg text-muted-foreground">
-            Discover and support amazing causes from around the world
-          </p>
-        </div>
-
-        {/* Enhanced Search and Filters */}
-        <div className="mb-8 space-y-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <EnhancedSearch 
-                placeholder="Search all campaigns, users, organizations..."
-              />
-            </div>
-            <Button variant="outline" className="md:w-auto">
+      <main className="container mx-auto px-4 py-6">
+        {/* Compact Header */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl font-bold">All Campaigns</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Discover and support amazing causes from around the world
+            </p>
+          </div>
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <span>{filteredFundraisers.length} campaigns found</span>
+            <Button variant="outline" size="sm">
               <SlidersHorizontal className="h-4 w-4 mr-2" />
               Filters
             </Button>
+          </div>
+        </div>
+
+        {/* Enhanced Search and Category Filters */}
+        <div className="mb-6 space-y-4">
+          <div className="max-w-2xl">
+            <EnhancedSearch 
+              placeholder="Search all campaigns, users, organizations..."
+            />
           </div>
           
           {/* Category Filter */}
@@ -214,13 +217,6 @@ export default function AllCampaigns() {
               </Badge>
             ))}
           </div>
-        </div>
-
-        {/* Results count */}
-        <div className="mb-6">
-          <p className="text-muted-foreground">
-            {filteredFundraisers.length} campaign{filteredFundraisers.length !== 1 ? 's' : ''} found
-          </p>
         </div>
 
         {/* Campaign Grid */}
