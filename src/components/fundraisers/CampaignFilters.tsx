@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
@@ -16,6 +17,7 @@ import { CATEGORIES } from '@/types/fundraiser';
 interface FilterState {
   categories: string[];
   location: string;
+  locationInput: string;
   timePeriod: string;
   nonprofitsOnly: boolean;
   closeToGoal: boolean;
@@ -51,6 +53,7 @@ export function CampaignFilters({
   const [filters, setFilters] = useState<FilterState>({
     categories: [],
     location: 'All locations',
+    locationInput: '',
     timePeriod: 'all',
     nonprofitsOnly: false,
     closeToGoal: false
@@ -73,6 +76,7 @@ export function CampaignFilters({
     const defaultFilters: FilterState = {
       categories: [],
       location: 'All locations',
+      locationInput: '',
       timePeriod: 'all',
       nonprofitsOnly: false,
       closeToGoal: false
@@ -84,7 +88,7 @@ export function CampaignFilters({
   const getActiveFiltersCount = () => {
     let count = 0;
     if (filters.categories.length > 0) count++;
-    if (filters.location !== 'All locations') count++;
+    if (filters.location !== 'All locations' || filters.locationInput.trim() !== '') count++;
     if (filters.timePeriod !== 'all') count++;
     if (filters.nonprofitsOnly) count++;
     if (filters.closeToGoal) count++;
@@ -117,28 +121,62 @@ export function CampaignFilters({
                 
                 <div className="space-y-6 py-4">
                   
-                  {/* Categories Section */}
-                  <div>
-                    <Label className="text-base font-medium mb-3 block">Categories</Label>
-                    <div className="grid grid-cols-2 gap-3">
-                      {CATEGORIES.map((category) => (
-                        <div key={category.name} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`dialog-${category.name}`}
-                            checked={filters.categories.includes(category.name)}
-                            onCheckedChange={() => handleCategoryToggle(category.name)}
-                          />
-                          <Label 
-                            htmlFor={`dialog-${category.name}`} 
-                            className="text-sm flex items-center gap-2 cursor-pointer"
-                          >
-                            <span>{category.emoji}</span>
-                            {category.name}
-                          </Label>
-                        </div>
-                      ))}
-                    </div>
+                {/* Categories Section */}
+                <div>
+                  <Label className="text-base font-medium mb-3 block">Categories</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {CATEGORIES.map((category) => (
+                      <Badge
+                        key={category.name}
+                        variant={filters.categories.includes(category.name) ? 'default' : 'outline'}
+                        className="cursor-pointer transition-all hover:bg-primary hover:text-primary-foreground"
+                        onClick={() => handleCategoryToggle(category.name)}
+                      >
+                        <span className="mr-1">{category.emoji}</span>
+                        {category.name}
+                      </Badge>
+                    ))}
                   </div>
+                </div>
+
+                {/* Location Section */}
+                <div className="space-y-4">
+                  <Label className="text-base font-medium mb-3 block flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    Location
+                  </Label>
+                  
+                  {/* Location Dropdown */}
+                  <div>
+                    <Label className="text-sm font-medium mb-2 block">Region</Label>
+                    <Select value={filters.location} onValueChange={(value) => handleFilterChange('location', value)}>
+                      <SelectTrigger className="bg-background border border-border">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border border-border z-50">
+                        {LOCATIONS.map((location) => (
+                          <SelectItem key={location} value={location}>
+                            {location}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Location Input */}
+                  <div>
+                    <Label className="text-sm font-medium mb-2 block">City or Zip Code</Label>
+                    <Input
+                      placeholder="Enter city name or zip code..."
+                      value={filters.locationInput}
+                      onChange={(e) => handleFilterChange('locationInput', e.target.value)}
+                      className="bg-background border border-border"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      e.g., "New York", "90210", "London"
+                    </p>
+                  </div>
+                </div>
 
                   {/* Time Period */}
                   <div>
@@ -293,6 +331,11 @@ export function CampaignFilters({
                   {filters.location !== 'All locations' && (
                     <Badge variant="secondary" className="text-xs py-0 px-2 h-6">
                       📍 {filters.location}
+                    </Badge>
+                  )}
+                  {filters.locationInput.trim() !== '' && (
+                    <Badge variant="secondary" className="text-xs py-0 px-2 h-6">
+                      📍 {filters.locationInput}
                     </Badge>
                   )}
                   {filters.nonprofitsOnly && (
