@@ -107,9 +107,9 @@ export default function AllCampaigns() {
                 </div>
                 <div className="flex flex-col items-end">
                   <span className="font-medium text-blue-600">
-                    {campaignStats.loading ? '...' : campaignStats.successfulCampaigns.toLocaleString()} Funded
+                    {campaignStats.loading ? '...' : campaignStats.successfulCampaigns.toLocaleString()} Closed
                   </span>
-                  <span className="text-xs text-muted-foreground">successful</span>
+                  <span className="text-xs text-muted-foreground">campaigns</span>
                 </div>
                 <div className="flex flex-col items-end">
                   <span className="font-medium text-primary">

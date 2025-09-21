@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface CampaignStats {
   activeCampaigns: number;
-  successfulCampaigns: number;
+  successfulCampaigns: number; // This will now represent closed campaigns
   totalFundsRaised: number;
   loading: boolean;
   error: string | null;
@@ -32,11 +32,20 @@ export function useCampaignStats() {
 
         if (activeError) throw activeError;
 
-        // Get all active fundraisers with their donation totals
+        // Get closed campaigns count
+        const { count: closedCount, error: closedError } = await supabase
+          .from('fundraisers')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'closed')
+          .eq('visibility', 'public');
+
+        if (closedError) throw closedError;
+
+        // Get all fundraisers (active and closed) with their donation totals
         const { data: fundraisers, error: fundraisersError } = await supabase
           .from('fundraisers')
-          .select('id, goal_amount')
-          .eq('status', 'active')
+          .select('id, goal_amount, status')
+          .in('status', ['active', 'closed'])
           .eq('visibility', 'public');
 
         if (fundraisersError) throw fundraisersError;
@@ -57,21 +66,16 @@ export function useCampaignStats() {
           fundraiserTotals.set(donation.fundraiser_id, currentTotal + Number(donation.amount));
         });
 
-        // Count successful campaigns (reached or exceeded goal)
-        let successfulCount = 0;
+        // Calculate total funds raised from all campaigns
         let totalRaised = 0;
-
         fundraisers?.forEach(fundraiser => {
           const raised = fundraiserTotals.get(fundraiser.id) || 0;
           totalRaised += raised;
-          if (raised >= Number(fundraiser.goal_amount)) {
-            successfulCount++;
-          }
         });
 
         setStats({
           activeCampaigns: activeCount || 0,
-          successfulCampaigns: successfulCount,
+          successfulCampaigns: closedCount || 0, // Show closed campaigns instead of successful ones
           totalFundsRaised: totalRaised,
           loading: false,
           error: null
