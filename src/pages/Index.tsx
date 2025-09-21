@@ -170,6 +170,71 @@ const Index = () => {
       {/* Trust indicators */}
       <TrustBadges />
 
+      {/* Category filters */}
+      <CategoryFilter />
+
+      {/* Featured Campaigns */}
+      <section className="py-20 bg-secondary/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4">Featured campaigns</h2>
+            <p className="text-xl text-muted-foreground">Support these urgent causes making a difference right now</p>
+          </div>
+          
+          {loading ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="bg-muted rounded-lg h-64"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {fundraisers.map((fundraiser, index) => (
+                <EnhancedFundraiserCard
+                  key={fundraiser.id}
+                  id={fundraiser.id}
+                  title={fundraiser.title}
+                  summary={fundraiser.summary || ""}
+                  goalAmount={fundraiser.goal_amount}
+                  raisedAmount={donations[fundraiser.id] || 0}
+                  currency={fundraiser.currency}
+                  coverImage={fundraiser.cover_image || "/placeholder.svg"}
+                  category={fundraiser.category || "General"}
+                  organizationName={fundraiser.profiles?.name || "Anonymous"}
+                  location={fundraiser.location || undefined}
+                  donorCount={Math.floor(Math.random() * 50) + 1}
+                  daysLeft={Math.floor(Math.random() * 60) + 1}
+                  urgency={index % 3 === 0 ? 'high' : index % 2 === 0 ? 'medium' : 'low'}
+                  isVerified={index % 4 === 0}
+                  isOrganization={index % 5 === 0}
+                  onClick={() => handleCardClick(fundraiser.slug)}
+                />
+              ))}
+            </div>
+          )}
+          
+          {!loading && fundraisers.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No fundraisers available at the moment.</p>
+              <Button className="mt-4" asChild>
+                <Link to="/create">Be the first to create one!</Link>
+              </Button>
+            </div>
+          )}
+          
+          <div className="text-center mt-12">
+            <Button variant="outline" size="lg" asChild>
+              <Link to="/">
+                View All Campaigns
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* FundlyPay Feature Section */}
       <section className="py-20 bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -254,70 +319,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Category filters */}
-      <CategoryFilter />
-
-      {/* Featured Campaigns */}
-      <section className="py-20 bg-secondary/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-4">Featured campaigns</h2>
-            <p className="text-xl text-muted-foreground">Support these urgent causes making a difference right now</p>
-          </div>
-          
-          {loading ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="bg-muted rounded-lg h-64"></div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {fundraisers.map((fundraiser, index) => (
-                <EnhancedFundraiserCard
-                  key={fundraiser.id}
-                  id={fundraiser.id}
-                  title={fundraiser.title}
-                  summary={fundraiser.summary || ""}
-                  goalAmount={fundraiser.goal_amount}
-                  raisedAmount={donations[fundraiser.id] || 0}
-                  currency={fundraiser.currency}
-                  coverImage={fundraiser.cover_image || "/placeholder.svg"}
-                  category={fundraiser.category || "General"}
-                  organizationName={fundraiser.profiles?.name || "Anonymous"}
-                  location={fundraiser.location || undefined}
-                  donorCount={Math.floor(Math.random() * 50) + 1}
-                  daysLeft={Math.floor(Math.random() * 60) + 1}
-                  urgency={index % 3 === 0 ? 'high' : index % 2 === 0 ? 'medium' : 'low'}
-                  isVerified={index % 4 === 0}
-                  isOrganization={index % 5 === 0}
-                  onClick={() => handleCardClick(fundraiser.slug)}
-                />
-              ))}
-            </div>
-          )}
-          
-          {!loading && fundraisers.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No fundraisers available at the moment.</p>
-              <Button className="mt-4" asChild>
-                <Link to="/create">Be the first to create one!</Link>
-              </Button>
-            </div>
-          )}
-          
-          <div className="text-center mt-12">
-            <Button variant="outline" size="lg" asChild>
-              <Link to="/">
-                View All Campaigns
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-hero">
