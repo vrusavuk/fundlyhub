@@ -87,6 +87,14 @@ export const CATEGORIES: readonly CategoryData[] = [
   { name: 'Environment', emoji: '🌱', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
   { name: 'Sports', emoji: '⚽', color: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
   { name: 'Arts', emoji: '🎨', color: 'bg-pink-50 text-pink-700 border-pink-200' },
+  { name: 'Business', emoji: '💼', color: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
+  { name: 'Memorial', emoji: '🕯️', color: 'bg-gray-50 text-gray-700 border-gray-200' },
+  { name: 'Charity', emoji: '❤️', color: 'bg-rose-50 text-rose-700 border-rose-200' },
+  { name: 'Religious', emoji: '⛪', color: 'bg-violet-50 text-violet-700 border-violet-200' },
+  { name: 'Travel', emoji: '✈️', color: 'bg-sky-50 text-sky-700 border-sky-200' },
+  { name: 'Technology', emoji: '💻', color: 'bg-slate-50 text-slate-700 border-slate-200' },
+  { name: 'Family', emoji: '👨‍👩‍👧‍👦', color: 'bg-amber-50 text-amber-700 border-amber-200' },
+  { name: 'Housing', emoji: '🏠', color: 'bg-stone-50 text-stone-700 border-stone-200' },
 ] as const;
 
 export type CategoryName = typeof CATEGORIES[number]['name'];

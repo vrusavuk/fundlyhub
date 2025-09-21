@@ -1,116 +1,118 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Search, Heart, Share2, BookmarkPlus, ChevronDown } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-
-const categories = [
-  { name: 'Medical', emoji: '🏥', color: 'bg-red-50 text-red-700 border-red-200' },
-  { name: 'Emergency', emoji: '🚨', color: 'bg-orange-50 text-orange-700 border-orange-200' },
-  { name: 'Education', emoji: '🎓', color: 'bg-blue-50 text-blue-700 border-blue-200' },
-  { name: 'Community', emoji: '🏘️', color: 'bg-green-50 text-green-700 border-green-200' },
-  { name: 'Animal', emoji: '🐾', color: 'bg-purple-50 text-purple-700 border-purple-200' },
-  { name: 'Environment', emoji: '🌱', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  { name: 'Sports', emoji: '⚽', color: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
-  { name: 'Arts', emoji: '🎨', color: 'bg-pink-50 text-pink-700 border-pink-200' },
-];
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CATEGORIES } from '@/types/fundraiser';
+import { Heart, Users, TrendingUp } from 'lucide-react';
 
 export function CategoryFilter() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleCategoryClick = (categoryName: string) => {
+    // Navigate to category page or apply filter
+    window.location.href = `/all-campaigns?category=${encodeURIComponent(categoryName)}`;
+  };
+
+  const getCategoryStats = (categoryName: string) => {
+    // Mock data - in real app this would come from API
+    const stats = {
+      'Medical': { count: 1234, raised: '$2.4M' },
+      'Emergency': { count: 856, raised: '$1.8M' },
+      'Education': { count: 742, raised: '$1.2M' },
+      'Community': { count: 523, raised: '$980K' },
+      'Animal': { count: 394, raised: '$650K' },
+      'Environment': { count: 287, raised: '$420K' },
+      'Sports': { count: 195, raised: '$280K' },
+      'Arts': { count: 143, raised: '$190K' },
+      'Business': { count: 324, raised: '$540K' },
+      'Memorial': { count: 167, raised: '$230K' },
+      'Charity': { count: 445, raised: '$780K' },
+      'Religious': { count: 89, raised: '$120K' },
+      'Travel': { count: 134, raised: '$160K' },
+      'Technology': { count: 76, raised: '$95K' },
+      'Family': { count: 298, raised: '$450K' },
+      'Housing': { count: 203, raised: '$310K' },
+    };
+    return stats[categoryName as keyof typeof stats] || { count: 0, raised: '$0' };
+  };
 
   return (
-    <div className="bg-background py-8 border-b">
+    <div className="bg-background py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Search and Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search fundraisers..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-12 bg-white border-border"
-            />
-          </div>
-          
-          <div className="flex gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="h-12 px-4">
-                  Sort by
-                  <ChevronDown className="ml-2 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem>Most recent</DropdownMenuItem>
-                <DropdownMenuItem>Most funded</DropdownMenuItem>
-                <DropdownMenuItem>Close to goal</DropdownMenuItem>
-                <DropdownMenuItem>Ending soon</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="h-12 px-4">
-                  Location
-                  <ChevronDown className="ml-2 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem>Near me</DropdownMenuItem>
-                <DropdownMenuItem>United States</DropdownMenuItem>
-                <DropdownMenuItem>Canada</DropdownMenuItem>
-                <DropdownMenuItem>United Kingdom</DropdownMenuItem>
-                <DropdownMenuItem>Worldwide</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold mb-4">
+            Browse Fundraising Categories
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Discover causes that matter to you. Every category represents thousands of fundraisers 
+            making a real difference in communities worldwide.
+          </p>
         </div>
 
-        {/* Category Pills */}
-        <div className="flex flex-wrap gap-3">
-          <Button
-            variant={selectedCategory === null ? "default" : "outline"}
-            onClick={() => setSelectedCategory(null)}
-            className="h-10 px-4 rounded-full"
-          >
-            All Categories
-          </Button>
-          
-          {categories.map((category) => (
-            <Button
-              key={category.name}
-              variant={selectedCategory === category.name ? "default" : "outline"}
-              onClick={() => setSelectedCategory(
-                selectedCategory === category.name ? null : category.name
-              )}
-              className="h-10 px-4 rounded-full"
-            >
-              <span className="mr-2">{category.emoji}</span>
-              {category.name}
-            </Button>
-          ))}
-        </div>
-
-        {/* Active Filter Indicator */}
-        {selectedCategory && (
-          <div className="mt-4 flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Showing:</span>
-            <Badge variant="secondary" className="flex items-center gap-1">
-              {categories.find(c => c.name === selectedCategory)?.emoji}
-              {selectedCategory}
-              <button
-                onClick={() => setSelectedCategory(null)}
-                className="ml-1 hover:bg-secondary-foreground/20 rounded-full p-0.5"
+        {/* Category Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {CATEGORIES.map((category) => {
+            const stats = getCategoryStats(category.name);
+            return (
+              <Card 
+                key={category.name}
+                className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-2 hover:border-primary/20"
+                onClick={() => handleCategoryClick(category.name)}
               >
-                ×
-              </button>
-            </Badge>
-          </div>
-        )}
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="text-4xl">{category.emoji}</div>
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                      <Heart className="h-4 w-4" />
+                      <span>{stats.count}</span>
+                    </div>
+                  </div>
+                  
+                  <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">
+                    {category.name}
+                  </h3>
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Active campaigns</span>
+                      <span className="font-medium">{stats.count.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Total raised</span>
+                      <span className="font-medium text-green-600">{stats.raised}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <div className="flex items-center justify-center gap-2 text-sm text-primary group-hover:text-primary-foreground transition-colors">
+                      <span>Explore {category.name} Causes</span>
+                      <TrendingUp className="h-4 w-4" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        {/* Call to Action */}
+        <div className="mt-16 text-center">
+          <Card className="max-w-2xl mx-auto bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
+            <CardContent className="p-8">
+              <Users className="h-12 w-12 mx-auto mb-4 text-primary" />
+              <h3 className="text-2xl font-bold mb-4">
+                Start Your Own Fundraiser
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                Join thousands of people who have successfully raised funds for their causes. 
+                It's free to start and our platform makes it easy to reach your goals.
+              </p>
+              <Button size="lg" className="px-8">
+                Create Fundraiser
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
