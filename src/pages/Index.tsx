@@ -1,12 +1,89 @@
+import { useEffect, useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Navigation } from "@/components/Navigation";
 import { FundraiserCard } from "@/components/FundraiserCard";
 import { CategoryGrid } from "@/components/CategoryGrid";
-import { featuredFundraisers } from "@/data/mockData";
 import { ArrowRight, TrendingUp, Shield, Heart } from "lucide-react";
+import { supabase } from '@/integrations/supabase/client';
 import heroImage from "@/assets/hero-image.jpg";
 
+interface Fundraiser {
+  id: string;
+  title: string;
+  slug: string;
+  summary: string;
+  goal_amount: number;
+  currency: string;
+  category: string;
+  cover_image: string;
+  created_at: string;
+  profiles: {
+    name: string;
+  } | null;
+}
+
 const Index = () => {
+  const [fundraisers, setFundraisers] = useState<Fundraiser[]>([]);
+  const [donations, setDonations] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchFundraisers();
+  }, []);
+
+  const fetchFundraisers = async () => {
+    try {
+      // Fetch active fundraisers
+      const { data: fundraisersData, error: fundraisersError } = await supabase
+        .from('fundraisers')
+        .select(`
+          *,
+          profiles!fundraisers_owner_user_id_fkey(name)
+        `)
+        .eq('status', 'active')
+        .eq('visibility', 'public')
+        .order('created_at', { ascending: false })
+        .limit(6);
+
+      if (fundraisersError) {
+        console.error('Error fetching fundraisers:', fundraisersError);
+        setLoading(false);
+        return;
+      }
+
+      setFundraisers(fundraisersData || []);
+
+      // Fetch donation totals for each fundraiser
+      if (fundraisersData && fundraisersData.length > 0) {
+        const fundraiserIds = fundraisersData.map(f => f.id);
+        const { data: donationsData, error: donationsError } = await supabase
+          .from('donations')
+          .select('fundraiser_id, amount')
+          .in('fundraiser_id', fundraiserIds)
+          .eq('payment_status', 'paid');
+
+        if (!donationsError && donationsData) {
+          const donationTotals: Record<string, number> = {};
+          donationsData.forEach(donation => {
+            donationTotals[donation.fundraiser_id] = 
+              (donationTotals[donation.fundraiser_id] || 0) + Number(donation.amount);
+          });
+          setDonations(donationTotals);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCardClick = (slug: string) => {
+    navigate(`/fundraiser/${slug}`);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -28,12 +105,16 @@ const Index = () => {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button variant="hero" size="lg" className="text-lg px-8 py-6">
-                  Start Your Fundraiser
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                <Button variant="hero" size="lg" className="text-lg px-8 py-6" asChild>
+                  <Link to="/create">
+                    Start Your Fundraiser
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
                 </Button>
-                <Button variant="outline" size="lg" className="text-lg px-8 py-6">
-                  Browse Campaigns
+                <Button variant="outline" size="lg" className="text-lg px-8 py-6" asChild>
+                  <Link to="/">
+                    Browse Campaigns
+                  </Link>
                 </Button>
               </div>
               
@@ -107,20 +188,49 @@ const Index = () => {
             <p className="text-xl text-muted-foreground">Support these urgent causes making a difference right now</p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredFundraisers.slice(0, 6).map((fundraiser) => (
-              <FundraiserCard
-                key={fundraiser.id}
-                {...fundraiser}
-                onClick={() => console.log('Navigate to fundraiser:', fundraiser.id)}
-              />
-            ))}
-          </div>
+          {loading ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="bg-muted rounded-lg h-64"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {fundraisers.map((fundraiser) => (
+                <FundraiserCard
+                  key={fundraiser.id}
+                  id={fundraiser.id}
+                  title={fundraiser.title}
+                  summary={fundraiser.summary}
+                  goalAmount={fundraiser.goal_amount}
+                  raisedAmount={donations[fundraiser.id] || 0}
+                  currency={fundraiser.currency}
+                  coverImage={fundraiser.cover_image}
+                  category={fundraiser.category}
+                  organizationName={fundraiser.profiles?.name}
+                  onClick={() => handleCardClick(fundraiser.slug)}
+                />
+              ))}
+            </div>
+          )}
+          
+          {!loading && fundraisers.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No fundraisers available at the moment.</p>
+              <Button className="mt-4" asChild>
+                <Link to="/create">Be the first to create one!</Link>
+              </Button>
+            </div>
+          )}
           
           <div className="text-center mt-12">
-            <Button variant="outline" size="lg">
-              View All Campaigns
-              <ArrowRight className="ml-2 h-5 w-5" />
+            <Button variant="outline" size="lg" asChild>
+              <Link to="/">
+                View All Campaigns
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
             </Button>
           </div>
         </div>
@@ -135,9 +245,11 @@ const Index = () => {
           <p className="text-xl text-white/90 mb-8">
             Start your fundraiser today and connect with people who want to help
           </p>
-          <Button variant="accent" size="lg" className="text-lg px-8 py-6">
-            Start Your Campaign Now
-            <ArrowRight className="ml-2 h-5 w-5" />
+          <Button variant="accent" size="lg" className="text-lg px-8 py-6" asChild>
+            <Link to="/create">
+              Start Your Campaign Now
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
           </Button>
         </div>
       </section>
@@ -159,7 +271,7 @@ const Index = () => {
             <div>
               <h4 className="font-semibold mb-4">For Fundraisers</h4>
               <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-smooth">Start a Campaign</a></li>
+                <li><Link to="/create" className="hover:text-primary transition-smooth">Start a Campaign</Link></li>
                 <li><a href="#" className="hover:text-primary transition-smooth">Success Stories</a></li>
                 <li><a href="#" className="hover:text-primary transition-smooth">Resources</a></li>
               </ul>

@@ -1,10 +1,17 @@
+import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Heart, User, Menu } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
@@ -12,17 +19,17 @@ export function Navigation() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <div className="flex items-center space-x-2">
+            <Link to="/" className="flex items-center space-x-2">
               <Heart className="h-8 w-8 text-accent" />
               <span className="text-xl font-bold text-primary">FundlyHub</span>
-            </div>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            <a href="#" className="text-foreground hover:text-primary transition-smooth">
+            <Link to="/" className="text-foreground hover:text-primary transition-smooth">
               Browse
-            </a>
+            </Link>
             <a href="#" className="text-foreground hover:text-primary transition-smooth">
               Categories
             </a>
@@ -44,13 +51,32 @@ export function Navigation() {
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-3">
-            <Button variant="outline" size="sm" className="hidden md:inline-flex">
-              <User className="h-4 w-4 mr-2" />
-              Sign In
-            </Button>
-            <Button variant="hero" size="sm">
-              Start Fundraiser
-            </Button>
+            {user ? (
+              <>
+                <span className="hidden md:inline text-sm text-muted-foreground">
+                  Welcome, {user.user_metadata?.name || user.email}
+                </span>
+                <Button variant="outline" size="sm" className="hidden md:inline-flex" onClick={handleSignOut}>
+                  <User className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+                <Button variant="hero" size="sm" asChild>
+                  <Link to="/create">Start Fundraiser</Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" size="sm" className="hidden md:inline-flex" asChild>
+                  <Link to="/auth">
+                    <User className="h-4 w-4 mr-2" />
+                    Sign In
+                  </Link>
+                </Button>
+                <Button variant="hero" size="sm" asChild>
+                  <Link to="/create">Start Fundraiser</Link>
+                </Button>
+              </>
+            )}
             
             {/* Mobile Menu Button */}
             <Button 
@@ -75,19 +101,28 @@ export function Navigation() {
                   className="pl-10 bg-secondary/50 border-0"
                 />
               </div>
-              <a href="#" className="text-foreground hover:text-primary transition-smooth py-2">
+              <Link to="/" className="text-foreground hover:text-primary transition-smooth py-2">
                 Browse
-              </a>
+              </Link>
               <a href="#" className="text-foreground hover:text-primary transition-smooth py-2">
                 Categories
               </a>
               <a href="#" className="text-foreground hover:text-primary transition-smooth py-2">
                 How it works
               </a>
-              <Button variant="outline" size="sm" className="justify-start">
-                <User className="h-4 w-4 mr-2" />
-                Sign In
-              </Button>
+              {user ? (
+                <Button variant="outline" size="sm" className="justify-start" onClick={handleSignOut}>
+                  <User className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+              ) : (
+                <Button variant="outline" size="sm" className="justify-start" asChild>
+                  <Link to="/auth">
+                    <User className="h-4 w-4 mr-2" />
+                    Sign In
+                  </Link>
+                </Button>
+              )}
             </div>
           </div>
         )}
