@@ -2,6 +2,7 @@
  * Custom hook for managing fundraiser data fetching and state
  */
 import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   fetchFundraisers, 
   fetchDonationTotals,
@@ -35,24 +36,37 @@ export function useFundraisers(options: FundraiserQueryOptions = {}): UseFundrai
       setError(null);
 
       const currentOffset = isLoadMore ? offset : 0;
-      const data = await fetchFundraisers({
-        ...options,
-        offset: currentOffset,
-        limit
-      });
+      
+      // Fetch fundraisers and donations in parallel for consistency
+      const [fundraiserData, donationData] = await Promise.all([
+        fetchFundraisers({
+          ...options,
+          offset: currentOffset,
+          limit
+        }),
+        // Always fetch donations for all fundraisers to ensure consistency
+        supabase
+          .from('donations')
+          .select('fundraiser_id, amount')
+          .eq('payment_status', 'paid')
+      ]);
 
-      if (data.length < limit) {
+      if (fundraiserData.length < limit) {
         setHasMore(false);
       }
 
-      const newFundraisers = isLoadMore ? [...fundraisers, ...data] : data;
+      const newFundraisers = isLoadMore ? [...fundraisers, ...fundraiserData] : fundraiserData;
       setFundraisers(newFundraisers as Fundraiser[]);
 
-      // Fetch donation totals
-      const fundraiserIds = data.map(f => f.id);
-      if (fundraiserIds.length > 0) {
-        const donationTotals = await fetchDonationTotals(fundraiserIds);
-        setDonations(prev => ({ ...prev, ...donationTotals }));
+      // Calculate donation totals from the complete dataset
+      if (donationData.data) {
+        const donationTotals = donationData.data.reduce((totals, donation) => {
+          totals[donation.fundraiser_id] = 
+            (totals[donation.fundraiser_id] || 0) + Number(donation.amount);
+          return totals;
+        }, {} as Record<string, number>);
+        
+        setDonations(donationTotals);
       }
 
       if (isLoadMore) {
@@ -65,18 +79,42 @@ export function useFundraisers(options: FundraiserQueryOptions = {}): UseFundrai
     } finally {
       setLoading(false);
     }
-  }, [options, offset, limit, fundraisers]);
+  }, [options, offset, limit]);
 
   const loadMore = useCallback(() => loadFundraisers(true), [loadFundraisers]);
 
   const refresh = useCallback(() => {
     setOffset(0);
     setHasMore(true);
+    setDonations({}); // Clear donations to prevent stale data
     return loadFundraisers(false);
   }, [loadFundraisers]);
 
   useEffect(() => {
     loadFundraisers(false);
+    
+    // Set up real-time subscription for donations to keep data in sync
+    const channel = supabase
+      .channel('fundraiser-donations-sync')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'donations'
+        },
+        () => {
+          // Refresh donation data when new donations are made
+          setTimeout(() => {
+            loadFundraisers(false);
+          }, 1000);
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [options.category, options.searchTerm]);
 
   return {

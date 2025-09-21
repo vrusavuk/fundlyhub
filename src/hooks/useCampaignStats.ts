@@ -23,46 +23,49 @@ export function useCampaignStats() {
       try {
         setStats(prev => ({ ...prev, loading: true, error: null }));
 
-        // Get active campaigns count
-        const { count: activeCount, error: activeError } = await supabase
-          .from('fundraisers')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'active')
-          .eq('visibility', 'public');
+        // Use a single transaction-like approach to get consistent data
+        const [activeCountResult, closedCountResult, donationsResult] = await Promise.all([
+          // Get active campaigns count
+          supabase
+            .from('fundraisers')
+            .select('*', { count: 'exact', head: true })
+            .eq('status', 'active')
+            .eq('visibility', 'public'),
+          
+          // Get closed campaigns count  
+          supabase
+            .from('fundraisers')
+            .select('*', { count: 'exact', head: true })
+            .eq('status', 'closed')
+            .eq('visibility', 'public'),
+          
+          // Get all donations with their fundraiser info in one query
+          supabase
+            .from('donations')
+            .select(`
+              amount,
+              fundraisers!inner(
+                status,
+                visibility
+              )
+            `)
+            .eq('payment_status', 'paid')
+            .eq('fundraisers.visibility', 'public')
+            .in('fundraisers.status', ['active', 'closed'])
+        ]);
 
-        if (activeError) throw activeError;
+        if (activeCountResult.error) throw activeCountResult.error;
+        if (closedCountResult.error) throw closedCountResult.error;
+        if (donationsResult.error) throw donationsResult.error;
 
-        // Get closed campaigns count
-        const { count: closedCount, error: closedError } = await supabase
-          .from('fundraisers')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'closed')
-          .eq('visibility', 'public');
-
-        if (closedError) throw closedError;
-
-        // Get all donations to calculate total funds raised
-        const { data: allDonations, error: donationsError } = await supabase
-          .from('donations')
-          .select(`
-            amount,
-            fundraiser_id,
-            fundraisers!inner(status, visibility)
-          `)
-          .eq('payment_status', 'paid')
-          .eq('fundraisers.visibility', 'public')
-          .in('fundraisers.status', ['active', 'closed']);
-
-        if (donationsError) throw donationsError;
-
-        // Calculate total funds raised across all campaigns
-        const totalRaised = allDonations?.reduce((sum, donation) => {
+        // Calculate total funds raised from all campaigns
+        const totalRaised = donationsResult.data?.reduce((sum, donation) => {
           return sum + Number(donation.amount);
         }, 0) || 0;
 
         setStats({
-          activeCampaigns: activeCount || 0,
-          successfulCampaigns: closedCount || 0,
+          activeCampaigns: activeCountResult.count || 0,
+          successfulCampaigns: closedCountResult.count || 0,
           totalFundsRaised: totalRaised,
           loading: false,
           error: null
