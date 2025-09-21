@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Search, X, Users, Building, Heart } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -83,7 +84,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   if (!isOpen) return null;
 
-  return (
+  const modalContent = (
     <>
       {/* Full Screen Backdrop - TESTING WITH RED BACKGROUND */}
       <div 
@@ -247,4 +248,6 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       </div>
     </>
   );
+
+  return createPortal(modalContent, document.body);
 }
