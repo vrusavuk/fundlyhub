@@ -50,7 +50,10 @@ export function Navigation() {
               variant="ghost" 
               size="icon"
               className="hidden md:flex"
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              onClick={() => {
+                console.log('Search button clicked, current state:', isSearchOpen);
+                setIsSearchOpen(!isSearchOpen);
+              }}
             >
               <Search className="h-5 w-5" />
             </Button>

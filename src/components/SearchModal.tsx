@@ -81,9 +81,23 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   if (!isOpen) return null;
 
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm" onClick={onClose}>
-      <div className="fixed inset-0 flex items-start justify-center pt-[10vh]" onClick={(e) => e.stopPropagation()}>
+    <div 
+      className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm" 
+      onClick={(e) => {
+        console.log('Backdrop clicked');
+        onClose();
+      }}
+    >
+      <div 
+        className="fixed inset-0 flex items-start justify-center pt-[10vh]"
+        onClick={(e) => {
+          console.log('Container clicked');
+          e.stopPropagation();
+        }}
+      >
         <div className="w-full max-w-2xl mx-4">
           {/* Search Header */}
           <div className="relative mb-6">
