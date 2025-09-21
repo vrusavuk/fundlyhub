@@ -20,12 +20,12 @@ const FundlyGive = () => {
             </div>
             
             <h1 className="text-4xl lg:text-6xl font-bold text-white leading-tight">
-              Fundly Give makes generosity 
-              <span className="block text-yellow-300">automatic</span>
+              Your Giving, Your Way—
+              <span className="block text-yellow-300">Always Tax-Deductible</span>
             </h1>
             
             <p className="text-xl lg:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed">
-              Connect your payroll, choose your cause, and give directly from your paycheck—simple, steady, and powerful.
+              With Fundly Give, you can support verified nonprofits and charities through payroll, card, or ACH—every contribution comes with an IRS-compliant receipt.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -56,10 +56,10 @@ const FundlyGive = () => {
             <div className="space-y-8">
               <div className="space-y-6">
                 <h2 className="text-3xl lg:text-4xl font-bold">
-                  Turn Paychecks into Impact
+                  The simplest, smartest way to give
                 </h2>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  With Fundly Give, every payday becomes an opportunity to make a difference. By integrating with leading U.S. payroll platforms, FundlyHub lets you set up automatic contributions that flow directly from your paycheck into the funds and nonprofits you care about most.
+                  Fundly Give is the simplest, smartest way to make tax-deductible donations to the causes you care about most. Whether you prefer the convenience of payroll giving, the flexibility of a credit card, or the consistency of ACH recurring payments, FundlyHub makes sure your generosity is always documented and impactful.
                 </p>
               </div>
               
@@ -350,6 +350,13 @@ const FundlyGive = () => {
             Start Your Fundly Give Setup
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
+          
+          {/* Compliance Note */}
+          <div className="mt-12 pt-8 border-t border-white/20">
+            <p className="text-sm text-white/70 max-w-4xl mx-auto leading-relaxed">
+              <strong>Compliance Note:</strong> Donations through Fundly Give are only tax-deductible when made to qualified §170(c) nonprofit organizations. Payroll deductions are taken after taxes but remain eligible as charitable contributions if you itemize. FundlyHub provides IRS-compliant receipts and annual summaries for all qualified donations.
+            </p>
+          </div>
         </div>
       </section>
 

@@ -148,26 +148,26 @@ const Index = () => {
               
               <div className="space-y-6">
                 <h2 className="text-3xl lg:text-4xl font-bold">
-                  Fundly Give makes generosity 
-                  <span className="text-primary"> automatic</span>
+                  Your Giving, Your Way—
+                  <span className="text-primary"> Always Tax-Deductible</span>
                 </h2>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  Connect your payroll and give directly from your paycheck. Set it once, impact forever—simple, steady, and powerful.
+                  Support verified nonprofits and charities through payroll, card, or ACH—every contribution comes with an IRS-compliant receipt. Choose how you give and change it anytime.
                 </p>
               </div>
               
               <div className="grid gap-4">
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  <span className="text-muted-foreground">Automatic payroll deductions</span>
+                  <span className="text-muted-foreground">Payroll, card & ACH options</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-accent rounded-full"></div>
-                  <span className="text-muted-foreground">IRS-compliant tax receipts</span>
+                  <span className="text-muted-foreground">IRS-compliant receipts</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-success rounded-full"></div>
-                  <span className="text-muted-foreground">Employer matching compatible</span>
+                  <span className="text-muted-foreground">Verified nonprofits only</span>
                 </div>
               </div>
               
