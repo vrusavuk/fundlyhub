@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DonationWidget } from '@/components/DonationWidget';
+import { RecentDonors } from '@/components/fundraisers/RecentDonors';
 import { Navigation } from '@/components/Navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -435,42 +436,7 @@ export default function FundraiserDetail() {
                 </Card>
 
                 {/* Recent Donors - After Story */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Users className="h-5 w-5" />
-                      Recent Donors ({donations.length})
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {donations.length > 0 ? (
-                      <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-track-muted scrollbar-thumb-muted-foreground">
-                        {donations.slice(0, 20).map((donation) => (
-                          <div key={donation.id} className="flex-shrink-0 text-center min-w-[80px]">
-                            <Avatar className="h-12 w-12 mx-auto mb-2">
-                              <AvatarFallback className="text-sm font-medium">
-                                {donation.profiles?.name?.charAt(0) || 'A'}
-                              </AvatarFallback>
-                            </Avatar>
-                            <p className="text-xs font-medium truncate">{donation.profiles?.name || 'Anonymous'}</p>
-                            <p className="text-xs text-primary font-semibold">
-                              {formatAmount(donation.amount)}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {formatDate(donation.created_at)}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <Heart className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
-                        <p className="text-muted-foreground">No donations yet.</p>
-                        <p className="text-sm text-muted-foreground">Be the first to support this cause!</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                <RecentDonors donations={donations} />
               </TabsContent>
               
               <TabsContent value="updates" className="mt-6">
