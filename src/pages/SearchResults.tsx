@@ -173,9 +173,10 @@ export default function SearchResults() {
                             </h3>
                             
                             {result.subtitle && (
-                              <p className="text-sm text-muted-foreground mb-2">
-                                {result.subtitle}
-                              </p>
+                              <p 
+                                className="text-sm text-muted-foreground mb-2"
+                                dangerouslySetInnerHTML={{ __html: result.highlightedSubtitle || result.subtitle }}
+                              />
                             )}
                             
                             {result.snippet && (

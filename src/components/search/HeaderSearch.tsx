@@ -214,9 +214,10 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
                             </h4>
                             
                             {result.subtitle && (
-                              <p className="text-xs text-muted-foreground truncate">
-                                {result.subtitle}
-                              </p>
+                              <p 
+                                className="text-xs text-muted-foreground truncate"
+                                dangerouslySetInnerHTML={{ __html: result.highlightedSubtitle || result.subtitle }}
+                              />
                             )}
                           </div>
                         </div>
