@@ -14,7 +14,366 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      comments: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string | null
+          fundraiser_id: string
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string | null
+          fundraiser_id: string
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string | null
+          fundraiser_id?: string
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "fundraisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      donations: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          donor_user_id: string | null
+          fee_amount: number | null
+          fundraiser_id: string
+          id: string
+          net_amount: number | null
+          payment_provider: string | null
+          payment_status: Database["public"]["Enums"]["payment_status"] | null
+          receipt_id: string | null
+          tip_amount: number | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          donor_user_id?: string | null
+          fee_amount?: number | null
+          fundraiser_id: string
+          id?: string
+          net_amount?: number | null
+          payment_provider?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"] | null
+          receipt_id?: string | null
+          tip_amount?: number | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          donor_user_id?: string | null
+          fee_amount?: number | null
+          fundraiser_id?: string
+          id?: string
+          net_amount?: number | null
+          payment_provider?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"] | null
+          receipt_id?: string | null
+          tip_amount?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "donations_donor_user_id_fkey"
+            columns: ["donor_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "donations_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "fundraisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fundraisers: {
+        Row: {
+          beneficiary_contact: string | null
+          beneficiary_name: string | null
+          category: string | null
+          cover_image: string | null
+          created_at: string | null
+          currency: string | null
+          end_date: string | null
+          goal_amount: number
+          id: string
+          images: string[] | null
+          location: string | null
+          org_id: string | null
+          owner_user_id: string
+          slug: string
+          status: Database["public"]["Enums"]["fundraiser_status"] | null
+          story_html: string | null
+          summary: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          video_url: string | null
+          visibility: Database["public"]["Enums"]["visibility_type"] | null
+        }
+        Insert: {
+          beneficiary_contact?: string | null
+          beneficiary_name?: string | null
+          category?: string | null
+          cover_image?: string | null
+          created_at?: string | null
+          currency?: string | null
+          end_date?: string | null
+          goal_amount: number
+          id?: string
+          images?: string[] | null
+          location?: string | null
+          org_id?: string | null
+          owner_user_id: string
+          slug: string
+          status?: Database["public"]["Enums"]["fundraiser_status"] | null
+          story_html?: string | null
+          summary?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          video_url?: string | null
+          visibility?: Database["public"]["Enums"]["visibility_type"] | null
+        }
+        Update: {
+          beneficiary_contact?: string | null
+          beneficiary_name?: string | null
+          category?: string | null
+          cover_image?: string | null
+          created_at?: string | null
+          currency?: string | null
+          end_date?: string | null
+          goal_amount?: number
+          id?: string
+          images?: string[] | null
+          location?: string | null
+          org_id?: string | null
+          owner_user_id?: string
+          slug?: string
+          status?: Database["public"]["Enums"]["fundraiser_status"] | null
+          story_html?: string | null
+          summary?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          video_url?: string | null
+          visibility?: Database["public"]["Enums"]["visibility_type"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fundraisers_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fundraisers_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_members: {
+        Row: {
+          created_at: string | null
+          org_id: string
+          role: Database["public"]["Enums"]["org_member_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          org_id: string
+          role: Database["public"]["Enums"]["org_member_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          org_id?: string
+          role?: Database["public"]["Enums"]["org_member_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_members_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          address: Json | null
+          categories: string[] | null
+          country: string | null
+          created_at: string | null
+          dba_name: string | null
+          ein: string | null
+          id: string
+          legal_name: string
+          paypal_merchant_id: string | null
+          stripe_connect_id: string | null
+          updated_at: string | null
+          verification_status:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          website: string | null
+        }
+        Insert: {
+          address?: Json | null
+          categories?: string[] | null
+          country?: string | null
+          created_at?: string | null
+          dba_name?: string | null
+          ein?: string | null
+          id?: string
+          legal_name: string
+          paypal_merchant_id?: string | null
+          stripe_connect_id?: string | null
+          updated_at?: string | null
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          website?: string | null
+        }
+        Update: {
+          address?: Json | null
+          categories?: string[] | null
+          country?: string | null
+          created_at?: string | null
+          dba_name?: string | null
+          ein?: string | null
+          id?: string
+          legal_name?: string
+          paypal_merchant_id?: string | null
+          stripe_connect_id?: string | null
+          updated_at?: string | null
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          website?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          name: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
+          twofa_enabled: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar?: string | null
+          created_at?: string | null
+          email?: string | null
+          id: string
+          name?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+          twofa_enabled?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          name?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+          twofa_enabled?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      updates: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string | null
+          fundraiser_id: string
+          id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string | null
+          fundraiser_id: string
+          id?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string | null
+          fundraiser_id?: string
+          id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "updates_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "updates_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "fundraisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +382,12 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      fundraiser_status: "draft" | "active" | "paused" | "ended"
+      org_member_role: "owner" | "admin" | "editor" | "viewer"
+      payment_status: "paid" | "refunded" | "failed"
+      user_role: "visitor" | "creator" | "org_admin" | "admin"
+      verification_status: "pending" | "approved" | "rejected"
+      visibility_type: "public" | "unlisted"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +514,13 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      fundraiser_status: ["draft", "active", "paused", "ended"],
+      org_member_role: ["owner", "admin", "editor", "viewer"],
+      payment_status: ["paid", "refunded", "failed"],
+      user_role: ["visitor", "creator", "org_admin", "admin"],
+      verification_status: ["pending", "approved", "rejected"],
+      visibility_type: ["public", "unlisted"],
+    },
   },
 } as const
