@@ -14,10 +14,44 @@ interface SearchModalProps {
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [query, setQuery] = useState('');
   const [selectedType, setSelectedType] = useState<'all' | 'campaign' | 'user' | 'organization'>('all');
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   
   const { results, loading, error } = useSearch(query);
+
+  // Load search history and last query from localStorage
+  useEffect(() => {
+    const savedHistory = localStorage.getItem('searchHistory');
+    const lastQuery = localStorage.getItem('lastSearchQuery');
+    
+    if (savedHistory) {
+      setSearchHistory(JSON.parse(savedHistory));
+    }
+    if (lastQuery && isOpen) {
+      setQuery(lastQuery);
+    }
+  }, [isOpen]);
+
+  // Save search query to localStorage and history
+  const saveSearchQuery = (searchQuery: string) => {
+    if (searchQuery.trim() && searchQuery.length >= 2) {
+      localStorage.setItem('lastSearchQuery', searchQuery);
+      
+      const savedHistory = localStorage.getItem('searchHistory');
+      let history = savedHistory ? JSON.parse(savedHistory) : [];
+      
+      // Remove if already exists and add to beginning
+      history = history.filter((item: string) => item !== searchQuery);
+      history.unshift(searchQuery);
+      
+      // Keep only last 10 searches
+      history = history.slice(0, 10);
+      
+      localStorage.setItem('searchHistory', JSON.stringify(history));
+      setSearchHistory(history);
+    }
+  };
   
   const filteredResults = results.filter(result => 
     selectedType === 'all' || result.type === selectedType
@@ -52,6 +86,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   }, [isOpen]);
 
   const handleResultClick = (result: any) => {
+    saveSearchQuery(query);
     if (result.type === 'campaign') {
       navigate(`/fundraiser/${result.id}`);
     } else if (result.type === 'user') {
@@ -60,6 +95,15 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       navigate(`/organization/${result.id}`);
     }
     onClose();
+  };
+
+  const handleHistoryClick = (historyQuery: string) => {
+    setQuery(historyQuery);
+  };
+
+  const clearSearchHistory = () => {
+    localStorage.removeItem('searchHistory');
+    setSearchHistory([]);
   };
 
   const getTypeIcon = (type: string) => {
@@ -110,6 +154,11 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && query.trim()) {
+                  saveSearchQuery(query);
+                }
+              }}
               placeholder="Search campaigns, users, organizations..."
               className="w-full h-14 pl-12 pr-14 text-lg bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent shadow-lg"
             />
@@ -147,7 +196,37 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
           {/* Search Results */}
           <div className="bg-background border border-border rounded-xl shadow-xl max-h-[60vh] overflow-y-auto">
-            {query.length < 2 ? (
+            {query.length < 2 && searchHistory.length > 0 ? (
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                    Recent Searches
+                  </h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearSearchHistory}
+                    className="text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    Clear All
+                  </Button>
+                </div>
+                <div className="space-y-1">
+                  {searchHistory.map((historyQuery, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleHistoryClick(historyQuery)}
+                      className="w-full text-left p-3 rounded-lg hover:bg-accent/50 transition-colors group flex items-center space-x-3"
+                    >
+                      <Search className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-foreground group-hover:text-primary transition-colors">
+                        {historyQuery}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : query.length < 2 ? (
               <div className="p-8 text-center text-muted-foreground">
                 <Search className="h-12 w-12 mx-auto mb-4 opacity-40" />
                 <p className="text-lg">Start typing to search...</p>
