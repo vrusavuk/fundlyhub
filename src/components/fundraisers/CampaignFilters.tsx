@@ -63,14 +63,16 @@ export function CampaignFilters({
     closeToGoal: false
   });
 
-  // Update filters when initialCategory changes
+  // Update filters when initialCategory changes and sync with selectedCategory
   useEffect(() => {
     if (initialCategory && initialCategory !== 'All') {
-      const newFilters = { ...filters, categories: [initialCategory] };
-      setFilters(newFilters);
-      onFiltersChange(newFilters);
+      setFilters(prevFilters => {
+        const newFilters = { ...prevFilters, categories: [initialCategory] };
+        onFiltersChange(newFilters);
+        return newFilters;
+      });
     }
-  }, [initialCategory]);
+  }, [initialCategory, onFiltersChange]);
 
   const handleFilterChange = (key: keyof FilterState, value: any) => {
     const newFilters = { ...filters, [key]: value };

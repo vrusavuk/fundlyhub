@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageContainer } from "@/components/ui/PageContainer";
@@ -54,12 +54,12 @@ export default function AllCampaigns() {
     category: selectedCategory === "All" ? undefined : selectedCategory
   });
 
-  // Refresh data when selected category changes
-  useEffect(() => {
-    refresh();
-  }, [selectedCategory, refresh]);
+  // Remove the automatic refresh effect to prevent conflicts
+  // useEffect(() => {
+  //   refresh();
+  // }, [selectedCategory, refresh]);
 
-  // Client-side filtering for search and additional filters (category is handled server-side)
+  // Enhanced filtering for both server-side and client-side
   const filteredFundraisers = useMemo(() => {
     return fundraisers.filter((fundraiser) => {
       const matchesSearch = !searchQuery || 
@@ -67,19 +67,54 @@ export default function AllCampaigns() {
         fundraiser.summary?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         fundraiser.profiles?.name?.toLowerCase().includes(searchQuery.toLowerCase());
       
+      // Category filtering for multiple categories (client-side)
+      const matchesMultipleCategories = activeFilters.categories.length <= 1 || 
+        activeFilters.categories.includes(fundraiser.category || '');
+      
       const matchesLocation = activeFilters.location === 'All locations' || 
         fundraiser.location?.toLowerCase().includes(activeFilters.location.toLowerCase());
       
-      // Simple time period filtering (would need actual date logic in real implementation)
-      const matchesTimePeriod = activeFilters.timePeriod === 'all';
+      // Time period filtering based on created_at
+      const matchesTimePeriod = () => {
+        if (activeFilters.timePeriod === 'all') return true;
+        
+        const createdAt = new Date(fundraiser.created_at);
+        const now = new Date();
+        const diffMs = now.getTime() - createdAt.getTime();
+        
+        switch (activeFilters.timePeriod) {
+          case '24h':
+            return diffMs <= 24 * 60 * 60 * 1000;
+          case '7d':
+            return diffMs <= 7 * 24 * 60 * 60 * 1000;
+          case '30d':
+            return diffMs <= 30 * 24 * 60 * 60 * 1000;
+          case '12m':
+            return diffMs <= 365 * 24 * 60 * 60 * 1000;
+          default:
+            return true;
+        }
+      };
       
-      return matchesSearch && matchesLocation && matchesTimePeriod;
+      // TODO: Add logic for nonprofitsOnly and closeToGoal filters when data is available
+      
+      return matchesSearch && matchesMultipleCategories && matchesLocation && matchesTimePeriod();
     });
   }, [fundraisers, searchQuery, activeFilters]);
 
-  const handleFiltersChange = (filters: any) => {
+  const handleFiltersChange = useCallback((filters: any) => {
     setActiveFilters(filters);
-  };
+    
+    // Update selectedCategory to trigger server-side filtering
+    if (filters.categories.length === 1) {
+      setSelectedCategory(filters.categories[0]);
+    } else if (filters.categories.length === 0) {
+      setSelectedCategory("All");
+    } else {
+      // Multiple categories selected - use client-side filtering
+      setSelectedCategory("All");
+    }
+  }, []);
 
   const getActiveFiltersCount = () => {
     let count = 0;
