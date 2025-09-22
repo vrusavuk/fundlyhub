@@ -86,7 +86,7 @@ export function CategoryFilter() {
                     <div className="text-4xl">{category.emoji}</div>
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <TrendingUp className="h-4 w-4" />
-                      <span>{category.active_campaigns || 0}</span>
+                      <span>{category.campaign_count || 0}</span>
                     </div>
                   </div>
                   
@@ -99,6 +99,13 @@ export function CategoryFilter() {
                           Active Campaigns
                         </span>
                         <span className="font-medium text-foreground">{category.active_campaigns || 0}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground flex items-center gap-1">
+                          <Users className="h-4 w-4" />
+                          Closed Campaigns
+                        </span>
+                        <span className="font-medium text-foreground">{category.closed_campaigns || 0}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground flex items-center gap-1">

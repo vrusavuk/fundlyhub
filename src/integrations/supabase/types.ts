@@ -613,6 +613,7 @@ export type Database = {
           campaign_count: number
           category_id: string
           category_name: string
+          closed_campaigns: number
           color_class: string
           emoji: string
           total_raised: number

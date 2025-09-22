@@ -19,6 +19,7 @@ export interface CategoryStats {
   emoji: string;
   color_class: string;
   active_campaigns: number;
+  closed_campaigns: number;
   total_raised: number;
   campaign_count: number;
 }
