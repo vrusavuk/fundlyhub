@@ -1,18 +1,22 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CATEGORIES } from '@/types/fundraiser';
-import { Heart, Users, TrendingUp } from 'lucide-react';
+import { Heart, Users, TrendingUp, ArrowRight } from 'lucide-react';
 import { useCategoryStats } from '@/hooks/useCategoryStats';
 import { formatCurrency } from '@/lib/utils/formatters';
 
 export function CategoryFilter() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [navigating, setNavigating] = useState<string | null>(null);
   const { stats: categoryStats, loading } = useCategoryStats();
+  const navigate = useNavigate();
 
-  const handleCategoryClick = (categoryName: string) => {
-    // Navigate to category page or apply filter
-    window.location.href = `/all-campaigns?category=${encodeURIComponent(categoryName)}`;
+  const handleCategoryClick = async (categoryName: string) => {
+    setNavigating(categoryName);
+    // Navigate to campaigns page with category filter
+    navigate(`/campaigns?category=${encodeURIComponent(categoryName)}`);
   };
 
   const getCategoryStats = (categoryName: string) => {
@@ -44,10 +48,25 @@ export function CategoryFilter() {
             return (
               <Card 
                 key={category.name}
-                className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-2 hover:border-primary/20"
+                className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-2 hover:border-primary/20 relative"
                 onClick={() => handleCategoryClick(category.name)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleCategoryClick(category.name);
+                  }
+                }}
+                aria-label={`View ${category.name} campaigns`}
               >
                 <CardContent className="p-6">
+                  {/* Loading overlay */}
+                  {navigating === category.name && (
+                    <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center rounded-lg z-10">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between mb-4">
                     <div className="text-4xl">{category.emoji}</div>
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -76,9 +95,9 @@ export function CategoryFilter() {
                   </div>
                   
                   <div className="mt-4 pt-4 border-t border-border">
-                    <div className="flex items-center justify-center gap-2 text-sm text-primary group-hover:text-primary-foreground transition-colors">
+                    <div className="flex items-center justify-between text-sm text-primary group-hover:text-primary transition-colors">
                       <span>Explore {category.name} Causes</span>
-                      <TrendingUp className="h-4 w-4" />
+                      <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
                 </CardContent>
@@ -99,7 +118,11 @@ export function CategoryFilter() {
                 Join thousands of people who have successfully raised funds for their causes. 
                 It's free to start and our platform makes it easy to reach your goals.
               </p>
-              <Button size="lg" className="px-8">
+              <Button 
+                size="lg" 
+                className="px-8"
+                onClick={() => navigate('/create')}
+              >
                 Create Fundraiser
               </Button>
             </CardContent>
