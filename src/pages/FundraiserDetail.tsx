@@ -319,9 +319,9 @@ export default function FundraiserDetail() {
           <SmartBreadcrumb />
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="mobile-grid gap-6 lg:gap-8">
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Hero Image */}
             <div className="aspect-video rounded-xl overflow-hidden shadow-lg">
               <img
@@ -332,8 +332,8 @@ export default function FundraiserDetail() {
             </div>
 
             {/* Title and Info */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 flex-wrap">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                 <Badge variant="secondary" className="flex items-center gap-1">
                   {fundraiser.category}
                 </Badge>
@@ -349,11 +349,11 @@ export default function FundraiserDetail() {
                 </Badge>
               </div>
               
-              <h1 className="text-3xl lg:text-4xl font-bold leading-tight">{fundraiser.title}</h1>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight">{fundraiser.title}</h1>
               
               <p className="text-lg text-muted-foreground leading-relaxed">{fundraiser.summary}</p>
               
-              <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
                 {/* Campaign Organizer - Clickable */}
                 <Link 
                   to={`/profile/${fundraiser.owner_user_id}`}

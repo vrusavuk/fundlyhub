@@ -18,8 +18,8 @@ export function Navigation() {
       <HeaderSearch isOpen={isHeaderSearchOpen} onClose={closeHeaderSearch} />
       
       <nav className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+        <div className="max-w-7xl mx-auto mobile-nav-spacing">
+          <div className="flex justify-between items-center h-14 sm:h-16">
             
             {/* Brand Logo */}
             <BrandLogo />
@@ -28,7 +28,7 @@ export function Navigation() {
             <NavigationMenu />
 
             {/* Action Buttons */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               {/* Search Trigger */}
               <SearchTrigger />
               

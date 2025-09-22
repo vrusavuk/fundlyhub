@@ -25,7 +25,7 @@ export function PageContainer({
   className 
 }: PageContainerProps) {
   return (
-    <div className={`container mx-auto px-4 py-6 ${maxWidthClasses[maxWidth]} ${className || ''}`}>
+    <div className={`container mx-auto mobile-container ${maxWidthClasses[maxWidth]} ${className || ''}`}>
       {children}
     </div>
   );

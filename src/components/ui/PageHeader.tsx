@@ -26,12 +26,12 @@ export function PageHeader({
   const { navigationContext, isMobile, shouldShowBackButton } = useSmartNavigation();
   
   return (
-    <div className={`mb-6 ${className || ''}`}>
+    <div className={`mb-4 sm:mb-6 ${className || ''}`}>
       {/* Smart Navigation */}
       <SmartBackButton />
-      {showBreadcrumbs && <SmartBreadcrumb className="mb-4" />}
+      {showBreadcrumbs && <SmartBreadcrumb className="mb-3 sm:mb-4" />}
       
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
         <div className="flex-1">
           {/* Mobile context indicator when breadcrumbs are hidden */}
           {isMobile && shouldShowBackButton && navigationContext && (
@@ -40,16 +40,16 @@ export function PageHeader({
             </p>
           )}
           
-          <h1 className="text-2xl font-bold">{title}</h1>
+          <h1 className="text-xl sm:text-2xl font-bold leading-tight">{title}</h1>
           {description && (
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-muted-foreground mt-1 sm:mt-2">
               {description}
             </p>
           )}
         </div>
         
         {actions && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {actions}
           </div>
         )}

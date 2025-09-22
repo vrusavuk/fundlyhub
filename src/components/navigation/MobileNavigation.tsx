@@ -33,9 +33,9 @@ export function MobileNavigation({ className }: MobileNavigationProps) {
 
       {/* Mobile Menu Overlay */}
       {isMenuOpen && (
-        <div className="absolute top-full left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border py-4 shadow-lg">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col space-y-3">
+        <div className="absolute top-full left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border mobile-card-spacing shadow-lg">
+          <div className="container mx-auto">
+            <div className="flex flex-col space-y-4">
               {/* Search Button */}
               <SearchTrigger 
                 variant="button"

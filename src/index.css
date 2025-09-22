@@ -165,6 +165,53 @@
   }
 }
 
+@layer components {
+  /* Mobile-first responsive layout utilities */
+  .mobile-container {
+    @apply px-3 py-4 sm:px-4 sm:py-5 md:px-6 md:py-6 lg:px-8;
+  }
+
+  .mobile-section {
+    @apply px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-12;
+  }
+
+  .mobile-page-spacing {
+    @apply px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-6;
+  }
+
+  .mobile-card-spacing {
+    @apply p-3 sm:p-4 md:p-6;
+  }
+
+  .mobile-header-spacing {
+    @apply px-3 py-4 sm:px-4 sm:py-5 md:px-6 md:py-6;
+  }
+
+  /* Touch-friendly interactive elements */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  .touch-button {
+    @apply min-h-[44px] px-4 py-3 text-base;
+  }
+
+  /* Mobile navigation spacing */
+  .mobile-nav-spacing {
+    @apply px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4;
+  }
+
+  /* Mobile grid with proper gutters */
+  .mobile-grid {
+    @apply grid gap-3 sm:gap-4 md:gap-6;
+  }
+
+  /* Mobile typography with proper spacing */
+  .mobile-text-spacing {
+    @apply space-y-3 sm:space-y-4 md:space-y-6;
+  }
+}
+
 /* Float animation for hero circles */
 @keyframes float {
   0%, 100% {

@@ -19,7 +19,7 @@ export function AppLayout({ children, className, fullWidth = false }: AppLayoutP
         children
       ) : (
         <main className="relative">
-          <div className="container mx-auto px-4 py-6">
+          <div className="container mx-auto mobile-page-spacing">
             {children}
           </div>
         </main>
