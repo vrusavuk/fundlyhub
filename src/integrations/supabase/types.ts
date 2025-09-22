@@ -220,6 +220,42 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          campaign_updates: boolean | null
+          created_at: string
+          donation_alerts: boolean | null
+          email_notifications: boolean | null
+          id: string
+          new_follower: boolean | null
+          push_notifications: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          campaign_updates?: boolean | null
+          created_at?: string
+          donation_alerts?: boolean | null
+          email_notifications?: boolean | null
+          id?: string
+          new_follower?: boolean | null
+          push_notifications?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          campaign_updates?: boolean | null
+          created_at?: string
+          donation_alerts?: boolean | null
+          email_notifications?: boolean | null
+          id?: string
+          new_follower?: boolean | null
+          push_notifications?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       org_members: {
         Row: {
           created_at: string | null
@@ -313,33 +349,84 @@ export type Database = {
       profiles: {
         Row: {
           avatar: string | null
+          bio: string | null
+          campaign_count: number | null
           created_at: string | null
           email: string | null
+          follower_count: number | null
+          following_count: number | null
           id: string
+          location: string | null
           name: string | null
+          profile_visibility: string | null
           role: Database["public"]["Enums"]["user_role"] | null
+          social_links: Json | null
+          total_funds_raised: number | null
           twofa_enabled: boolean | null
           updated_at: string | null
+          website: string | null
         }
         Insert: {
           avatar?: string | null
+          bio?: string | null
+          campaign_count?: number | null
           created_at?: string | null
           email?: string | null
+          follower_count?: number | null
+          following_count?: number | null
           id: string
+          location?: string | null
           name?: string | null
+          profile_visibility?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
+          social_links?: Json | null
+          total_funds_raised?: number | null
           twofa_enabled?: boolean | null
           updated_at?: string | null
+          website?: string | null
         }
         Update: {
           avatar?: string | null
+          bio?: string | null
+          campaign_count?: number | null
           created_at?: string | null
           email?: string | null
+          follower_count?: number | null
+          following_count?: number | null
           id?: string
+          location?: string | null
           name?: string | null
+          profile_visibility?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
+          social_links?: Json | null
+          total_funds_raised?: number | null
           twofa_enabled?: boolean | null
           updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          following_type: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          following_type: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          following_type?: string
+          id?: string
         }
         Relationships: []
       }
@@ -394,6 +481,57 @@ export type Database = {
             referencedColumns: ["fundraiser_id"]
           },
         ]
+      }
+      user_activities: {
+        Row: {
+          activity_type: string
+          actor_id: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          target_id: string | null
+          target_type: string | null
+        }
+        Insert: {
+          activity_type: string
+          actor_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Update: {
+          activity_type?: string
+          actor_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Relationships: []
+      }
+      user_blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
