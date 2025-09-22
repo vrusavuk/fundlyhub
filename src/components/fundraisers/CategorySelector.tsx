@@ -2,7 +2,8 @@
  * Category selection component with improved UX
  */
 import { Badge } from '@/components/ui/badge';
-import { CATEGORIES, type CategoryName } from '@/types/fundraiser';
+import { useCategories } from '@/hooks/useCategories';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
 interface CategorySelectorProps {
   selectedCategory: string;
@@ -15,16 +16,29 @@ export function CategorySelector({
   onCategoryChange,
   className
 }: CategorySelectorProps) {
-  const categories = ['All', ...CATEGORIES.map(c => c.name)];
+  const { categories: dbCategories, loading } = useCategories();
+  const categories = ['All', ...dbCategories.map(c => c.name)];
 
   const getCategoryStyle = (categoryName: string) => {
     if (categoryName === 'All') {
       return selectedCategory === 'All' ? 'default' : 'outline';
     }
     
-    const category = CATEGORIES.find(c => c.name === categoryName);
     return selectedCategory === categoryName ? 'default' : 'outline';
   };
+
+  const getCategoryEmoji = (categoryName: string) => {
+    const category = dbCategories.find(c => c.name === categoryName);
+    return category?.emoji;
+  };
+
+  if (loading) {
+    return (
+      <div className={`flex items-center justify-center p-4 ${className}`}>
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   return (
     <div className={`flex flex-wrap gap-2 ${className}`}>
@@ -37,7 +51,7 @@ export function CategorySelector({
         >
           {category !== 'All' && (
             <span className="mr-1">
-              {CATEGORIES.find(c => c.name === category)?.emoji}
+              {getCategoryEmoji(category)}
             </span>
           )}
           {category}

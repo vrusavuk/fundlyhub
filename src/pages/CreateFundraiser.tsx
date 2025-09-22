@@ -11,19 +11,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useCategories } from '@/hooks/useCategories';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { supabase } from '@/integrations/supabase/client';
-
-const categories = [
-  'Medical',
-  'Emergency',
-  'Education',
-  'Community',
-  'Animal',
-  'Environment',
-  'Sports',
-  'Arts',
-  'Other'
-];
 
 export default function CreateFundraiser() {
   const [loading, setLoading] = useState(false);
@@ -41,6 +31,7 @@ export default function CreateFundraiser() {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { categories, loading: categoriesLoading } = useCategories();
 
   const generateSlug = (title: string) => {
     return title
@@ -80,6 +71,7 @@ export default function CreateFundraiser() {
           story_html: formData.story.replace(/\n/g, '<br>'),
           goal_amount: goalAmount,
           category: formData.category,
+          category_id: selectedCategory?.id,
           beneficiary_name: formData.beneficiaryName,
           location: formData.location,
           cover_image: formData.coverImage || '/placeholder.svg',
@@ -119,6 +111,18 @@ export default function CreateFundraiser() {
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  if (categoriesLoading) {
+    return (
+      <AppLayout>
+        <PageContainer>
+          <div className="flex justify-center items-center min-h-[400px]">
+            <LoadingSpinner />
+          </div>
+        </PageContainer>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
@@ -174,9 +178,12 @@ export default function CreateFundraiser() {
                         <SelectValue placeholder="Select a category" />
                       </SelectTrigger>
                       <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category} value={category}>
-                            {category}
+                        {categories.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.name}>
+                            <span className="flex items-center gap-2">
+                              <span>{cat.emoji}</span>
+                              <span>{cat.name}</span>
+                            </span>
                           </SelectItem>
                         ))}
                       </SelectContent>

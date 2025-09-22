@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      categories: {
+        Row: {
+          color_class: string
+          created_at: string
+          description: string | null
+          display_order: number | null
+          emoji: string
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          color_class: string
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          emoji: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          color_class?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          emoji?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           author_id: string
@@ -135,6 +171,7 @@ export type Database = {
           beneficiary_contact: string | null
           beneficiary_name: string | null
           category: string | null
+          category_id: string | null
           cover_image: string | null
           created_at: string | null
           currency: string | null
@@ -159,6 +196,7 @@ export type Database = {
           beneficiary_contact?: string | null
           beneficiary_name?: string | null
           category?: string | null
+          category_id?: string | null
           cover_image?: string | null
           created_at?: string | null
           currency?: string | null
@@ -183,6 +221,7 @@ export type Database = {
           beneficiary_contact?: string | null
           beneficiary_name?: string | null
           category?: string | null
+          category_id?: string | null
           cover_image?: string | null
           created_at?: string | null
           currency?: string | null
@@ -204,6 +243,13 @@ export type Database = {
           visibility?: Database["public"]["Enums"]["visibility_type"] | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fundraisers_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fundraisers_org_id_fkey"
             columns: ["org_id"]
@@ -558,6 +604,18 @@ export type Database = {
           active_campaigns: number
           closed_campaigns: number
           total_funds_raised: number
+        }[]
+      }
+      get_category_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          active_campaigns: number
+          campaign_count: number
+          category_id: string
+          category_name: string
+          color_class: string
+          emoji: string
+          total_raised: number
         }[]
       }
       get_fundraiser_totals: {

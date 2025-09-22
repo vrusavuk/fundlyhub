@@ -48,6 +48,7 @@ export default function AllCampaigns() {
         fundraiser.summary?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         fundraiser.profiles?.name?.toLowerCase().includes(searchQuery.toLowerCase());
       
+      // Match by category name (fundraiser.category is the text name, not ID)
       const matchesCategory = selectedCategory === "All" || fundraiser.category === selectedCategory;
       
       return matchesSearch && matchesCategory;
