@@ -14,6 +14,7 @@ import AllCampaigns from "./pages/AllCampaigns";
 import FundlyGive from "./pages/FundlyGive";
 import SearchResults from "./pages/SearchResults";
 import NotFound from "./pages/NotFound";
+import { UserProfile } from "./pages/UserProfile";
 
 // Query client for React Query
 const queryClient = new QueryClient();
@@ -32,6 +33,12 @@ const App = () => (
               <Route path="/campaigns" element={<AllCampaigns />} />
               <Route path="/search" element={<SearchResults />} />
               <Route path="/fundly-give" element={<FundlyGive />} />
+              <Route path="/profile/:userId" element={<UserProfile />} />
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <UserProfile />
+                </ProtectedRoute>
+              } />
               {/* Legacy route redirect for backward compatibility */}
               <Route path="/fundlypay" element={<Navigate to="/fundly-give" replace />} />
               <Route path="/create" element={
