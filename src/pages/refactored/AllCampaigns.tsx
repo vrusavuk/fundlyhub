@@ -19,11 +19,12 @@ export default function AllCampaigns() {
   const navigate = useNavigate();
   const { searchQuery } = useGlobalSearch();
 
-  // Get initial category from URL parameters  
-  const initialCategory = searchParams.get('category') || 'All';
+  // Get initial category from URL parameters (decode URI component and capitalize properly)
+  const urlCategory = searchParams.get('category');
+  const initialCategory = urlCategory ? decodeURIComponent(urlCategory) : 'All';
 
   useEffect(() => {
-    if (initialCategory) {
+    if (initialCategory && initialCategory !== 'All') {
       setSelectedCategory(initialCategory);
     }
   }, [initialCategory]);

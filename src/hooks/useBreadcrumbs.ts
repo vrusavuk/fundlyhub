@@ -37,7 +37,7 @@ export function useBreadcrumbs() {
           if (categoryFromState) {
             breadcrumbs.push({ 
               label: categoryFromState, 
-              href: `/campaigns?category=${categoryFromState.toLowerCase()}` 
+              href: `/campaigns?category=${encodeURIComponent(categoryFromState)}` 
             });
           }
 
@@ -105,18 +105,27 @@ export function useBreadcrumbs() {
     try {
       const { data } = await supabase
         .from('fundraisers')
-        .select('title, category')
+        .select(`
+          title,
+          category_id,
+          categories!fundraisers_category_id_fkey (
+            id,
+            name,
+            emoji
+          )
+        `)
         .eq('slug', slug)
         .single();
 
       if (data) {
         const updatedBreadcrumbs = [...currentBreadcrumbs];
         
-        // Update category if not already present
-        if (!updatedBreadcrumbs.find(b => b.label.toLowerCase() === data.category?.toLowerCase())) {
+        // Update category if not already present and we have category data
+        const categoryData = data.categories;
+        if (categoryData && !updatedBreadcrumbs.find(b => b.label.toLowerCase() === categoryData.name?.toLowerCase())) {
           updatedBreadcrumbs.splice(-1, 0, { 
-            label: data.category || 'Other', 
-            href: `/campaigns?category=${(data.category || 'other').toLowerCase()}` 
+            label: `${categoryData.emoji} ${categoryData.name}`, 
+            href: `/campaigns?category=${encodeURIComponent(categoryData.name)}` 
           });
         }
         
