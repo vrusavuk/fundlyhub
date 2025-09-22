@@ -1,5 +1,6 @@
 /**
- * Smart breadcrumb component that automatically generates breadcrumbs
+ * Smart breadcrumb component that dynamically generates and displays breadcrumbs
+ * with responsive behavior for mobile and desktop
  */
 import { Fragment } from 'react';
 import { Link } from 'react-router-dom';
@@ -17,6 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
 import { useSmartNavigation } from '@/hooks/useSmartNavigation';
+import { MobileBreadcrumb } from './MobileBreadcrumb';
 
 interface SmartBreadcrumbProps {
   className?: string;
@@ -25,16 +27,26 @@ interface SmartBreadcrumbProps {
 
 export function SmartBreadcrumb({ className, maxItems = 5 }: SmartBreadcrumbProps) {
   const { breadcrumbs } = useNavigation();
-  const { shouldShowBreadcrumbs } = useSmartNavigation();
+  const { shouldShowBreadcrumbs, shouldShowMobileBreadcrumbs, isMobile } = useSmartNavigation();
   
   // Initialize breadcrumbs
   useBreadcrumbs();
 
-  if (!shouldShowBreadcrumbs || breadcrumbs.length <= 1) {
+  // Don't show breadcrumbs if logic determines they shouldn't be shown
+  if (!shouldShowBreadcrumbs && !shouldShowMobileBreadcrumbs) {
     return null;
   }
 
-  // Condense breadcrumbs if too many
+  if (breadcrumbs.length <= 1) {
+    return null;
+  }
+
+  // Use mobile breadcrumb component on mobile devices
+  if (isMobile && shouldShowMobileBreadcrumbs) {
+    return <MobileBreadcrumb className={className} maxItems={3} />;
+  }
+
+  // Desktop breadcrumb logic
   const displayBreadcrumbs = breadcrumbs.length > maxItems 
     ? [
         ...breadcrumbs.slice(0, 1), // Keep home

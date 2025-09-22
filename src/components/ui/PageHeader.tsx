@@ -1,10 +1,12 @@
 /**
  * Page header component for consistent page layouts
  * Provides standardized headers with titles, descriptions, and actions
+ * Now with mobile-optimized navigation context
  */
 import { ReactNode } from 'react';
 import { SmartBreadcrumb } from '@/components/navigation/SmartBreadcrumb';
 import { SmartBackButton } from '@/components/navigation/SmartBackButton';
+import { useSmartNavigation } from '@/hooks/useSmartNavigation';
 
 interface PageHeaderProps {
   title: string;
@@ -21,6 +23,8 @@ export function PageHeader({
   className,
   showBreadcrumbs = true
 }: PageHeaderProps) {
+  const { navigationContext, isMobile, shouldShowBackButton } = useSmartNavigation();
+  
   return (
     <div className={`mb-6 ${className || ''}`}>
       {/* Smart Navigation */}
@@ -29,6 +33,13 @@ export function PageHeader({
       
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div className="flex-1">
+          {/* Mobile context indicator when breadcrumbs are hidden */}
+          {isMobile && shouldShowBackButton && navigationContext && (
+            <p className="text-xs text-muted-foreground mb-1">
+              {navigationContext}
+            </p>
+          )}
+          
           <h1 className="text-2xl font-bold">{title}</h1>
           {description && (
             <p className="text-sm text-muted-foreground mt-1">
