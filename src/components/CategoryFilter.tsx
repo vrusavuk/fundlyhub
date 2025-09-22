@@ -20,13 +20,6 @@ export function CategoryFilter() {
     navigate(`/campaigns?category=${encodeURIComponent(categoryName)}`);
   };
 
-  const getCategoryStats = (categoryName: string) => {
-    const stats = categoryStats.find(stat => stat.category_name === categoryName);
-    return {
-      activeCount: stats?.active_campaigns || 0,
-      totalRaised: stats?.total_raised || 0
-    };
-  };
 
   if (loading) {
     return (
@@ -67,7 +60,6 @@ export function CategoryFilter() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
           {categoryStats.map((category) => {
-            const stats = getCategoryStats(category.category_name);
             return (
               <Card 
                 key={category.category_id}
@@ -94,7 +86,7 @@ export function CategoryFilter() {
                     <div className="text-4xl">{category.emoji}</div>
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <TrendingUp className="h-4 w-4" />
-                      <span>{stats.activeCount}</span>
+                      <span>{category.active_campaigns || 0}</span>
                     </div>
                   </div>
                   
@@ -106,7 +98,7 @@ export function CategoryFilter() {
                           <Users className="h-4 w-4" />
                           Active Campaigns
                         </span>
-                        <span className="font-medium text-foreground">{stats.activeCount}</span>
+                        <span className="font-medium text-foreground">{category.active_campaigns || 0}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground flex items-center gap-1">
@@ -114,7 +106,7 @@ export function CategoryFilter() {
                           Total Raised
                         </span>
                         <span className="font-medium text-foreground">
-                          {formatCurrency(stats.totalRaised)}
+                          {formatCurrency(category.total_raised || 0)}
                         </span>
                       </div>
                     </div>
