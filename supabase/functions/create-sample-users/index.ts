@@ -120,16 +120,60 @@ Deno.serve(async (req) => {
       // Get existing fundraisers
       const { data: fundraisers } = await supabaseAdmin
         .from('fundraisers')
-        .select('id')
-        .limit(4)
+        .select('id, title')
+        .order('created_at', { ascending: false })
 
       if (fundraisers && fundraisers.length > 0) {
-        // Distribute fundraisers among the new users
-        for (let i = 0; i < Math.min(fundraisers.length, createdUsers.length); i++) {
-          await supabaseAdmin
+        console.log(`Found ${fundraisers.length} fundraisers to reassign`)
+        
+        // Randomly assign each fundraiser to one of the new users
+        const updatedFundraisers = []
+        for (const fundraiser of fundraisers) {
+          // Pick a random user from the created users
+          const randomUserIndex = Math.floor(Math.random() * createdUsers.length)
+          const selectedUser = createdUsers[randomUserIndex]
+          
+          const { error } = await supabaseAdmin
             .from('fundraisers')
-            .update({ owner_user_id: createdUsers[i].id })
-            .eq('id', fundraisers[i].id)
+            .update({ owner_user_id: selectedUser.id })
+            .eq('id', fundraiser.id)
+            
+          if (!error) {
+            updatedFundraisers.push({
+              title: fundraiser.title,
+              assignedTo: selectedUser.name
+            })
+            console.log(`Assigned "${fundraiser.title}" to ${selectedUser.name}`)
+          }
+        }
+
+        // Update campaign counts for all users after reassignment
+        for (const user of createdUsers) {
+          const { data: userFundraisers } = await supabaseAdmin
+            .from('fundraisers')
+            .select('id', { count: 'exact' })
+            .eq('owner_user_id', user.id)
+
+          const { data: userStats } = await supabaseAdmin
+            .from('public_fundraiser_stats')
+            .select('total_raised')
+            .in('fundraiser_id', 
+              await supabaseAdmin
+                .from('fundraisers')
+                .select('id')
+                .eq('owner_user_id', user.id)
+                .then(res => res.data?.map(f => f.id) || [])
+            )
+
+          const totalRaised = userStats?.reduce((sum, stat) => sum + (stat.total_raised || 0), 0) || 0
+
+          await supabaseAdmin
+            .from('profiles')
+            .update({
+              campaign_count: userFundraisers?.length || 0,
+              total_funds_raised: totalRaised
+            })
+            .eq('id', user.id)
         }
       }
 
@@ -187,8 +231,9 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Created ${createdUsers.length} sample users with proper auth entries`,
-        users: createdUsers
+        message: `Created ${createdUsers.length} sample users with proper auth entries and randomly assigned campaigns`,
+        users: createdUsers,
+        campaignsAssigned: updatedFundraisers || []
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
