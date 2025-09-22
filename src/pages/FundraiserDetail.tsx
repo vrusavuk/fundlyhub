@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, Navigate, Link } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { PageContainer } from '@/components/ui/PageContainer';
 import { Button } from '@/components/ui/button';
@@ -355,14 +355,19 @@ export default function FundraiserDetail() {
               <p className="text-lg text-muted-foreground leading-relaxed">{fundraiser.summary}</p>
               
               <div className="flex items-center gap-4 flex-wrap">
-                {/* Campaign Organizer */}
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12">
+                {/* Campaign Organizer - Clickable */}
+                <Link 
+                  to={`/profile/${fundraiser.owner_user_id}`}
+                  className="flex items-center gap-3 hover:bg-muted/50 rounded-lg p-2 transition-colors group"
+                >
+                  <Avatar className="h-12 w-12 group-hover:scale-105 transition-transform">
                     <AvatarFallback>{fundraiser.profiles?.name?.charAt(0) || 'A'}</AvatarFallback>
                   </Avatar>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{fundraiser.profiles?.name || 'Anonymous'}</span>
+                      <span className="font-medium group-hover:text-primary transition-colors">
+                        {fundraiser.profiles?.name || 'Anonymous'}
+                      </span>
                       <Badge variant="outline" className="text-xs">
                         <Verified className="h-3 w-3 mr-1" />
                         Verified
@@ -370,7 +375,7 @@ export default function FundraiserDetail() {
                     </div>
                     <span className="text-sm text-muted-foreground">Organizer</span>
                   </div>
-                </div>
+                </Link>
 
                 {/* Follow Campaign Organizer Button */}
                 {fundraiser.owner_user_id && (
@@ -381,18 +386,21 @@ export default function FundraiserDetail() {
                   />
                 )}
 
-                {/* Organization Info & Follow Button */}
+                {/* Organization Info & Follow Button - Clickable */}
                 {fundraiser.organizations && (
                   <>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
+                    <Link 
+                      to={`/organization/${fundraiser.organizations.id}`}
+                      className="flex items-center gap-3 hover:bg-muted/50 rounded-lg p-2 transition-colors group"
+                    >
+                      <Avatar className="h-10 w-10 group-hover:scale-105 transition-transform">
                         <AvatarFallback className="bg-primary text-primary-foreground">
                           {fundraiser.organizations.dba_name?.charAt(0) || fundraiser.organizations.legal_name?.charAt(0) || 'O'}
                         </AvatarFallback>
                       </Avatar>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm">
+                          <span className="font-medium text-sm group-hover:text-primary transition-colors">
                             {fundraiser.organizations.dba_name || fundraiser.organizations.legal_name}
                           </span>
                           <Badge variant="outline" className="text-xs">
@@ -401,7 +409,7 @@ export default function FundraiserDetail() {
                         </div>
                         <span className="text-xs text-muted-foreground">Supporting this cause</span>
                       </div>
-                    </div>
+                    </Link>
                     
                     <FollowOrganizationButton 
                       organizationId={fundraiser.organizations.id}
