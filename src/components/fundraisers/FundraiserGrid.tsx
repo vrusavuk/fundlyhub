@@ -71,7 +71,7 @@ export function FundraiserGrid({
               title={fundraiser.title}
               summary={fundraiser.summary || ""}
               goalAmount={fundraiser.goal_amount}
-              raisedAmount={donations[fundraiser.id] || 0}
+              raisedAmount={stats?.totalRaised || 0}
               currency={fundraiser.currency}
               coverImage={fundraiser.cover_image || "/placeholder.svg"}
               category={fundraiser.category || "General"}
