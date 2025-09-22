@@ -83,7 +83,7 @@ export function CategoryFilter() {
                     </div>
                   )}
                   <div className="flex items-center justify-between mb-4">
-                    <div className="text-4xl">{category.emoji}</div>
+                    <div className="text-lg font-semibold">{category.category_name}</div>
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <TrendingUp className="h-4 w-4" />
                       <span>{category.campaign_count || 0}</span>

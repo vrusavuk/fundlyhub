@@ -174,7 +174,6 @@ export function CampaignFilters({
                         className="cursor-pointer transition-all hover:bg-primary hover:text-primary-foreground"
                         onClick={() => handleCategoryToggle(category.name)}
                       >
-                        <span className="mr-1">{category.emoji}</span>
                         {category.name}
                       </Badge>
                     ))}
@@ -344,7 +343,6 @@ export function CampaignFilters({
                           htmlFor={`category-${category.id}`}
                           className="flex items-center gap-2 cursor-pointer flex-1 text-sm"
                         >
-                          <span>{category.emoji}</span>
                           <span>{category.name}</span>
                         </Label>
                       </div>
@@ -402,7 +400,7 @@ export function CampaignFilters({
                 <div className="flex gap-1">
                   {filters.categories.slice(0, 1).map((category) => (
                     <Badge key={category} variant="secondary" className="text-xs py-0 px-2 h-6">
-                      {categories.find(c => c.name === category)?.emoji} {category}
+                      {category}
                     </Badge>
                   ))}
                   {filters.categories.length > 1 && (

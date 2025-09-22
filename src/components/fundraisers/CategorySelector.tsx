@@ -19,17 +19,12 @@ export function CategorySelector({
   const { categories: dbCategories, loading } = useCategories();
   const categories = ['All', ...dbCategories.map(c => c.name)];
 
-  const getCategoryStyle = (categoryName: string) => {
+  const getCategoryVariant = (categoryName: string) => {
     if (categoryName === 'All') {
       return selectedCategory === 'All' ? 'default' : 'outline';
     }
     
     return selectedCategory === categoryName ? 'default' : 'outline';
-  };
-
-  const getCategoryEmoji = (categoryName: string) => {
-    const category = dbCategories.find(c => c.name === categoryName);
-    return category?.emoji;
   };
 
   if (loading) {
@@ -45,15 +40,10 @@ export function CategorySelector({
       {categories.map((category) => (
         <Badge
           key={category}
-          variant={getCategoryStyle(category)}
+          variant={getCategoryVariant(category)}
           className="cursor-pointer transition-smooth hover:bg-primary hover:text-primary-foreground"
           onClick={() => onCategoryChange(category)}
         >
-          {category !== 'All' && (
-            <span className="mr-1">
-              {getCategoryEmoji(category)}
-            </span>
-          )}
           {category}
         </Badge>
       ))}

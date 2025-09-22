@@ -149,12 +149,11 @@ export function EnhancedFundraiserCard({
         {/* Category and urgency badges */}
         <div className="absolute top-3 left-3 flex gap-2">
           <Badge className={`${categoryInfo.colorClass} border font-medium`}>
-            <span className="mr-1">{categoryInfo.emoji}</span>
             {category}
           </Badge>
           {urgency && (
             <Badge className={`${getUrgencyColor()} text-white border-0`}>
-              {urgency === 'high' ? '🔥 Urgent' : urgency === 'medium' ? '⏰ Limited Time' : '💚 Stable'}
+              {urgency === 'high' ? 'Urgent' : urgency === 'medium' ? 'Limited Time' : 'Stable'}
             </Badge>
           )}
         </div>

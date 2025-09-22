@@ -124,7 +124,7 @@ export function useBreadcrumbs() {
         const categoryData = data.categories;
         if (categoryData && !updatedBreadcrumbs.find(b => b.label.toLowerCase() === categoryData.name?.toLowerCase())) {
           updatedBreadcrumbs.splice(-1, 0, { 
-            label: `${categoryData.emoji} ${categoryData.name}`, 
+            label: categoryData.name, 
             href: `/campaigns?category=${encodeURIComponent(categoryData.name)}` 
           });
         }
