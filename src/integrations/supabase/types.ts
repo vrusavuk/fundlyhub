@@ -54,6 +54,13 @@ export type Database = {
             referencedRelation: "fundraisers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "comments_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "public_fundraiser_stats"
+            referencedColumns: ["fundraiser_id"]
+          },
         ]
       }
       donations: {
@@ -113,6 +120,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "fundraisers"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "donations_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "public_fundraiser_stats"
+            referencedColumns: ["fundraiser_id"]
           },
         ]
       }
@@ -372,14 +386,50 @@ export type Database = {
             referencedRelation: "fundraisers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "updates_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "public_fundraiser_stats"
+            referencedColumns: ["fundraiser_id"]
+          },
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      public_fundraiser_stats: {
+        Row: {
+          created_at: string | null
+          currency: string | null
+          donor_count: number | null
+          end_date: string | null
+          fundraiser_id: string | null
+          goal_amount: number | null
+          status: Database["public"]["Enums"]["fundraiser_status"] | null
+          title: string | null
+          total_raised: number | null
+          visibility: Database["public"]["Enums"]["visibility_type"] | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      get_campaign_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          active_campaigns: number
+          closed_campaigns: number
+          total_funds_raised: number
+        }[]
+      }
+      get_fundraiser_totals: {
+        Args: { fundraiser_ids: string[] }
+        Returns: {
+          donor_count: number
+          fundraiser_id: string
+          total_raised: number
+        }[]
+      }
     }
     Enums: {
       fundraiser_status:
