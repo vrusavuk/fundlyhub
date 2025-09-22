@@ -16,9 +16,7 @@ export function useBreadcrumbs() {
   }, [location.pathname]);
 
   const generateBreadcrumbs = async () => {
-    const breadcrumbs: BreadcrumbItem[] = [
-      { label: 'Home', href: '/' }
-    ];
+    const breadcrumbs: BreadcrumbItem[] = [];
 
     const pathSegments = location.pathname.slice(1).split('/');
     const [firstSegment, secondSegment] = pathSegments;

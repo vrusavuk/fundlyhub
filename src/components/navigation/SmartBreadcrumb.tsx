@@ -49,7 +49,7 @@ export function SmartBreadcrumb({ className, maxItems = 5 }: SmartBreadcrumbProp
   // Desktop breadcrumb logic
   const displayBreadcrumbs = breadcrumbs.length > maxItems 
     ? [
-        ...breadcrumbs.slice(0, 1), // Keep home
+        ...breadcrumbs.slice(0, 1), // Keep first meaningful breadcrumb
         { label: '...', href: '', isEllipsis: true, isLoading: false },
         ...breadcrumbs.slice(-2) // Keep last 2
       ]

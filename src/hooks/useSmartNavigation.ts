@@ -47,7 +47,7 @@ export function useSmartNavigation() {
       const deepHierarchyPaths = [
         '/search',
       ];
-      return deepHierarchyPaths.some(breadcrumbPath => path.startsWith(breadcrumbPath)) && breadcrumbs.length > 3;
+      return deepHierarchyPaths.some(breadcrumbPath => path.startsWith(breadcrumbPath)) && breadcrumbs.length > 2;
     }
     
     // Desktop: Show breadcrumbs for hierarchical navigation (3+ levels deep)
@@ -58,7 +58,7 @@ export function useSmartNavigation() {
       '/search',
     ];
 
-    return breadcrumbPaths.some(breadcrumbPath => path.startsWith(breadcrumbPath)) && breadcrumbs.length > 2;
+    return breadcrumbPaths.some(breadcrumbPath => path.startsWith(breadcrumbPath)) && breadcrumbs.length > 1;
   };
 
   const shouldShowMobileBreadcrumbs = (): boolean => {
