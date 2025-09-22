@@ -62,6 +62,9 @@ export default function CreateFundraiser() {
         return;
       }
 
+      // Find the selected category to get its ID
+      const selectedCategory = categories.find(cat => cat.name === formData.category);
+      
       const { data, error } = await supabase
         .from('fundraisers')
         .insert({
