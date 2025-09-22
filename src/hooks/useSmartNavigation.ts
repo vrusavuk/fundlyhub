@@ -12,11 +12,6 @@ export function useSmartNavigation() {
   const { setShouldShowBackButton, breadcrumbs } = useNavigation();
   const isMobile = useIsMobile();
 
-  useEffect(() => {
-    const shouldUseBackButton = shouldShowBackButton();
-    setShouldShowBackButton(shouldUseBackButton);
-  }, [location.pathname, isMobile]);
-
   const shouldShowBackButton = (): boolean => {
     const path = location.pathname;
     
@@ -38,6 +33,11 @@ export function useSmartNavigation() {
     const pathsToCheck = isMobile ? mobileBackButtonPaths : desktopBackButtonPaths;
     return pathsToCheck.some(backPath => path.startsWith(backPath));
   };
+
+  useEffect(() => {
+    const shouldUseBackButton = shouldShowBackButton();
+    setShouldShowBackButton(shouldUseBackButton);
+  }, [location.pathname, isMobile]);
 
   const shouldShowBreadcrumbs = (): boolean => {
     const path = location.pathname;
