@@ -17,6 +17,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Heart, Share2, Flag, Calendar, Users, MapPin, Verified, Clock, Facebook, Twitter, Copy } from 'lucide-react';
+import { formatCurrency, formatProgress } from '@/lib/utils/formatters';
 
 interface Fundraiser {
   id: string;
@@ -66,6 +67,7 @@ export default function FundraiserDetail() {
   const [loading, setLoading] = useState(true);
   const [donating, setDonating] = useState(false);
   const [commenting, setCommenting] = useState(false);
+  const [showMobileDonation, setShowMobileDonation] = useState(false);
   
   const { user } = useAuth();
   const { toast } = useToast();
@@ -528,6 +530,58 @@ export default function FundraiserDetail() {
               />
             </div>
           </div>
+        </div>
+
+        {/* Fixed Mobile Donation Button */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border shadow-lg">
+          {!showMobileDonation ? (
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex-1">
+                  <div className="flex items-center justify-between text-sm mb-1">
+                    <span className="text-muted-foreground">Raised</span>
+                    <span className="font-medium">{formatCurrency(totalRaised)} of {formatCurrency(fundraiser.goal_amount)}</span>
+                  </div>
+                  <Progress value={progressPercentage} className="h-2" />
+                </div>
+              </div>
+              <Button 
+                className="w-full" 
+                size="lg"
+                onClick={() => setShowMobileDonation(true)}
+              >
+                Donate now
+              </Button>
+            </div>
+          ) : (
+            <div className="p-4 max-h-[80vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Make a donation</h3>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setShowMobileDonation(false)}
+                >
+                  ✕
+                </Button>
+              </div>
+              <DonationWidget
+                fundraiserId={fundraiser.id}
+                title={fundraiser.title}
+                creatorName={fundraiser.profiles?.name || 'Anonymous'}
+                goalAmount={fundraiser.goal_amount}
+                raisedAmount={totalRaised}
+                donorCount={donations.length}
+                progressPercentage={progressPercentage}
+                currency={fundraiser.currency}
+                onDonate={(amount, tipAmount) => {
+                  handleDonate(amount, tipAmount);
+                  setShowMobileDonation(false);
+                }}
+                loading={donating}
+              />
+            </div>
+          )}
         </div>
       </PageContainer>
     </AppLayout>
