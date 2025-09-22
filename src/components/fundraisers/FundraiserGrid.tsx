@@ -4,6 +4,7 @@
 import { EnhancedFundraiserCard } from '@/components/EnhancedFundraiserCard';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
+import { LoadingState } from '@/components/common/LoadingState';
 import { Button } from '@/components/ui/button';
 import type { Fundraiser } from '@/types/fundraiser';
 
@@ -35,11 +36,7 @@ export function FundraiserGrid({
   // Remove the redundant useFundraiserStats hook call since stats are now passed as props
   if (loading && fundraisers.length === 0) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-96 bg-muted animate-pulse rounded-lg" />
-        ))}
-      </div>
+      <LoadingState variant="fundraiser-cards" count={6} />
     );
   }
 

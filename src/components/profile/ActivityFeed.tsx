@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Heart, Trophy, UserPlus, RefreshCw } from 'lucide-react';
 import { useActivityFeed } from '@/hooks/useActivityFeed';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { LoadingState } from '@/components/common/LoadingState';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -61,9 +62,7 @@ export function ActivityFeed({ userId, showHeader = true, maxItems }: ActivityFe
           </CardHeader>
         )}
         <CardContent>
-          <div className="flex justify-center py-8">
-            <LoadingSpinner size="lg" />
-          </div>
+          <LoadingState variant="activity-items" count={5} />
         </CardContent>
       </Card>
     );
