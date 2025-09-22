@@ -18,6 +18,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Heart, Share2, Flag, Calendar, Users, MapPin, Verified, Clock, Facebook, Twitter, Copy } from 'lucide-react';
 import { formatCurrency, formatProgress } from '@/lib/utils/formatters';
+import { FollowButton } from '@/components/profile/FollowButton';
+import { FollowOrganizationButton } from '@/components/profile/FollowOrganizationButton';
 
 interface Fundraiser {
   id: string;
@@ -33,8 +35,16 @@ interface Fundraiser {
   location: string;
   status: string;
   created_at: string;
+  owner_user_id: string;
+  org_id: string | null;
   profiles: {
+    id: string;
     name: string;
+  } | null;
+  organizations: {
+    id: string;
+    legal_name: string;
+    dba_name: string;
   } | null;
 }
 
@@ -87,7 +97,8 @@ export default function FundraiserDetail() {
       .from('fundraisers')
       .select(`
         *,
-        profiles!fundraisers_owner_user_id_fkey(name)
+        profiles!fundraisers_owner_user_id_fkey(id, name),
+        organizations(id, legal_name, dba_name)
       `)
       .eq('slug', slug)
       .single();
@@ -343,7 +354,8 @@ export default function FundraiserDetail() {
               
               <p className="text-lg text-muted-foreground leading-relaxed">{fundraiser.summary}</p>
               
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 flex-wrap">
+                {/* Campaign Organizer */}
                 <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12">
                     <AvatarFallback>{fundraiser.profiles?.name?.charAt(0) || 'A'}</AvatarFallback>
@@ -359,6 +371,45 @@ export default function FundraiserDetail() {
                     <span className="text-sm text-muted-foreground">Organizer</span>
                   </div>
                 </div>
+
+                {/* Follow Campaign Organizer Button */}
+                {fundraiser.owner_user_id && (
+                  <FollowButton 
+                    userId={fundraiser.owner_user_id} 
+                    size="sm"
+                    variant="outline"
+                  />
+                )}
+
+                {/* Organization Info & Follow Button */}
+                {fundraiser.organizations && (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarFallback className="bg-primary text-primary-foreground">
+                          {fundraiser.organizations.dba_name?.charAt(0) || fundraiser.organizations.legal_name?.charAt(0) || 'O'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm">
+                            {fundraiser.organizations.dba_name || fundraiser.organizations.legal_name}
+                          </span>
+                          <Badge variant="outline" className="text-xs">
+                            Organization
+                          </Badge>
+                        </div>
+                        <span className="text-xs text-muted-foreground">Supporting this cause</span>
+                      </div>
+                    </div>
+                    
+                    <FollowOrganizationButton 
+                      organizationId={fundraiser.organizations.id}
+                      size="sm"
+                      variant="outline"
+                    />
+                  </>
+                )}
               </div>
             </div>
 

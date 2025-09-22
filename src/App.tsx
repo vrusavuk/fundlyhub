@@ -15,6 +15,7 @@ import FundlyGive from "./pages/FundlyGive";
 import SearchResults from "./pages/SearchResults";
 import NotFound from "./pages/NotFound";
 import { UserProfile } from "./pages/UserProfile";
+import { OrganizationProfile } from "./pages/OrganizationProfile";
 
 // Query client for React Query
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
                   <UserProfile />
                 </ProtectedRoute>
               } />
+              <Route path="/organization/:orgId" element={<OrganizationProfile />} />
               {/* Legacy route redirect for backward compatibility */}
               <Route path="/fundlypay" element={<Navigate to="/fundly-give" replace />} />
               <Route path="/create" element={
