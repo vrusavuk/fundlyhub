@@ -6,11 +6,13 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
   SlidersHorizontal, 
   MapPin, 
   Clock,
-  X
+  X,
+  ChevronDown
 } from 'lucide-react';
 import type { Category } from '@/types/category';
 
@@ -283,53 +285,74 @@ export function CampaignFilters({
               </DialogContent>
             </Dialog>
 
-            {/* Category Dropdown - Responsive Width */}
-            <Select 
-              value={filters.categories.length === 1 ? filters.categories[0] : filters.categories.length > 1 ? 'multiple' : 'all'} 
-              onValueChange={(value) => {
-                if (value === 'all') {
-                  handleFilterChange('categories', []);
-                } else if (value !== 'multiple') {
-                  handleFilterChange('categories', [value]);
-                }
-              }}
-            >
-              <SelectTrigger 
-                className={`w-[90px] sm:w-[180px] transition-all duration-200 flex-shrink-0 ${
-                  hasCategoryFilters() 
-                    ? "bg-accent text-accent-foreground border-accent-foreground/20" 
-                    : "bg-background border border-border"
-                }`}
-              >
-                <SelectValue placeholder="Category">
-                  {filters.categories.length === 0 && <span className="hidden sm:inline">All Categories</span>}
-                  {filters.categories.length === 0 && <span className="sm:hidden">All</span>}
-                  {filters.categories.length === 1 && (
-                    <span className="flex items-center gap-1">
-                      {categories.find(c => c.name === filters.categories[0])?.emoji}
-                      <span className="hidden sm:inline">{filters.categories[0]}</span>
-                      <span className="sm:hidden">{filters.categories[0].slice(0, 4)}</span>
-                    </span>
-                  )}
-                  {filters.categories.length > 1 && (
-                    <span className="flex items-center gap-1">
-                      <span className="hidden sm:inline">Multiple ({filters.categories.length})</span>
-                      <span className="sm:hidden">{filters.categories.length}</span>
-                    </span>
-                  )}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent className="bg-background border border-border z-50">
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.name}>
-                    <span className="flex items-center gap-2">
-                      {category.emoji} {category.name}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {/* Category Multi-Select Popover - Responsive Width */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={`w-[90px] sm:w-[180px] justify-between transition-all duration-200 flex-shrink-0 ${
+                    hasCategoryFilters() 
+                      ? "bg-accent text-accent-foreground border-accent-foreground/20" 
+                      : "bg-background border border-border"
+                  }`}
+                >
+                  <span className="truncate">
+                    {filters.categories.length === 0 && <span className="hidden sm:inline">All Categories</span>}
+                    {filters.categories.length === 0 && <span className="sm:hidden">All</span>}
+                    {filters.categories.length === 1 && (
+                      <span className="flex items-center gap-1">
+                        <span>{categories.find(c => c.name === filters.categories[0])?.emoji}</span>
+                        <span className="hidden sm:inline">{filters.categories[0]}</span>
+                        <span className="sm:hidden">{filters.categories[0].slice(0, 4)}</span>
+                      </span>
+                    )}
+                    {filters.categories.length > 1 && (
+                      <span className="flex items-center gap-1">
+                        <span className="hidden sm:inline">Multiple ({filters.categories.length})</span>
+                        <span className="sm:hidden">{filters.categories.length}</span>
+                      </span>
+                    )}
+                  </span>
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[300px] p-0" align="start">
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <Label className="font-medium">Categories</Label>
+                    {filters.categories.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleFilterChange('categories', [])}
+                        className="h-auto p-1 text-xs"
+                      >
+                        Clear
+                      </Button>
+                    )}
+                  </div>
+                  <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                    {categories.map((category) => (
+                      <div key={category.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`category-${category.id}`}
+                          checked={filters.categories.includes(category.name)}
+                          onCheckedChange={() => handleCategoryToggle(category.name)}
+                        />
+                        <Label 
+                          htmlFor={`category-${category.id}`}
+                          className="flex items-center gap-2 cursor-pointer flex-1 text-sm"
+                        >
+                          <span>{category.emoji}</span>
+                          <span>{category.name}</span>
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
 
             {/* Location Dropdown - Responsive Width */}
             <Select value={filters.location} onValueChange={(value) => handleFilterChange('location', value)}>
