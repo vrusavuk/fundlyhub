@@ -192,7 +192,7 @@ export function CampaignFilters({
                   <div>
                     <Label className="text-sm font-medium mb-2 block">Region</Label>
                     <Select value={filters.location} onValueChange={(value) => handleFilterChange('location', value)}>
-                      <SelectTrigger className="bg-background border border-border focus:outline-none focus-visible:ring-0">
+                      <SelectTrigger className="bg-background !border-0 focus:ring-0 focus:ring-offset-0">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-background border border-border z-50">
@@ -212,7 +212,7 @@ export function CampaignFilters({
                       placeholder="Enter city name or zip code..."
                       value={filters.locationInput}
                       onChange={(e) => handleFilterChange('locationInput', e.target.value)}
-                      className="bg-background border border-border"
+                      className="bg-background !border-0 focus:ring-0 focus:ring-offset-0"
                     />
                     <p className="text-xs text-muted-foreground mt-1">
                       e.g., "New York", "90210", "London"
@@ -227,7 +227,7 @@ export function CampaignFilters({
                       Time Period
                     </Label>
                     <Select value={filters.timePeriod} onValueChange={(value) => handleFilterChange('timePeriod', value)}>
-                      <SelectTrigger className="bg-background border border-border focus:outline-none focus-visible:ring-0">
+                      <SelectTrigger className="bg-background !border-0 focus:ring-0 focus:ring-offset-0">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-background border border-border z-50">
@@ -357,7 +357,7 @@ export function CampaignFilters({
             {/* Location Dropdown - Responsive Width */}
             <Select value={filters.location} onValueChange={(value) => handleFilterChange('location', value)}>
               <SelectTrigger 
-                className={`w-[80px] sm:w-[160px] transition-all duration-200 flex-shrink-0 border-0 ${
+                className={`w-[80px] sm:w-[160px] transition-all duration-200 flex-shrink-0 !border-0 focus:ring-0 focus:ring-offset-0 ${
                   (filters.location !== 'All locations' || filters.locationInput.trim() !== '') 
                     ? "bg-accent text-accent-foreground" 
                     : "bg-background hover:bg-accent hover:text-accent-foreground"
