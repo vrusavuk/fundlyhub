@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -29,6 +30,7 @@ export function FollowersList({ userId, type, maxItems }: FollowersListProps) {
   const [followers, setFollowers] = useState<Follower[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const fetchFollowers = async () => {
     try {
@@ -156,7 +158,10 @@ export function FollowersList({ userId, type, maxItems }: FollowersListProps) {
                 key={follower.id}
                 className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors"
               >
-                <div className="flex items-center gap-3">
+                <div 
+                  className="flex items-center gap-3 flex-1 cursor-pointer" 
+                  onClick={() => navigate(`/profile/${follower.id}`)}
+                >
                   <Avatar className="w-10 h-10">
                     <AvatarImage src={follower.avatar || undefined} />
                     <AvatarFallback>
@@ -166,7 +171,7 @@ export function FollowersList({ userId, type, maxItems }: FollowersListProps) {
 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <h4 className="font-medium text-sm truncate">
+                      <h4 className="font-medium text-sm truncate hover:text-primary transition-colors">
                         {follower.name || 'Anonymous User'}
                       </h4>
                       <Badge variant="secondary" className="text-xs">
