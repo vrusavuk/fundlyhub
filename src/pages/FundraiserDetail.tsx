@@ -20,6 +20,7 @@ import { Heart, Share2, Flag, Calendar, Users, MapPin, Verified, Clock, Facebook
 import { formatCurrency, formatProgress } from '@/lib/utils/formatters';
 import { FollowButton } from '@/components/profile/FollowButton';
 import { SmartBreadcrumb } from '@/components/navigation/SmartBreadcrumb';
+import { SmartBackButton } from '@/components/navigation/SmartBackButton';
 import { FollowOrganizationButton } from '@/components/profile/FollowOrganizationButton';
 
 interface Fundraiser {
@@ -314,6 +315,7 @@ export default function FundraiserDetail() {
       <PageContainer>
         {/* Smart Navigation */}
         <div className="mb-6">
+          <SmartBackButton />
           <SmartBreadcrumb />
         </div>
         
