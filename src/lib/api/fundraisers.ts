@@ -61,24 +61,20 @@ export async function fetchFundraisers(options: FundraiserQueryOptions = {}) {
 }
 
 /**
- * Fetches donation totals for given fundraiser IDs
+ * Fetches donation totals for given fundraiser IDs using aggregated view
  */
 export async function fetchDonationTotals(fundraiserIds: string[]) {
   if (fundraiserIds.length === 0) return {};
 
   const { data, error } = await supabase
-    .from('donations')
-    .select('fundraiser_id, amount')
-    .in('fundraiser_id', fundraiserIds)
-    .eq('payment_status', 'paid');
+    .rpc('get_fundraiser_totals', { fundraiser_ids: fundraiserIds });
 
   if (error) {
-    throw new Error(`Failed to fetch donations: ${error.message}`);
+    throw new Error(`Failed to fetch donation totals: ${error.message}`);
   }
 
-  return (data || []).reduce((totals, donation) => {
-    totals[donation.fundraiser_id] = 
-      (totals[donation.fundraiser_id] || 0) + Number(donation.amount);
+  return (data || []).reduce((totals, row) => {
+    totals[row.fundraiser_id] = Number(row.total_raised);
     return totals;
   }, {} as Record<string, number>);
 }

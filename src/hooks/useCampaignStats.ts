@@ -24,57 +24,19 @@ export function useCampaignStats() {
         setStats(prev => ({ ...prev, loading: true, error: null }));
         console.log('Fetching campaign stats...');
 
-        // Get campaign counts
-        const [activeCountResult, closedCountResult] = await Promise.all([
-          supabase
-            .from('fundraisers')
-            .select('*', { count: 'exact', head: true })
-            .eq('status', 'active')
-            .eq('visibility', 'public'),
-          
-          supabase
-            .from('fundraisers')
-            .select('*', { count: 'exact', head: true })
-            .eq('status', 'closed')
-            .eq('visibility', 'public')
-        ]);
+        // Use the new database function to get campaign stats efficiently
+        const { data, error } = await supabase
+          .rpc('get_campaign_stats');
 
-        console.log('Active campaigns:', activeCountResult.count);
-        console.log('Closed campaigns:', closedCountResult.count);
+        if (error) throw error;
 
-        if (activeCountResult.error) throw activeCountResult.error;
-        if (closedCountResult.error) throw closedCountResult.error;
-
-        // Get donations and calculate total raised
-        const [donationsResult, publicFundraisersResult] = await Promise.all([
-          supabase
-            .from('donations')
-            .select('amount, fundraiser_id')
-            .eq('payment_status', 'paid'),
-          supabase
-            .from('fundraisers')
-            .select('id')
-            .eq('visibility', 'public')
-            .in('status', ['active', 'closed'])
-        ]);
-
-        console.log('Donations count:', donationsResult.data?.length);
-        console.log('Public fundraisers count:', publicFundraisersResult.data?.length);
-
-        let totalRaised = 0;
-        if (!donationsResult.error && !publicFundraisersResult.error) {
-          const publicIds = new Set(publicFundraisersResult.data?.map(f => f.id) || []);
-          const publicDonations = donationsResult.data?.filter(d => publicIds.has(d.fundraiser_id)) || [];
-          
-          console.log('Public donations count:', publicDonations.length);
-          totalRaised = publicDonations.reduce((sum, d) => sum + Number(d.amount), 0);
-          console.log('Calculated total raised:', totalRaised);
-        }
-
+        const statsData = data?.[0];
+        console.log('Campaign stats from database:', statsData);
+        
         const finalStats = {
-          activeCampaigns: activeCountResult.count || 0,
-          successfulCampaigns: closedCountResult.count || 0,
-          totalFundsRaised: totalRaised,
+          activeCampaigns: Number(statsData?.active_campaigns || 0),
+          successfulCampaigns: Number(statsData?.closed_campaigns || 0),
+          totalFundsRaised: Number(statsData?.total_funds_raised || 0),
           loading: false,
           error: null
         };
