@@ -50,10 +50,16 @@ export default function AllCampaigns() {
     loadMore,
     refresh 
   } = useFundraisers({ 
-    limit: 24
+    limit: 24,
+    category: selectedCategory === "All" ? undefined : selectedCategory
   });
 
-  // Enhanced filtering of fundraisers
+  // Refresh data when selected category changes
+  useEffect(() => {
+    refresh();
+  }, [selectedCategory, refresh]);
+
+  // Client-side filtering for search and additional filters (category is handled server-side)
   const filteredFundraisers = useMemo(() => {
     return fundraisers.filter((fundraiser) => {
       const matchesSearch = !searchQuery || 
@@ -61,20 +67,15 @@ export default function AllCampaigns() {
         fundraiser.summary?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         fundraiser.profiles?.name?.toLowerCase().includes(searchQuery.toLowerCase());
       
-      const matchesCategory = selectedCategory === "All" || 
-        fundraiser.category === selectedCategory ||
-        activeFilters.categories.length === 0 ||
-        activeFilters.categories.includes(fundraiser.category || '');
-      
       const matchesLocation = activeFilters.location === 'All locations' || 
         fundraiser.location?.toLowerCase().includes(activeFilters.location.toLowerCase());
       
       // Simple time period filtering (would need actual date logic in real implementation)
       const matchesTimePeriod = activeFilters.timePeriod === 'all';
       
-      return matchesSearch && matchesCategory && matchesLocation && matchesTimePeriod;
+      return matchesSearch && matchesLocation && matchesTimePeriod;
     });
-  }, [fundraisers, searchQuery, selectedCategory, activeFilters]);
+  }, [fundraisers, searchQuery, activeFilters]);
 
   const handleFiltersChange = (filters: any) => {
     setActiveFilters(filters);

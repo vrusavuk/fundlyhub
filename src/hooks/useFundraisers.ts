@@ -85,6 +85,10 @@ export function useFundraisers(options: FundraiserQueryOptions = {}): UseFundrai
   }, [loadFundraisers]);
 
   useEffect(() => {
+    // Reset pagination state when options change
+    setOffset(0);
+    setHasMore(true);
+    setDonations({});
     loadFundraisers(false);
     
     // Set up real-time subscription for donations to keep data in sync
