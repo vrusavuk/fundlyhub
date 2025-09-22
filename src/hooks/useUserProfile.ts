@@ -41,36 +41,90 @@ export function useUserProfile(userId: string): UseUserProfileReturn {
       setLoading(true);
       setError(null);
 
-      // For now, fetch basic profile data from profiles table
-      const { data, error } = await supabase
+      // Fetch basic profile data
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, name, email, avatar, bio, location, website, social_links, profile_visibility, role, created_at')
         .eq('id', userId)
         .single();
 
-      if (error) throw error;
+      if (profileError) throw profileError;
 
-      if (data) {
-        setProfile({
-          id: data.id,
-          name: data.name,
-          email: data.email,
-          avatar: data.avatar,
-          bio: data.bio || null,
-          location: data.location || null,
-          website: data.website || null,
-          social_links: (data.social_links as Record<string, any>) || {},
-          profile_visibility: data.profile_visibility || 'public',
-          role: data.role || 'visitor',
-          campaign_count: Number(data.campaign_count || 0),
-          total_funds_raised: Number(data.total_funds_raised || 0),
-          follower_count: Number(data.follower_count || 0),
-          following_count: Number(data.following_count || 0),
-          created_at: data.created_at
-        });
-      } else {
+      if (!profileData) {
         setProfile(null);
+        return;
       }
+
+      // Calculate real-time following count (both users and organizations)
+      const { count: followingCount, error: followingError } = await supabase
+        .from('subscriptions')
+        .select('*', { count: 'exact', head: true })
+        .eq('follower_id', userId);
+
+      if (followingError) console.error('Error fetching following count:', followingError);
+
+      // Calculate real-time follower count (only users can follow users)
+      const { count: followerCount, error: followerError } = await supabase
+        .from('subscriptions')
+        .select('*', { count: 'exact', head: true })
+        .eq('following_id', userId)
+        .eq('following_type', 'user');
+
+      if (followerError) console.error('Error fetching follower count:', followerError);
+
+      // Calculate real-time campaign count (active campaigns only)
+      const { count: campaignCount, error: campaignError } = await supabase
+        .from('fundraisers')
+        .select('*', { count: 'exact', head: true })
+        .eq('owner_user_id', userId)
+        .eq('status', 'active');
+
+      if (campaignError) console.error('Error fetching campaign count:', campaignError);
+
+      // Calculate real-time total funds raised
+      // First get all fundraiser IDs that belong to this user
+      const { data: userFundraisers, error: fundraiserError } = await supabase
+        .from('fundraisers')
+        .select('id')
+        .eq('owner_user_id', userId);
+
+      if (fundraiserError) console.error('Error fetching user fundraisers:', fundraiserError);
+
+      let totalFundsRaised = 0;
+      if (userFundraisers && userFundraisers.length > 0) {
+        const fundraiserIds = userFundraisers.map(f => f.id);
+        
+        // Get stats for all user's fundraisers
+        const { data: fundraiserStats, error: statsError } = await supabase
+          .from('public_fundraiser_stats')
+          .select('total_raised')
+          .in('fundraiser_id', fundraiserIds);
+
+        if (statsError) console.error('Error fetching fundraiser stats:', statsError);
+
+        // Sum up total funds raised from all user's campaigns
+        totalFundsRaised = fundraiserStats?.reduce((sum, stat) => {
+          return sum + (Number(stat.total_raised) || 0);
+        }, 0) || 0;
+      }
+
+      setProfile({
+        id: profileData.id,
+        name: profileData.name,
+        email: profileData.email,
+        avatar: profileData.avatar,
+        bio: profileData.bio || null,
+        location: profileData.location || null,
+        website: profileData.website || null,
+        social_links: (profileData.social_links as Record<string, any>) || {},
+        profile_visibility: profileData.profile_visibility || 'public',
+        role: profileData.role || 'visitor',
+        campaign_count: campaignCount || 0,
+        total_funds_raised: totalFundsRaised,
+        follower_count: followerCount || 0,
+        following_count: followingCount || 0,
+        created_at: profileData.created_at
+      });
     } catch (error) {
       console.error('Error fetching user profile:', error);
       setError(error instanceof Error ? error.message : 'Failed to load profile');
