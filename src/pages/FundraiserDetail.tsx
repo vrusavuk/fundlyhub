@@ -314,14 +314,14 @@ export default function FundraiserDetail() {
     <AppLayout>
       <PageContainer>
         {/* Smart Navigation */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <SmartBackButton />
           <SmartBreadcrumb />
         </div>
         
-          <div className="mobile-grid gap-6 lg:gap-8">
-            {/* Main Content */}
-            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Hero Image */}
             <div className="aspect-video rounded-xl overflow-hidden shadow-lg">
               <img
@@ -332,28 +332,28 @@ export default function FundraiserDetail() {
             </div>
 
             {/* Title and Info */}
-            <div className="space-y-3 sm:space-y-4">
-              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  {fundraiser.category}
-                </Badge>
-                {fundraiser.location && (
-                  <Badge variant="outline" className="flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />
-                    {fundraiser.location}
-                  </Badge>
-                )}
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              <Badge variant="secondary" className="flex items-center gap-1">
+                {fundraiser.category}
+              </Badge>
+              {fundraiser.location && (
                 <Badge variant="outline" className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  Created {formatDate(fundraiser.created_at)}
+                  <MapPin className="h-3 w-3" />
+                  {fundraiser.location}
                 </Badge>
-              </div>
-              
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight">{fundraiser.title}</h1>
-              
-              <p className="text-lg text-muted-foreground leading-relaxed">{fundraiser.summary}</p>
-              
-              <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+              )}
+              <Badge variant="outline" className="flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                Created {formatDate(fundraiser.created_at)}
+              </Badge>
+            </div>
+            
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight">{fundraiser.title}</h1>
+            
+            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">{fundraiser.summary}</p>
+            
+            <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
                 {/* Campaign Organizer - Clickable */}
                 <Link 
                   to={`/profile/${fundraiser.owner_user_id}`}
@@ -436,17 +436,17 @@ export default function FundraiserDetail() {
               />
             </div>
 
-            {/* Tabs for Story, Updates, Comments */}
-            <Tabs defaultValue="story" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="story">Story</TabsTrigger>
-                <TabsTrigger value="updates">Updates</TabsTrigger>
-                <TabsTrigger value="comments">Comments ({comments.length})</TabsTrigger>
-              </TabsList>
+          {/* Tabs for Story, Updates, Comments */}
+          <Tabs defaultValue="story" className="w-full">
+            <TabsList className="grid w-full grid-cols-3 mb-4 sm:mb-6">
+              <TabsTrigger value="story" className="text-sm">Story</TabsTrigger>
+              <TabsTrigger value="updates" className="text-sm">Updates</TabsTrigger>
+              <TabsTrigger value="comments" className="text-sm">Comments ({comments.length})</TabsTrigger>
+            </TabsList>
               
-              <TabsContent value="story" className="mt-6 space-y-6">
-                <Card>
-                  <CardContent className="p-6">
+              <TabsContent value="story" className="mt-4 sm:mt-6 space-y-4 sm:space-y-6">
+              <Card>
+                <CardContent className="p-4 sm:p-6">
                     <div 
                       className="prose max-w-none"
                       dangerouslySetInnerHTML={{ __html: fundraiser.story_html }}
@@ -463,7 +463,7 @@ export default function FundraiserDetail() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-2 sm:gap-3">
                       <Button
                         variant="outline"
                         onClick={() => {
@@ -587,14 +587,44 @@ export default function FundraiserDetail() {
                 isFloating={true}
               />
             </div>
+
+            {/* Recent Donors */}
+            <RecentDonors
+              donations={donations}
+            />
           </div>
+
+        {/* Sidebar */}
+        <div className="lg:col-span-1 space-y-4 sm:space-y-6">
+          {/* Desktop donation widget */}
+          <div className="hidden lg:block">
+            <DonationWidget
+              fundraiserId={fundraiser.id}
+              title={fundraiser.title}
+              creatorName={fundraiser.profiles?.name || 'Anonymous'}
+              goalAmount={fundraiser.goal_amount}
+              raisedAmount={totalRaised}
+              donorCount={donations.length}
+              progressPercentage={progressPercentage}
+              currency={fundraiser.currency}
+              onDonate={handleDonate}
+              loading={donating}
+              isFloating={true}
+            />
+          </div>
+
+          {/* Recent Donors */}
+          <RecentDonors
+            donations={donations}
+          />
         </div>
+      </div>
 
         {/* Fixed Mobile Donation Button */}
         <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border shadow-lg">
           {!showMobileDonation ? (
-            <div className="p-4">
-              <div className="flex items-center justify-between mb-3">
+            <div className="p-3 sm:p-4">
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
                 <div className="flex-1">
                   <div className="flex items-center justify-between text-sm mb-1">
                     <span className="text-muted-foreground">Raised</span>
@@ -604,7 +634,7 @@ export default function FundraiserDetail() {
                 </div>
               </div>
               <Button 
-                className="w-full" 
+                className="w-full touch-target" 
                 size="lg"
                 onClick={() => setShowMobileDonation(true)}
               >
@@ -612,7 +642,7 @@ export default function FundraiserDetail() {
               </Button>
             </div>
           ) : (
-            <div className="p-4 max-h-[80vh] overflow-y-auto">
+            <div className="p-3 sm:p-4 max-h-[80vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Make a donation</h3>
                 <Button 
