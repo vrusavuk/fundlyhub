@@ -77,6 +77,7 @@ Deno.serve(async (req) => {
     ]
 
     const createdUsers = []
+    let updatedFundraisers = []
 
     // Create each user
     for (const userData of sampleUsers) {
@@ -145,7 +146,6 @@ Deno.serve(async (req) => {
         console.log(`Found ${fundraisers.length} fundraisers to reassign`)
         
         // Randomly assign each fundraiser to one of the new users
-        const updatedFundraisers = []
         for (const fundraiser of fundraisers) {
           // Pick a random user from the created users
           const randomUserIndex = Math.floor(Math.random() * createdUsers.length)
@@ -196,9 +196,6 @@ Deno.serve(async (req) => {
       } else {
         console.log('No fundraisers found to reassign')
       }
-    } else {
-      console.log('No users were processed, skipping campaign assignment')
-    }
 
       // Create some follow relationships
       const vitaliyId = 'ebd04736-b785-4569-83d4-5fee5a49e3fa'
@@ -249,6 +246,8 @@ Deno.serve(async (req) => {
           })
           .eq('id', userId)
       }
+    } else {
+      console.log('No users were processed, skipping campaign assignment and follow relationships')
     }
 
     return new Response(
@@ -256,7 +255,7 @@ Deno.serve(async (req) => {
         success: true, 
         message: `Processed ${createdUsers.length} sample users (created new or updated existing) and randomly assigned campaigns`,
         users: createdUsers,
-        campaignsAssigned: updatedFundraisers || []
+        campaignsAssigned: updatedFundraisers
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
