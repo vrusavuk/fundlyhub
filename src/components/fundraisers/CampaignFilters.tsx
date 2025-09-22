@@ -112,22 +112,23 @@ export function CampaignFilters({
   return (
     <div className="border-b border-border bg-background -mx-4 mb-6">
       <div className="px-4 py-4">
-        {/* Compact Filter Bar - Reordered: Filters, Categories, Location, Reset */}
-          <div className="flex items-center gap-4 flex-wrap">
+        {/* Compact Filter Bar - Mobile Optimized Single Row */}
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
             
-            {/* Advanced Filters Dialog - FIRST */}
+            {/* Advanced Filters Dialog - Icon Only */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button 
                   variant="outline" 
-                  className={`flex items-center gap-2 relative transition-all duration-200 ${
+                  size="sm"
+                  className={`flex items-center gap-1 relative transition-all duration-200 flex-shrink-0 ${
                     hasCustomFilters() 
                       ? "bg-accent text-accent-foreground border-accent-foreground/20" 
                       : ""
                   }`}
                 >
                   <SlidersHorizontal className="h-4 w-4" />
-                  Filters
+                  <span className="hidden sm:inline">Filters</span>
                   {getActiveFiltersCount() > 0 && (
                     <Badge 
                       variant="secondary" 
@@ -267,7 +268,7 @@ export function CampaignFilters({
               </DialogContent>
             </Dialog>
 
-            {/* Category Dropdown - SECOND */}
+            {/* Category Dropdown - Responsive Width */}
             <Select 
               value={filters.categories.length === 1 ? filters.categories[0] : filters.categories.length > 1 ? 'multiple' : 'all'} 
               onValueChange={(value) => {
@@ -279,23 +280,26 @@ export function CampaignFilters({
               }}
             >
               <SelectTrigger 
-                className={`w-[180px] transition-all duration-200 ${
+                className={`w-[140px] sm:w-[180px] transition-all duration-200 flex-shrink-0 ${
                   hasCategoryFilters() 
                     ? "bg-accent text-accent-foreground border-accent-foreground/20" 
                     : "bg-background border border-border"
                 }`}
               >
                 <SelectValue placeholder="Category">
-                  {filters.categories.length === 0 && "All Categories"}
+                  {filters.categories.length === 0 && <span className="hidden sm:inline">All Categories</span>}
+                  {filters.categories.length === 0 && <span className="sm:hidden">All</span>}
                   {filters.categories.length === 1 && (
                     <span className="flex items-center gap-1">
                       {CATEGORIES.find(c => c.name === filters.categories[0])?.emoji}
-                      {filters.categories[0]}
+                      <span className="hidden sm:inline">{filters.categories[0]}</span>
+                      <span className="sm:hidden">{filters.categories[0].slice(0, 8)}{filters.categories[0].length > 8 ? '...' : ''}</span>
                     </span>
                   )}
                   {filters.categories.length > 1 && (
                     <span className="flex items-center gap-1">
-                      Multiple ({filters.categories.length})
+                      <span className="hidden sm:inline">Multiple ({filters.categories.length})</span>
+                      <span className="sm:hidden">{filters.categories.length} cats</span>
                     </span>
                   )}
                 </SelectValue>
@@ -312,10 +316,10 @@ export function CampaignFilters({
               </SelectContent>
             </Select>
 
-            {/* Location Dropdown - THIRD */}
+            {/* Location Dropdown - Responsive Width */}
             <Select value={filters.location} onValueChange={(value) => handleFilterChange('location', value)}>
               <SelectTrigger 
-                className={`w-[160px] transition-all duration-200 ${
+                className={`w-[120px] sm:w-[160px] transition-all duration-200 flex-shrink-0 ${
                   (filters.location !== 'All locations' || filters.locationInput.trim() !== '') 
                     ? "bg-accent text-accent-foreground border-accent-foreground/20" 
                     : "bg-background border border-border"
@@ -324,7 +328,10 @@ export function CampaignFilters({
                 <SelectValue>
                   <span className="flex items-center gap-1">
                     <MapPin className="h-4 w-4" />
-                    {filters.location}
+                    <span className="hidden sm:inline">{filters.location}</span>
+                    <span className="sm:hidden">
+                      {filters.location === 'All locations' ? 'All' : filters.location.slice(0, 6)}
+                    </span>
                   </span>
                 </SelectValue>
               </SelectTrigger>
@@ -337,51 +344,42 @@ export function CampaignFilters({
               </SelectContent>
             </Select>
 
-            {/* Reset Button - FOURTH */}
+            {/* Reset Button - Compact */}
             {getActiveFiltersCount() > 0 && (
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={clearAllFilters}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground flex-shrink-0"
               >
-                Reset
+                <X className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Reset</span>
               </Button>
             )}
 
-            {/* Active Filters Display */}
+            {/* Active Filters Count - Mobile Friendly */}
             {getActiveFiltersCount() > 0 && (
-              <div className="flex items-center gap-2 ml-auto">
+              <div className="hidden md:flex items-center gap-2 ml-auto">
                 <span className="text-xs text-muted-foreground">Active:</span>
-                <div className="flex gap-1 flex-wrap">
-                  {filters.categories.slice(0, 2).map((category) => (
+                <div className="flex gap-1">
+                  {filters.categories.slice(0, 1).map((category) => (
                     <Badge key={category} variant="secondary" className="text-xs py-0 px-2 h-6">
                       {CATEGORIES.find(c => c.name === category)?.emoji} {category}
                     </Badge>
                   ))}
-                  {filters.categories.length > 2 && (
+                  {filters.categories.length > 1 && (
                     <Badge variant="secondary" className="text-xs py-0 px-2 h-6">
-                      +{filters.categories.length - 2} more
+                      +{filters.categories.length - 1} more
                     </Badge>
                   )}
                   {filters.location !== 'All locations' && (
                     <Badge variant="secondary" className="text-xs py-0 px-2 h-6">
-                      📍 {filters.location}
+                      📍 {filters.location.slice(0, 8)}
                     </Badge>
                   )}
-                  {filters.locationInput.trim() !== '' && (
+                  {(filters.nonprofitsOnly || filters.closeToGoal) && (
                     <Badge variant="secondary" className="text-xs py-0 px-2 h-6">
-                      📍 {filters.locationInput}
-                    </Badge>
-                  )}
-                  {filters.nonprofitsOnly && (
-                    <Badge variant="secondary" className="text-xs py-0 px-2 h-6">
-                      Nonprofits
-                    </Badge>
-                  )}
-                  {filters.closeToGoal && (
-                    <Badge variant="secondary" className="text-xs py-0 px-2 h-6">
-                      Close to goal
+                      +filters
                     </Badge>
                   )}
                 </div>
