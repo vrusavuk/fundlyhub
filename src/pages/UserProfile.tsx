@@ -12,6 +12,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { CreateSampleUsers } from '@/components/admin/CreateSampleUsers';
 
 export function UserProfile() {
   const { userId } = useParams<{ userId: string }>();
@@ -67,6 +68,11 @@ export function UserProfile() {
 
           {/* Profile Content Tabs */}
           <ProfileTabs userId={profile.id} />
+          
+          {/* Admin Tools - Only show for current user */}
+          {user && user.id === profile.id && (
+            <CreateSampleUsers />
+          )}
         </div>
       </PageContainer>
     </AppLayout>
