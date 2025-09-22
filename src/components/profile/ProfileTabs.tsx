@@ -71,7 +71,7 @@ export function ProfileTabs({ userId }: ProfileTabsProps) {
             ) : userActiveCampaigns.length > 0 ? (
               <FundraiserGrid 
                 fundraisers={userActiveCampaigns} 
-                donations={{}}
+                stats={{}}
                 loading={activeLoading}
                 error={null}
                 onCardClick={(slug) => window.location.href = `/fundraiser/${slug}`}
@@ -99,7 +99,7 @@ export function ProfileTabs({ userId }: ProfileTabsProps) {
             ) : userClosedCampaigns.length > 0 ? (
               <FundraiserGrid 
                 fundraisers={userClosedCampaigns} 
-                donations={{}}
+                stats={{}}
                 loading={closedLoading}
                 error={null}
                 onCardClick={(slug) => window.location.href = `/fundraiser/${slug}`}

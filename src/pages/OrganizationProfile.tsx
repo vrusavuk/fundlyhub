@@ -192,7 +192,7 @@ export function OrganizationProfile() {
               ) : organizationCampaigns.length > 0 ? (
                 <FundraiserGrid 
                   fundraisers={organizationCampaigns} 
-                  donations={{}}
+                  stats={{}}
                   loading={false}
                   error={null}
                   onCardClick={(slug) => window.location.href = `/fundraiser/${slug}`}

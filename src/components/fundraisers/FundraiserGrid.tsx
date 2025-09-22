@@ -2,16 +2,14 @@
  * Grid component for displaying fundraiser cards with loading and error states
  */
 import { EnhancedFundraiserCard } from '@/components/EnhancedFundraiserCard';
-import { useFundraiserStats } from '@/hooks/useFundraiserStats';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { Button } from '@/components/ui/button';
 import type { Fundraiser } from '@/types/fundraiser';
-import { formatCurrency } from '@/lib/utils/formatters';
 
 interface FundraiserGridProps {
   fundraisers: Fundraiser[];
-  donations: Record<string, number>;
+  stats: Record<string, any>; // Updated to use stats instead of donations
   loading: boolean;
   error: string | null;
   hasMore?: boolean;
@@ -19,12 +17,12 @@ interface FundraiserGridProps {
   onCardClick: (slug: string) => void;
   onRetry?: () => void;
   emptyMessage?: string;
-  searchQuery?: string; // New prop for highlighting
+  searchQuery?: string;
 }
 
 export function FundraiserGrid({
   fundraisers,
-  donations,
+  stats,
   loading,
   error,
   hasMore = false,
@@ -34,8 +32,7 @@ export function FundraiserGrid({
   emptyMessage = "No fundraisers available at the moment.",
   searchQuery
 }: FundraiserGridProps) {
-  const fundraiserIds = fundraisers.map(f => f.id);
-  const { stats: fundraiserStats, loading: statsLoading } = useFundraiserStats(fundraiserIds);
+  // Remove the redundant useFundraiserStats hook call since stats are now passed as props
   if (loading && fundraisers.length === 0) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -62,7 +59,7 @@ export function FundraiserGrid({
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {fundraisers.map((fundraiser, index) => {
-          const stats = fundraiserStats[fundraiser.id];
+          const fundraiserStats = stats[fundraiser.id];
           
           return (
             <EnhancedFundraiserCard
@@ -71,15 +68,15 @@ export function FundraiserGrid({
               title={fundraiser.title}
               summary={fundraiser.summary || ""}
               goalAmount={fundraiser.goal_amount}
-              raisedAmount={stats?.totalRaised || 0}
+              raisedAmount={fundraiserStats?.totalRaised || 0}
               currency={fundraiser.currency}
               coverImage={fundraiser.cover_image || "/placeholder.svg"}
               category={fundraiser.category || "General"}
               organizationName={fundraiser.profiles?.name || "Anonymous"}
               location={fundraiser.location || undefined}
-              donorCount={stats?.donorCount || 0}
-              daysLeft={stats?.daysLeft}
-              urgency={stats?.daysLeft && stats.daysLeft <= 7 ? 'high' : stats?.daysLeft && stats.daysLeft <= 14 ? 'medium' : 'low'}
+              donorCount={fundraiserStats?.donorCount || 0}
+              daysLeft={fundraiserStats?.daysLeft}
+              urgency={fundraiserStats?.daysLeft && fundraiserStats.daysLeft <= 7 ? 'high' : fundraiserStats?.daysLeft && fundraiserStats.daysLeft <= 14 ? 'medium' : 'low'}
               isVerified={fundraiser.profiles?.name ? true : false}
               isOrganization={fundraiser.org_id ? true : false}
               searchQuery={searchQuery}

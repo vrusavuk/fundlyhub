@@ -24,7 +24,7 @@ export interface Fundraiser extends BaseEntity {
   goal_amount: number;
   currency: string;
   category?: string;
-  status: 'draft' | 'active' | 'paused' | 'ended' | 'closed';
+  status: 'draft' | 'active' | 'paused' | 'ended' | 'closed' | 'pending';
   visibility: 'public' | 'unlisted';
   cover_image?: string;
   images?: string[];

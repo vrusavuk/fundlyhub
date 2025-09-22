@@ -17,7 +17,7 @@ import businessImage from "@/assets/categories/business.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { fundraisers, donations, loading, error, refresh } = useFundraisers({ limit: 6 });
+  const { fundraisers, stats, loading, error, refresh } = useFundraisers({ limit: 6 });
 
   const handleCardClick = (slug: string) => {
     navigate(`/fundraiser/${slug}`);
@@ -176,7 +176,7 @@ const Index = () => {
           
           <FundraiserGrid
             fundraisers={fundraisers}
-            donations={donations}
+            stats={stats}
             loading={loading}
             error={error}
             onCardClick={handleCardClick}

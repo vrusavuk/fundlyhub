@@ -1,46 +1,17 @@
 /**
- * Hook for fetching category statistics from the database
+ * Enterprise category stats hook
+ * Uses the new service layer for better performance and caching
  */
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import type { CategoryStats } from '@/types/category';
+import { useCategories } from './useCategories';
 
+// Re-export the stats from the main categories hook for backward compatibility
 export function useDynamicCategoryStats() {
-  const [stats, setStats] = useState<CategoryStats[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchCategoryStats();
-  }, []);
-
-  const fetchCategoryStats = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const { data, error } = await supabase
-        .rpc('get_category_stats');
-
-      if (error) throw error;
-
-      setStats(data || []);
-    } catch (err) {
-      console.error('Error fetching category stats:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch category stats');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const refetch = () => {
-    fetchCategoryStats();
-  };
-
+  const { stats: categoryStats, loading, error, refresh } = useCategories();
+  
   return {
-    stats,
-    loading, 
+    stats: categoryStats,
+    loading,
     error,
-    refetch
+    refetch: refresh,
   };
 }

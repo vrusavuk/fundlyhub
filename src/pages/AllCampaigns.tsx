@@ -43,7 +43,7 @@ export default function AllCampaigns() {
 
   const { 
     fundraisers, 
-    donations, 
+    stats, 
     loading, 
     error, 
     hasMore, 
@@ -138,7 +138,7 @@ export default function AllCampaigns() {
       <PageContainer>
         <FundraiserGrid
           fundraisers={filteredFundraisers}
-          donations={donations}
+          stats={stats}
           loading={loading}
           error={error}
           hasMore={hasMore}
