@@ -138,7 +138,7 @@ export function CampaignFilters({
                 <Button 
                   variant="outline" 
                   size="sm"
-                  className={`flex items-center gap-1 relative transition-all duration-200 flex-shrink-0 ${
+                  className={`flex items-center gap-1 relative transition-all duration-200 flex-shrink-0 focus:outline-none focus-visible:ring-0 ${
                     hasCustomFilters() 
                       ? "bg-accent text-accent-foreground border-accent-foreground/20" 
                       : ""
@@ -192,7 +192,7 @@ export function CampaignFilters({
                   <div>
                     <Label className="text-sm font-medium mb-2 block">Region</Label>
                     <Select value={filters.location} onValueChange={(value) => handleFilterChange('location', value)}>
-                      <SelectTrigger className="bg-background border border-border">
+                      <SelectTrigger className="bg-background border border-border focus:outline-none focus-visible:ring-0">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-background border border-border z-50">
@@ -227,7 +227,7 @@ export function CampaignFilters({
                       Time Period
                     </Label>
                     <Select value={filters.timePeriod} onValueChange={(value) => handleFilterChange('timePeriod', value)}>
-                      <SelectTrigger className="bg-background border border-border">
+                      <SelectTrigger className="bg-background border border-border focus:outline-none focus-visible:ring-0">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-background border border-border z-50">
@@ -291,7 +291,7 @@ export function CampaignFilters({
                 <Button
                   variant="outline"
                   size="sm"
-                  className={`w-[90px] sm:w-[180px] justify-between transition-all duration-200 flex-shrink-0 ${
+                  className={`w-[90px] sm:w-[180px] justify-between transition-all duration-200 flex-shrink-0 focus:outline-none focus-visible:ring-0 ${
                     hasCategoryFilters() 
                       ? "bg-accent text-accent-foreground border-accent-foreground/20" 
                       : "bg-background border border-border"
@@ -357,7 +357,7 @@ export function CampaignFilters({
             {/* Location Dropdown - Responsive Width */}
             <Select value={filters.location} onValueChange={(value) => handleFilterChange('location', value)}>
               <SelectTrigger 
-                className={`w-[80px] sm:w-[160px] transition-all duration-200 flex-shrink-0 ${
+                className={`w-[80px] sm:w-[160px] transition-all duration-200 flex-shrink-0 focus:outline-none focus-visible:ring-0 ${
                   (filters.location !== 'All locations' || filters.locationInput.trim() !== '') 
                     ? "bg-accent text-accent-foreground border-accent-foreground/20" 
                     : "bg-background border border-border"
@@ -388,7 +388,7 @@ export function CampaignFilters({
                 variant="ghost" 
                 size="sm" 
                 onClick={clearAllFilters}
-                className="text-muted-foreground hover:text-foreground flex-shrink-0"
+                className="text-muted-foreground hover:text-foreground flex-shrink-0 focus:outline-none focus-visible:ring-0"
               >
                 <X className="h-4 w-4 sm:mr-1" />
                 <span className="hidden sm:inline">Reset</span>
