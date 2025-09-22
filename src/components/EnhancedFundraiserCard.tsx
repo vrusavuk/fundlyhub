@@ -6,6 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Heart, Share2, BookmarkPlus, MapPin, Clock, Users, Verified } from 'lucide-react';
 import { HighlightedTitle, HighlightedDescription, HighlightedLabel } from '@/components/search/HighlightedText';
+import { useCategories } from '@/hooks/useCategories';
 
 interface EnhancedFundraiserCardProps {
   id: string;
@@ -24,7 +25,7 @@ interface EnhancedFundraiserCardProps {
   urgency?: 'high' | 'medium' | 'low';
   isOrganization?: boolean;
   avatarUrl?: string;
-  searchQuery?: string; // New prop for highlighting
+  searchQuery?: string;
   onClick?: () => void;
 }
 
@@ -50,6 +51,7 @@ export function EnhancedFundraiserCard({
 }: EnhancedFundraiserCardProps) {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
+  const { categories } = useCategories();
   
   const progressPercentage = Math.min((raisedAmount / goalAmount) * 100, 100);
   const formatAmount = (amount: number) => new Intl.NumberFormat('en-US', {
@@ -58,8 +60,6 @@ export function EnhancedFundraiserCard({
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
-
-  // Clean up the highlighting logic - components will handle it internally
 
   const getUrgencyColor = () => {
     switch (urgency) {
@@ -70,19 +70,16 @@ export function EnhancedFundraiserCard({
     }
   };
 
-  const getCategoryColor = () => {
-    const colors: Record<string, string> = {
-      'Medical': 'bg-destructive/10 text-destructive border-destructive/20',
-      'Emergency': 'bg-warning/10 text-warning border-warning/20',
-      'Education': 'bg-primary/10 text-primary border-primary/20',
-      'Community': 'bg-success/10 text-success border-success/20',
-      'Animal': 'bg-accent/10 text-accent border-accent/20',
-      'Environment': 'bg-success/10 text-success border-success/20',
-      'Sports': 'bg-primary/10 text-primary border-primary/20',
-      'Arts': 'bg-accent/10 text-accent border-accent/20',
+  // Get category info from database
+  const getCategoryInfo = () => {
+    const categoryData = categories.find(c => c.name === category);
+    return {
+      emoji: categoryData?.emoji || '📋',
+      colorClass: categoryData?.color_class || 'bg-muted text-muted-foreground border-border'
     };
-    return colors[category] || 'bg-muted text-muted-foreground border-border';
   };
+
+  const categoryInfo = getCategoryInfo();
 
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -151,7 +148,8 @@ export function EnhancedFundraiserCard({
 
         {/* Category and urgency badges */}
         <div className="absolute top-3 left-3 flex gap-2">
-          <Badge className={`${getCategoryColor()} border font-medium`}>
+          <Badge className={`${categoryInfo.colorClass} border font-medium`}>
+            <span className="mr-1">{categoryInfo.emoji}</span>
             {category}
           </Badge>
           {urgency && (

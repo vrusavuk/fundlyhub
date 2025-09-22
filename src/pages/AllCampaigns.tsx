@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { SlidersHorizontal } from "lucide-react";
 import { useFundraisers } from "@/hooks/useFundraisers";
 import { useCampaignStats } from "@/hooks/useCampaignStats";
+import { useCategories } from "@/hooks/useCategories";
 import { useGlobalSearch } from "@/contexts/SearchContext";
 
 export default function AllCampaigns() {
@@ -24,13 +25,19 @@ export default function AllCampaigns() {
   const navigate = useNavigate();
   const { searchQuery } = useGlobalSearch();
   const campaignStats = useCampaignStats();
+  const { categories } = useCategories();
 
   // Get initial category from URL parameters  
   const initialCategory = searchParams.get('category') || 'All';
 
   useEffect(() => {
-    if (initialCategory) {
+    if (initialCategory && initialCategory !== 'All') {
       setSelectedCategory(initialCategory);
+      // Also set it in activeFilters for the filter component
+      setActiveFilters(prev => ({
+        ...prev,
+        categories: [initialCategory]
+      }));
     }
   }, [initialCategory]);
 
@@ -121,6 +128,8 @@ export default function AllCampaigns() {
         <CampaignFilters
           onFiltersChange={handleFiltersChange}
           activeFiltersCount={getActiveFiltersCount()}
+          initialCategory={initialCategory}
+          categories={categories}
         />
       </PageContainer>
       

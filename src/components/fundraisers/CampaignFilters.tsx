@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -12,7 +12,7 @@ import {
   Clock,
   X
 } from 'lucide-react';
-import { CATEGORIES } from '@/types/fundraiser';
+import type { Category } from '@/types/category';
 
 interface FilterState {
   categories: string[];
@@ -26,6 +26,8 @@ interface FilterState {
 interface CampaignFiltersProps {
   onFiltersChange: (filters: FilterState) => void;
   activeFiltersCount: number;
+  initialCategory?: string;
+  categories: Category[];
 }
 
 const LOCATIONS = [
@@ -47,17 +49,28 @@ const TIME_PERIODS = [
 
 export function CampaignFilters({ 
   onFiltersChange, 
-  activeFiltersCount 
+  activeFiltersCount,
+  initialCategory,
+  categories
 }: CampaignFiltersProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
-    categories: [],
+    categories: initialCategory && initialCategory !== 'All' ? [initialCategory] : [],
     location: 'All locations',
     locationInput: '',
     timePeriod: 'all',
     nonprofitsOnly: false,
     closeToGoal: false
   });
+
+  // Update filters when initialCategory changes
+  useEffect(() => {
+    if (initialCategory && initialCategory !== 'All') {
+      const newFilters = { ...filters, categories: [initialCategory] };
+      setFilters(newFilters);
+      onFiltersChange(newFilters);
+    }
+  }, [initialCategory]);
 
   const handleFilterChange = (key: keyof FilterState, value: any) => {
     const newFilters = { ...filters, [key]: value };
@@ -150,9 +163,9 @@ export function CampaignFilters({
                 <div>
                   <Label className="text-base font-medium mb-3 block">Categories</Label>
                   <div className="flex flex-wrap gap-2">
-                    {CATEGORIES.map((category) => (
+                    {categories.map((category) => (
                       <Badge
-                        key={category.name}
+                        key={category.id}
                         variant={filters.categories.includes(category.name) ? 'default' : 'outline'}
                         className="cursor-pointer transition-all hover:bg-primary hover:text-primary-foreground"
                         onClick={() => handleCategoryToggle(category.name)}
@@ -291,7 +304,7 @@ export function CampaignFilters({
                   {filters.categories.length === 0 && <span className="sm:hidden">All</span>}
                   {filters.categories.length === 1 && (
                     <span className="flex items-center gap-1">
-                      {CATEGORIES.find(c => c.name === filters.categories[0])?.emoji}
+                      {categories.find(c => c.name === filters.categories[0])?.emoji}
                       <span className="hidden sm:inline">{filters.categories[0]}</span>
                       <span className="sm:hidden">{filters.categories[0].slice(0, 4)}</span>
                     </span>
@@ -306,8 +319,8 @@ export function CampaignFilters({
               </SelectTrigger>
               <SelectContent className="bg-background border border-border z-50">
                 <SelectItem value="all">All Categories</SelectItem>
-                {CATEGORIES.map((category) => (
-                  <SelectItem key={category.name} value={category.name}>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.name}>
                     <span className="flex items-center gap-2">
                       {category.emoji} {category.name}
                     </span>
@@ -364,7 +377,7 @@ export function CampaignFilters({
                 <div className="flex gap-1">
                   {filters.categories.slice(0, 1).map((category) => (
                     <Badge key={category} variant="secondary" className="text-xs py-0 px-2 h-6">
-                      {CATEGORIES.find(c => c.name === category)?.emoji} {category}
+                      {categories.find(c => c.name === category)?.emoji} {category}
                     </Badge>
                   ))}
                   {filters.categories.length > 1 && (
