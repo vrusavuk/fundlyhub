@@ -18,6 +18,9 @@ interface Follower {
   role: string;
   follower_count: number;
   campaign_count: number;
+  type: 'user' | 'organization';
+  legal_name?: string;
+  dba_name?: string;
 }
 
 interface FollowersListProps {
@@ -38,9 +41,10 @@ export function FollowersList({ userId, type, maxItems }: FollowersListProps) {
       setError(null);
 
       let profileIds: string[] = [];
+      let organizationIds: string[] = [];
 
       if (type === 'followers') {
-        // Get follower IDs for this user
+        // Get follower IDs for this user (only users can follow, not organizations)
         const { data: subscriptions, error: subError } = await supabase
           .from('subscriptions')
           .select('follower_id')
@@ -51,41 +55,68 @@ export function FollowersList({ userId, type, maxItems }: FollowersListProps) {
         if (subError) throw subError;
         profileIds = (subscriptions || []).map(sub => sub.follower_id);
       } else {
-        // Get following IDs for this user
+        // Get following IDs for this user (can follow both users and organizations)
         const { data: subscriptions, error: subError } = await supabase
           .from('subscriptions')
-          .select('following_id')
+          .select('following_id, following_type')
           .eq('follower_id', userId)
-          .eq('following_type', 'user')
           .limit(maxItems || 50);
 
         if (subError) throw subError;
-        profileIds = (subscriptions || []).map(sub => sub.following_id);
+        
+        profileIds = (subscriptions || []).filter(sub => sub.following_type === 'user').map(sub => sub.following_id);
+        organizationIds = (subscriptions || []).filter(sub => sub.following_type === 'organization').map(sub => sub.following_id);
       }
 
-      if (profileIds.length === 0) {
-        setFollowers([]);
-        return;
+      let transformedData: Follower[] = [];
+
+      // Fetch user profiles
+      if (profileIds.length > 0) {
+        const { data: profiles, error: profileError } = await supabase
+          .from('profiles')
+          .select('id, name, email, avatar, role, follower_count, campaign_count')
+          .in('id', profileIds);
+
+        if (profileError) throw profileError;
+
+        const userFollowers = (profiles || []).map(profile => ({
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          avatar: profile.avatar,
+          role: profile.role,
+          follower_count: Number(profile.follower_count || 0),
+          campaign_count: Number(profile.campaign_count || 0),
+          type: 'user' as const
+        }));
+
+        transformedData = [...transformedData, ...userFollowers];
       }
 
-      // Fetch profiles for the IDs
-      const { data: profiles, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, name, email, avatar, role, follower_count, campaign_count')
-        .in('id', profileIds);
+      // Fetch organization profiles
+      if (organizationIds.length > 0) {
+        const { data: organizations, error: orgError } = await supabase
+          .from('organizations')
+          .select('id, legal_name, dba_name, verification_status')
+          .in('id', organizationIds);
 
-      if (profileError) throw profileError;
+        if (orgError) throw orgError;
 
-      // Transform the data
-      const transformedData = (profiles || []).map(profile => ({
-        id: profile.id,
-        name: profile.name,
-        email: profile.email,
-        avatar: profile.avatar,
-        role: profile.role,
-        follower_count: Number(profile.follower_count || 0),
-        campaign_count: Number(profile.campaign_count || 0)
-      }));
+        const orgFollowers = (organizations || []).map(org => ({
+          id: org.id,
+          name: org.dba_name || org.legal_name,
+          email: null,
+          avatar: null,
+          role: org.verification_status || 'pending',
+          follower_count: 0,
+          campaign_count: 0,
+          type: 'organization' as const,
+          legal_name: org.legal_name,
+          dba_name: org.dba_name
+        }));
+
+        transformedData = [...transformedData, ...orgFollowers];
+      }
 
       setFollowers(transformedData);
     } catch (error) {
@@ -160,33 +191,51 @@ export function FollowersList({ userId, type, maxItems }: FollowersListProps) {
               >
                 <div 
                   className="flex items-center gap-3 flex-1 cursor-pointer" 
-                  onClick={() => navigate(`/profile/${follower.id}`)}
+                  onClick={() => {
+                    if (follower.type === 'organization') {
+                      navigate(`/organization/${follower.id}`);
+                    } else {
+                      navigate(`/profile/${follower.id}`);
+                    }
+                  }}
                 >
                   <Avatar className="w-10 h-10">
                     <AvatarImage src={follower.avatar || undefined} />
                     <AvatarFallback>
-                      {follower.name?.charAt(0)?.toUpperCase() || follower.email?.charAt(0)?.toUpperCase() || 'U'}
+                      {follower.type === 'organization' 
+                        ? (follower.dba_name || follower.legal_name || 'O').charAt(0).toUpperCase()
+                        : follower.name?.charAt(0)?.toUpperCase() || follower.email?.charAt(0)?.toUpperCase() || 'U'
+                      }
                     </AvatarFallback>
                   </Avatar>
 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <h4 className="font-medium text-sm truncate hover:text-primary transition-colors">
-                        {follower.name || 'Anonymous User'}
+                        {follower.type === 'organization' 
+                          ? (follower.dba_name || follower.legal_name || 'Organization')
+                          : (follower.name || 'Anonymous User')
+                        }
                       </h4>
                       <Badge variant="secondary" className="text-xs">
-                        {follower.role}
+                        {follower.type === 'organization' ? 'org' : follower.role}
                       </Badge>
                     </div>
                     
                     <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                      <span>{follower.campaign_count} campaigns</span>
-                      <span>{follower.follower_count} followers</span>
+                      {follower.type === 'organization' ? (
+                        <span>Organization</span>
+                      ) : (
+                        <>
+                          <span>{follower.campaign_count} campaigns</span>
+                          <span>{follower.follower_count} followers</span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
 
-                <FollowButton userId={follower.id} size="sm" />
+                {follower.type === 'user' && <FollowButton userId={follower.id} size="sm" />}
               </div>
             ))}
           </div>
