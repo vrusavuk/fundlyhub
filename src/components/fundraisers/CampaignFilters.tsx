@@ -113,7 +113,7 @@ export function CampaignFilters({
     <div className="border-b border-border bg-background -mx-4 mb-6">
       <div className="px-4 py-4">
         {/* Compact Filter Bar - Mobile Optimized Single Row */}
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+          <div className="flex items-center gap-1 sm:gap-2 overflow-hidden"  >
             
             {/* Advanced Filters Dialog - Icon Only */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -280,7 +280,7 @@ export function CampaignFilters({
               }}
             >
               <SelectTrigger 
-                className={`w-[140px] sm:w-[180px] transition-all duration-200 flex-shrink-0 ${
+                className={`w-[90px] sm:w-[180px] transition-all duration-200 flex-shrink-0 ${
                   hasCategoryFilters() 
                     ? "bg-accent text-accent-foreground border-accent-foreground/20" 
                     : "bg-background border border-border"
@@ -293,13 +293,13 @@ export function CampaignFilters({
                     <span className="flex items-center gap-1">
                       {CATEGORIES.find(c => c.name === filters.categories[0])?.emoji}
                       <span className="hidden sm:inline">{filters.categories[0]}</span>
-                      <span className="sm:hidden">{filters.categories[0].slice(0, 8)}{filters.categories[0].length > 8 ? '...' : ''}</span>
+                      <span className="sm:hidden">{filters.categories[0].slice(0, 4)}</span>
                     </span>
                   )}
                   {filters.categories.length > 1 && (
                     <span className="flex items-center gap-1">
                       <span className="hidden sm:inline">Multiple ({filters.categories.length})</span>
-                      <span className="sm:hidden">{filters.categories.length} cats</span>
+                      <span className="sm:hidden">{filters.categories.length}</span>
                     </span>
                   )}
                 </SelectValue>
@@ -319,7 +319,7 @@ export function CampaignFilters({
             {/* Location Dropdown - Responsive Width */}
             <Select value={filters.location} onValueChange={(value) => handleFilterChange('location', value)}>
               <SelectTrigger 
-                className={`w-[120px] sm:w-[160px] transition-all duration-200 flex-shrink-0 ${
+                className={`w-[80px] sm:w-[160px] transition-all duration-200 flex-shrink-0 ${
                   (filters.location !== 'All locations' || filters.locationInput.trim() !== '') 
                     ? "bg-accent text-accent-foreground border-accent-foreground/20" 
                     : "bg-background border border-border"
@@ -327,10 +327,10 @@ export function CampaignFilters({
               >
                 <SelectValue>
                   <span className="flex items-center gap-1">
-                    <MapPin className="h-4 w-4" />
+                    <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span className="hidden sm:inline">{filters.location}</span>
-                    <span className="sm:hidden">
-                      {filters.location === 'All locations' ? 'All' : filters.location.slice(0, 6)}
+                    <span className="sm:hidden text-xs">
+                      {filters.location === 'All locations' ? 'All' : filters.location.slice(0, 3)}
                     </span>
                   </span>
                 </SelectValue>
