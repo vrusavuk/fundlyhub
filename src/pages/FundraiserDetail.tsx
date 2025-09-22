@@ -19,6 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Heart, Share2, Flag, Calendar, Users, MapPin, Verified, Clock, Facebook, Twitter, Copy } from 'lucide-react';
 import { formatCurrency, formatProgress } from '@/lib/utils/formatters';
 import { FollowButton } from '@/components/profile/FollowButton';
+import { SmartBreadcrumb } from '@/components/navigation/SmartBreadcrumb';
 import { FollowOrganizationButton } from '@/components/profile/FollowOrganizationButton';
 
 interface Fundraiser {
@@ -311,18 +312,14 @@ export default function FundraiserDetail() {
   return (
     <AppLayout>
       <PageContainer>
+        {/* Smart Navigation */}
+        <div className="mb-6">
+          <SmartBreadcrumb />
+        </div>
+        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Breadcrumb */}
-            <div className="flex items-center text-sm text-muted-foreground">
-              <span>Fundraisers</span>
-              <span className="mx-2">→</span>
-              <span>{fundraiser.category}</span>
-              <span className="mx-2">→</span>
-              <span className="text-foreground font-medium">{fundraiser.title}</span>
-            </div>
-
             {/* Hero Image */}
             <div className="aspect-video rounded-xl overflow-hidden shadow-lg">
               <img

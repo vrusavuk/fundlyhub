@@ -84,8 +84,6 @@ export default function SearchResults() {
         <PageHeader
           title="Search Results"
           description={`${filteredResults.length} results for "${query}"`}
-          showBackButton
-          backTo="/"
         />
 
         {/* Type Filter */}

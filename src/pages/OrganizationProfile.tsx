@@ -16,6 +16,7 @@ import { useFundraisers } from '@/hooks/useFundraisers';
 import { useOrganizationProfile } from '@/hooks/useOrganizationProfile';
 import { formatCurrency } from '@/lib/utils/formatters';
 import { format } from 'date-fns';
+import { SmartBreadcrumb } from '@/components/navigation/SmartBreadcrumb';
 
 export function OrganizationProfile() {
   const { orgId } = useParams<{ orgId: string }>();
@@ -67,6 +68,11 @@ export function OrganizationProfile() {
   return (
     <AppLayout>
       <PageContainer className="max-w-6xl mx-auto">
+        {/* Smart Navigation */}
+        <div className="mb-6">
+          <SmartBreadcrumb />
+        </div>
+        
         <div className="space-y-6">
           {/* Organization Header */}
           <Card className="border-0 shadow-none bg-gradient-subtle">

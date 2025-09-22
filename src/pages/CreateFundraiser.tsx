@@ -125,8 +125,6 @@ export default function CreateFundraiser() {
       <PageContainer maxWidth="md">
         <PageHeader 
           title="Create New Fundraiser"
-          showBackButton
-          backTo="/campaigns"
         />
         <Card>
             <CardContent>

@@ -1,5 +1,10 @@
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import { AppLayout } from '@/components/layout/AppLayout';
+import { PageContainer } from '@/components/ui/PageContainer';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 const NotFound = () => {
   const location = useLocation();
@@ -9,15 +14,20 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">404</h1>
-        <p className="mb-4 text-xl text-gray-600">Oops! Page not found</p>
-        <a href="/" className="text-blue-500 underline hover:text-blue-700">
-          Return to Home
-        </a>
-      </div>
-    </div>
+    <AppLayout>
+      <PageContainer maxWidth="md">
+        <div className="text-center">
+          <PageHeader
+            title="404"
+            description="Oops! Page not found"
+            showBreadcrumbs={false}
+          />
+          <Button asChild size="lg" className="mt-6">
+            <Link to="/">Return to Home</Link>
+          </Button>
+        </div>
+      </PageContainer>
+    </AppLayout>
   );
 };
 

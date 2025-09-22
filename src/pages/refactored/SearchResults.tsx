@@ -53,7 +53,6 @@ export default function SearchResults() {
             <PageHeader
               title="Search Results"
               description="No search query provided"
-              showBackButton
             />
             <Button asChild className="mt-4">
               <Link to="/">Go Home</Link>
@@ -97,7 +96,6 @@ export default function SearchResults() {
       <PageContainer maxWidth="lg">
         <PageHeader
           title="Search Results"
-          showBackButton
           actions={headerActions}
         />
 

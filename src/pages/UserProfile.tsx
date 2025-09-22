@@ -12,6 +12,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { SmartBreadcrumb } from '@/components/navigation/SmartBreadcrumb';
 
 export function UserProfile() {
   const { userId } = useParams<{ userId: string }>();
@@ -61,6 +62,11 @@ export function UserProfile() {
   return (
     <AppLayout>
       <PageContainer className="max-w-6xl mx-auto">
+        {/* Smart Navigation */}
+        <div className="mb-6">
+          <SmartBreadcrumb />
+        </div>
+        
         <div className="space-y-6">
           {/* Profile Header */}
           <ProfileHeader profile={profile} />
