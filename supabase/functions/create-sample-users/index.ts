@@ -80,34 +80,50 @@ Deno.serve(async (req) => {
 
     // Create each user
     for (const userData of sampleUsers) {
-      // Create auth user
-      const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
-        email: userData.email,
-        password: userData.password,
-        user_metadata: userData.user_metadata,
-        email_confirm: true // Auto-confirm email for sample users
-      })
+      // First check if user already exists
+      const { data: existingUser } = await supabaseAdmin.auth.admin.listUsers()
+      const userExists = existingUser.users?.some(u => u.email === userData.email)
 
-      if (authError) {
-        console.error('Error creating auth user:', authError)
-        continue
+      let userId = null
+
+      if (userExists) {
+        // Find the existing user
+        const existingUserData = existingUser.users?.find(u => u.email === userData.email)
+        userId = existingUserData?.id
+        console.log(`User ${userData.email} already exists with ID: ${userId}`)
+      } else {
+        // Create auth user
+        const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
+          email: userData.email,
+          password: userData.password,
+          user_metadata: userData.user_metadata,
+          email_confirm: true // Auto-confirm email for sample users
+        })
+
+        if (authError) {
+          console.error('Error creating auth user:', authError)
+          continue
+        }
+
+        userId = authUser.user?.id
+        console.log(`Created new user ${userData.email} with ID: ${userId}`)
       }
 
-      if (authUser.user) {
-        // Update the profile (it should be created by the trigger, but let's update it with our data)
+      if (userId) {
+        // Update or create the profile
         const { error: profileError } = await supabaseAdmin
           .from('profiles')
-          .update({
+          .upsert({
+            id: userId,
             ...userData.profile,
             email: userData.email
           })
-          .eq('id', authUser.user.id)
 
         if (profileError) {
           console.error('Error updating profile:', profileError)
         } else {
           createdUsers.push({
-            id: authUser.user.id,
+            id: userId,
             email: userData.email,
             name: userData.profile.name
           })
@@ -117,6 +133,8 @@ Deno.serve(async (req) => {
 
     // Now reassign some fundraisers to the new users
     if (createdUsers.length > 0) {
+      console.log(`Processing ${createdUsers.length} users for campaign assignment`)
+      
       // Get existing fundraisers
       const { data: fundraisers } = await supabaseAdmin
         .from('fundraisers')
@@ -175,7 +193,12 @@ Deno.serve(async (req) => {
             })
             .eq('id', user.id)
         }
+      } else {
+        console.log('No fundraisers found to reassign')
       }
+    } else {
+      console.log('No users were processed, skipping campaign assignment')
+    }
 
       // Create some follow relationships
       const vitaliyId = 'ebd04736-b785-4569-83d4-5fee5a49e3fa'
@@ -231,7 +254,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Created ${createdUsers.length} sample users with proper auth entries and randomly assigned campaigns`,
+        message: `Processed ${createdUsers.length} sample users (created new or updated existing) and randomly assigned campaigns`,
         users: createdUsers,
         campaignsAssigned: updatedFundraisers || []
       }),
