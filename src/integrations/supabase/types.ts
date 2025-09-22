@@ -568,6 +568,18 @@ export type Database = {
           total_raised: number
         }[]
       }
+      update_follow_counts: {
+        Args: {
+          affected_org_id?: string
+          affected_user_id: string
+          operation?: string
+        }
+        Returns: undefined
+      }
+      update_user_campaign_count: {
+        Args: { user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       fundraiser_status:

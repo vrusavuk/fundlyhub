@@ -34,6 +34,8 @@ export function FundraiserGrid({
   emptyMessage = "No fundraisers available at the moment.",
   searchQuery
 }: FundraiserGridProps) {
+  const fundraiserIds = fundraisers.map(f => f.id);
+  const { stats: fundraiserStats, loading: statsLoading } = useFundraiserStats(fundraiserIds);
   if (loading && fundraisers.length === 0) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
