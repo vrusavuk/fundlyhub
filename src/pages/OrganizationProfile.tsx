@@ -2,7 +2,6 @@
  * Organization Profile page showing organization information and campaigns
  */
 import { useParams } from 'react-router-dom';
-import { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { PageContainer } from '@/components/ui/PageContainer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,29 +11,21 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { FollowOrganizationButton } from '@/components/profile/FollowOrganizationButton';
 import { FundraiserGrid } from '@/components/fundraisers/FundraiserGrid';
-import { supabase } from '@/integrations/supabase/client';
-import { MapPin, Globe, Calendar, Building2, Users, Trophy } from 'lucide-react';
+import { MapPin, Globe, Calendar, Users, Trophy } from 'lucide-react';
 import { useFundraisers } from '@/hooks/useFundraisers';
+import { useOrganizationProfile } from '@/hooks/useOrganizationProfile';
 import { formatCurrency } from '@/lib/utils/formatters';
 import { format } from 'date-fns';
 
-interface Organization {
-  id: string;
-  legal_name: string;
-  dba_name: string | null;
-  website: string | null;
-  country: string | null;
-  categories: string[];
-  verification_status: string;
-  created_at: string;
-}
-
 export function OrganizationProfile() {
   const { orgId } = useParams<{ orgId: string }>();
-  const [organization, setOrganization] = useState<Organization | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [followerCount, setFollowerCount] = useState(0);
+
+  // Fetch organization profile with real-time stats
+  const { 
+    profile: organization, 
+    loading, 
+    error 
+  } = useOrganizationProfile(orgId || '');
 
   // Fetch organization campaigns
   const { 
@@ -48,51 +39,6 @@ export function OrganizationProfile() {
   });
 
   const organizationCampaigns = campaigns.filter(f => f.org_id === orgId);
-
-  useEffect(() => {
-    if (orgId) {
-      fetchOrganization();
-      fetchFollowerCount();
-    }
-  }, [orgId]);
-
-  const fetchOrganization = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const { data, error } = await supabase
-        .from('organizations')
-        .select('*')
-        .eq('id', orgId)
-        .single();
-
-      if (error) throw error;
-
-      setOrganization(data);
-    } catch (error) {
-      console.error('Error fetching organization:', error);
-      setError(error instanceof Error ? error.message : 'Failed to load organization');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchFollowerCount = async () => {
-    try {
-      const { count, error } = await supabase
-        .from('subscriptions')
-        .select('*', { count: 'exact', head: true })
-        .eq('following_id', orgId)
-        .eq('following_type', 'organization');
-
-      if (error) throw error;
-
-      setFollowerCount(count || 0);
-    } catch (error) {
-      console.error('Error fetching follower count:', error);
-    }
-  };
 
   if (loading) {
     return (
@@ -117,10 +63,6 @@ export function OrganizationProfile() {
   }
 
   const joinDate = format(new Date(organization.created_at), 'MMMM yyyy');
-  const totalFundsRaised = organizationCampaigns.reduce((sum, campaign) => {
-    // This would come from donation totals in a real implementation
-    return sum + Math.random() * 10000; // Mock data
-  }, 0);
 
   return (
     <AppLayout>
@@ -199,26 +141,26 @@ export function OrganizationProfile() {
 
                   {/* Stats and Actions */}
                   <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                    {/* Stats */}
-                    <div className="flex gap-6 text-sm">
-                      <div className="text-center">
-                        <div className="font-bold text-lg text-foreground">{organizationCampaigns.length}</div>
-                        <div className="text-muted-foreground">Campaigns</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="font-bold text-lg text-foreground">
-                          {formatCurrency(totalFundsRaised)}
-                        </div>
-                        <div className="text-muted-foreground">Raised</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="font-bold text-lg text-foreground flex items-center gap-1">
-                          <Users className="h-4 w-4" />
-                          {followerCount}
-                        </div>
-                        <div className="text-muted-foreground">Followers</div>
-                      </div>
-                    </div>
+                     {/* Stats */}
+                     <div className="flex gap-6 text-sm">
+                       <div className="text-center">
+                         <div className="font-bold text-lg text-foreground">{organization.campaignCount}</div>
+                         <div className="text-muted-foreground">Campaigns</div>
+                       </div>
+                       <div className="text-center">
+                         <div className="font-bold text-lg text-foreground">
+                           {formatCurrency(organization.totalFundsRaised)}
+                         </div>
+                         <div className="text-muted-foreground">Raised</div>
+                       </div>
+                       <div className="text-center">
+                         <div className="font-bold text-lg text-foreground flex items-center gap-1">
+                           <Users className="h-4 w-4" />
+                           {organization.followerCount}
+                         </div>
+                         <div className="text-muted-foreground">Followers</div>
+                       </div>
+                     </div>
 
                     {/* Follow Button */}
                     <FollowOrganizationButton organizationId={organization.id} />

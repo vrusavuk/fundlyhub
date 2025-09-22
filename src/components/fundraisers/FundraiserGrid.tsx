@@ -2,6 +2,7 @@
  * Grid component for displaying fundraiser cards with loading and error states
  */
 import { EnhancedFundraiserCard } from '@/components/EnhancedFundraiserCard';
+import { useFundraiserStats } from '@/hooks/useFundraiserStats';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { Button } from '@/components/ui/button';
@@ -58,28 +59,32 @@ export function FundraiserGrid({
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {fundraisers.map((fundraiser, index) => (
-          <EnhancedFundraiserCard
-            key={fundraiser.id}
-            id={fundraiser.id}
-            title={fundraiser.title}
-            summary={fundraiser.summary || ""}
-            goalAmount={fundraiser.goal_amount}
-            raisedAmount={donations[fundraiser.id] || 0}
-            currency={fundraiser.currency}
-            coverImage={fundraiser.cover_image || "/placeholder.svg"}
-            category={fundraiser.category || "General"}
-            organizationName={fundraiser.profiles?.name || "Anonymous"}
-            location={fundraiser.location || undefined}
-            donorCount={Math.floor(Math.random() * 100) + 1}
-            daysLeft={Math.floor(Math.random() * 30) + 1}
-            urgency={index % 3 === 0 ? 'high' : index % 2 === 0 ? 'medium' : 'low'}
-            isVerified={index % 4 === 0}
-            isOrganization={index % 5 === 0}
-            searchQuery={searchQuery}
-            onClick={() => onCardClick(fundraiser.slug)}
-          />
-        ))}
+        {fundraisers.map((fundraiser, index) => {
+          const stats = fundraiserStats[fundraiser.id];
+          
+          return (
+            <EnhancedFundraiserCard
+              key={fundraiser.id}
+              id={fundraiser.id}
+              title={fundraiser.title}
+              summary={fundraiser.summary || ""}
+              goalAmount={fundraiser.goal_amount}
+              raisedAmount={donations[fundraiser.id] || 0}
+              currency={fundraiser.currency}
+              coverImage={fundraiser.cover_image || "/placeholder.svg"}
+              category={fundraiser.category || "General"}
+              organizationName={fundraiser.profiles?.name || "Anonymous"}
+              location={fundraiser.location || undefined}
+              donorCount={stats?.donorCount || 0}
+              daysLeft={stats?.daysLeft}
+              urgency={stats?.daysLeft && stats.daysLeft <= 7 ? 'high' : stats?.daysLeft && stats.daysLeft <= 14 ? 'medium' : 'low'}
+              isVerified={fundraiser.profiles?.name ? true : false}
+              isOrganization={fundraiser.org_id ? true : false}
+              searchQuery={searchQuery}
+              onClick={() => onCardClick(fundraiser.slug)}
+            />
+          );
+        })}
       </div>
 
       {hasMore && onLoadMore && (

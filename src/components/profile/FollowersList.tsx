@@ -109,8 +109,8 @@ export function FollowersList({ userId, type, maxItems }: FollowersListProps) {
           email: null,
           avatar: null,
           role: org.verification_status || 'pending',
-          follower_count: 0,
-          campaign_count: 0,
+          follower_count: 0, // Will be calculated dynamically if needed
+          campaign_count: 0, // Will be calculated dynamically if needed
           type: 'organization' as const,
           legal_name: org.legal_name,
           dba_name: org.dba_name

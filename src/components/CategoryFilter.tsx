@@ -3,9 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CATEGORIES } from '@/types/fundraiser';
 import { Heart, Users, TrendingUp } from 'lucide-react';
+import { useCategoryStats } from '@/hooks/useCategoryStats';
+import { formatCurrency } from '@/lib/utils/formatters';
 
 export function CategoryFilter() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const { stats: categoryStats, loading } = useCategoryStats();
 
   const handleCategoryClick = (categoryName: string) => {
     // Navigate to category page or apply filter
@@ -13,26 +16,11 @@ export function CategoryFilter() {
   };
 
   const getCategoryStats = (categoryName: string) => {
-    // Mock data - in real app this would come from API
-    const stats = {
-      'Medical': { count: 1234, raised: '$2.4M' },
-      'Emergency': { count: 856, raised: '$1.8M' },
-      'Education': { count: 742, raised: '$1.2M' },
-      'Community': { count: 523, raised: '$980K' },
-      'Animal': { count: 394, raised: '$650K' },
-      'Environment': { count: 287, raised: '$420K' },
-      'Sports': { count: 195, raised: '$280K' },
-      'Arts': { count: 143, raised: '$190K' },
-      'Business': { count: 324, raised: '$540K' },
-      'Memorial': { count: 167, raised: '$230K' },
-      'Charity': { count: 445, raised: '$780K' },
-      'Religious': { count: 89, raised: '$120K' },
-      'Travel': { count: 134, raised: '$160K' },
-      'Technology': { count: 76, raised: '$95K' },
-      'Family': { count: 298, raised: '$450K' },
-      'Housing': { count: 203, raised: '$310K' },
+    const stat = categoryStats[categoryName];
+    return {
+      count: stat?.count || 0,
+      raised: formatCurrency(stat?.raised || 0)
     };
-    return stats[categoryName as keyof typeof stats] || { count: 0, raised: '$0' };
   };
 
   return (
@@ -75,11 +63,15 @@ export function CategoryFilter() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Active campaigns</span>
-                      <span className="font-medium">{stats.count.toLocaleString()}</span>
+                      <span className="font-medium">
+                        {loading ? '...' : stats.count.toLocaleString()}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Total raised</span>
-                      <span className="font-medium text-green-600">{stats.raised}</span>
+                      <span className="font-medium text-green-600">
+                        {loading ? '...' : stats.raised}
+                      </span>
                     </div>
                   </div>
                   
