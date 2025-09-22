@@ -136,12 +136,12 @@ export function CampaignFilters({
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button 
-                  variant="outline" 
+                  variant="ghost" 
                   size="sm"
-                  className={`flex items-center gap-1 relative transition-all duration-200 flex-shrink-0 focus:outline-none focus-visible:ring-0 ${
+                  className={`flex items-center gap-1 relative transition-all duration-200 flex-shrink-0 ${
                     hasCustomFilters() 
-                      ? "bg-accent text-accent-foreground border-accent-foreground/20" 
-                      : ""
+                      ? "bg-accent text-accent-foreground" 
+                      : "hover:bg-accent hover:text-accent-foreground"
                   }`}
                 >
                   <SlidersHorizontal className="h-4 w-4" />
@@ -289,12 +289,12 @@ export function CampaignFilters({
             <Popover>
               <PopoverTrigger asChild>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  className={`w-[90px] sm:w-[180px] justify-between transition-all duration-200 flex-shrink-0 focus:outline-none focus-visible:ring-0 ${
+                  className={`w-[90px] sm:w-[180px] justify-between transition-all duration-200 flex-shrink-0 ${
                     hasCategoryFilters() 
-                      ? "bg-accent text-accent-foreground border-accent-foreground/20" 
-                      : "bg-background border border-border"
+                      ? "bg-accent text-accent-foreground" 
+                      : "hover:bg-accent hover:text-accent-foreground"
                   }`}
                 >
                   <span className="truncate">
@@ -357,10 +357,10 @@ export function CampaignFilters({
             {/* Location Dropdown - Responsive Width */}
             <Select value={filters.location} onValueChange={(value) => handleFilterChange('location', value)}>
               <SelectTrigger 
-                className={`w-[80px] sm:w-[160px] transition-all duration-200 flex-shrink-0 focus:outline-none focus-visible:ring-0 ${
+                className={`w-[80px] sm:w-[160px] transition-all duration-200 flex-shrink-0 border-0 ${
                   (filters.location !== 'All locations' || filters.locationInput.trim() !== '') 
-                    ? "bg-accent text-accent-foreground border-accent-foreground/20" 
-                    : "bg-background border border-border"
+                    ? "bg-accent text-accent-foreground" 
+                    : "bg-background hover:bg-accent hover:text-accent-foreground"
                 }`}
               >
                 <SelectValue>
