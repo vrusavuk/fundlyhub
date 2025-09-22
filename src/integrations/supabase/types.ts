@@ -568,6 +568,10 @@ export type Database = {
           total_raised: number
         }[]
       }
+      update_following_count: {
+        Args: { user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       fundraiser_status:
