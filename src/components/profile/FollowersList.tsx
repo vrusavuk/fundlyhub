@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { FollowButton } from './FollowButton';
+import { FollowOrganizationButton } from './FollowOrganizationButton';
 
 interface Follower {
   id: string;
@@ -236,6 +237,7 @@ export function FollowersList({ userId, type, maxItems }: FollowersListProps) {
                 </div>
 
                 {follower.type === 'user' && <FollowButton userId={follower.id} size="sm" />}
+                {follower.type === 'organization' && <FollowOrganizationButton organizationId={follower.id} size="sm" />}
               </div>
             ))}
           </div>
