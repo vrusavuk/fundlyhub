@@ -35,43 +35,55 @@ export function FollowersList({ userId, type, maxItems }: FollowersListProps) {
       setLoading(true);
       setError(null);
 
-      // Fetch subscriptions and join with profiles
-      const query = type === 'followers'
-        ? supabase
-            .from('subscriptions')
-            .select(`
-              follower_id,
-              profiles!subscriptions_follower_id_fkey(id, name, email, avatar, role, follower_count, campaign_count)
-            `)
-            .eq('following_id', userId)
-            .eq('following_type', 'user')
-        : supabase
-            .from('subscriptions')
-            .select(`
-              following_id,
-              profiles!subscriptions_following_id_fkey(id, name, email, avatar, role, follower_count, campaign_count)
-            `)
-            .eq('follower_id', userId);
+      let profileIds: string[] = [];
 
-      const { data, error } = await query.limit(maxItems || 50);
+      if (type === 'followers') {
+        // Get follower IDs for this user
+        const { data: subscriptions, error: subError } = await supabase
+          .from('subscriptions')
+          .select('follower_id')
+          .eq('following_id', userId)
+          .eq('following_type', 'user')
+          .limit(maxItems || 50);
 
-      if (error) throw error;
+        if (subError) throw subError;
+        profileIds = (subscriptions || []).map(sub => sub.follower_id);
+      } else {
+        // Get following IDs for this user
+        const { data: subscriptions, error: subError } = await supabase
+          .from('subscriptions')
+          .select('following_id')
+          .eq('follower_id', userId)
+          .eq('following_type', 'user')
+          .limit(maxItems || 50);
+
+        if (subError) throw subError;
+        profileIds = (subscriptions || []).map(sub => sub.following_id);
+      }
+
+      if (profileIds.length === 0) {
+        setFollowers([]);
+        return;
+      }
+
+      // Fetch profiles for the IDs
+      const { data: profiles, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, name, email, avatar, role, follower_count, campaign_count')
+        .in('id', profileIds);
+
+      if (profileError) throw profileError;
 
       // Transform the data
-      const transformedData = (data || [])
-        .map(item => {
-          const profile = type === 'followers' ? item.profiles : item.profiles;
-          return profile ? {
-            id: profile.id,
-            name: profile.name,
-            email: profile.email,
-            avatar: profile.avatar,
-            role: profile.role,
-            follower_count: Number(profile.follower_count || 0),
-            campaign_count: Number(profile.campaign_count || 0)
-          } : null;
-        })
-        .filter((item): item is Follower => item !== null);
+      const transformedData = (profiles || []).map(profile => ({
+        id: profile.id,
+        name: profile.name,
+        email: profile.email,
+        avatar: profile.avatar,
+        role: profile.role,
+        follower_count: Number(profile.follower_count || 0),
+        campaign_count: Number(profile.campaign_count || 0)
+      }));
 
       setFollowers(transformedData);
     } catch (error) {
