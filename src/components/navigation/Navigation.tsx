@@ -17,7 +17,7 @@ export function Navigation() {
     <>
       <HeaderSearch isOpen={isHeaderSearchOpen} onClose={closeHeaderSearch} />
       
-      <nav className="fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
+      <nav className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border relative">
         <div className="max-w-7xl mx-auto mobile-nav-spacing">
           <div className="flex justify-between items-center h-14 sm:h-16">
             

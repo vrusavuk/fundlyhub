@@ -47,8 +47,8 @@ export function TableOfContents() {
   };
 
   return (
-    <div className="fixed top-16 sm:top-18 right-0 w-56 h-[calc(100vh-4rem)] sm:h-[calc(100vh-4.5rem)] border-l border-border bg-background/95 backdrop-blur-sm overflow-y-auto z-20">
-      <div className="p-4">
+    <div className="fixed top-14 sm:top-16 right-0 w-56 h-[calc(100vh-3.5rem)] sm:h-[calc(100vh-4rem)] border-l border-border bg-background overflow-y-auto z-20">
+      <div className="pt-2 px-4 pb-4">
         <h4 className="font-semibold text-sm mb-4 text-foreground">On this page</h4>
         <nav className="space-y-1">
           {headings.map((heading) => (
