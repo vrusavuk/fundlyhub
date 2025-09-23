@@ -11,7 +11,7 @@ interface DocsLayoutProps {
 
 export function DocsLayout({ children }: DocsLayoutProps) {
   return (
-    <AppLayout fullWidth>
+    <AppLayout>
       {/* Fixed Sidebar */}
       <DocsSidebar />
       
@@ -19,8 +19,8 @@ export function DocsLayout({ children }: DocsLayoutProps) {
       <TableOfContents />
       
       {/* Main Content with margins for fixed sidebars */}
-      <main className="min-h-screen ml-64 mr-56 pt-14 sm:pt-16">
-        <div className="max-w-4xl mx-auto px-8 py-4">
+      <main className="min-h-screen ml-64 mr-56">
+        <div className="max-w-4xl mx-auto px-8">
           {children}
         </div>
       </main>
