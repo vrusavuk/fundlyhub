@@ -12,13 +12,13 @@ interface DocsLayoutProps {
 export function DocsLayout({ children }: DocsLayoutProps) {
   return (
     <AppLayout fullWidth>
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen mt-14 sm:mt-16">
         {/* Sidebar */}
         <DocsSidebar />
         
         {/* Main Content */}
         <div className="flex-1 flex ml-64">
-          <main className="flex-1 max-w-4xl mx-auto p-8 pt-20 sm:pt-24">
+          <main className="flex-1 max-w-4xl mx-auto p-8">
             {children}
           </main>
           
