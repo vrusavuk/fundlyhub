@@ -192,16 +192,11 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
         onClick={() => setShowDropdown(false)} 
       />
       
-      {/* Search Header */}
+      {/* Search Header - NO backdrop filter to avoid conflicts */}
       <div 
         className="absolute top-0 left-0 right-0 z-50 border-b border-border/20 shadow-strong"
         style={{
-          background: `linear-gradient(180deg, 
-            hsl(var(--background) / 0.95) 0%, 
-            hsl(var(--background) / 0.90) 100%
-          )`,
-          backdropFilter: 'blur(10px) saturate(1.5) brightness(1.02)',
-          WebkitBackdropFilter: 'blur(10px) saturate(1.5) brightness(1.02)',
+          background: `hsl(var(--background) / 0.95)`,
           boxShadow: `
             0 6px 20px hsl(var(--foreground) / 0.12),
             inset 0 1px 0 hsl(var(--background) / 0.9),
@@ -265,31 +260,32 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
               <X className="h-4 w-4" />
             </Button>
           </form>
-
-          {/* Enhanced Search Dropdown - positioned relative to viewport */}
-          {showDropdown && (
-            <div 
-              className="fixed inset-x-0 top-16 px-3 sm:px-4 md:px-6"
-              style={{ zIndex: 60 }}
-            >
-              <EnhancedSearchDropdown
-                query={query}
-                searchResults={isOnCampaignsPage ? [...userResults, ...organizationResults] : results}
-                searchLoading={loading}
-                isVisible={showDropdown}
-                onSuggestionSelect={handleSuggestionSelect}
-                onResultClick={handleResultClick}
-                onViewAllResults={handleViewAllResults}
-                onClose={() => setShowDropdown(false)}
-                showResultsSection={!isOnCampaignsPage || (userResults.length > 0 || organizationResults.length > 0)}
-                maxHeight="max-h-[70vh]"
-                className="relative top-0 left-0 right-0 mt-0"
-              />
-            </div>
-          )}
         </div>
       </div>
       </div>
+
+      {/* Enhanced Search Dropdown - COMPLETELY OUTSIDE header, positioned to blur page content */}
+      {showDropdown && (
+        <div 
+          className="fixed inset-x-0 top-16 px-3 sm:px-4 md:px-6 pointer-events-none"
+          style={{ zIndex: 55 }}
+        >
+          <div className="pointer-events-auto">
+            <EnhancedSearchDropdown
+              query={query}
+              searchResults={isOnCampaignsPage ? [...userResults, ...organizationResults] : results}
+              searchLoading={loading}
+              isVisible={showDropdown}
+              onSuggestionSelect={handleSuggestionSelect}
+              onResultClick={handleResultClick}
+              onViewAllResults={handleViewAllResults}
+              onClose={() => setShowDropdown(false)}
+              showResultsSection={!isOnCampaignsPage || (userResults.length > 0 || organizationResults.length > 0)}
+              maxHeight="max-h-[70vh]"
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 }
