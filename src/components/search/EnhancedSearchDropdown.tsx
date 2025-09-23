@@ -94,16 +94,17 @@ export function EnhancedSearchDropdown({
       <Card
         ref={dropdownRef}
         className={cn(
-          "w-full mt-2 z-60",
+          "w-full mt-2",
           "border border-border/30 shadow-strong",
           "animate-in fade-in-0 slide-in-from-top-2 duration-200",
           maxHeight,
           className
         )}
         style={{
-          background: `hsl(var(--background) / 0.5)`,
-          backdropFilter: 'blur(35px) saturate(2.0) brightness(1.1)',
-          WebkitBackdropFilter: 'blur(35px) saturate(2.0) brightness(1.1)',
+          zIndex: 60,
+          background: `hsl(var(--background) / 0.4)`,
+          backdropFilter: 'blur(40px) saturate(2.2) brightness(1.15)',
+          WebkitBackdropFilter: 'blur(40px) saturate(2.2) brightness(1.15)',
           border: '1px solid hsl(var(--border) / 0.3)',
           boxShadow: `
             0 12px 40px hsl(var(--foreground) / 0.15),

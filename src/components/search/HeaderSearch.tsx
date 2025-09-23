@@ -268,7 +268,10 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
 
           {/* Enhanced Search Dropdown - positioned relative to viewport */}
           {showDropdown && (
-            <div className="fixed inset-x-0 top-16 z-60 px-3 sm:px-4 md:px-6">
+            <div 
+              className="fixed inset-x-0 top-16 px-3 sm:px-4 md:px-6"
+              style={{ zIndex: 60 }}
+            >
               <EnhancedSearchDropdown
                 query={query}
                 searchResults={isOnCampaignsPage ? [...userResults, ...organizationResults] : results}
