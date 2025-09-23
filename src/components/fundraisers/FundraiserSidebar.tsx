@@ -20,7 +20,7 @@ export function FundraiserSidebar({
   const progressPercentage = Math.min((totalRaised / fundraiser.goal_amount) * 100, 100);
 
   return (
-    <div className="hidden lg:block space-y-6">
+    <div className="hidden lg:block fixed top-20 right-4 xl:right-8 w-80 z-40">
       <div className="sticky top-20">
         <DonationWidget
           fundraiserId={fundraiser.id}
@@ -37,7 +37,9 @@ export function FundraiserSidebar({
         />
       </div>
 
-      <RecentDonors donations={donations} />
+      <div className="mt-6">
+        <RecentDonors donations={donations} />
+      </div>
     </div>
   );
 }

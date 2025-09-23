@@ -47,34 +47,32 @@ export default function FundraiserDetail() {
         
         <FundraiserHero fundraiser={fundraiser} />
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mt-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-            <FundraiserMetrics
-              goalAmount={fundraiser.goal_amount}
-              totalRaised={totalRaised}
-              donorCount={donations.length}
-              currency={fundraiser.currency}
-            />
-            
-            <FundraiserContent
-              fundraiser={fundraiser}
-              comments={comments}
-              donations={donations}
-              onComment={handleComment}
-              commenting={commenting}
-            />
-          </div>
-
-          {/* Sidebar - Desktop Only */}
-          <FundraiserSidebar
-            fundraiser={fundraiser}
-            donations={donations}
+        {/* Main Content - Full Width with right padding for floating sidebar */}
+        <div className="space-y-4 sm:space-y-6 mt-6 lg:pr-96">
+          <FundraiserMetrics
+            goalAmount={fundraiser.goal_amount}
             totalRaised={totalRaised}
-            onDonate={handleDonate}
-            donating={donating}
+            donorCount={donations.length}
+            currency={fundraiser.currency}
+          />
+          
+          <FundraiserContent
+            fundraiser={fundraiser}
+            comments={comments}
+            donations={donations}
+            onComment={handleComment}
+            commenting={commenting}
           />
         </div>
+
+        {/* Floating Sidebar - Desktop Only */}
+        <FundraiserSidebar
+          fundraiser={fundraiser}
+          donations={donations}
+          totalRaised={totalRaised}
+          onDonate={handleDonate}
+          donating={donating}
+        />
 
         {/* Mobile Donation Bar */}
         <MobileDonationBar
