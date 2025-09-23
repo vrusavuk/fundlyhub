@@ -25,7 +25,7 @@ export function FundraiserCardSkeleton({ className, style }: FundraiserCardSkele
         </div>
       </div>
 
-      <CardContent className="p-5 flex flex-col flex-grow">
+      <CardContent className="p-5 pb-6 flex flex-col flex-grow">
         {/* Creator Info Skeleton - Fixed Height */}
         <div className="flex items-center gap-3 h-12 flex-shrink-0 mb-2">
           <SkeletonAvatar size="sm" className="flex-shrink-0" />
@@ -76,7 +76,7 @@ export function FundraiserCardSkeleton({ className, style }: FundraiserCardSkele
           </div>
           
           {/* Stats Row - Grouped with progress */}
-          <div className="flex justify-between items-center pt-3 border-t border-border/50 h-8">
+          <div className="flex justify-between items-center pt-2 border-t border-border/50 h-8">
             <div className="flex items-center gap-4">
               <Skeleton className="h-4 w-16" />
               <Skeleton className="h-4 w-20" />

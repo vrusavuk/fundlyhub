@@ -290,7 +290,7 @@ export function UnifiedFundraiserCard({
       </div>
       
       {/* Content Section - Flexible with fixed sections */}
-      <CardContent className="p-5 flex flex-col flex-grow">
+      <CardContent className="p-5 pb-6 flex flex-col flex-grow">
         {/* Creator Info - Fixed Height */}
         <div className="flex items-center gap-3 h-12 flex-shrink-0 mb-2">
           <Avatar className="h-8 w-8 flex-shrink-0">
@@ -372,7 +372,7 @@ export function UnifiedFundraiserCard({
           </div>
           
           {/* Stats Row - Grouped with progress */}
-          <div className="flex justify-between items-center pt-3 border-t border-border/50 text-xs text-muted-foreground h-8">
+          <div className="flex justify-between items-center pt-2 border-t border-border/50 text-xs text-muted-foreground h-8">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
                 <Users className="h-3 w-3 flex-shrink-0" />
@@ -389,9 +389,12 @@ export function UnifiedFundraiserCard({
               )}
             </div>
             
-            <div className="text-xs font-medium text-primary flex-shrink-0">
-              {Math.round(progressPercentage)}% funded
-            </div>
+            {isTrending && (
+              <div className="text-xs font-medium text-accent flex-shrink-0 flex items-center gap-1">
+                <TrendingUp className="h-3 w-3" />
+                Trending
+              </div>
+            )}
           </div>
         </div>
 
