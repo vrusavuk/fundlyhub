@@ -94,7 +94,7 @@ export function EnhancedSearchDropdown({
       ref={dropdownRef}
       className={cn(
         "absolute top-full left-0 right-0 mt-2 z-50",
-        "border border-border/30 shadow-strong",
+        "border border-border/20 shadow-strong",
         "animate-in fade-in-0 slide-in-from-top-2 duration-200",
         maxHeight,
         className
@@ -102,16 +102,18 @@ export function EnhancedSearchDropdown({
       style={{
         background: `
           linear-gradient(135deg, 
-            hsl(var(--background) / 0.95) 0%, 
-            hsl(var(--background) / 0.85) 100%
+            hsl(var(--background) / 0.85) 0%, 
+            hsl(var(--background) / 0.75) 50%,
+            hsl(var(--background) / 0.80) 100%
           )
         `,
-        backdropFilter: 'blur(16px) saturate(1.8)',
-        WebkitBackdropFilter: 'blur(16px) saturate(1.8)',
+        backdropFilter: 'blur(24px) saturate(2.2) brightness(1.1)',
+        WebkitBackdropFilter: 'blur(24px) saturate(2.2) brightness(1.1)',
         boxShadow: `
-          0 8px 32px hsl(var(--foreground) / 0.1),
-          0 4px 16px hsl(var(--foreground) / 0.05),
-          inset 0 1px 0 hsl(var(--background) / 0.8)
+          0 12px 40px hsl(var(--foreground) / 0.15),
+          0 6px 20px hsl(var(--foreground) / 0.08),
+          inset 0 1px 0 hsl(var(--background) / 0.9),
+          inset 0 -1px 0 hsl(var(--foreground) / 0.05)
         `
       }}
     >

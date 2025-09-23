@@ -14,7 +14,7 @@ interface SearchBackdropProps {
 
 export function SearchBackdrop({
   show,
-  opacity = 0.15,
+  opacity = 0.05,
   onClick,
   className
 }: SearchBackdropProps) {
@@ -29,14 +29,7 @@ export function SearchBackdrop({
       )}
       style={{
         backgroundColor: `hsl(var(--background) / ${opacity})`,
-        backdropFilter: 'blur(8px) saturate(1.2)',
-        WebkitBackdropFilter: 'blur(8px) saturate(1.2)',
-        background: `
-          radial-gradient(circle at 50% 50%, 
-            hsl(var(--background) / 0.3) 0%, 
-            hsl(var(--background) / ${opacity}) 100%
-          )
-        `
+        // Remove backdrop blur to keep page content clear
       }}
       onClick={onClick}
       role="presentation"
