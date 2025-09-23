@@ -290,7 +290,7 @@ export function UnifiedFundraiserCard({
       </div>
       
       {/* Content Section - Flexible with fixed sections */}
-      <CardContent className="p-5 pb-6 flex flex-col flex-grow">
+      <CardContent className="p-6 flex flex-col flex-grow">
         {/* Creator Info - Fixed Height */}
         <div className="flex items-center gap-3 h-12 flex-shrink-0 mb-2">
           <Avatar className="h-8 w-8 flex-shrink-0">
@@ -350,10 +350,10 @@ export function UnifiedFundraiserCard({
         </div>
         
         {/* Progress Section - Fixed Height */}
-        <div className="flex-shrink-0 mb-3">
-          <Progress value={progressPercentage} className="h-2 mb-3" />
+        <div className="flex-shrink-0 space-y-4 mb-6">
+          <Progress value={progressPercentage} className="h-2" />
           
-          <div className="flex justify-between items-end h-12">
+          <div className="flex justify-between items-end">
             <div>
               <p className="font-bold text-lg text-foreground leading-tight">
                 {formatAmount(raisedAmount)}
@@ -371,8 +371,8 @@ export function UnifiedFundraiserCard({
             </div>
           </div>
           
-          {/* Stats Row - Grouped with progress */}
-          <div className="flex justify-between items-center pt-2 pb-4 border-t border-border/50 text-xs text-muted-foreground">
+          {/* Stats Section - Natural flow without border */}
+          <div className="flex justify-between items-center text-xs text-muted-foreground">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
                 <Users className="h-3 w-3 flex-shrink-0" />
