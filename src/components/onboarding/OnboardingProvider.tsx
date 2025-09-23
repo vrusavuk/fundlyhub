@@ -2,7 +2,7 @@
  * Onboarding provider for managing onboarding state and tours
  */
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { OnboardingTour } from './OnboardingTour';
+import { SimpleTour } from './SimpleTour';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -75,7 +75,7 @@ export function OnboardingProvider({ children }: OnboardingProviderProps) {
       }}
     >
       {children}
-      <OnboardingTour
+      <SimpleTour
         isOpen={isOnboardingOpen}
         onClose={handleCompleteOnboarding}
       />
