@@ -363,6 +363,54 @@
   }
 }
 
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 20%;
+    --secondary-foreground: 0 0% 100%;
+    --border: 0 0% 40%;
+    --ring: 0 0% 60%;
+  }
+}
+
+/* Focus visible improvements */
+.focus-visible-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2;
+}
+
+/* Screen reader only with focus option */
+.sr-only-focusable {
+  @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded focus:no-underline;
+}
+
+/* Keyboard navigation body classes */
+body.keyboard-navigation *:focus-visible {
+  @apply ring-2 ring-primary ring-offset-2;
+}
+
+body.reduce-motion * {
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
+}
+
+body.high-contrast {
+  filter: contrast(1.5);
+}
+
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
