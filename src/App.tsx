@@ -52,7 +52,7 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/fundraiser/:slug" element={<FundraiserDetail />} />
-              <Route path="/docs" element={<ApiDocs />} />
+              <Route path="/docs/*" element={<ApiDocs />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
               </Routes>

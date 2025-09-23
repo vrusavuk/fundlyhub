@@ -3,7 +3,7 @@
  */
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronDown, ChevronRight, Book, Code, Key, Database, Search, Users, Heart, Building } from 'lucide-react';
+import { ChevronDown, ChevronRight, Book, Code, Database, Search, Users, Heart, Building } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavItem {
@@ -18,40 +18,31 @@ const navigation: NavItem[] = [
     title: "Getting Started",
     icon: <Book className="h-4 w-4" />,
     children: [
-      { title: "Overview", href: "/docs#overview" },
-      { title: "Quick Start", href: "/docs#quick-start" },
-      { title: "Authentication", href: "/docs#authentication" },
-      { title: "Rate Limits", href: "/docs#rate-limits" }
+      { title: "Overview", href: "/docs" },
+      { title: "Quick Start", href: "/docs/quick-start" },
+      { title: "Authentication", href: "/docs/authentication" },
+      { title: "Rate Limits", href: "/docs/rate-limits" }
     ]
   },
   {
     title: "API Reference",
     icon: <Code className="h-4 w-4" />,
     children: [
-      { title: "Fundraisers", href: "/docs#fundraisers", icon: <Heart className="h-3 w-3" /> },
-      { title: "Categories", href: "/docs#categories", icon: <Database className="h-3 w-3" /> },
-      { title: "User Profiles", href: "/docs#profiles", icon: <Users className="h-3 w-3" /> },
-      { title: "Organizations", href: "/docs#organizations", icon: <Building className="h-3 w-3" /> },
-      { title: "Donations", href: "/docs#donations", icon: <Heart className="h-3 w-3" /> },
-      { title: "Search", href: "/docs#search", icon: <Search className="h-3 w-3" /> }
-    ]
-  },
-  {
-    title: "Authentication",
-    icon: <Key className="h-4 w-4" />,
-    children: [
-      { title: "JWT Tokens", href: "/docs#jwt-tokens" },
-      { title: "Row Level Security", href: "/docs#rls" },
-      { title: "API Keys", href: "/docs#api-keys" }
+      { title: "Fundraisers", href: "/docs/fundraisers", icon: <Heart className="h-3 w-3" /> },
+      { title: "Categories", href: "/docs/categories", icon: <Database className="h-3 w-3" /> },
+      { title: "User Profiles", href: "/docs/profiles", icon: <Users className="h-3 w-3" /> },
+      { title: "Organizations", href: "/docs/organizations", icon: <Building className="h-3 w-3" /> },
+      { title: "Donations", href: "/docs/donations", icon: <Heart className="h-3 w-3" /> },
+      { title: "Search", href: "/docs/search", icon: <Search className="h-3 w-3" /> }
     ]
   },
   {
     title: "Examples",
-    icon: <Code className="h-4 w-4" />,
+    icon: <Code className="h-4 w-4" />,  
     children: [
-      { title: "JavaScript/TypeScript", href: "/docs#javascript-examples" },
-      { title: "cURL", href: "/docs#curl-examples" },
-      { title: "Python", href: "/docs#python-examples" }
+      { title: "JavaScript/TypeScript", href: "/docs/javascript-examples" },
+      { title: "cURL", href: "/docs/curl-examples" },
+      { title: "Interactive Explorer", href: "/docs/explorer" }
     ]
   }
 ];
@@ -70,7 +61,7 @@ export function DocsSidebar() {
 
   const isActive = (href?: string) => {
     if (!href) return false;
-    return location.pathname + location.hash === href;
+    return location.pathname === href;
   };
 
   const renderNavItem = (item: NavItem, level = 0) => {
@@ -90,11 +81,6 @@ export function DocsSidebar() {
           onClick={() => {
             if (hasChildren) {
               toggleExpanded(item.title);
-            } else if (item.href) {
-              const [path, hash] = item.href.split('#');
-              if (hash) {
-                document.getElementById(hash)?.scrollIntoView({ behavior: 'smooth' });
-              }
             }
           }}
         >
@@ -104,7 +90,13 @@ export function DocsSidebar() {
             </span>
           )}
           {item.icon && <span className="flex-shrink-0">{item.icon}</span>}
-          <span className="flex-1">{item.title}</span>
+          {item.href && !hasChildren ? (
+            <Link to={item.href} className="flex-1">
+              {item.title}
+            </Link>
+          ) : (
+            <span className="flex-1">{item.title}</span>
+          )}
         </div>
         
         {hasChildren && isExpanded && (
