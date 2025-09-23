@@ -18,21 +18,21 @@ const navigationItems = [
 export function NavigationMenu({ className, onNavigate, vertical = false }: NavigationMenuProps) {
   const linkClassName = "text-foreground hover:text-primary transition-smooth";
   const containerClassName = vertical 
-    ? "flex flex-col space-y-3" 
+    ? "flex flex-col space-y-1" 
     : "hidden md:flex items-center space-x-6";
 
   return (
-    <div className={`${containerClassName} ${className || ''}`}>
+    <nav className={`${containerClassName} ${className || ''}`} role={vertical ? "navigation" : undefined}>
       {navigationItems.map(({ to, label }) => (
         <Link 
           key={to}
           to={to} 
-          className={vertical ? `${linkClassName} py-2` : linkClassName}
+          className={vertical ? `${linkClassName} py-3 px-4 rounded-md hover:bg-accent/50 min-h-[44px] flex items-center` : linkClassName}
           onClick={onNavigate}
         >
           {label}
         </Link>
       ))}
-    </div>
+    </nav>
   );
 }

@@ -50,7 +50,7 @@ export function UserMenu({
             <Button 
               variant="outline" 
               size="sm" 
-              className="justify-start" 
+              className="justify-start min-h-[44px]" 
               onClick={handleSignOut}
             >
               <LogOut className="h-4 w-4 mr-2" />
@@ -58,7 +58,7 @@ export function UserMenu({
             </Button>
           </>
         ) : (
-          <Button variant="outline" size="sm" className="justify-start" asChild>
+          <Button variant="outline" size="sm" className="justify-start min-h-[44px]" asChild>
             <Link to="/auth" onClick={onMenuAction}>
               <User className="h-4 w-4 mr-2" />
               Sign In
@@ -81,7 +81,7 @@ export function UserMenu({
       {user ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="hidden md:flex">
+            <Button variant="ghost" size="icon" className="hidden md:flex min-h-[44px] min-w-[44px]">
               <UserCircle className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>

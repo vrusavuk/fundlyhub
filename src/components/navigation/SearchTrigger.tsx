@@ -41,7 +41,7 @@ export function SearchTrigger({
     <Button 
       variant="ghost" 
       size="icon"
-      className={`hidden md:flex ${className || ''}`}
+      className={`hidden md:flex min-h-[44px] min-w-[44px] touch-target ${className || ''}`}
       onClick={handleSearchClick}
       title="Search (Ctrl+K)"
     >
