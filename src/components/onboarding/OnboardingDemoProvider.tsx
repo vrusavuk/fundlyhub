@@ -113,6 +113,21 @@ export function OnboardingDemoProvider({ children }: OnboardingDemoProviderProps
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [demoInteractions, setDemoInteractions] = useState<Array<{ action: string; data?: any; timestamp: number }>>([]);
 
+  const trackDemoInteraction = useCallback((action: string, data?: any) => {
+    if (!isDemoMode) return;
+
+    const interaction = {
+      action,
+      data,
+      timestamp: Date.now()
+    };
+
+    setDemoInteractions(prev => [...prev, interaction]);
+    
+    // Optional: Log to console for debugging
+    console.log('[Demo Interaction]', interaction);
+  }, [isDemoMode]);
+
   const setDemoMode = useCallback((enabled: boolean) => {
     setIsDemoMode(enabled);
     if (enabled) {
@@ -120,7 +135,7 @@ export function OnboardingDemoProvider({ children }: OnboardingDemoProviderProps
     } else {
       trackDemoInteraction('demo_mode_disabled');
     }
-  }, []);
+  }, [trackDemoInteraction]);
 
   const getDemoSearchResults = useCallback((query: string): DemoSearchResult[] => {
     if (!isDemoMode || !query) return [];
@@ -186,22 +201,7 @@ export function OnboardingDemoProvider({ children }: OnboardingDemoProviderProps
         resultCount: getDemoSearchResults(query).length 
       });
     }, 300);
-  }, [isDemoMode, getDemoSearchResults]);
-
-  const trackDemoInteraction = useCallback((action: string, data?: any) => {
-    if (!isDemoMode) return;
-
-    const interaction = {
-      action,
-      data,
-      timestamp: Date.now()
-    };
-
-    setDemoInteractions(prev => [...prev, interaction]);
-    
-    // Optional: Log to console for debugging
-    console.log('[Demo Interaction]', interaction);
-  }, [isDemoMode]);
+  }, [isDemoMode, getDemoSearchResults, trackDemoInteraction]);
 
   const value: OnboardingDemoContextType = {
     isDemoMode,
