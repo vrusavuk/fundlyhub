@@ -18,7 +18,7 @@ export function DocsLayout({ children }: DocsLayoutProps) {
         
         {/* Main Content - With margins for fixed sidebars */}
         <div className="flex-1 ml-64 mr-56">
-          <main className="max-w-4xl mx-auto p-8 pt-24">
+          <main className="max-w-4xl mx-auto p-8" style={{ paddingTop: '5rem' }}>
             {children}
           </main>
         </div>
