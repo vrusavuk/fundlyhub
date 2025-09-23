@@ -193,7 +193,52 @@
         }
 
         .touch-button {
-          @apply min-h-[44px] px-4 py-3 text-base;
+          @apply min-h-[44px] px-4 py-3 text-base sm:min-h-[40px] sm:px-3 sm:py-2 sm:text-sm;
+        }
+
+        /* Enhanced form elements for mobile */
+        .mobile-form-spacing {
+          @apply space-y-6 sm:space-y-4;
+        }
+        
+        .mobile-input-padding {
+          @apply px-4 py-3 sm:px-3 sm:py-2;
+        }
+
+        /* Tap highlight utilities */
+        .tap-highlight-transparent {
+          -webkit-tap-highlight-color: transparent;
+        }
+        
+        .tap-highlight-primary {
+          -webkit-tap-highlight-color: hsl(var(--primary) / 0.1);
+        }
+
+        /* Touch manipulation */
+        .touch-manipulation {
+          touch-action: manipulation;
+        }
+
+        /* Keyboard optimization for mobile forms */
+        .mobile-keyboard-spacing {
+          @apply pb-[50vh] sm:pb-0; /* Extra space for virtual keyboard */
+        }
+
+        /* Safe area utilities for mobile devices */
+        .pb-safe-bottom {
+          padding-bottom: max(1rem, env(safe-area-inset-bottom));
+        }
+        
+        .pt-safe-top {
+          padding-top: max(0.5rem, env(safe-area-inset-top));
+        }
+        
+        .pl-safe-left {
+          padding-left: max(1rem, env(safe-area-inset-left));
+        }
+        
+        .pr-safe-right {
+          padding-right: max(1rem, env(safe-area-inset-right));
         }
 
         /* Mobile navigation spacing */
