@@ -91,21 +91,6 @@ export function EnhancedSearchDropdown({
 
   return (
     <div className="relative">
-      {/* Localized blur backdrop - positioned exactly behind dropdown */}
-      <div
-        className={cn(
-          "absolute top-full left-0 right-0 mt-2 z-40 rounded-md",
-          "animate-in fade-in-0 slide-in-from-top-2 duration-200",
-          maxHeight,
-        )}
-        style={{
-          backgroundColor: 'hsl(var(--background) / 0.1)',
-          backdropFilter: 'blur(8px) saturate(1.3)',
-          WebkitBackdropFilter: 'blur(8px) saturate(1.3)',
-        }}
-        aria-hidden="true"
-      />
-      
       <Card
         ref={dropdownRef}
         className={cn(
@@ -116,15 +101,9 @@ export function EnhancedSearchDropdown({
           className
         )}
         style={{
-          background: `
-            linear-gradient(135deg, 
-              hsl(var(--background) / 0.85) 0%, 
-              hsl(var(--background) / 0.75) 50%,
-              hsl(var(--background) / 0.80) 100%
-            )
-          `,
-          backdropFilter: 'blur(24px) saturate(2.2) brightness(1.1)',
-          WebkitBackdropFilter: 'blur(24px) saturate(2.2) brightness(1.1)',
+          background: `hsl(var(--background) / 0.7)`,
+          backdropFilter: 'blur(12px) saturate(1.4) brightness(1.05)',
+          WebkitBackdropFilter: 'blur(12px) saturate(1.4) brightness(1.05)',
           boxShadow: `
             0 12px 40px hsl(var(--foreground) / 0.15),
             0 6px 20px hsl(var(--foreground) / 0.08),
