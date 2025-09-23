@@ -194,9 +194,14 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
       
       {/* Search Header */}
       <div 
-        className="absolute top-0 left-0 right-0 z-40 border-b border-border/20 shadow-strong"
+        className="absolute top-0 left-0 right-0 z-50 border-b border-border/20 shadow-strong"
         style={{
-          background: `hsl(var(--background) / 0.95)`,
+          background: `linear-gradient(180deg, 
+            hsl(var(--background) / 0.95) 0%, 
+            hsl(var(--background) / 0.90) 100%
+          )`,
+          backdropFilter: 'blur(10px) saturate(1.5) brightness(1.02)',
+          WebkitBackdropFilter: 'blur(10px) saturate(1.5) brightness(1.02)',
           boxShadow: `
             0 6px 20px hsl(var(--foreground) / 0.12),
             inset 0 1px 0 hsl(var(--background) / 0.9),
@@ -263,7 +268,7 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
 
           {/* Enhanced Search Dropdown - positioned relative to viewport */}
           {showDropdown && (
-            <div className="fixed inset-x-0 top-16 z-50 px-3 sm:px-4 md:px-6">
+            <div className="fixed inset-x-0 top-16 z-40 px-3 sm:px-4 md:px-6">
               <EnhancedSearchDropdown
                 query={query}
                 searchResults={isOnCampaignsPage ? [...userResults, ...organizationResults] : results}
