@@ -19,7 +19,7 @@ export function DocsLayout({ children }: DocsLayoutProps) {
       <TableOfContents />
       
       {/* Main Content with margins for fixed sidebars */}
-      <main className="min-h-screen ml-64 mr-56 pt-14 sm:pt-16">
+      <main className="min-h-screen ml-64 mr-56 pt-20 sm:pt-24">
         <div className="max-w-4xl mx-auto px-8 py-4">
           {children}
         </div>
