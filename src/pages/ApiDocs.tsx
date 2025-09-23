@@ -13,6 +13,9 @@ import { DocsProfiles } from "./docs/Profiles";
 import { DocsOrganizations } from "./docs/Organizations";
 import { DocsDonations } from "./docs/Donations";
 import { DocsSearch } from "./docs/Search";
+import { DocsJavaScriptExamples } from "./docs/JavaScriptExamples";
+import { DocsCurlExamples } from "./docs/CurlExamples";
+import { DocsApiExplorer } from "./docs/ApiExplorer";
 
 const ApiDocs = () => {
   return (
@@ -28,10 +31,9 @@ const ApiDocs = () => {
         <Route path="/organizations" element={<DocsOrganizations />} />
         <Route path="/donations" element={<DocsDonations />} />
         <Route path="/search" element={<DocsSearch />} />
-        {/* Placeholder routes for remaining sections */}
-        <Route path="/javascript-examples" element={<div className="max-w-4xl"><h1 className="text-4xl font-bold mb-4">JavaScript Examples</h1><p className="text-muted-foreground">Documentation coming soon...</p></div>} />
-        <Route path="/curl-examples" element={<div className="max-w-4xl"><h1 className="text-4xl font-bold mb-4">cURL Examples</h1><p className="text-muted-foreground">Documentation coming soon...</p></div>} />
-        <Route path="/explorer" element={<div className="max-w-4xl"><h1 className="text-4xl font-bold mb-4">Interactive API Explorer</h1><p className="text-muted-foreground">Documentation coming soon...</p></div>} />
+        <Route path="/javascript-examples" element={<DocsJavaScriptExamples />} />
+        <Route path="/curl-examples" element={<DocsCurlExamples />} />
+        <Route path="/explorer" element={<DocsApiExplorer />} />
       </Routes>
     </DocsLayout>
   );
