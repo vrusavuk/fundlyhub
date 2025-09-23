@@ -13,18 +13,18 @@ export function DocsLayout({ children }: DocsLayoutProps) {
   return (
     <AppLayout fullWidth>
       <div className="flex min-h-screen">
-        {/* Sidebar */}
+        {/* Sidebar - Fixed */}
         <DocsSidebar />
         
-        {/* Main Content */}
-        <div className="flex-1 flex">
-          <main className="flex-1 max-w-4xl mx-auto p-8">
+        {/* Main Content - With margins for fixed sidebars */}
+        <div className="flex-1 ml-64 mr-56">
+          <main className="max-w-4xl mx-auto p-8 pt-24">
             {children}
           </main>
-          
-          {/* Table of Contents */}
-          <TableOfContents />
         </div>
+        
+        {/* Table of Contents - Fixed */}
+        <TableOfContents />
       </div>
     </AppLayout>
   );
