@@ -6,13 +6,14 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { PageContainer } from '@/components/ui/PageContainer';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ProfileTabs } from '@/components/profile/ProfileTabs';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
+import { ProfilePageSkeleton } from '@/components/skeletons/ProfilePageSkeleton';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SmartBreadcrumb } from '@/components/navigation/SmartBreadcrumb';
+import { ScreenReaderOnly } from '@/components/accessibility/ScreenReaderOnly';
 
 export function UserProfile() {
   const { userId } = useParams<{ userId: string }>();
@@ -31,9 +32,7 @@ export function UserProfile() {
     return (
       <AppLayout>
         <PageContainer>
-          <div className="flex justify-center py-12">
-            <LoadingSpinner size="lg" />
-          </div>
+          <ProfilePageSkeleton />
         </PageContainer>
       </AppLayout>
     );
@@ -43,7 +42,10 @@ export function UserProfile() {
     return (
       <AppLayout>
         <PageContainer>
-          <ErrorMessage message={error} />
+          <ErrorMessage 
+            message={error}
+            onRetry={() => window.location.reload()}
+          />
         </PageContainer>
       </AppLayout>
     );
@@ -53,7 +55,10 @@ export function UserProfile() {
     return (
       <AppLayout>
         <PageContainer>
-          <ErrorMessage message="The user profile you're looking for doesn't exist." />
+          <ErrorMessage 
+            message="The user profile you're looking for doesn't exist."
+            onRetry={() => navigate('/campaigns')}
+          />
         </PageContainer>
       </AppLayout>
     );
@@ -62,6 +67,10 @@ export function UserProfile() {
   return (
     <AppLayout>
       <PageContainer className="max-w-6xl mx-auto">
+        <ScreenReaderOnly>
+          <h1>Profile for {profile.name || 'User'}</h1>
+        </ScreenReaderOnly>
+        
         {/* Smart Navigation */}
         <div className="mb-6">
           <SmartBreadcrumb />

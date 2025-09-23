@@ -11,6 +11,8 @@ import { useFundraisers } from "@/hooks/useFundraisers";
 import { useCampaignStats } from "@/hooks/useCampaignStats";
 import { useCategories } from "@/hooks/useCategories";
 import { useGlobalSearch } from "@/contexts/SearchContext";
+import { LoadingState } from "@/components/common/LoadingState";
+import { ScreenReaderOnly } from "@/components/accessibility/ScreenReaderOnly";
 
 export default function AllCampaigns() {
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -133,6 +135,10 @@ export default function AllCampaigns() {
   return (
     <AppLayout>
       <PageContainer>
+        <ScreenReaderOnly>
+          <h1>All Campaigns - Browse and Support Fundraisers</h1>
+        </ScreenReaderOnly>
+        
         <PageHeader
           title="All Campaigns"
           description="Discover and support amazing causes from around the world"
@@ -140,19 +146,31 @@ export default function AllCampaigns() {
             <div className="flex items-center gap-4 text-sm">
               <div className="flex flex-col items-end">
                 <span className="font-medium text-green-600">
-                  {campaignStats.loading ? '...' : campaignStats.activeCampaigns.toLocaleString()} Active
+                  {campaignStats.loading ? (
+                    <LoadingState variant="skeleton" className="h-4 w-12" />
+                  ) : (
+                    campaignStats.activeCampaigns.toLocaleString()
+                  )} Active
                 </span>
                 <span className="text-xs text-muted-foreground">campaigns</span>
               </div>
               <div className="flex flex-col items-end">
                 <span className="font-medium text-blue-600">
-                  {campaignStats.loading ? '...' : campaignStats.successfulCampaigns.toLocaleString()} Closed
+                  {campaignStats.loading ? (
+                    <LoadingState variant="skeleton" className="h-4 w-12" />
+                  ) : (
+                    campaignStats.successfulCampaigns.toLocaleString()
+                  )} Closed
                 </span>
                 <span className="text-xs text-muted-foreground">campaigns</span>
               </div>
               <div className="flex flex-col items-end">
                 <span className="font-medium text-primary">
-                  {campaignStats.loading ? '...' : `$${campaignStats.totalFundsRaised.toLocaleString()}`}
+                  {campaignStats.loading ? (
+                    <LoadingState variant="skeleton" className="h-4 w-16" />
+                  ) : (
+                    `$${campaignStats.totalFundsRaised.toLocaleString()}`
+                  )}
                 </span>
                 <span className="text-xs text-muted-foreground">total raised</span>
               </div>

@@ -11,6 +11,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DonationWidget } from '@/components/DonationWidget';
 import { RecentDonors } from '@/components/fundraisers/RecentDonors';
+import { ErrorMessage } from '@/components/common/ErrorMessage';
+import { CampaignPageSkeleton } from '@/components/skeletons/CampaignPageSkeleton';
+import { ScreenReaderOnly } from '@/components/accessibility/ScreenReaderOnly';
+import { LazyImage } from '@/components/lazy/LazyImage';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -284,14 +288,25 @@ export default function FundraiserDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
+      <AppLayout>
+        <PageContainer>
+          <CampaignPageSkeleton />
+        </PageContainer>
+      </AppLayout>
     );
   }
 
   if (!fundraiser) {
-    return <Navigate to="/404" replace />;
+    return (
+      <AppLayout>
+        <PageContainer>
+          <ErrorMessage 
+            message="The fundraiser you're looking for doesn't exist or has been removed."
+            onRetry={() => window.history.back()}
+          />
+        </PageContainer>
+      </AppLayout>
+    );
   }
 
   const progressPercentage = Math.min((totalRaised / fundraiser.goal_amount) * 100, 100);
