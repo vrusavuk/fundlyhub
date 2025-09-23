@@ -394,7 +394,7 @@ stats.forEach(stat => {
       </ApiEndpointSection>
 
       <ApiEndpointSection title="Common Use Cases" description="Practical examples for common fundraiser operations">
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="space-y-8">
           <div>
             <h4 className="font-semibold mb-3 text-foreground">Search Fundraisers</h4>
             <p className="text-sm text-muted-foreground mb-3">Search across titles and summaries</p>
@@ -440,6 +440,52 @@ const { data, error } = await supabase
   .from('fundraisers')
   .select('*')
   .eq('owner_user_id', user.id)
+  .order('created_at', { ascending: false })`}
+              language="javascript"
+            />
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-3 text-foreground">Get Fundraiser with Statistics</h4>
+            <p className="text-sm text-muted-foreground mb-3">Retrieve a fundraiser with calculated total raised and donor count</p>
+            <CodeBlock 
+              code={`// Get fundraiser with live statistics
+const { data, error } = await supabase
+  .from('fundraisers')
+  .select(\`
+    *,
+    profiles(name, avatar),
+    categories(name, emoji)
+  \`)
+  .eq('slug', 'help-local-food-bank')
+  .single()
+
+// Then get statistics separately
+const { data: stats } = await supabase
+  .rpc('get_fundraiser_totals', {
+    fundraiser_ids: [data.id]
+  })`}
+              language="javascript"
+            />
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-3 text-foreground">Filter by Location and Goal Amount</h4>
+            <p className="text-sm text-muted-foreground mb-3">Advanced filtering with multiple criteria</p>
+            <CodeBlock 
+              code={`// Find fundraisers in Texas with goals between $1,000-$10,000
+const { data, error } = await supabase
+  .from('fundraisers')
+  .select(\`
+    *,
+    profiles(name, avatar),
+    categories(name, emoji)
+  \`)
+  .ilike('location', '%TX%')
+  .gte('goal_amount', 1000)
+  .lte('goal_amount', 10000)
+  .eq('status', 'active')
+  .eq('visibility', 'public')
   .order('created_at', { ascending: false })`}
               language="javascript"
             />
