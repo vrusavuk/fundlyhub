@@ -18,17 +18,21 @@ export function Navigation() {
       <HeaderSearch isOpen={isHeaderSearchOpen} onClose={closeHeaderSearch} />
       
       <nav className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border relative">
-        <div className="max-w-7xl mx-auto mobile-nav-spacing">
-          <div className="flex justify-between items-center h-14 sm:h-16">
+        <div className="w-full px-3 sm:px-4 md:px-6">
+          <div className="flex items-center h-14 sm:h-16">
             
-            {/* Brand Logo */}
-            <BrandLogo />
+            {/* Brand Logo - Left Edge */}
+            <div className="flex-shrink-0">
+              <BrandLogo />
+            </div>
 
-            {/* Desktop Navigation Menu */}
-            <NavigationMenu />
+            {/* Desktop Navigation Menu - Center */}
+            <div className="flex-1 flex justify-center">
+              <NavigationMenu />
+            </div>
 
-            {/* Action Buttons */}
-            <div className="flex items-center space-x-2 sm:space-x-3">
+            {/* Action Buttons - Right Edge */}
+            <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
               {/* Search Trigger */}
               <SearchTrigger />
               
