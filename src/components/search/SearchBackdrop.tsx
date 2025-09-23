@@ -29,7 +29,8 @@ export function SearchBackdrop({
       )}
       style={{
         backgroundColor: `hsl(var(--background) / ${opacity})`,
-        // Remove backdrop blur to keep page content clear
+        backdropFilter: 'blur(3px) saturate(1.1)',
+        WebkitBackdropFilter: 'blur(3px) saturate(1.1)',
       }}
       onClick={onClick}
       role="presentation"
