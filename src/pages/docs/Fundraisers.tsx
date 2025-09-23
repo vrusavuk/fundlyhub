@@ -43,7 +43,37 @@ export function DocsFundraisers() {
               { name: 'offset', type: 'integer', description: 'Pagination offset', example: '0' }
             ]}
             responses={[
-              { status: '200', description: 'Array of fundraiser objects with profiles and categories' },
+              { 
+                status: '200', 
+                description: 'Array of fundraiser objects with profiles and categories',
+                example: `[
+  {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "title": "Help Local Food Bank",
+    "slug": "help-local-food-bank",
+    "summary": "Supporting families in need during tough times",
+    "goal_amount": 5000,
+    "currency": "USD",
+    "status": "active",
+    "visibility": "public",
+    "cover_image": "https://example.com/image.jpg",
+    "location": "Austin, TX",
+    "tags": ["community", "food", "families"],
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T10:30:00Z",
+    "profiles": {
+      "id": "456e7890-e89b-12d3-a456-426614174000",
+      "name": "John Doe",
+      "avatar": "https://example.com/avatar.jpg"
+    },
+    "categories": {
+      "id": "789e0123-e89b-12d3-a456-426614174000",
+      "name": "Community",
+      "emoji": "🏘️"
+    }
+  }
+]`
+              },
               { status: '400', description: 'Bad request - invalid parameters' }
             ]}
             examples={[
@@ -94,7 +124,42 @@ console.log('Total count:', result.count)`
               { name: 'slug', type: 'string', required: true, description: 'Fundraiser slug or ID', example: 'help-local-food-bank' }
             ]}
             responses={[
-              { status: '200', description: 'Fundraiser object with statistics and profile data' },
+              { 
+                status: '200', 
+                description: 'Fundraiser object with statistics and profile data',
+                example: `{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "title": "Help Local Food Bank",
+  "slug": "help-local-food-bank",
+  "summary": "Supporting families in need during tough times",
+  "story_html": "<p>Our local food bank serves over 500 families...</p>",
+  "goal_amount": 5000,
+  "currency": "USD",
+  "status": "active",
+  "visibility": "public",
+  "cover_image": "https://example.com/image.jpg",
+  "location": "Austin, TX",
+  "tags": ["community", "food", "families"],
+  "end_date": "2024-12-31",
+  "created_at": "2024-01-15T10:30:00Z",
+  "updated_at": "2024-01-15T10:30:00Z",
+  "total_raised": 1250.50,
+  "donor_count": 23,
+  "days_left": 45,
+  "profiles": {
+    "id": "456e7890-e89b-12d3-a456-426614174000",
+    "name": "John Doe",
+    "avatar": "https://example.com/avatar.jpg",
+    "bio": "Community organizer passionate about helping families"
+  },
+  "categories": {
+    "id": "789e0123-e89b-12d3-a456-426614174000",
+    "name": "Community",
+    "emoji": "🏘️",
+    "color_class": "bg-green-500"
+  }
+}`
+              },
               { status: '404', description: 'Fundraiser not found' }
             ]}
             examples={[
@@ -154,7 +219,29 @@ console.log('Days left:', fundraiser.days_left)`
 }`
             }}
             responses={[
-              { status: '201', description: 'Fundraiser created successfully' },
+              { 
+                status: '201', 
+                description: 'Fundraiser created successfully',
+                example: `{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "title": "Help Support Local Food Bank",
+  "slug": "help-support-local-food-bank",
+  "summary": "Raising funds to support families in need during the holiday season",
+  "story_html": "<p>Our local food bank serves over 500 families...</p>",
+  "goal_amount": 5000,
+  "currency": "USD",
+  "status": "draft",
+  "visibility": "public",
+  "cover_image": "https://example.com/image.jpg",
+  "location": "Austin, TX",
+  "tags": ["community", "food", "families"],
+  "end_date": "2024-12-31",
+  "owner_user_id": "456e7890-e89b-12d3-a456-426614174000",
+  "category_id": "789e0123-e89b-12d3-a456-426614174000",
+  "created_at": "2024-01-15T10:30:00Z",
+  "updated_at": "2024-01-15T10:30:00Z"
+}`
+              },
               { status: '400', description: 'Validation errors' },
               { status: '401', description: 'Authentication required' }
             ]}
@@ -195,7 +282,19 @@ console.log('Days left:', fundraiser.days_left)`
               { name: 'id', type: 'uuid', required: true, description: 'Fundraiser ID' }
             ]}
             responses={[
-              { status: '200', description: 'Fundraiser updated successfully' },
+              { 
+                status: '200', 
+                description: 'Fundraiser updated successfully',
+                example: `{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "title": "Updated: Help Support Local Food Bank",
+  "slug": "help-support-local-food-bank",
+  "summary": "Updated description with more details...",
+  "goal_amount": 7500,
+  "status": "active",
+  "updated_at": "2024-01-16T14:22:00Z"
+}`
+              },
               { status: '400', description: 'Validation errors' },
               { status: '401', description: 'Authentication required' },
               { status: '403', description: 'Permission denied - not the owner' },
@@ -239,7 +338,27 @@ console.log('Days left:', fundraiser.days_left)`
 }`
             }}
             responses={[
-              { status: '200', description: 'Array of statistics objects with total_raised and donor_count for each fundraiser' }
+              { 
+                status: '200', 
+                description: 'Array of statistics objects with total_raised and donor_count for each fundraiser',
+                example: `[
+  {
+    "fundraiser_id": "123e4567-e89b-12d3-a456-426614174000",
+    "total_raised": 1250.50,
+    "donor_count": 23
+  },
+  {
+    "fundraiser_id": "456e7890-e89b-12d3-a456-426614174000", 
+    "total_raised": 3780.25,
+    "donor_count": 47
+  },
+  {
+    "fundraiser_id": "789e0123-e89b-12d3-a456-426614174000",
+    "total_raised": 850.00,
+    "donor_count": 12
+  }
+]`
+              }
             ]}
             examples={[
               {

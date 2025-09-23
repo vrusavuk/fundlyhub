@@ -37,7 +37,34 @@ export function DocsCategories() {
         >
           <EndpointDetails
             responses={[
-              { status: '200', description: 'Array of category objects with metadata' },
+              { 
+                status: '200', 
+                description: 'Array of category objects with metadata',
+                example: `[
+  {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "name": "Medical",
+    "emoji": "🏥",
+    "color_class": "bg-red-500",
+    "description": "Healthcare and medical emergency campaigns",
+    "display_order": 1,
+    "is_active": true,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "456e7890-e89b-12d3-a456-426614174000",
+    "name": "Education",
+    "emoji": "📚",
+    "color_class": "bg-blue-500",
+    "description": "Educational and scholarship campaigns",
+    "display_order": 2,
+    "is_active": true,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+]`
+              },
               { status: '500', description: 'Internal server error' }
             ]}
             examples={[
@@ -75,7 +102,32 @@ categories.forEach(category => {
         >
           <EndpointDetails
             responses={[
-              { status: '200', description: 'Array of category statistics with campaign counts and fundraising totals' },
+              { 
+                status: '200', 
+                description: 'Array of category statistics with campaign counts and fundraising totals',
+                example: `[
+  {
+    "category_id": "123e4567-e89b-12d3-a456-426614174000",
+    "category_name": "Medical",
+    "emoji": "🏥",
+    "color_class": "bg-red-500",
+    "active_campaigns": 45,
+    "closed_campaigns": 123,
+    "total_raised": 125450.75,
+    "campaign_count": 168
+  },
+  {
+    "category_id": "456e7890-e89b-12d3-a456-426614174000",
+    "category_name": "Education", 
+    "emoji": "📚",
+    "color_class": "bg-blue-500",
+    "active_campaigns": 32,
+    "closed_campaigns": 89,
+    "total_raised": 87320.50,
+    "campaign_count": 121
+  }
+]`
+              },
               { status: '500', description: 'Internal server error' }
             ]}
             examples={[

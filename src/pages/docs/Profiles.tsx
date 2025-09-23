@@ -41,7 +41,37 @@ export function DocsProfiles() {
               { name: 'offset', type: 'integer', description: 'Pagination offset', example: '0' }
             ]}
             responses={[
-              { status: '200', description: 'Array of public user profile objects' },
+              { 
+                status: '200', 
+                description: 'Array of public user profile objects',
+                example: `[
+  {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "name": "John Doe",
+    "avatar": "https://example.com/avatar1.jpg",
+    "bio": "Community organizer passionate about helping families",
+    "location": "Austin, TX",
+    "website": "https://johndoe.com",
+    "campaign_count": 3,
+    "total_funds_raised": 15750.25,
+    "follower_count": 142,
+    "following_count": 89,
+    "created_at": "2023-06-15T10:30:00Z"
+  },
+  {
+    "id": "456e7890-e89b-12d3-a456-426614174000",
+    "name": "Jane Smith",
+    "avatar": "https://example.com/avatar2.jpg",
+    "bio": "Animal rescue volunteer",
+    "location": "Portland, OR",
+    "campaign_count": 1,
+    "total_funds_raised": 5200.00,
+    "follower_count": 67,
+    "following_count": 34,
+    "created_at": "2023-08-22T14:15:00Z"
+  }
+]`
+              },
               { status: '500', description: 'Internal server error' }
             ]}
             examples={[
@@ -70,7 +100,29 @@ export function DocsProfiles() {
               { name: 'userId', type: 'uuid', required: true, description: 'User ID' }
             ]}
             responses={[
-              { status: '200', description: 'User profile object with public information' },
+              { 
+                status: '200', 
+                description: 'User profile object with public information',
+                example: `{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "name": "John Doe",
+  "avatar": "https://example.com/avatar.jpg",
+  "bio": "Community organizer passionate about helping families in need. Active fundraiser since 2023.",
+  "location": "Austin, TX",
+  "website": "https://johndoe.com",
+  "social_links": {
+    "twitter": "https://twitter.com/johndoe",
+    "linkedin": "https://linkedin.com/in/johndoe"
+  },
+  "campaign_count": 3,
+  "total_funds_raised": 15750.25,
+  "follower_count": 142,
+  "following_count": 89,
+  "profile_visibility": "public",
+  "created_at": "2023-06-15T10:30:00Z",
+  "updated_at": "2024-01-15T09:22:00Z"
+}`
+              },
               { status: '404', description: 'User profile not found' },
               { status: '500', description: 'Internal server error' }
             ]}
@@ -122,7 +174,19 @@ console.log('Total raised:', profile.total_raised)`
 }`
             }}
             responses={[
-              { status: '200', description: 'Profile updated successfully' },
+              { 
+                status: '200', 
+                description: 'Profile updated successfully',
+                example: `{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "name": "John Doe",
+  "bio": "Passionate about helping local communities",
+  "avatar": "https://example.com/avatar.jpg",
+  "location": "Austin, TX",
+  "website": "https://johndoe.com",
+  "updated_at": "2024-01-16T14:30:00Z"
+}`
+              },
               { status: '400', description: 'Validation errors' },
               { status: '401', description: 'Authentication required' },
               { status: '403', description: 'Permission denied - can only update own profile' },

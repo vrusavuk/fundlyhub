@@ -23,6 +23,7 @@ interface Response {
   status: string;
   description: string;
   example?: string;
+  schema?: string;
 }
 
 interface EndpointDetailsProps {
@@ -109,11 +110,23 @@ export function EndpointDetails({
                   </Badge>
                   <span className="text-sm text-muted-foreground">{response.description}</span>
                 </div>
+                {response.schema && (
+                  <div className="mt-2">
+                    <p className="text-sm font-medium text-foreground mb-2">Response Schema:</p>
+                    <CodeBlock 
+                      code={response.schema} 
+                      language="json"
+                    />
+                  </div>
+                )}
                 {response.example && (
-                  <CodeBlock 
-                    code={response.example} 
-                    language="json"
-                  />
+                  <div className="mt-2">
+                    <p className="text-sm font-medium text-foreground mb-2">Example Response:</p>
+                    <CodeBlock 
+                      code={response.example} 
+                      language="json"
+                    />
+                  </div>
                 )}
               </div>
             ))}
