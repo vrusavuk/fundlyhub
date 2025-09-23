@@ -4,7 +4,7 @@
  */
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { UserCircle, User, LogOut } from 'lucide-react';
+import { UserCircle, User, LogOut, HelpCircle } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
+import { useOnboarding } from '@/components/onboarding/OnboardingProvider';
 
 interface UserMenuProps {
   className?: string;
@@ -28,9 +29,15 @@ export function UserMenu({
   onMenuAction 
 }: UserMenuProps) {
   const { user, signOut } = useAuth();
+  const { startOnboarding } = useOnboarding();
 
   const handleSignOut = async () => {
     await signOut();
+    onMenuAction?.();
+  };
+
+  const handleTakeTour = () => {
+    startOnboarding();
     onMenuAction?.();
   };
 
@@ -47,6 +54,12 @@ export function UserMenu({
             >
               Profile
             </Link>
+            <button 
+              className="text-foreground hover:text-primary transition-smooth py-2 text-left"
+              onClick={handleTakeTour}
+            >
+              Take Tour
+            </button>
             <Button 
               variant="outline" 
               size="sm" 
@@ -58,12 +71,20 @@ export function UserMenu({
             </Button>
           </>
         ) : (
-          <Button variant="outline" size="sm" className="justify-start min-h-[44px]" asChild>
-            <Link to="/auth" onClick={onMenuAction}>
-              <User className="h-4 w-4 mr-2" />
-              Sign In
-            </Link>
-          </Button>
+          <>
+            <button 
+              className="text-foreground hover:text-primary transition-smooth py-2 text-left"
+              onClick={handleTakeTour}
+            >
+              Take Tour
+            </button>
+            <Button variant="outline" size="sm" className="justify-start min-h-[44px]" asChild>
+              <Link to="/auth" onClick={onMenuAction}>
+                <User className="h-4 w-4 mr-2" />
+                Sign In
+              </Link>
+            </Button>
+          </>
         )}
       </div>
     );
@@ -97,6 +118,10 @@ export function UserMenu({
                 Profile
               </Link>
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleTakeTour}>
+              <HelpCircle className="mr-2 h-4 w-4" />
+              Take Tour
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={handleSignOut}>
               <LogOut className="mr-2 h-4 w-4" />
               Sign Out
@@ -104,12 +129,23 @@ export function UserMenu({
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
-        <Button variant="outline" size="sm" className="hidden md:inline-flex" asChild>
-          <Link to="/auth">
-            <User className="h-4 w-4 mr-2" />
-            Sign In
-          </Link>
-        </Button>
+        <>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="hidden md:inline-flex text-muted-foreground hover:text-primary"
+            onClick={handleTakeTour}
+          >
+            <HelpCircle className="h-4 w-4 mr-2" />
+            Take Tour
+          </Button>
+          <Button variant="outline" size="sm" className="hidden md:inline-flex" asChild>
+            <Link to="/auth">
+              <User className="h-4 w-4 mr-2" />
+              Sign In
+            </Link>
+          </Button>
+        </>
       )}
     </div>
   );

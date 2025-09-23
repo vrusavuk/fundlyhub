@@ -7,6 +7,7 @@ import { CategoryFilter } from "@/components/CategoryFilter";
 import { TrustBadges } from "@/components/TrustBadges";
 import { ArrowRight, Star, Zap, CheckCircle, Heart } from "lucide-react";
 import { useFundraisers } from "@/hooks/useFundraisers";
+import { FloatingActionButton } from "@/components/ui/FloatingActionButton";
 import heroImage from "@/assets/hero-image.jpg";
 import yourCauseImage from "@/assets/categories/your-cause.jpg";
 import medicalImage from "@/assets/categories/medical.jpg";
@@ -354,6 +355,9 @@ const Index = () => {
           </div>
         </div>
       </footer>
+      
+      {/* Floating Help Button */}
+      <FloatingActionButton />
     </AppLayout>
   );
 };
