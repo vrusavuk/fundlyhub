@@ -17,6 +17,7 @@ import SearchResults from "./pages/SearchResults";
 import NotFound from "./pages/NotFound";
 import { UserProfile } from "./pages/UserProfile";
 import { OrganizationProfile } from "./pages/OrganizationProfile";
+import ApiDocs from "./pages/ApiDocs";
 
 // Query client for React Query
 const queryClient = new QueryClient();
@@ -51,6 +52,7 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/fundraiser/:slug" element={<FundraiserDetail />} />
+              <Route path="/docs" element={<ApiDocs />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
               </Routes>
