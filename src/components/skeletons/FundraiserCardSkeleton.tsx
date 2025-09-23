@@ -25,7 +25,7 @@ export function FundraiserCardSkeleton({ className, style }: FundraiserCardSkele
         </div>
       </div>
 
-      <CardContent className="p-6 flex flex-col flex-grow">
+      <CardContent className="px-6 pt-6 pb-4 flex flex-col flex-grow">
         {/* Creator Info Skeleton - Fixed Height */}
         <div className="flex items-center gap-3 h-12 flex-shrink-0 mb-2">
           <SkeletonAvatar size="sm" className="flex-shrink-0" />
@@ -58,7 +58,7 @@ export function FundraiserCardSkeleton({ className, style }: FundraiserCardSkele
         </div>
 
         {/* Progress Section Skeleton - Improved spacing */}
-        <div className="flex-shrink-0 space-y-4 mb-6">
+        <div className="flex-shrink-0 space-y-4 mb-0">
           <div className="relative">
             <Skeleton className="h-2 w-full rounded-full" />
             <Skeleton className="absolute top-0 left-0 h-2 w-3/5 rounded-full bg-primary/20" />
@@ -85,13 +85,6 @@ export function FundraiserCardSkeleton({ className, style }: FundraiserCardSkele
           </div>
         </div>
 
-        {/* CTA Section Skeleton */}
-        <div className="flex-shrink-0">
-          <div className="flex gap-3">
-            <Skeleton className="h-8 flex-1 rounded" />
-            <Skeleton className="h-8 w-16 rounded" />
-          </div>
-        </div>
       </CardContent>
     </Card>
   );

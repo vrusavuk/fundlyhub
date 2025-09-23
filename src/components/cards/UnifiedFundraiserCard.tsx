@@ -290,7 +290,7 @@ export function UnifiedFundraiserCard({
       </div>
       
       {/* Content Section - Flexible with fixed sections */}
-      <CardContent className="p-6 flex flex-col flex-grow">
+      <CardContent className="px-6 pt-6 pb-4 flex flex-col flex-grow">
         {/* Creator Info - Fixed Height */}
         <div className="flex items-center gap-3 h-12 flex-shrink-0 mb-2">
           <Avatar className="h-8 w-8 flex-shrink-0">
@@ -350,7 +350,7 @@ export function UnifiedFundraiserCard({
         </div>
         
         {/* Progress Section - Fixed Height */}
-        <div className="flex-shrink-0 space-y-4 mb-6">
+        <div className="flex-shrink-0 space-y-4 mb-0">
           <Progress value={progressPercentage} className="h-2" />
           
           <div className="flex justify-between items-end">
@@ -398,33 +398,6 @@ export function UnifiedFundraiserCard({
           </div>
         </div>
 
-        {/* CTA Section - Flows naturally after content */}
-        <div className="flex-shrink-0">
-          {variant === 'polished' && onDonate ? (
-            <div className="flex gap-3">
-              <EnhancedButton
-                variant="cta"
-                prominence="primary"
-                icon="arrow"
-                gradient={isFeatured}
-                onClick={handleDonate}
-                className="flex-1"
-                size="sm"
-              >
-                Donate Now
-              </EnhancedButton>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCardClick}
-                className="px-4 font-medium hover:bg-accent/50 transition-colors"
-              >
-                View
-              </Button>
-            </div>
-          ) : null}
-        </div>
       </CardContent>
     </Card>
   );
