@@ -253,7 +253,7 @@ const { data, error } = await supabase
       </ApiEndpointSection>
 
       <ApiEndpointSection title="Payment Processing" description="Integration examples for payment providers">
-        <div className="grid gap-6">
+        <div className="space-y-8">
           <div>
             <h4 className="font-semibold mb-3 text-foreground">Stripe Integration</h4>
             <p className="text-sm text-muted-foreground mb-3">Process donations with Stripe payment processing</p>
@@ -313,6 +313,84 @@ const { data, error } = await supabase
     currency: 'USD',
     payment_provider: 'stripe'
   }])`}
+              language="javascript"
+            />
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-3 text-foreground">Anonymous Donation Processing</h4>
+            <p className="text-sm text-muted-foreground mb-3">Handle donations without user authentication</p>
+            <CodeBlock 
+              code={`// Process anonymous donation with minimal data collection
+const processAnonymousDonation = async (donationData) => {
+  // 1. Validate fundraiser exists and is active
+  const { data: fundraiser } = await supabase
+    .from('fundraisers')
+    .select('id, status')
+    .eq('id', donationData.fundraiser_id)
+    .eq('status', 'active')
+    .single()
+
+  if (!fundraiser) {
+    throw new Error('Fundraiser not found or inactive')
+  }
+
+  // 2. Create donation record (donor_user_id will be null)
+  const { data, error } = await supabase
+    .from('donations')
+    .insert([{
+      fundraiser_id: donationData.fundraiser_id,
+      amount: donationData.amount,
+      tip_amount: donationData.tip_amount || 0,
+      currency: 'USD',
+      payment_provider: 'stripe',
+      payment_status: 'paid',
+      receipt_id: donationData.receipt_id
+      // donor_user_id is intentionally omitted for anonymous donations
+    }])
+    .select()
+
+  return data
+}`}
+              language="javascript"
+            />
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-3 text-foreground">Donation Receipt Generation</h4>
+            <p className="text-sm text-muted-foreground mb-3">Generate and send donation receipts to donors</p>
+            <CodeBlock 
+              code={`// Generate donation receipt after successful payment
+const generateReceipt = async (donationId) => {
+  const { data: donation } = await supabase
+    .from('donations')
+    .select(\`
+      *,
+      fundraisers(title, owner_user_id),
+      profiles(name, email)
+    \`)
+    .eq('id', donationId)
+    .single()
+
+  const receiptData = {
+    donation_id: donation.id,
+    amount: donation.amount,
+    tip_amount: donation.tip_amount,
+    total_amount: donation.amount + (donation.tip_amount || 0),
+    fundraiser_title: donation.fundraisers.title,
+    donor_name: donation.profiles?.name || 'Anonymous',
+    donor_email: donation.profiles?.email,
+    date: donation.created_at,
+    receipt_id: donation.receipt_id
+  }
+
+  // Send receipt email if donor provided email
+  if (receiptData.donor_email) {
+    await sendReceiptEmail(receiptData)
+  }
+
+  return receiptData
+}`}
               language="javascript"
             />
           </div>
