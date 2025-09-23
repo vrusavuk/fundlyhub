@@ -5,6 +5,7 @@ import { ReactNode } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { PageContainer } from '@/components/ui/PageContainer';
 import { Link, useLocation } from 'react-router-dom';
+import { TableOfContents } from '@/components/docs/TableOfContents';
 
 interface DocsLayoutProps {
   children: ReactNode;
@@ -89,12 +90,7 @@ export function DocsLayout({ children }: DocsLayoutProps) {
 
           {/* Table of Contents */}
           <aside className="w-56 shrink-0 sticky top-20 h-fit">
-            <div className="bg-background border border-border rounded-lg p-4">
-              <h4 className="font-semibold text-sm mb-4 text-foreground">On this page</h4>
-              <nav className="space-y-1" id="toc-nav">
-                <div className="text-xs text-muted-foreground">Table of contents will be generated automatically</div>
-              </nav>
-            </div>
+            <TableOfContents />
           </aside>
         </div>
       </PageContainer>
