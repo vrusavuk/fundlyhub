@@ -2,6 +2,7 @@
  * Hook for generating and managing dynamic table of contents
  */
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 interface TocItem {
   id: string;
@@ -12,6 +13,7 @@ interface TocItem {
 export function useTableOfContents() {
   const [tocItems, setTocItems] = useState<TocItem[]>([]);
   const [activeId, setActiveId] = useState<string>('');
+  const location = useLocation();
 
   useEffect(() => {
     // Generate IDs and extract headings (only h1 and h2)
@@ -71,7 +73,7 @@ export function useTableOfContents() {
     return () => {
       observer.disconnect();
     };
-  }, []);
+  }, [location.pathname]); // Re-run when route changes
 
   const scrollToHeading = (id: string) => {
     const element = document.getElementById(id);
