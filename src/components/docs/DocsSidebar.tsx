@@ -109,7 +109,7 @@ export function DocsSidebar() {
   };
 
   return (
-    <div className="fixed top-18 sm:top-20 left-0 w-64 h-[calc(100vh-4.5rem)] sm:h-[calc(100vh-5rem)] border-r border-border bg-background overflow-y-auto z-30">
+    <div className="fixed top-20 sm:top-24 left-0 w-64 h-[calc(100vh-5rem)] sm:h-[calc(100vh-6rem)] border-r border-border bg-background overflow-y-auto z-30">
       <div className="pt-4 px-4 pb-4">
         <div className="flex items-center gap-2 mb-6">
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
