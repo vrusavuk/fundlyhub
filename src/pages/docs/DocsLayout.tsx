@@ -18,7 +18,7 @@ export function DocsLayout({ children }: DocsLayoutProps) {
         
         {/* Main Content */}
         <div className="flex-1 flex ml-64">
-          <main className="flex-1 max-w-4xl mx-auto p-8 pt-24">
+          <main className="flex-1 max-w-4xl mx-auto p-8 pt-20 sm:pt-24">
             {children}
           </main>
           
