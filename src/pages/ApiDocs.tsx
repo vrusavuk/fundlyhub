@@ -8,6 +8,8 @@ import { DocsQuickStart } from "./docs/QuickStart";
 import { DocsAuthentication } from "./docs/Authentication";
 import { DocsRateLimits } from "./docs/RateLimits";
 import { DocsFundraisers } from "./docs/Fundraisers";
+import { DocsCategories } from "./docs/Categories";
+import { DocsProfiles } from "./docs/Profiles";
 
 const ApiDocs = () => {
   return (
@@ -18,9 +20,9 @@ const ApiDocs = () => {
         <Route path="/authentication" element={<DocsAuthentication />} />
         <Route path="/rate-limits" element={<DocsRateLimits />} />
         <Route path="/fundraisers" element={<DocsFundraisers />} />
+        <Route path="/categories" element={<DocsCategories />} />
+        <Route path="/profiles" element={<DocsProfiles />} />
         {/* Placeholder routes for other sections */}
-        <Route path="/categories" element={<div className="max-w-4xl"><h1 className="text-4xl font-bold mb-4">Categories API</h1><p className="text-muted-foreground">Documentation coming soon...</p></div>} />
-        <Route path="/profiles" element={<div className="max-w-4xl"><h1 className="text-4xl font-bold mb-4">User Profiles API</h1><p className="text-muted-foreground">Documentation coming soon...</p></div>} />
         <Route path="/organizations" element={<div className="max-w-4xl"><h1 className="text-4xl font-bold mb-4">Organizations API</h1><p className="text-muted-foreground">Documentation coming soon...</p></div>} />
         <Route path="/donations" element={<div className="max-w-4xl"><h1 className="text-4xl font-bold mb-4">Donations API</h1><p className="text-muted-foreground">Documentation coming soon...</p></div>} />
         <Route path="/search" element={<div className="max-w-4xl"><h1 className="text-4xl font-bold mb-4">Search API</h1><p className="text-muted-foreground">Documentation coming soon...</p></div>} />
