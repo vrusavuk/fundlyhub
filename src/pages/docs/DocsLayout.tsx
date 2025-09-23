@@ -12,20 +12,18 @@ interface DocsLayoutProps {
 export function DocsLayout({ children }: DocsLayoutProps) {
   return (
     <AppLayout fullWidth>
-      <div className="flex min-h-screen mt-14 sm:mt-16">
-        {/* Sidebar */}
-        <DocsSidebar />
-        
-        {/* Main Content */}
-        <div className="flex-1 flex ml-64">
-          <main className="flex-1 max-w-4xl mx-auto p-8">
-            {children}
-          </main>
-          
-          {/* Table of Contents */}
-          <TableOfContents />
+      {/* Fixed Sidebar */}
+      <DocsSidebar />
+      
+      {/* Fixed Table of Contents */}
+      <TableOfContents />
+      
+      {/* Main Content with margins for fixed sidebars */}
+      <main className="min-h-screen ml-64 mr-56 pt-16 sm:pt-18">
+        <div className="max-w-4xl mx-auto p-8">
+          {children}
         </div>
-      </div>
+      </main>
     </AppLayout>
   );
 }
