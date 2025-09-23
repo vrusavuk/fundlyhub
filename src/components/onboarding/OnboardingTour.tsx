@@ -1,14 +1,19 @@
 /**
- * Interactive onboarding tour with step-by-step guidance
+ * Enhanced interactive onboarding tour with comprehensive state management
  */
 import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
+import { ResponsiveTourTooltip } from './ResponsiveTourTooltip';
+import { InteractionMonitor } from './InteractionMonitor';
+import { useTourState, TourStep } from './TourStateManager';
+import { useOnboardingDemo } from './OnboardingDemoProvider';
+import { useGlobalSearch } from '@/contexts/SearchContext';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AnimatedCard } from '@/components/animations/AnimatedCard';
-import { useUserPreferences } from '@/hooks/useUserPreferences';
-import { cn } from '@/lib/utils';
 import { hapticFeedback } from '@/lib/utils/mobile';
+import { cn } from '@/lib/utils';
 import { 
   ArrowRight, 
   ArrowLeft, 
@@ -18,62 +23,43 @@ import {
   Heart,
   Eye,
   Users,
-  CheckCircle
+  CheckCircle,
+  RotateCcw,
+  Play,
+  Pause
 } from 'lucide-react';
 
-interface OnboardingStep {
-  id: string;
-  title: string;
-  description: string;
-  target?: string; // CSS selector for target element
-  position?: 'top' | 'bottom' | 'left' | 'right';
-  icon: React.ComponentType<{ className?: string }>;
-  action?: {
-    text: string;
-    onClick: () => void;
-  };
-}
-
-const ONBOARDING_STEPS: OnboardingStep[] = [
+const ENHANCED_ONBOARDING_STEPS: TourStep[] = [
   {
     id: 'welcome',
     title: 'Welcome to FundlyGive! 🎉',
     description: 'Let\'s take a quick tour to help you discover amazing fundraising campaigns and learn how to make a difference.',
     icon: Sparkles,
+    validPaths: ['/'],
   },
   {
     id: 'search',
-    title: 'Smart Search',
-    description: 'Use our intelligent search to find campaigns by cause, location, or keywords. Try typing "medical" or "education".',
+    title: 'Smart Search Experience',
+    description: 'Our intelligent search helps you find campaigns by cause, location, or keywords. Go ahead and try searching for "education" - we\'ll guide you through the results!',
     target: '[data-search-trigger]',
     position: 'bottom',
     icon: Search,
+    validPaths: ['/'],
+    requiresInteraction: true,
+    interactionType: 'search',
     action: {
-      text: 'Try Search',
-      onClick: () => {
-        const searchTrigger = document.querySelector('[data-search-trigger]') as HTMLElement;
-        if (searchTrigger) {
-          searchTrigger.click();
-          setTimeout(() => {
-            const searchInput = document.querySelector('input[placeholder*="Search"]') as HTMLInputElement;
-            if (searchInput) {
-              searchInput.value = 'education';
-              const event = new Event('input', { bubbles: true });
-              searchInput.dispatchEvent(event);
-              searchInput.focus();
-            }
-          }, 200);
-        }
-      }
+      text: 'Try Interactive Search',
+      onClick: () => {} // Will be handled by the enhanced system
     }
   },
   {
     id: 'categories',
     title: 'Browse Categories',
-    description: 'Explore campaigns by category to find causes you care about. Each category shows live statistics.',
+    description: 'Explore campaigns by category to find causes you care about. Each category shows live statistics and trending causes.',
     target: '[data-category-filter]',
     position: 'top',
     icon: Heart,
+    validPaths: ['/'],
   },
   {
     id: 'campaigns',
@@ -82,18 +68,21 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     target: '[data-campaign-grid]',
     position: 'top',
     icon: Eye,
+    validPaths: ['/'],
   },
   {
     id: 'community',
     title: 'Join the Community',
     description: 'Follow creators, bookmark campaigns, and see the impact you\'re making with other supporters.',
     icon: Users,
+    validPaths: ['/'],
   },
   {
     id: 'complete',
     title: 'You\'re All Set! ✨',
     description: 'You\'re ready to explore and support amazing causes. Happy giving!',
     icon: CheckCircle,
+    validPaths: ['/'],
   }
 ];
 
@@ -103,18 +92,60 @@ interface OnboardingTourProps {
 }
 
 export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [highlightedElement, setHighlightedElement] = useState<HTMLElement | null>(null);
+  const location = useLocation();
   const { completeOnboarding } = useUserPreferences();
+  const { openHeaderSearch, setSearchQuery } = useGlobalSearch();
+  const { 
+    setDemoMode, 
+    simulateSearchInteraction, 
+    trackDemoInteraction 
+  } = useOnboardingDemo();
+  
+  const {
+    tourProgress,
+    recoveryState,
+    isWaitingForInteraction,
+    startTour,
+    pauseTour,
+    resumeTour,
+    nextStep,
+    previousStep,
+    skipStep,
+    completeTour,
+    handleUserInteraction,
+    setWaitingForInteraction,
+    attemptRecovery
+  } = useTourState();
+
+  const [highlightedElement, setHighlightedElement] = useState<HTMLElement | null>(null);
+  const [showRecoveryDialog, setShowRecoveryDialog] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
 
-  const step = ONBOARDING_STEPS[currentStep];
+  const currentStep = tourProgress.currentStep;
+  const step = ENHANCED_ONBOARDING_STEPS[currentStep];
   const isFirstStep = currentStep === 0;
-  const isLastStep = currentStep === ONBOARDING_STEPS.length - 1;
+  const isLastStep = currentStep === ENHANCED_ONBOARDING_STEPS.length - 1;
+
+  // Initialize tour when opened
+  useEffect(() => {
+    if (isOpen) {
+      setDemoMode(true);
+      startTour(ENHANCED_ONBOARDING_STEPS);
+      trackDemoInteraction('tour_started');
+    } else {
+      setDemoMode(false);
+      if (tourProgress.currentStep > 0) {
+        trackDemoInteraction('tour_closed', { 
+          completedSteps: tourProgress.completedSteps.length,
+          totalSteps: ENHANCED_ONBOARDING_STEPS.length 
+        });
+      }
+    }
+  }, [isOpen, startTour, setDemoMode, trackDemoInteraction, tourProgress.completedSteps.length, tourProgress.currentStep]);
 
   // Handle highlighting target elements
   useEffect(() => {
-    if (!isOpen || !step.target) {
+    if (!isOpen || !step?.target || tourProgress.isPaused) {
       setHighlightedElement(null);
       return;
     }
@@ -133,199 +164,193 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
         element.style.zIndex = '';
       }
     };
-  }, [isOpen, step.target]);
+  }, [isOpen, step?.target, tourProgress.isPaused]);
+
+  // Show recovery dialog when needed
+  useEffect(() => {
+    if (recoveryState.canRecover && !showRecoveryDialog) {
+      setShowRecoveryDialog(true);
+    }
+  }, [recoveryState.canRecover, showRecoveryDialog]);
 
   const handleNext = () => {
     if (isLastStep) {
       handleComplete();
     } else {
-      setCurrentStep(prev => prev + 1);
+      nextStep();
       hapticFeedback.light();
     }
   };
 
   const handlePrevious = () => {
     if (!isFirstStep) {
-      setCurrentStep(prev => prev - 1);
+      previousStep();
       hapticFeedback.light();
     }
   };
 
   const handleComplete = () => {
+    completeTour();
     completeOnboarding();
+    setDemoMode(false);
     onClose();
     hapticFeedback.medium();
+    trackDemoInteraction('tour_completed', {
+      completedSteps: tourProgress.completedSteps.length,
+      totalSteps: ENHANCED_ONBOARDING_STEPS.length,
+      userDeviations: tourProgress.userDeviations.length
+    });
   };
 
   const handleSkip = () => {
-    completeOnboarding();
-    onClose();
-  };
-
-  const getTooltipPosition = () => {
-    if (!highlightedElement) return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
-
-    const rect = highlightedElement.getBoundingClientRect();
-    const tooltipWidth = 320;
-    const tooltipHeight = 200;
-    const padding = 20;
-
-    let top = 0;
-    let left = 0;
-
-    switch (step.position) {
-      case 'bottom':
-        top = rect.bottom + padding;
-        left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
-        break;
-      case 'top':
-        top = rect.top - tooltipHeight - padding;
-        left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
-        break;
-      case 'left':
-        top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
-        left = rect.left - tooltipWidth - padding;
-        break;
-      case 'right':
-        top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
-        left = rect.right + padding;
-        break;
-      default:
-        top = window.innerHeight / 2 - tooltipHeight / 2;
-        left = window.innerWidth / 2 - tooltipWidth / 2;
+    skipStep(step?.id || '');
+    if (isLastStep) {
+      handleComplete();
     }
-
-    // Keep tooltip within viewport
-    top = Math.max(padding, Math.min(top, window.innerHeight - tooltipHeight - padding));
-    left = Math.max(padding, Math.min(left, window.innerWidth - tooltipWidth - padding));
-
-    return { top: `${top}px`, left: `${left}px` };
   };
 
-  if (!isOpen) return null;
+  const handleActionClick = () => {
+    if (step?.id === 'search') {
+      // Enhanced search interaction
+      trackDemoInteraction('search_demo_started');
+      setWaitingForInteraction(true, 'search');
+      
+      // Open search with demo mode
+      openHeaderSearch();
+      
+      // Simulate typing after a delay
+      setTimeout(() => {
+        const searchInput = document.querySelector('input[placeholder*="Search"], input[placeholder*="search"]') as HTMLInputElement;
+        if (searchInput) {
+          // Focus the input
+          searchInput.focus();
+          
+          // Simulate typing "education"
+          const demoQuery = 'education';
+          setSearchQuery(demoQuery);
+          simulateSearchInteraction(demoQuery);
+          
+          // Type character by character for realistic effect
+          let currentText = '';
+          demoQuery.split('').forEach((char, index) => {
+            setTimeout(() => {
+              currentText += char;
+              searchInput.value = currentText;
+              const event = new Event('input', { bubbles: true });
+              searchInput.dispatchEvent(event);
+            }, index * 150);
+          });
+        }
+      }, 500);
+    } else if (step?.action?.onClick) {
+      step.action.onClick();
+    }
+  };
+
+  const handleRecoveryResume = () => {
+    attemptRecovery();
+    setShowRecoveryDialog(false);
+  };
+
+  const handleRecoverySkip = () => {
+    setShowRecoveryDialog(false);
+    handleComplete();
+  };
+
+  if (!isOpen || !step) return null;
+
+  // Recovery dialog
+  if (showRecoveryDialog && recoveryState.canRecover) {
+    return (
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+        <Card className="relative w-80 max-w-[90vw] shadow-2xl">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Pause className="h-5 w-5 text-warning" />
+              Tour Paused
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              {recoveryState.recoveryMessage}
+            </p>
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleRecoveryResume}
+                className="flex-1"
+                size="sm"
+              >
+                <Play className="h-4 w-4 mr-2" />
+                Continue Tour
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={handleRecoverySkip}
+                size="sm"
+              >
+                Complete
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <div className="fixed inset-0 z-1000">
+    <>
+      {/* Interactive Monitoring */}
+      <InteractionMonitor 
+        isActive={isOpen && !tourProgress.isPaused}
+        onInteraction={(type, data) => {
+          console.log('Tour interaction:', type, data);
+        }}
+      />
+
       {/* Backdrop with spotlight effect */}
       <div 
         ref={overlayRef}
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-        onClick={highlightedElement ? undefined : handleSkip}
+        className="fixed inset-0 z-[9998]"
       >
+        {/* Backdrop */}
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+        
+        {/* Spotlight effect for highlighted element */}
         {highlightedElement && (
           <div
-            className="absolute border-4 border-primary rounded-lg shadow-lg shadow-primary/30 animate-pulse-subtle"
+            className="absolute border-4 border-primary rounded-lg shadow-lg shadow-primary/30 animate-pulse-subtle pointer-events-none"
             style={{
               top: highlightedElement.offsetTop - 8,
               left: highlightedElement.offsetLeft - 8,
               width: highlightedElement.offsetWidth + 16,
               height: highlightedElement.offsetHeight + 16,
-              pointerEvents: 'none',
             }}
           />
         )}
       </div>
 
-      {/* Tooltip */}
-      <Card
-        className="absolute w-80 bg-background border-2 border-primary/20 shadow-2xl animate-scale-in"
-        style={getTooltipPosition()}
-      >
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <step.icon className="h-5 w-5 text-primary" />
-              <CardTitle className="text-lg">{step.title}</CardTitle>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSkip}
-              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          <Badge variant="outline" className="w-fit">
-            Step {currentStep + 1} of {ONBOARDING_STEPS.length}
-          </Badge>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {step.description}
-          </p>
-
-          {step.action && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={step.action.onClick}
-              className="w-full animate-fade-in"
-            >
-              {step.action.text}
-            </Button>
-          )}
-
-          {/* Progress indicator */}
-          <div className="flex justify-center">
-            <div className="flex gap-1">
-              {ONBOARDING_STEPS.map((_, index) => (
-                <div
-                  key={index}
-                  className={cn(
-                    'h-2 w-2 rounded-full transition-colors',
-                    index === currentStep ? 'bg-primary' : 'bg-muted'
-                  )}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Navigation */}
-          <div className="flex justify-between">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePrevious}
-              disabled={isFirstStep}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Previous
-            </Button>
-
-            <Button
-              onClick={handleNext}
-              size="sm"
-              className="flex items-center gap-2"
-            >
-              {isLastStep ? (
-                <>
-                  Complete
-                  <CheckCircle className="h-4 w-4" />
-                </>
-              ) : (
-                <>
-                  Next
-                  <ArrowRight className="h-4 w-4" />
-                </>
-              )}
-            </Button>
-          </div>
-
-          {!isLastStep && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSkip}
-              className="w-full text-xs text-muted-foreground"
-            >
-              Skip tour
-            </Button>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+      {/* Enhanced Responsive Tooltip */}
+      <ResponsiveTourTooltip
+        title={step.title}
+        description={step.description}
+        icon={step.icon}
+        currentStep={currentStep}
+        totalSteps={ENHANCED_ONBOARDING_STEPS.length}
+        targetElement={highlightedElement}
+        preferredPosition={step.position}
+        isVisible={isOpen && !tourProgress.isPaused}
+        onNext={handleNext}
+        onPrevious={handlePrevious}
+        onClose={onClose}
+        onSkip={handleSkip}
+        isFirstStep={isFirstStep}
+        isLastStep={isLastStep}
+        action={step.action ? {
+          text: step.action.text,
+          onClick: handleActionClick
+        } : undefined}
+      />
+    </>
   );
 }

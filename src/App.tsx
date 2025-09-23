@@ -7,6 +7,8 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { SearchProvider } from "@/contexts/SearchContext";
 import { NavigationProvider } from '@/contexts/NavigationContext';
 import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider';
+import { OnboardingDemoProvider } from '@/components/onboarding/OnboardingDemoProvider';
+import { TourStateProvider } from '@/components/onboarding/TourStateManager';
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -32,7 +34,9 @@ const App = () => (
         <BrowserRouter>
           <NavigationProvider>
             <SearchProvider>
-              <OnboardingProvider>
+        <OnboardingDemoProvider>
+          <TourStateProvider>
+            <OnboardingProvider>
                 <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
@@ -58,7 +62,9 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
                 </Routes>
-              </OnboardingProvider>
+            </OnboardingProvider>
+          </TourStateProvider>
+        </OnboardingDemoProvider>
             </SearchProvider>
           </NavigationProvider>
         </BrowserRouter>
