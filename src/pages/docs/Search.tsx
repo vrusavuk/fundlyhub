@@ -302,7 +302,7 @@ const getSuggestions = async (query) => {
       </ApiEndpointSection>
 
       <ApiEndpointSection title="Advanced Search Features" description="Complex search patterns and optimization techniques">
-        <div className="grid gap-6">
+        <div className="space-y-8">
           <div>
             <h4 className="font-semibold mb-3 text-foreground">Full-Text Search with Ranking</h4>
             <p className="text-sm text-muted-foreground mb-3">Implement relevance scoring for better search results</p>
@@ -391,6 +391,56 @@ const { data: popularSearches } = await supabase
   .group('query')
   .order('count', { ascending: false })
   .limit(10)`}
+              language="javascript"
+            />
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-3 text-foreground">Advanced Filtering</h4>
+            <p className="text-sm text-muted-foreground mb-3">Combine multiple search criteria for precise results</p>
+            <CodeBlock 
+              code={`// Complex search with multiple filters
+const advancedSearch = async (filters) => {
+  let query = supabase
+    .from('fundraisers')
+    .select(\`
+      *,
+      profiles(name, avatar),
+      categories(name, emoji)
+    \`)
+    .eq('status', 'active')
+    .eq('visibility', 'public')
+
+  // Add text search if provided
+  if (filters.searchTerm) {
+    query = query.or(\`title.ilike.%\${filters.searchTerm}%,summary.ilike.%\${filters.searchTerm}%\`)
+  }
+
+  // Add category filter
+  if (filters.categoryId) {
+    query = query.eq('category_id', filters.categoryId)
+  }
+
+  // Add goal amount range
+  if (filters.minGoal) {
+    query = query.gte('goal_amount', filters.minGoal)
+  }
+  if (filters.maxGoal) {
+    query = query.lte('goal_amount', filters.maxGoal)
+  }
+
+  // Add location filter
+  if (filters.location) {
+    query = query.ilike('location', \`%\${filters.location}%\`)
+  }
+
+  // Add date range
+  if (filters.dateFrom) {
+    query = query.gte('created_at', filters.dateFrom)
+  }
+
+  return query.order('created_at', { ascending: false })
+}`}
               language="javascript"
             />
           </div>
