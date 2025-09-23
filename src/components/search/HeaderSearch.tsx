@@ -192,9 +192,9 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
         onClick={() => setShowDropdown(false)} 
       />
       
-      {/* Search Header - NO backdrop filter to avoid conflicts */}
+      {/* Search Header - FIXED positioning for scroll persistence */}
       <div 
-        className="absolute top-0 left-0 right-0 z-50 border-b border-border/20 shadow-strong"
+        className="fixed top-0 left-0 right-0 z-50 border-b border-border/20 shadow-strong"
         style={{
           background: `hsl(var(--background) / 0.95)`,
           boxShadow: `
