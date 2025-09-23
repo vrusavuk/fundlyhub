@@ -94,12 +94,26 @@ export function EnhancedSearchDropdown({
       ref={dropdownRef}
       className={cn(
         "absolute top-full left-0 right-0 mt-2 z-50",
-        "bg-background border border-border/50 shadow-strong",
-        "backdrop-blur-lg",
+        "border border-border/30 shadow-strong",
         "animate-in fade-in-0 slide-in-from-top-2 duration-200",
         maxHeight,
         className
       )}
+      style={{
+        background: `
+          linear-gradient(135deg, 
+            hsl(var(--background) / 0.95) 0%, 
+            hsl(var(--background) / 0.85) 100%
+          )
+        `,
+        backdropFilter: 'blur(16px) saturate(1.8)',
+        WebkitBackdropFilter: 'blur(16px) saturate(1.8)',
+        boxShadow: `
+          0 8px 32px hsl(var(--foreground) / 0.1),
+          0 4px 16px hsl(var(--foreground) / 0.05),
+          inset 0 1px 0 hsl(var(--background) / 0.8)
+        `
+      }}
     >
       <ScrollArea className="max-h-[70vh]">
         <div className="p-1">
