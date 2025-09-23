@@ -182,7 +182,7 @@ export function UnifiedFundraiserCard({
         // Fixed height and consistent styling
         "group cursor-pointer overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 border-0 shadow-lg bg-card/50 backdrop-blur-sm",
         // CRITICAL: Fixed minimum height for consistent grid
-        "min-h-[580px] flex flex-col",
+        "min-h-[480px] flex flex-col",
         isFeatured && "ring-2 ring-primary/20 shadow-primary/5",
         isTrending && "bg-gradient-to-br from-card to-primary/5"
       )}
@@ -292,7 +292,7 @@ export function UnifiedFundraiserCard({
       {/* Content Section - Flexible with fixed sections */}
       <CardContent className="p-5 flex flex-col flex-grow">
         {/* Creator Info - Fixed Height */}
-        <div className="flex items-center gap-3 h-12 flex-shrink-0 mb-3">
+        <div className="flex items-center gap-3 h-12 flex-shrink-0 mb-2">
           <Avatar className="h-8 w-8 flex-shrink-0">
             <AvatarImage src={avatarUrl} />
             <AvatarFallback className="text-xs font-medium">
@@ -329,7 +329,7 @@ export function UnifiedFundraiserCard({
         </div>
 
         {/* Title and Description - Fixed Height */}
-        <div className="flex-shrink-0 mb-4">
+        <div className="flex-shrink-0 mb-3">
           {/* Fixed height title area */}
           <div className="h-12 mb-2">
             <HighlightedTitle
@@ -350,7 +350,7 @@ export function UnifiedFundraiserCard({
         </div>
         
         {/* Progress Section - Fixed Height */}
-        <div className="flex-shrink-0 mb-4">
+        <div className="flex-shrink-0 mb-3">
           <Progress value={progressPercentage} className="h-2 mb-3" />
           
           <div className="flex justify-between items-end h-12">
@@ -370,12 +370,35 @@ export function UnifiedFundraiserCard({
               <p className="text-xs text-muted-foreground">funded</p>
             </div>
           </div>
+          
+          {/* Stats Row - Grouped with progress */}
+          <div className="flex justify-between items-center pt-3 border-t border-border/50 text-xs text-muted-foreground h-8">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1">
+                <Users className="h-3 w-3 flex-shrink-0" />
+                <span>{donorCount} supporter{donorCount !== 1 ? 's' : ''}</span>
+              </div>
+              
+              {daysLeft !== undefined && (
+                <div className="flex items-center gap-1">
+                  <Clock className="h-3 w-3 flex-shrink-0" />
+                  <span>
+                    {daysLeft > 0 ? `${daysLeft} days left` : 'Campaign ended'}
+                  </span>
+                </div>
+              )}
+            </div>
+            
+            <div className="text-xs font-medium text-primary flex-shrink-0">
+              {Math.round(progressPercentage)}% funded
+            </div>
+          </div>
         </div>
 
-        {/* CTA Section - Fixed at bottom */}
-        <div className="mt-auto">
+        {/* CTA Section - Flows naturally after content */}
+        <div className="flex-shrink-0">
           {variant === 'polished' && onDonate ? (
-            <div className="flex gap-3 mb-3">
+            <div className="flex gap-3">
               <EnhancedButton
                 variant="cta"
                 prominence="primary"
@@ -398,29 +421,6 @@ export function UnifiedFundraiserCard({
               </Button>
             </div>
           ) : null}
-
-          {/* Stats Row - Fixed Height */}
-          <div className="flex justify-between items-center pt-2 border-t border-border/50 text-xs text-muted-foreground h-8">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1">
-                <Users className="h-3 w-3 flex-shrink-0" />
-                <span>{donorCount} supporter{donorCount !== 1 ? 's' : ''}</span>
-              </div>
-              
-              {daysLeft !== undefined && (
-                <div className="flex items-center gap-1">
-                  <Clock className="h-3 w-3 flex-shrink-0" />
-                  <span>
-                    {daysLeft > 0 ? `${daysLeft} days left` : 'Campaign ended'}
-                  </span>
-                </div>
-              )}
-            </div>
-            
-            <div className="text-xs font-medium text-primary flex-shrink-0">
-              {Math.round(progressPercentage)}% funded
-            </div>
-          </div>
         </div>
       </CardContent>
     </Card>

@@ -8,7 +8,7 @@ interface FundraiserCardSkeletonProps {
 
 export function FundraiserCardSkeleton({ className, style }: FundraiserCardSkeletonProps) {
   return (
-    <Card className={`group overflow-hidden transition-all duration-300 hover:shadow-lg min-h-[580px] flex flex-col ${className}`} style={style}>
+    <Card className={`group overflow-hidden transition-all duration-300 hover:shadow-lg min-h-[480px] flex flex-col ${className}`} style={style}>
       {/* Cover Image Skeleton - Fixed Height */}
       <div className="relative flex-shrink-0">
         <SkeletonImage aspectRatio="16/9" className="h-48" />
@@ -27,7 +27,7 @@ export function FundraiserCardSkeleton({ className, style }: FundraiserCardSkele
 
       <CardContent className="p-5 flex flex-col flex-grow">
         {/* Creator Info Skeleton - Fixed Height */}
-        <div className="flex items-center gap-3 h-12 flex-shrink-0 mb-3">
+        <div className="flex items-center gap-3 h-12 flex-shrink-0 mb-2">
           <SkeletonAvatar size="sm" className="flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <Skeleton className="h-4 w-24 mb-1" />
@@ -37,7 +37,7 @@ export function FundraiserCardSkeleton({ className, style }: FundraiserCardSkele
         </div>
 
         {/* Title and Description Skeleton - Fixed Height */}
-        <div className="flex-shrink-0 mb-4">
+        <div className="flex-shrink-0 mb-3">
           {/* Title Area - Fixed Height */}
           <div className="h-12 mb-2">
             <SkeletonText 
@@ -58,7 +58,7 @@ export function FundraiserCardSkeleton({ className, style }: FundraiserCardSkele
         </div>
 
         {/* Progress Section Skeleton - Fixed Height */}
-        <div className="flex-shrink-0 mb-4">
+        <div className="flex-shrink-0 mb-3">
           <div className="relative mb-3">
             <Skeleton className="h-2 w-full rounded-full" />
             <Skeleton className="absolute top-0 left-0 h-2 w-3/5 rounded-full bg-primary/20" />
@@ -74,16 +74,22 @@ export function FundraiserCardSkeleton({ className, style }: FundraiserCardSkele
               <Skeleton className="h-3 w-12" />
             </div>
           </div>
-        </div>
-
-        {/* Bottom Stats Skeleton - Fixed at bottom */}
-        <div className="mt-auto">
-          <div className="flex justify-between items-center pt-2 border-t border-border/50 h-8">
+          
+          {/* Stats Row - Grouped with progress */}
+          <div className="flex justify-between items-center pt-3 border-t border-border/50 h-8">
             <div className="flex items-center gap-4">
               <Skeleton className="h-4 w-16" />
               <Skeleton className="h-4 w-20" />
             </div>
             <Skeleton className="h-4 w-16" />
+          </div>
+        </div>
+
+        {/* CTA Section Skeleton */}
+        <div className="flex-shrink-0">
+          <div className="flex gap-3">
+            <Skeleton className="h-8 flex-1 rounded" />
+            <Skeleton className="h-8 w-16 rounded" />
           </div>
         </div>
       </CardContent>
