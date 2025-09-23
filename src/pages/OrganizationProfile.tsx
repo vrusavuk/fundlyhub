@@ -7,7 +7,7 @@ import { PageContainer } from '@/components/ui/PageContainer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { LoadingState } from '@/components/common/LoadingState';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { FollowOrganizationButton } from '@/components/profile/FollowOrganizationButton';
 import { FundraiserGrid } from '@/components/fundraisers/FundraiserGrid';
@@ -45,9 +45,7 @@ export function OrganizationProfile() {
     return (
       <AppLayout>
         <PageContainer>
-          <div className="flex justify-center py-12">
-            <LoadingSpinner size="lg" />
-          </div>
+          <LoadingState variant="cards" count={4} />
         </PageContainer>
       </AppLayout>
     );

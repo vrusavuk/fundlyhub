@@ -1,17 +1,43 @@
 /**
- * Enhanced skeleton components with shimmer effects and content-aware variants
+ * Centralized skeleton exports
  */
 
+// Enhanced skeleton components
+export { Skeleton, SkeletonText, SkeletonImage, SkeletonAvatar, SkeletonButton } from '@/components/ui/enhanced-skeleton';
+
+// Specific skeleton screens
 export { FundraiserCardSkeleton } from './FundraiserCardSkeleton';
 export { ActivityItemSkeleton } from './ActivityItemSkeleton';
 export { ProfileHeaderSkeleton } from './ProfileHeaderSkeleton';
 export { SearchResultSkeleton } from './SearchResultSkeleton';
 
-// Re-export enhanced skeleton components for convenience
+// Page-level skeletons
 export { 
-  Skeleton, 
-  SkeletonText, 
-  SkeletonImage, 
-  SkeletonAvatar, 
-  SkeletonButton 
-} from '@/components/ui/enhanced-skeleton';
+  ProfilePageSkeleton, 
+  ProfileHeaderSkeleton as ProfilePageHeader,
+  ProfileTabContentSkeleton,
+  ProfileCampaignCardSkeleton,
+  ProfileFollowerItemSkeleton
+} from './ProfilePageSkeleton';
+export { CampaignPageSkeleton } from './CampaignPageSkeleton';
+
+// Loading state variants
+export type SkeletonVariant = 
+  | 'default' 
+  | 'fundraiser-cards' 
+  | 'activity-items' 
+  | 'profile-header' 
+  | 'profile-page'
+  | 'campaign-page'
+  | 'search-results'
+  | 'table'
+  | 'cards';
+
+// Skeleton count configurations
+export const SKELETON_COUNTS = {
+  FUNDRAISER_CARDS: 6,
+  ACTIVITY_ITEMS: 5,
+  SEARCH_RESULTS: 8,
+  TABLE_ROWS: 10,
+  COMMENTS: 3,
+} as const;

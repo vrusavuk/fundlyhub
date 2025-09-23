@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Users, UserPlus, Heart } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { LoadingState } from '@/components/common/LoadingState';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
+import { ProfileFollowerItemSkeleton } from '@/components/skeletons/ProfilePageSkeleton';
 import { FollowButton } from './FollowButton';
 import { FollowOrganizationButton } from './FollowOrganizationButton';
 
@@ -146,8 +147,10 @@ export function FollowersList({ userId, type, maxItems }: FollowersListProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex justify-center py-8">
-            <LoadingSpinner size="lg" />
+          <div className="space-y-3">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <ProfileFollowerItemSkeleton key={index} />
+            ))}
           </div>
         </CardContent>
       </Card>

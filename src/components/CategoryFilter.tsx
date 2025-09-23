@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Users, TrendingUp, ArrowRight } from 'lucide-react';
 import { useDynamicCategoryStats } from '@/hooks/useDynamicCategoryStats';
 import { formatCurrency } from '@/lib/utils/formatters';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { LoadingState } from '@/components/common/LoadingState';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 
 export function CategoryFilter() {
@@ -26,7 +26,7 @@ export function CategoryFilter() {
       <section className="py-16 bg-gradient-to-br from-background via-muted/20 to-background">
         <div className="container mx-auto px-4">
           <div className="flex justify-center items-center min-h-[400px]">
-            <LoadingSpinner />
+            <LoadingState variant="cards" count={6} />
           </div>
         </div>
       </section>

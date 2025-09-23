@@ -4,6 +4,8 @@ import { FollowersList } from './FollowersList';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Users, Trophy } from 'lucide-react';
 import { useFundraisers } from '@/hooks/useFundraisers';
+import { LoadingState } from '@/components/common/LoadingState';
+import { ProfileTabContentSkeleton } from '@/components/skeletons/ProfilePageSkeleton';
 
 interface ProfileTabsProps {
   userId: string;
@@ -67,7 +69,7 @@ export function ProfileTabs({ userId }: ProfileTabsProps) {
           </CardHeader>
           <CardContent>
             {activeLoading ? (
-              <div className="text-center py-8 text-muted-foreground">Loading campaigns...</div>
+              <LoadingState variant="fundraiser-cards" count={3} />
             ) : userActiveCampaigns.length > 0 ? (
               <FundraiserGrid 
                 fundraisers={userActiveCampaigns} 
@@ -95,7 +97,7 @@ export function ProfileTabs({ userId }: ProfileTabsProps) {
           </CardHeader>
           <CardContent>
             {closedLoading ? (
-              <div className="text-center py-8 text-muted-foreground">Loading campaigns...</div>
+              <LoadingState variant="fundraiser-cards" count={3} />
             ) : userClosedCampaigns.length > 0 ? (
               <FundraiserGrid 
                 fundraisers={userClosedCampaigns} 
