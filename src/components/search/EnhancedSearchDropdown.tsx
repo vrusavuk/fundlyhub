@@ -101,10 +101,10 @@ export function EnhancedSearchDropdown({
           className
         )}
         style={{
-          background: `hsl(var(--background) / 0.7)`,
-          backdropFilter: 'blur(20px) saturate(1.8) brightness(1.1)',
-          WebkitBackdropFilter: 'blur(20px) saturate(1.8) brightness(1.1)',
-          border: '1px solid hsl(var(--border) / 0.3)',
+          background: `hsl(var(--background) / 0.4)`,
+          backdropFilter: 'blur(40px) saturate(2.2) brightness(1.15)',
+          WebkitBackdropFilter: 'blur(40px) saturate(2.2) brightness(1.15)',
+          border: '1px solid hsl(var(--border) / 0.4)',
           boxShadow: `
             0 12px 40px hsl(var(--foreground) / 0.15),
             0 6px 20px hsl(var(--foreground) / 0.08),
