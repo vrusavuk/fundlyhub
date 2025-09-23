@@ -14,8 +14,8 @@ export function useTableOfContents() {
   const [activeId, setActiveId] = useState<string>('');
 
   useEffect(() => {
-    // Generate IDs and extract headings
-    const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6'));
+    // Generate IDs and extract headings (only h1 and h2)
+    const headings = Array.from(document.querySelectorAll('h1, h2'));
     
     const items: TocItem[] = headings.map((heading, index) => {
       const text = heading.textContent || '';
