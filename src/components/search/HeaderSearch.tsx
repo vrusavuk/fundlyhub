@@ -205,7 +205,7 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
                 }
                 className={
                   "pl-10 pr-12 h-12 sm:h-10 border-2 bg-background focus:bg-background transition-all duration-200 " +
-                  "focus:border-primary focus:shadow-lg focus:shadow-primary/20 " +
+                  "focus:border-primary focus:shadow-lg focus:shadow-primary/20 animate-fade-in " +
                   "text-base sm:text-sm touch-manipulation"
                 }
                 autoComplete="off"

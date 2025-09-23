@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { SearchProvider } from "@/contexts/SearchContext";
 import { NavigationProvider } from '@/contexts/NavigationContext';
+import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider';
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -31,7 +32,8 @@ const App = () => (
         <BrowserRouter>
           <NavigationProvider>
             <SearchProvider>
-              <Routes>
+              <OnboardingProvider>
+                <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/campaigns" element={<AllCampaigns />} />
@@ -55,7 +57,8 @@ const App = () => (
               <Route path="/docs/*" element={<ApiDocs />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
-              </Routes>
+                </Routes>
+              </OnboardingProvider>
             </SearchProvider>
           </NavigationProvider>
         </BrowserRouter>
