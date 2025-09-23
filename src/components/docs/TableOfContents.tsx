@@ -1,10 +1,24 @@
 /**
  * Dynamic table of contents component for documentation pages
  */
+import { memo } from 'react';
 import { useTableOfContents } from '@/hooks/useTableOfContents';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
-export function TableOfContents() {
-  const { tocItems, activeId, scrollToHeading } = useTableOfContents();
+export const TableOfContents = memo(() => {
+  const { tocItems, activeId, scrollToHeading, isLoading } = useTableOfContents();
+
+  if (isLoading) {
+    return (
+      <div className="bg-background border border-border rounded-lg p-4">
+        <h4 className="font-semibold text-sm mb-4 text-foreground">On this page</h4>
+        <div className="flex items-center gap-2">
+          <LoadingSpinner size="sm" />
+          <span className="text-xs text-muted-foreground">Loading...</span>
+        </div>
+      </div>
+    );
+  }
 
   if (tocItems.length === 0) {
     return (
@@ -44,4 +58,6 @@ export function TableOfContents() {
       </nav>
     </div>
   );
-}
+});
+
+TableOfContents.displayName = 'TableOfContents';

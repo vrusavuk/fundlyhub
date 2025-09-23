@@ -1,90 +1,164 @@
 /**
- * Hook for generating and managing dynamic table of contents
+ * Advanced table of contents hook with best practices
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useIntersectionObserver } from './useIntersectionObserver';
+import { useMutationObserver } from './useMutationObserver';
+import { 
+  TocItem, 
+  extractHeadings, 
+  scrollToHeading as utilScrollToHeading,
+  debounce 
+} from '@/lib/utils/headingUtils';
 
-interface TocItem {
-  id: string;
-  text: string;
-  level: number;
+interface UseTableOfContentsOptions {
+  headingSelector?: string;
+  containerSelector?: string;
+  scrollOffset?: number;
+  debounceDelay?: number;
 }
 
-export function useTableOfContents() {
+interface UseTableOfContentsReturn {
+  tocItems: TocItem[];
+  activeId: string;
+  scrollToHeading: (id: string) => boolean;
+  isLoading: boolean;
+}
+
+export function useTableOfContents(
+  options: UseTableOfContentsOptions = {}
+): UseTableOfContentsReturn {
+  const {
+    headingSelector = 'h1, h2',
+    containerSelector,
+    scrollOffset = 100,
+    debounceDelay = 150,
+  } = options;
+
   const [tocItems, setTocItems] = useState<TocItem[]>([]);
   const [activeId, setActiveId] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
 
-  useEffect(() => {
-    // Generate IDs and extract headings (only h1 and h2)
-    const headings = Array.from(document.querySelectorAll('h1, h2'));
-    
-    const items: TocItem[] = headings.map((heading, index) => {
-      const text = heading.textContent || '';
-      const level = parseInt(heading.tagName.charAt(1));
-      
-      // Generate ID if not present
-      let id = heading.getAttribute('id');
-      if (!id) {
-        id = text.toLowerCase()
-          .replace(/[^\w\s-]/g, '') // Remove special characters
-          .replace(/\s+/g, '-') // Replace spaces with hyphens
-          .trim();
-        
-        // Ensure uniqueness
-        const existingIds = headings.slice(0, index).map(h => h.getAttribute('id')).filter(Boolean);
-        let uniqueId = id;
-        let counter = 1;
-        while (existingIds.includes(uniqueId)) {
-          uniqueId = `${id}-${counter}`;
-          counter++;
-        }
-        
-        heading.setAttribute('id', uniqueId);
-        id = uniqueId;
+  // Memoized scroll function
+  const scrollToHeading = useCallback(
+    (id: string): boolean => {
+      const success = utilScrollToHeading(id, scrollOffset);
+      if (success) {
+        setActiveId(id);
       }
+      return success;
+    },
+    [scrollOffset]
+  );
+
+  // Handle intersection observer entries
+  const handleIntersection = useCallback((entries: IntersectionObserverEntry[]) => {
+    // Find the topmost visible heading
+    const visibleEntries = entries.filter(entry => entry.isIntersecting);
+    
+    if (visibleEntries.length > 0) {
+      // Sort by position on screen (topmost first)
+      const sortedEntries = visibleEntries.sort(
+        (a, b) => a.boundingClientRect.top - b.boundingClientRect.top
+      );
       
-      return { id, text, level };
-    });
+      const topEntry = sortedEntries[0];
+      if (topEntry.target.id) {
+        setActiveId(topEntry.target.id);
+      }
+    }
+  }, []);
 
-    setTocItems(items);
+  // Set up intersection observer
+  const { observe, unobserve, disconnect } = useIntersectionObserver(
+    handleIntersection,
+    {
+      rootMargin: '-100px 0px -80% 0px',
+      threshold: [0, 0.25, 0.5, 0.75, 1],
+    }
+  );
 
-    // Set up intersection observer for active section tracking
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveId(entry.target.id);
+  // Debounced heading extraction
+  const debouncedExtractHeadings = useMemo(
+    () => debounce(() => {
+      try {
+        setIsLoading(true);
+        const headings = extractHeadings(headingSelector, containerSelector);
+        setTocItems(headings);
+
+        // Set up intersection observer for new headings
+        headings.forEach(({ element }) => {
+          if (element.id) {
+            observe(element);
           }
         });
-      },
-      {
-        rootMargin: '-100px 0px -80% 0px', // Trigger when heading is near top
-        threshold: 0
+
+        // Set initial active heading if none is set
+        if (headings.length > 0 && !activeId) {
+          setActiveId(headings[0].id);
+        }
+      } catch (error) {
+        console.warn('Error extracting headings:', error);
+        setTocItems([]);
+      } finally {
+        setIsLoading(false);
       }
+    }, debounceDelay),
+    [headingSelector, containerSelector, debounceDelay, observe, activeId]
+  );
+
+  // Handle DOM mutations (for dynamic content)
+  const handleMutation = useCallback((mutations: MutationRecord[]) => {
+    const hasRelevantChanges = mutations.some(mutation => 
+      mutation.type === 'childList' && 
+      Array.from(mutation.addedNodes).some(node => 
+        node.nodeType === Node.ELEMENT_NODE &&
+        (node as Element).matches(headingSelector)
+      )
     );
 
-    headings.forEach((heading) => {
-      if (heading.id) {
-        observer.observe(heading);
-      }
-    });
+    if (hasRelevantChanges) {
+      debouncedExtractHeadings();
+    }
+  }, [headingSelector, debouncedExtractHeadings]);
+
+  // Set up mutation observer for dynamic content
+  const container = containerSelector ? document.querySelector(containerSelector) : document.body;
+  useMutationObserver(handleMutation, container, {
+    childList: true,
+    subtree: true,
+  });
+
+  // Extract headings on mount and route change
+  useEffect(() => {
+    // Cleanup previous observations
+    disconnect();
+    setActiveId('');
+    
+    // Small delay to ensure DOM is ready after route change
+    const timeoutId = setTimeout(() => {
+      debouncedExtractHeadings();
+    }, 50);
 
     return () => {
-      observer.disconnect();
+      clearTimeout(timeoutId);
+      disconnect();
     };
-  }, [location.pathname]); // Re-run when route changes
+  }, [location.pathname, disconnect, debouncedExtractHeadings]);
 
-  const scrollToHeading = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
-      setActiveId(id);
-    }
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      disconnect();
+    };
+  }, [disconnect]);
+
+  return {
+    tocItems,
+    activeId,
+    scrollToHeading,
+    isLoading,
   };
-
-  return { tocItems, activeId, scrollToHeading };
 }
