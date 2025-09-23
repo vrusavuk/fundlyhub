@@ -54,7 +54,10 @@ export function SearchProvider({ children }: { children: ReactNode }) {
 
   const openHeaderSearch = () => {
     // If we're on a page that uses integrated search, focus the search input instead
-    if (shouldUseIntegratedSearch()) {
+    // UNLESS we're in demo mode (onboarding), then always show header search
+    const isDemoMode = document.querySelector('[data-onboarding-active]') !== null;
+    
+    if (!isDemoMode && shouldUseIntegratedSearch()) {
       const searchInput = document.querySelector('input[placeholder*="Search"]') as HTMLInputElement;
       if (searchInput) {
         searchInput.focus();
@@ -63,6 +66,16 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     }
     setIsHeaderSearchOpen(true);
   };
+
+  // Listen for custom event to force open header search (for onboarding)
+  useEffect(() => {
+    const handleForceOpen = () => {
+      setIsHeaderSearchOpen(true);
+    };
+
+    document.addEventListener('open-header-search', handleForceOpen);
+    return () => document.removeEventListener('open-header-search', handleForceOpen);
+  }, []);
 
   const closeHeaderSearch = () => {
     setIsHeaderSearchOpen(false);

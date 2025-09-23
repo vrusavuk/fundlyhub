@@ -46,20 +46,30 @@ export class TourActionService {
     }
 
     try {
-      // Enable demo mode
+      // Enable demo mode first
       this.demoService.setDemoMode(true);
       
-      // Open search
-      this.searchService.openHeaderSearch();
+      // Force open header search regardless of page
+      this.forceOpenHeaderSearch();
       
       // Wait for search input to be available
-      await this.waitForElement('input[placeholder*="Search"], input[placeholder*="search"]');
+      const searchInput = await this.waitForElement('input[placeholder*="Search"], input[placeholder*="search"]');
       
-      // Simulate typing
-      await this.simulateTyping(query);
+      // Simulate typing with proper event handling
+      await this.simulateTyping(searchInput, query);
       
     } catch (error) {
       console.error('Failed to execute demo search:', error);
+    }
+  }
+
+  private forceOpenHeaderSearch(): void {
+    // Directly trigger the header search opening
+    if (this.searchService && typeof (this.searchService as any).forceOpen === 'function') {
+      (this.searchService as any).forceOpen();
+    } else {
+      // Fallback to standard method
+      this.searchService?.openHeaderSearch();
     }
   }
 
@@ -74,13 +84,13 @@ export class TourActionService {
     console.log('Custom action executed with payload:', payload);
   }
 
-  private async waitForElement(selector: string, timeout = 5000): Promise<HTMLElement> {
+  private async waitForElement(selector: string, timeout = 5000): Promise<HTMLInputElement> {
     return new Promise((resolve, reject) => {
       const startTime = Date.now();
       
       const checkElement = () => {
-        const element = document.querySelector(selector) as HTMLElement;
-        if (element) {
+        const element = document.querySelector(selector) as HTMLInputElement;
+        if (element && element.isConnected) {
           resolve(element);
           return;
         }
@@ -97,31 +107,50 @@ export class TourActionService {
     });
   }
 
-  private async simulateTyping(text: string): Promise<void> {
-    const searchInput = document.querySelector('input[placeholder*="Search"], input[placeholder*="search"]') as HTMLInputElement;
-    
-    if (!searchInput) {
+  private async simulateTyping(input: HTMLInputElement, text: string): Promise<void> {
+    if (!input) {
       throw new Error('Search input not found');
     }
 
-    searchInput.focus();
+    // Focus the input
+    input.focus();
     
     // Clear existing value
-    searchInput.value = '';
+    input.value = '';
+    
+    // Clear global search state
     this.searchService?.setSearchQuery('');
 
-    // Type character by character
+    // Dispatch focus event to show dropdown
+    input.dispatchEvent(new Event('focus', { bubbles: true }));
+
+    // Type character by character with realistic timing
     for (let i = 0; i <= text.length; i++) {
-      const currentText = text.substring(0, i);
-      
       await new Promise(resolve => setTimeout(resolve, TOUR_CONFIG.DEMO_TYPING_DELAY_MS));
       
-      searchInput.value = currentText;
+      const currentText = text.substring(0, i);
+      
+      // Update input value
+      input.value = currentText;
+      
+      // Update global search state
       this.searchService?.setSearchQuery(currentText);
       
-      // Trigger input event
-      const event = new Event('input', { bubbles: true });
-      searchInput.dispatchEvent(event);
+      // Trigger input events
+      const inputEvent = new Event('input', { bubbles: true });
+      const changeEvent = new Event('change', { bubbles: true });
+      
+      input.dispatchEvent(inputEvent);
+      input.dispatchEvent(changeEvent);
+      
+      // Also trigger React's onChange if it exists
+      const reactPropsKey = Object.keys(input).find(key => key.startsWith('__reactProps'));
+      if (reactPropsKey) {
+        const reactProps = (input as any)[reactPropsKey];
+        if (reactProps?.onChange) {
+          reactProps.onChange({ target: { value: currentText } });
+        }
+      }
     }
   }
 }
@@ -130,6 +159,7 @@ export class TourActionService {
 export interface SearchService {
   openHeaderSearch(): void;
   setSearchQuery(query: string): void;
+  isHeaderSearchOpen?: boolean;
 }
 
 export interface DemoService {

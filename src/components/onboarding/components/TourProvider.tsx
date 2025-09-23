@@ -31,8 +31,16 @@ export function TourProvider({ isOpen, onClose, onComplete }: TourProviderProps)
     
     // Create service adapters
     const searchService: SearchService = {
-      openHeaderSearch: globalSearch.openHeaderSearch,
-      setSearchQuery: globalSearch.setSearchQuery
+      openHeaderSearch: () => {
+        // Force open header search regardless of page context during onboarding
+        const event = new CustomEvent('open-header-search');
+        document.dispatchEvent(event);
+        
+        // Also trigger the standard method as fallback
+        globalSearch.openHeaderSearch();
+      },
+      setSearchQuery: globalSearch.setSearchQuery,
+      isHeaderSearchOpen: globalSearch.isHeaderSearchOpen
     };
     
     const demoService: DemoService = {
@@ -92,24 +100,24 @@ export function TourProvider({ isOpen, onClose, onComplete }: TourProviderProps)
   const stepConfig = currentStepData.config ?? {};
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-      <TourBackdrop
-        show={stepConfig.showBackdrop ?? true}
-        opacity={stepConfig.backdropOpacity ?? 0.6}
-        allowInteraction={stepConfig.allowBackgroundInteraction ?? false}
-        onClick={stepConfig.allowBackgroundInteraction ? undefined : onClose}
-      />
-      
-      <TourDialog
-        step={currentStepData}
-        state={state}
-        isFirstStep={isFirstStep}
-        isLastStep={isLastStep}
-        onNext={handleNext}
-        onPrevious={handlePrevious}
-        onClose={handleComplete}
-        onAction={handleAction}
-      />
-    </div>
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" data-onboarding-active="true">
+        <TourBackdrop
+          show={stepConfig.showBackdrop ?? true}
+          opacity={stepConfig.backdropOpacity ?? 0.6}
+          allowInteraction={stepConfig.allowBackgroundInteraction ?? false}
+          onClick={stepConfig.allowBackgroundInteraction ? undefined : onClose}
+        />
+        
+        <TourDialog
+          step={currentStepData}
+          state={state}
+          isFirstStep={isFirstStep}
+          isLastStep={isLastStep}
+          onNext={handleNext}
+          onPrevious={handlePrevious}
+          onClose={handleComplete}
+          onAction={handleAction}
+        />
+      </div>
   );
 }
