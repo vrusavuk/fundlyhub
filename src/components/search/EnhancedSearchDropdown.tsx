@@ -94,14 +94,14 @@ export function EnhancedSearchDropdown({
       {/* Localized blur backdrop - positioned exactly behind dropdown */}
       <div
         className={cn(
-          "absolute top-full left-0 right-0 mt-2 z-45",
+          "absolute top-full left-0 right-0 mt-2 z-40 rounded-md",
           "animate-in fade-in-0 slide-in-from-top-2 duration-200",
           maxHeight,
         )}
         style={{
-          backdropFilter: 'blur(6px) saturate(1.2)',
-          WebkitBackdropFilter: 'blur(6px) saturate(1.2)',
-          borderRadius: 'calc(var(--radius))',
+          backgroundColor: 'hsl(var(--background) / 0.1)',
+          backdropFilter: 'blur(8px) saturate(1.3)',
+          WebkitBackdropFilter: 'blur(8px) saturate(1.3)',
         }}
         aria-hidden="true"
       />
