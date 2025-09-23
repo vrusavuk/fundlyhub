@@ -213,25 +213,27 @@ export function ResponsiveTourTooltip({
   }[position.arrow?.position || 'bottom'];
 
   return (
-    <>
+    <div className="fixed inset-0 z-[9998] flex items-center justify-center">
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9998]" />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
       
       {/* Tooltip */}
       <Card
         ref={tooltipRef}
         className={cn(
-          'fixed z-[9999] shadow-2xl border-2 border-primary/20 bg-background',
-          'animate-scale-in transition-all duration-300',
-          isMobile ? 'w-[calc(100vw-2rem)] max-w-sm' : 'w-80 max-w-md',
-          !isPositioned && 'opacity-0',
+          'relative z-10 shadow-2xl border-2 border-primary/20 bg-background/95 backdrop-blur-sm',
+          'transition-opacity duration-200',
+          isMobile ? 'w-[calc(100vw-2rem)] max-w-sm mx-4' : 'w-80 max-w-md',
+          isPositioned ? 'opacity-100' : 'opacity-0',
           className
         )}
-        style={{
+        style={targetElement && isPositioned ? {
+          position: 'fixed',
           top: position.position === 'center' ? '50%' : `${position.top}px`,
           left: position.position === 'center' ? '50%' : `${position.left}px`,
-          transform: position.position === 'center' ? 'translate(-50%, -50%)' : undefined
-        }}
+          transform: position.position === 'center' ? 'translate(-50%, -50%)' : undefined,
+          zIndex: 9999
+        } : undefined}
       >
         {/* Arrow */}
         {position.arrow && targetElement && (
@@ -288,7 +290,7 @@ export function ResponsiveTourTooltip({
               variant="outline"
               size="sm"
               onClick={action.onClick}
-              className="w-full animate-fade-in"
+              className="w-full"
             >
               {action.text}
             </Button>
@@ -359,6 +361,6 @@ export function ResponsiveTourTooltip({
           )}
         </CardContent>
       </Card>
-    </>
+    </div>
   );
 }
