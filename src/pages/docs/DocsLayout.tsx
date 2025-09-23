@@ -4,12 +4,28 @@
 import { ReactNode } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { PageContainer } from '@/components/ui/PageContainer';
+import { Link, useLocation } from 'react-router-dom';
 
 interface DocsLayoutProps {
   children: ReactNode;
 }
 
 export function DocsLayout({ children }: DocsLayoutProps) {
+  const location = useLocation();
+  
+  const isActiveLink = (path: string) => {
+    if (path === '/docs') {
+      return location.pathname === '/docs' || location.pathname === '/docs/';
+    }
+    return location.pathname.startsWith(path);
+  };
+
+  const getLinkClassName = (path: string) => {
+    return isActiveLink(path) 
+      ? "text-primary font-medium" 
+      : "text-muted-foreground hover:text-foreground";
+  };
+
   return (
     <AppLayout>
       <PageContainer>
@@ -33,31 +49,31 @@ export function DocsLayout({ children }: DocsLayoutProps) {
                 <div>
                   <h4 className="font-semibold text-sm mb-2 text-foreground">Getting Started</h4>
                   <ul className="space-y-1 text-sm">
-                    <li><a href="/docs" className="text-primary font-medium">Overview</a></li>
-                    <li><a href="/docs/quick-start" className="text-muted-foreground hover:text-foreground">Quick Start</a></li>
-                    <li><a href="/docs/authentication" className="text-muted-foreground hover:text-foreground">Authentication</a></li>
-                    <li><a href="/docs/rate-limits" className="text-muted-foreground hover:text-foreground">Rate Limits</a></li>
+                    <li><Link to="/docs" className={getLinkClassName('/docs')}>Overview</Link></li>
+                    <li><Link to="/docs/quick-start" className={getLinkClassName('/docs/quick-start')}>Quick Start</Link></li>
+                    <li><Link to="/docs/authentication" className={getLinkClassName('/docs/authentication')}>Authentication</Link></li>
+                    <li><Link to="/docs/rate-limits" className={getLinkClassName('/docs/rate-limits')}>Rate Limits</Link></li>
                   </ul>
                 </div>
                 
                 <div>
                   <h4 className="font-semibold text-sm mb-2 text-foreground">API Reference</h4>
                   <ul className="space-y-1 text-sm">
-                    <li><a href="/docs/fundraisers" className="text-muted-foreground hover:text-foreground">Fundraisers</a></li>
-                    <li><a href="/docs/categories" className="text-muted-foreground hover:text-foreground">Categories</a></li>
-                    <li><a href="/docs/profiles" className="text-muted-foreground hover:text-foreground">User Profiles</a></li>
-                    <li><a href="/docs/organizations" className="text-muted-foreground hover:text-foreground">Organizations</a></li>
-                    <li><a href="/docs/donations" className="text-muted-foreground hover:text-foreground">Donations</a></li>
-                    <li><a href="/docs/search" className="text-muted-foreground hover:text-foreground">Search</a></li>
+                    <li><Link to="/docs/fundraisers" className={getLinkClassName('/docs/fundraisers')}>Fundraisers</Link></li>
+                    <li><Link to="/docs/categories" className={getLinkClassName('/docs/categories')}>Categories</Link></li>
+                    <li><Link to="/docs/profiles" className={getLinkClassName('/docs/profiles')}>User Profiles</Link></li>
+                    <li><Link to="/docs/organizations" className={getLinkClassName('/docs/organizations')}>Organizations</Link></li>
+                    <li><Link to="/docs/donations" className={getLinkClassName('/docs/donations')}>Donations</Link></li>
+                    <li><Link to="/docs/search" className={getLinkClassName('/docs/search')}>Search</Link></li>
                   </ul>
                 </div>
                 
                 <div>
                   <h4 className="font-semibold text-sm mb-2 text-foreground">Examples</h4>
                   <ul className="space-y-1 text-sm">
-                    <li><a href="/docs/javascript-examples" className="text-muted-foreground hover:text-foreground">JavaScript</a></li>
-                    <li><a href="/docs/curl-examples" className="text-muted-foreground hover:text-foreground">cURL</a></li>
-                    <li><a href="/docs/explorer" className="text-muted-foreground hover:text-foreground">API Explorer</a></li>
+                    <li><Link to="/docs/javascript-examples" className={getLinkClassName('/docs/javascript-examples')}>JavaScript</Link></li>
+                    <li><Link to="/docs/curl-examples" className={getLinkClassName('/docs/curl-examples')}>cURL</Link></li>
+                    <li><Link to="/docs/explorer" className={getLinkClassName('/docs/explorer')}>API Explorer</Link></li>
                   </ul>
                 </div>
               </nav>
