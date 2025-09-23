@@ -1,14 +1,14 @@
 /**
- * Polished fundraiser card with enhanced visual hierarchy and design
- * Implements Phase 4 improvements: better CTA placement, typography, and spacing
+ * Unified fundraiser card with consistent sizing across the application
+ * Standardized dimensions and content areas for perfect grid alignment
  */
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { EnhancedProgress } from './EnhancedProgress';
-import { EnhancedButton } from './EnhancedButton';
+import { Progress } from '@/components/ui/progress';
+import { EnhancedButton } from '@/components/enhanced/EnhancedButton';
 import { HighlightedTitle, HighlightedDescription, HighlightedLabel } from '@/components/search/HighlightedText';
 import { useCategories } from '@/hooks/useCategories';
 import { hapticFeedback } from '@/lib/utils/mobile';
@@ -27,7 +27,7 @@ import {
   Zap
 } from 'lucide-react';
 
-interface PolishedFundraiserCardProps {
+interface UnifiedFundraiserCardProps {
   id: string;
   title: string;
   summary: string;
@@ -53,9 +53,10 @@ interface PolishedFundraiserCardProps {
   onShare?: () => void;
   onBookmark?: () => void;
   onLike?: () => void;
+  variant?: 'default' | 'polished';
 }
 
-export function PolishedFundraiserCard({
+export function UnifiedFundraiserCard({
   id,
   title,
   summary,
@@ -75,13 +76,14 @@ export function PolishedFundraiserCard({
   searchQuery,
   isFeatured = false,
   isTrending = false,
-  trustScore = 85,
+  trustScore,
   onClick,
   onDonate,
   onShare,
   onBookmark,
   onLike,
-}: PolishedFundraiserCardProps) {
+  variant = 'default',
+}: UnifiedFundraiserCardProps) {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -177,16 +179,20 @@ export function PolishedFundraiserCard({
   return (
     <Card 
       className={cn(
+        // Fixed height and consistent styling
         "group cursor-pointer overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 border-0 shadow-lg bg-card/50 backdrop-blur-sm",
+        // CRITICAL: Fixed minimum height for consistent grid
+        "min-h-[580px] flex flex-col",
         isFeatured && "ring-2 ring-primary/20 shadow-primary/5",
         isTrending && "bg-gradient-to-br from-card to-primary/5"
       )}
       onClick={handleCardClick}
     >
-      {/* Image Section with Enhanced Overlay */}
-      <div className="relative overflow-hidden">
+      {/* Image Section - Fixed Height */}
+      <div className="relative overflow-hidden flex-shrink-0">
         <div className={cn(
-          "h-56 bg-muted transition-all duration-700",
+          // CRITICAL: Fixed image height for consistency
+          "h-48 bg-muted transition-all duration-700",
           imageLoaded ? "bg-transparent" : "animate-pulse"
         )}>
           <img
@@ -201,11 +207,8 @@ export function PolishedFundraiserCard({
           />
         </div>
         
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        
-        {/* Hover Actions */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-100 scale-95">
+        {/* Hover Overlay */}
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
           <div className="flex gap-3">
             <Button
               size="sm"
@@ -241,9 +244,9 @@ export function PolishedFundraiserCard({
         </div>
 
         {/* Top Badges */}
-        <div className="absolute top-4 left-4 flex flex-wrap gap-2 max-w-[calc(100%-2rem)]">
+        <div className="absolute top-3 left-3 flex flex-wrap gap-2 max-w-[calc(100%-6rem)]">
           <Badge className={cn(
-            "font-semibold shadow-md backdrop-blur-sm border-0",
+            "font-semibold shadow-md backdrop-blur-sm border-0 text-xs",
             categoryInfo.colorClass
           )}>
             <span className="mr-1">{categoryInfo.emoji}</span>
@@ -252,7 +255,7 @@ export function PolishedFundraiserCard({
           
           {urgencyConfig && (
             <Badge className={cn(
-              "font-semibold shadow-md border-0 flex items-center gap-1",
+              "font-semibold shadow-md border-0 flex items-center gap-1 text-xs",
               urgencyConfig.color
             )}>
               {urgencyConfig.icon}
@@ -261,7 +264,7 @@ export function PolishedFundraiserCard({
           )}
           
           {isTrending && (
-            <Badge className="bg-gradient-to-r from-primary to-accent text-white font-semibold shadow-md border-0 flex items-center gap-1">
+            <Badge className="bg-gradient-to-r from-primary to-accent text-white font-semibold shadow-md border-0 flex items-center gap-1 text-xs">
               <TrendingUp className="h-3 w-3" />
               Trending
             </Badge>
@@ -269,16 +272,16 @@ export function PolishedFundraiserCard({
         </div>
 
         {/* Top Right Badges */}
-        <div className="absolute top-4 right-4 flex flex-col gap-2">
+        <div className="absolute top-3 right-3 flex flex-col gap-2">
           {isVerified && (
-            <Badge className="bg-primary text-primary-foreground border-0 flex items-center gap-1 shadow-md">
+            <Badge className="bg-primary text-primary-foreground border-0 flex items-center gap-1 shadow-md text-xs">
               <Verified className="h-3 w-3" />
               Verified
             </Badge>
           )}
           
           {isFeatured && (
-            <Badge className="bg-gradient-to-r from-accent to-secondary text-white border-0 flex items-center gap-1 shadow-md">
+            <Badge className="bg-gradient-to-r from-accent to-secondary text-white border-0 flex items-center gap-1 shadow-md text-xs">
               <Award className="h-3 w-3" />
               Featured
             </Badge>
@@ -286,13 +289,13 @@ export function PolishedFundraiserCard({
         </div>
       </div>
       
-      {/* Content Section */}
-      <CardContent className="p-6 space-y-5">
-        {/* Creator Info */}
-        <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10 ring-2 ring-border shadow-sm">
+      {/* Content Section - Flexible with fixed sections */}
+      <CardContent className="p-5 flex flex-col flex-grow">
+        {/* Creator Info - Fixed Height */}
+        <div className="flex items-center gap-3 h-12 flex-shrink-0 mb-3">
+          <Avatar className="h-8 w-8 flex-shrink-0">
             <AvatarImage src={avatarUrl} />
-            <AvatarFallback className="text-sm font-medium">
+            <AvatarFallback className="text-xs font-medium">
               {organizationName?.charAt(0) || 'U'}
             </AvatarFallback>
           </Avatar>
@@ -304,98 +307,119 @@ export function PolishedFundraiserCard({
                 className="text-sm font-semibold text-foreground truncate"
               />
               {isOrganization && (
-                <Badge variant="outline" className="text-xs px-2 py-0.5 font-medium">
+                <Badge variant="outline" className="text-xs px-1 py-0 font-medium flex-shrink-0">
                   <Shield className="h-3 w-3 mr-1" />
                   Org
                 </Badge>
               )}
             </div>
             {location && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                <MapPin className="h-3 w-3" />
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <MapPin className="h-3 w-3 flex-shrink-0" />
                 <span className="truncate">{location}</span>
               </div>
             )}
           </div>
           {trustScore && (
-            <div className="text-right">
-              <div className="text-xs text-muted-foreground">Trust Score</div>
+            <div className="text-right flex-shrink-0">
+              <div className="text-xs text-muted-foreground">Trust</div>
               <div className="text-sm font-bold text-success">{trustScore}%</div>
             </div>
           )}
         </div>
 
-        {/* Title and Description */}
-        <div className="space-y-3">
-          <HighlightedTitle
-            text={title}
-            searchQuery={searchQuery || ''}
-            className="text-xl font-bold line-clamp-2 leading-tight group-hover:text-primary transition-colors duration-300"
-          />
-          <HighlightedDescription
-            text={summary}
-            searchQuery={searchQuery || ''}
-            className="text-sm text-muted-foreground line-clamp-2 leading-relaxed"
-          />
-        </div>
-        
-        {/* Progress Section */}
-        <EnhancedProgress
-          value={progressPercentage}
-          raisedAmount={raisedAmount}
-          goalAmount={goalAmount}
-          currency={currency}
-          donorCount={donorCount}
-          daysLeft={daysLeft}
-          variant="detailed"
-          size="md"
-          animated={true}
-          className="my-5"
-        />
-
-        {/* CTA Section */}
-        <div className="flex gap-3 pt-2">
-          <EnhancedButton
-            variant="cta"
-            prominence="primary"
-            icon="arrow"
-            gradient={isFeatured}
-            onClick={handleDonate}
-            className="flex-1"
-          >
-            Donate Now
-          </EnhancedButton>
-          
-          <Button
-            variant="outline"
-            size="default"
-            onClick={handleCardClick}
-            className="px-6 font-medium hover:bg-accent/50 transition-colors"
-          >
-            View Details
-          </Button>
-        </div>
-
-        {/* Additional Stats */}
-        <div className="flex justify-between items-center pt-3 border-t border-border/50 text-xs text-muted-foreground">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              <Users className="h-3 w-3" />
-              <span>{donorCount} supporter{donorCount !== 1 ? 's' : ''}</span>
-            </div>
-            
-            {daysLeft !== undefined && (
-              <div className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                <span>
-                  {daysLeft > 0 ? `${daysLeft} days left` : 'Campaign ended'}
-                </span>
-              </div>
-            )}
+        {/* Title and Description - Fixed Height */}
+        <div className="flex-shrink-0 mb-4">
+          {/* Fixed height title area */}
+          <div className="h-12 mb-2">
+            <HighlightedTitle
+              text={title}
+              searchQuery={searchQuery || ''}
+              className="text-lg font-bold line-clamp-2 leading-tight group-hover:text-primary transition-colors duration-300"
+            />
           </div>
           
-          <div className="text-xs font-medium text-primary">
-            {Math.round(progressPercentage)}% funded
+          {/* Fixed height description area */}
+          <div className="h-10">
+            <HighlightedDescription
+              text={summary}
+              searchQuery={searchQuery || ''}
+              className="text-sm text-muted-foreground line-clamp-2 leading-relaxed"
+            />
+          </div>
+        </div>
+        
+        {/* Progress Section - Fixed Height */}
+        <div className="flex-shrink-0 mb-4">
+          <Progress value={progressPercentage} className="h-2 mb-3" />
+          
+          <div className="flex justify-between items-end h-12">
+            <div>
+              <p className="font-bold text-lg text-foreground leading-tight">
+                {formatAmount(raisedAmount)}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                raised of {formatAmount(goalAmount)}
+              </p>
+            </div>
+            
+            <div className="text-right">
+              <p className="font-semibold text-sm text-foreground leading-tight">
+                {Math.round(progressPercentage)}%
+              </p>
+              <p className="text-xs text-muted-foreground">funded</p>
+            </div>
+          </div>
+        </div>
+
+        {/* CTA Section - Fixed at bottom */}
+        <div className="mt-auto">
+          {variant === 'polished' && onDonate ? (
+            <div className="flex gap-3 mb-3">
+              <EnhancedButton
+                variant="cta"
+                prominence="primary"
+                icon="arrow"
+                gradient={isFeatured}
+                onClick={handleDonate}
+                className="flex-1"
+                size="sm"
+              >
+                Donate Now
+              </EnhancedButton>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCardClick}
+                className="px-4 font-medium hover:bg-accent/50 transition-colors"
+              >
+                View
+              </Button>
+            </div>
+          ) : null}
+
+          {/* Stats Row - Fixed Height */}
+          <div className="flex justify-between items-center pt-2 border-t border-border/50 text-xs text-muted-foreground h-8">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1">
+                <Users className="h-3 w-3 flex-shrink-0" />
+                <span>{donorCount} supporter{donorCount !== 1 ? 's' : ''}</span>
+              </div>
+              
+              {daysLeft !== undefined && (
+                <div className="flex items-center gap-1">
+                  <Clock className="h-3 w-3 flex-shrink-0" />
+                  <span>
+                    {daysLeft > 0 ? `${daysLeft} days left` : 'Campaign ended'}
+                  </span>
+                </div>
+              )}
+            </div>
+            
+            <div className="text-xs font-medium text-primary flex-shrink-0">
+              {Math.round(progressPercentage)}% funded
+            </div>
           </div>
         </div>
       </CardContent>

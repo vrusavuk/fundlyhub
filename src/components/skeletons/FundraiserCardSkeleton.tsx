@@ -8,85 +8,83 @@ interface FundraiserCardSkeletonProps {
 
 export function FundraiserCardSkeleton({ className, style }: FundraiserCardSkeletonProps) {
   return (
-    <Card className={`group overflow-hidden transition-all duration-300 hover:shadow-lg ${className}`} style={style}>
-      {/* Cover Image Skeleton */}
-      <div className="relative">
+    <Card className={`group overflow-hidden transition-all duration-300 hover:shadow-lg min-h-[580px] flex flex-col ${className}`} style={style}>
+      {/* Cover Image Skeleton - Fixed Height */}
+      <div className="relative flex-shrink-0">
         <SkeletonImage aspectRatio="16/9" className="h-48" />
         
-        {/* Overlay Actions Skeleton */}
-        <div className="absolute top-4 right-4 flex gap-2">
-          <Skeleton variant="button" className="h-8 w-8 rounded-full" />
-          <Skeleton variant="button" className="h-8 w-8 rounded-full" />
-          <Skeleton variant="button" className="h-8 w-8 rounded-full" />
-        </div>
-
         {/* Category Badge Skeleton */}
-        <div className="absolute top-4 left-4">
+        <div className="absolute top-3 left-3 flex gap-2">
           <Skeleton className="h-6 w-20 rounded-full" />
+          <Skeleton className="h-5 w-16 rounded-full" />
         </div>
 
-        {/* Urgency Badge Skeleton */}
-        <div className="absolute bottom-4 left-4">
-          <Skeleton className="h-5 w-16 rounded-full" />
+        {/* Verification Badge Skeleton */}
+        <div className="absolute top-3 right-3">
+          <Skeleton className="h-6 w-16 rounded-full" />
         </div>
       </div>
 
-      <CardContent className="p-6">
-        {/* Creator Info Skeleton */}
-        <div className="flex items-center gap-3 mb-4">
-          <SkeletonAvatar size="sm" />
-          <div className="flex-1">
+      <CardContent className="p-5 flex flex-col flex-grow">
+        {/* Creator Info Skeleton - Fixed Height */}
+        <div className="flex items-center gap-3 h-12 flex-shrink-0 mb-3">
+          <SkeletonAvatar size="sm" className="flex-shrink-0" />
+          <div className="flex-1 min-w-0">
             <Skeleton className="h-4 w-24 mb-1" />
             <Skeleton className="h-3 w-20" />
           </div>
-          <Skeleton className="h-4 w-4 rounded-full" />
+          <Skeleton className="h-8 w-12 rounded flex-shrink-0" />
         </div>
 
-        {/* Title Skeleton */}
-        <div className="mb-3">
-          <SkeletonText 
-            lines={2} 
-            widths={['85%', '60%']}
-            className="h-5 mb-1"
-          />
+        {/* Title and Description Skeleton - Fixed Height */}
+        <div className="flex-shrink-0 mb-4">
+          {/* Title Area - Fixed Height */}
+          <div className="h-12 mb-2">
+            <SkeletonText 
+              lines={2} 
+              widths={['90%', '70%']}
+              className="h-5 mb-1"
+            />
+          </div>
+          
+          {/* Description Area - Fixed Height */}
+          <div className="h-10">
+            <SkeletonText 
+              lines={2} 
+              widths={['100%', '80%']}
+              className="h-4"
+            />
+          </div>
         </div>
 
-        {/* Description Skeleton */}
-        <div className="mb-4">
-          <SkeletonText 
-            lines={2} 
-            widths={['100%', '75%']}
-            className="h-4"
-          />
-        </div>
-
-        {/* Progress Bar Skeleton */}
-        <div className="mb-4">
-          <div className="relative">
+        {/* Progress Section Skeleton - Fixed Height */}
+        <div className="flex-shrink-0 mb-4">
+          <div className="relative mb-3">
             <Skeleton className="h-2 w-full rounded-full" />
             <Skeleton className="absolute top-0 left-0 h-2 w-3/5 rounded-full bg-primary/20" />
           </div>
+          
+          <div className="flex justify-between items-end h-12">
+            <div>
+              <Skeleton className="h-6 w-20 mb-1" />
+              <Skeleton className="h-3 w-16" />
+            </div>
+            <div className="text-right">
+              <Skeleton className="h-6 w-12 mb-1" />
+              <Skeleton className="h-3 w-12" />
+            </div>
+          </div>
         </div>
 
-        {/* Stats Row Skeleton */}
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <Skeleton className="h-6 w-16 mb-1" />
-            <Skeleton className="h-3 w-12" />
-          </div>
-          <div className="text-right">
-            <Skeleton className="h-6 w-20 mb-1" />
-            <Skeleton className="h-3 w-16 ml-auto" />
-          </div>
-        </div>
-
-        {/* Bottom Stats Skeleton */}
-        <div className="flex justify-between items-center text-sm">
-          <div className="flex items-center gap-4">
+        {/* Bottom Stats Skeleton - Fixed at bottom */}
+        <div className="mt-auto">
+          <div className="flex justify-between items-center pt-2 border-t border-border/50 h-8">
+            <div className="flex items-center gap-4">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-4 w-20" />
+            </div>
             <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-4 w-20" />
           </div>
-          <Skeleton className="h-4 w-24" />
         </div>
       </CardContent>
     </Card>

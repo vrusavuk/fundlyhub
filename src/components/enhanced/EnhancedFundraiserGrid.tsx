@@ -3,7 +3,7 @@
  * Implements Phase 4 visual design improvements
  */
 import React, { useState } from 'react';
-import { PolishedFundraiserCard } from './PolishedFundraiserCard';
+import { UnifiedFundraiserCard } from '@/components/cards/UnifiedFundraiserCard';
 import { LoadingState } from '@/components/common/LoadingState';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { EnhancedButton } from './EnhancedButton';
@@ -237,7 +237,7 @@ export function EnhancedFundraiserGrid({
           const isTrending = trendingFundraisers.includes(fundraiser);
           
           return (
-            <PolishedFundraiserCard
+            <UnifiedFundraiserCard
               key={fundraiser.id}
               id={fundraiser.id}
               title={fundraiser.title}
@@ -269,6 +269,7 @@ export function EnhancedFundraiserGrid({
                 // Handle donate action
                 console.log('Donate to:', fundraiser.id);
               }}
+              variant="polished"
             />
           );
         })}

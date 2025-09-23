@@ -1,7 +1,7 @@
 /**
  * Grid component for displaying fundraiser cards with loading and error states
  */
-import { EnhancedFundraiserCard } from '@/components/EnhancedFundraiserCard';
+import { UnifiedFundraiserCard } from '@/components/cards/UnifiedFundraiserCard';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { LoadingState } from '@/components/common/LoadingState';
 import { AccessibleButton } from '@/components/accessibility/AccessibleButton';
@@ -68,7 +68,7 @@ export function FundraiserGrid({
           
           return (
             <div key={fundraiser.id} role="gridcell">
-              <EnhancedFundraiserCard
+              <UnifiedFundraiserCard
                 id={fundraiser.id}
                 title={fundraiser.title}
                 summary={fundraiser.summary || ""}
@@ -86,6 +86,7 @@ export function FundraiserGrid({
                 isOrganization={fundraiser.org_id ? true : false}
                 searchQuery={searchQuery}
                 onClick={() => onCardClick(fundraiser.slug)}
+                variant="default"
               />
             </div>
           );
