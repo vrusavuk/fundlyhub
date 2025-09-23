@@ -17,8 +17,8 @@ export function DocsLayout({ children }: DocsLayoutProps) {
         <DocsSidebar />
         
         {/* Main Content */}
-        <div className="flex-1 flex">
-          <main className="flex-1 max-w-4xl mx-auto p-8">
+        <div className="flex-1 flex ml-64">
+          <main className="flex-1 max-w-4xl mx-auto p-8 pt-24">
             {children}
           </main>
           
