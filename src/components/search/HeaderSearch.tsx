@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { EnhancedSearchDropdown } from "./EnhancedSearchDropdown";
+import { SearchBackdrop } from "./SearchBackdrop";
 import { useEnhancedSearch } from "@/hooks/useEnhancedSearch";
 import { useSearchSuggestions } from "@/hooks/useSearchSuggestions";
 import { useGlobalSearch } from "@/contexts/SearchContext";
@@ -184,7 +185,15 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="absolute top-0 left-0 right-0 z-50 bg-background/98 backdrop-blur-md border-b border-border shadow-2xl">
+    <>
+      {/* Search Backdrop */}
+      <SearchBackdrop 
+        show={showDropdown} 
+        onClick={() => setShowDropdown(false)} 
+      />
+      
+      {/* Search Header */}
+      <div className="absolute top-0 left-0 right-0 z-50 bg-background border-b border-border shadow-strong">
       <div className="w-full px-3 sm:px-4 md:px-6">
         <div className="relative" ref={containerRef}>
           {/* Search Input */}
@@ -257,6 +266,7 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
           />
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

@@ -93,8 +93,9 @@ export function EnhancedSearchDropdown({
     <Card
       ref={dropdownRef}
       className={cn(
-        "absolute top-full left-0 right-0 mt-2 shadow-2xl border-2 z-50",
-        "bg-background/98 backdrop-blur-md",
+        "absolute top-full left-0 right-0 mt-2 z-50",
+        "bg-background border border-border/50 shadow-strong",
+        "backdrop-blur-lg",
         "animate-in fade-in-0 slide-in-from-top-2 duration-200",
         maxHeight,
         className
