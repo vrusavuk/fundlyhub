@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { PageContainer } from '@/components/ui/PageContainer';
@@ -6,18 +6,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DonationWidget } from '@/components/DonationWidget';
 import { RecentDonors } from '@/components/fundraisers/RecentDonors';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Heart, Share2, Flag, Calendar, Users, MapPin, Verified, Clock, Facebook, Twitter, Copy } from 'lucide-react';
-import { formatCurrency, formatProgress } from '@/lib/utils/formatters';
+import { Share2, Calendar, MapPin, Verified, Facebook, Twitter, Copy } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils/formatters';
 import { FollowButton } from '@/components/profile/FollowButton';
 import { SmartBreadcrumb } from '@/components/navigation/SmartBreadcrumb';
 import { SmartBackButton } from '@/components/navigation/SmartBackButton';
@@ -84,95 +82,83 @@ export default function FundraiserDetail() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (slug) {
-      fetchFundraiser();
-      fetchDonations();
-      fetchComments();
+  const formatDate = useCallback((dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  }, []);
+
+  const fetchFundraiserData = useCallback(async () => {
+    if (!slug) return;
+    
+    try {
+      // Fetch fundraiser details
+      const { data: fundraiserData, error: fundraiserError } = await supabase
+        .from('fundraisers')
+        .select(`
+          *,
+          profiles!fundraisers_owner_user_id_fkey(id, name),
+          organizations(id, legal_name, dba_name)
+        `)
+        .eq('slug', slug)
+        .single();
+
+      if (fundraiserError) {
+        console.error('Error fetching fundraiser:', fundraiserError);
+        setLoading(false);
+        return;
+      }
+
+      setFundraiser(fundraiserData);
+
+      // Fetch donations and comments in parallel
+      const [donationsResponse, commentsResponse] = await Promise.all([
+        supabase
+          .from('donations')
+          .select(`
+            *,
+            profiles!donations_donor_user_id_fkey(name)
+          `)
+          .eq('fundraiser_id', fundraiserData.id)
+          .eq('payment_status', 'paid')
+          .order('created_at', { ascending: false }),
+        
+        supabase
+          .from('comments')
+          .select(`
+            *,
+            profiles!comments_author_id_fkey(name)
+          `)
+          .eq('fundraiser_id', fundraiserData.id)
+          .order('created_at', { ascending: false })
+      ]);
+
+      if (donationsResponse.error) {
+        console.error('Error fetching donations:', donationsResponse.error);
+      } else {
+        setDonations(donationsResponse.data || []);
+        const total = donationsResponse.data?.reduce((sum, donation) => sum + Number(donation.amount), 0) || 0;
+        setTotalRaised(total);
+      }
+
+      if (commentsResponse.error) {
+        console.error('Error fetching comments:', commentsResponse.error);
+      } else {
+        setComments(commentsResponse.data || []);
+      }
+
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching fundraiser data:', error);
+      setLoading(false);
     }
   }, [slug]);
 
-  const fetchFundraiser = async () => {
-    if (!slug) return;
-    
-    const { data, error } = await supabase
-      .from('fundraisers')
-      .select(`
-        *,
-        profiles!fundraisers_owner_user_id_fkey(id, name),
-        organizations(id, legal_name, dba_name)
-      `)
-      .eq('slug', slug)
-      .single();
-
-    if (error) {
-      console.error('Error fetching fundraiser:', error);
-      setLoading(false);
-      return;
-    }
-
-    setFundraiser(data);
-    setLoading(false);
-  };
-
-  const fetchDonations = async () => {
-    if (!slug) return;
-    
-    const { data: fundraiserData } = await supabase
-      .from('fundraisers')
-      .select('id')
-      .eq('slug', slug)
-      .single();
-    
-    if (!fundraiserData) return;
-
-    const { data, error } = await supabase
-      .from('donations')
-      .select(`
-        *,
-        profiles!donations_donor_user_id_fkey(name)
-      `)
-      .eq('fundraiser_id', fundraiserData.id)
-      .eq('payment_status', 'paid')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching donations:', error);
-      return;
-    }
-
-    setDonations(data || []);
-    const total = data?.reduce((sum, donation) => sum + Number(donation.amount), 0) || 0;
-    setTotalRaised(total);
-  };
-
-  const fetchComments = async () => {
-    if (!slug) return;
-    
-    const { data: fundraiserData } = await supabase
-      .from('fundraisers')
-      .select('id')
-      .eq('slug', slug)
-      .single();
-    
-    if (!fundraiserData) return;
-
-    const { data, error } = await supabase
-      .from('comments')
-      .select(`
-        *,
-        profiles!comments_author_id_fkey(name)
-      `)
-      .eq('fundraiser_id', fundraiserData.id)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching comments:', error);
-      return;
-    }
-
-    setComments(data || []);
-  };
+  useEffect(() => {
+    fetchFundraiserData();
+  }, [fetchFundraiserData]);
 
   const handleDonate = async (amount: number, tipAmount: number = 0) => {
     if (!fundraiser || !user) return;
@@ -197,7 +183,7 @@ export default function FundraiserDetail() {
           amount: amount,
           currency: 'USD',
           tip_amount: tipAmount,
-          payment_status: 'paid', // In real app, this would be handled by payment processor
+          payment_status: 'paid',
           payment_provider: 'stripe',
         });
 
@@ -208,27 +194,24 @@ export default function FundraiserDetail() {
           variant: "destructive",
         });
       } else {
-        console.log('Donation successful, refreshing data and dispatching event');
         toast({
           title: "Thank you!",
           description: "Your donation has been processed successfully.",
         });
-        // Refresh donations to update the display
-        await fetchDonations();
         
-        // Trigger a page refresh event to update analytics across the site
-        console.log('Dispatching donationMade event');
+        // Refresh data
+        await fetchFundraiserData();
+        
+        // Trigger events for analytics
         window.dispatchEvent(new CustomEvent('donationMade'));
         
-        // Also force a manual refresh of the campaign stats page
         setTimeout(() => {
           if (window.location.pathname === '/campaigns') {
-            console.log('On campaigns page, forcing reload');
             window.location.reload();
           }
         }, 1500);
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "An error occurred",
         description: "Please try again later.",
@@ -266,9 +249,9 @@ export default function FundraiserDetail() {
           description: "Your comment has been posted successfully.",
         });
         setNewComment('');
-        fetchComments(); // Refresh comments
+        await fetchFundraiserData();
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "An error occurred",
         description: "Please try again later.",
@@ -279,22 +262,25 @@ export default function FundraiserDetail() {
     }
   };
 
-  const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
+  const handleShare = useCallback((platform: string) => {
+    const url = `${window.location.origin}/fundraiser/${fundraiser?.slug}`;
+    const text = `Help support: ${fundraiser?.title}`;
+    
+    switch (platform) {
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+        break;
+      case 'twitter':
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+        break;
+      case 'copy':
+        navigator.clipboard.writeText(url).then(
+          () => toast({ title: "Link copied!", description: "Fundraiser link copied to clipboard" }),
+          () => toast({ title: "Failed to copy", variant: "destructive" })
+        );
+        break;
+    }
+  }, [fundraiser, toast]);
 
   if (loading) {
     return (
@@ -332,29 +318,29 @@ export default function FundraiserDetail() {
             </div>
 
             {/* Title and Info */}
-          <div className="space-y-3 sm:space-y-4">
-            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-              <Badge variant="secondary" className="flex items-center gap-1">
-                {fundraiser.category}
-              </Badge>
-              {fundraiser.location && (
-                <Badge variant="outline" className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3" />
-                  {fundraiser.location}
+            <div className="space-y-3 sm:space-y-4">
+              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  {fundraiser.category}
                 </Badge>
-              )}
-              <Badge variant="outline" className="flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                Created {formatDate(fundraiser.created_at)}
-              </Badge>
-            </div>
-            
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight">{fundraiser.title}</h1>
-            
-            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">{fundraiser.summary}</p>
-            
-            <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
-                {/* Campaign Organizer - Clickable */}
+                {fundraiser.location && (
+                  <Badge variant="outline" className="flex items-center gap-1">
+                    <MapPin className="h-3 w-3" />
+                    {fundraiser.location}
+                  </Badge>
+                )}
+                <Badge variant="outline" className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  Created {formatDate(fundraiser.created_at)}
+                </Badge>
+              </div>
+              
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight">{fundraiser.title}</h1>
+              
+              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">{fundraiser.summary}</p>
+              
+              <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+                {/* Campaign Organizer */}
                 <Link 
                   to={`/profile/${fundraiser.owner_user_id}`}
                   className="flex items-center gap-3 hover:bg-muted/50 rounded-lg p-2 transition-colors group"
@@ -385,7 +371,7 @@ export default function FundraiserDetail() {
                   />
                 )}
 
-                {/* Organization Info & Follow Button - Clickable */}
+                {/* Organization Info & Follow Button */}
                 {fundraiser.organizations && (
                   <>
                     <Link 
@@ -436,17 +422,17 @@ export default function FundraiserDetail() {
               />
             </div>
 
-          {/* Tabs for Story, Updates, Comments */}
-          <Tabs defaultValue="story" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-4 sm:mb-6">
-              <TabsTrigger value="story" className="text-sm">Story</TabsTrigger>
-              <TabsTrigger value="updates" className="text-sm">Updates</TabsTrigger>
-              <TabsTrigger value="comments" className="text-sm">Comments ({comments.length})</TabsTrigger>
-            </TabsList>
-              
+            {/* Tabs for Story, Updates, Comments */}
+            <Tabs defaultValue="story" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 mb-4 sm:mb-6">
+                <TabsTrigger value="story" className="text-sm">Story</TabsTrigger>
+                <TabsTrigger value="updates" className="text-sm">Updates</TabsTrigger>
+                <TabsTrigger value="comments" className="text-sm">Comments ({comments.length})</TabsTrigger>
+              </TabsList>
+                
               <TabsContent value="story" className="mt-4 sm:mt-6 space-y-4 sm:space-y-6">
-              <Card>
-                <CardContent className="p-4 sm:p-6">
+                <Card>
+                  <CardContent className="p-4 sm:p-6">
                     <div 
                       className="prose max-w-none"
                       dangerouslySetInnerHTML={{ __html: fundraiser.story_html }}
@@ -454,7 +440,7 @@ export default function FundraiserDetail() {
                   </CardContent>
                 </Card>
 
-                {/* Share Section - After Story */}
+                {/* Share Section */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -466,10 +452,7 @@ export default function FundraiserDetail() {
                     <div className="flex flex-wrap gap-2 sm:gap-3">
                       <Button
                         variant="outline"
-                        onClick={() => {
-                          const url = `${window.location.origin}/fundraiser/${fundraiser.slug}`;
-                          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
-                        }}
+                        onClick={() => handleShare('facebook')}
                         className="flex items-center gap-2 hover-scale"
                       >
                         <Facebook className="h-4 w-4" />
@@ -478,11 +461,7 @@ export default function FundraiserDetail() {
 
                       <Button
                         variant="outline"
-                        onClick={() => {
-                          const url = `${window.location.origin}/fundraiser/${fundraiser.slug}`;
-                          const text = `Help support: ${fundraiser.title}`;
-                          window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
-                        }}
+                        onClick={() => handleShare('twitter')}
                         className="flex items-center gap-2 hover-scale"
                       >
                         <Twitter className="h-4 w-4" />
@@ -491,14 +470,7 @@ export default function FundraiserDetail() {
 
                       <Button
                         variant="outline"
-                        onClick={async () => {
-                          try {
-                            await navigator.clipboard.writeText(`${window.location.origin}/fundraiser/${fundraiser.slug}`);
-                            toast({ title: "Link copied!", description: "Fundraiser link copied to clipboard" });
-                          } catch (err) {
-                            toast({ title: "Failed to copy", variant: "destructive" });
-                          }
-                        }}
+                        onClick={() => handleShare('copy')}
                         className="flex items-center gap-2 hover-scale"
                       >
                         <Copy className="h-4 w-4" />
@@ -508,8 +480,10 @@ export default function FundraiserDetail() {
                   </CardContent>
                 </Card>
 
-                {/* Recent Donors - After Story */}
-                <RecentDonors donations={donations} />
+                {/* Recent Donors - Desktop only in story tab */}
+                <div className="lg:hidden">
+                  <RecentDonors donations={donations} />
+                </div>
               </TabsContent>
               
               <TabsContent value="updates" className="mt-6">
@@ -570,8 +544,8 @@ export default function FundraiserDetail() {
             </Tabs>
           </div>
 
-          {/* Sidebar - Desktop Only - Floating Donation Widget */}
-          <div className="hidden lg:block">
+          {/* Sidebar - Desktop Only */}
+          <div className="hidden lg:block lg:col-span-1 space-y-4 sm:space-y-6">
             <div className="sticky top-20 z-10">
               <DonationWidget
                 fundraiserId={fundraiser.id}
@@ -589,36 +563,9 @@ export default function FundraiserDetail() {
             </div>
 
             {/* Recent Donors */}
-            <RecentDonors
-              donations={donations}
-            />
+            <RecentDonors donations={donations} />
           </div>
-
-        {/* Sidebar */}
-        <div className="lg:col-span-1 space-y-4 sm:space-y-6">
-          {/* Desktop donation widget */}
-          <div className="hidden lg:block">
-            <DonationWidget
-              fundraiserId={fundraiser.id}
-              title={fundraiser.title}
-              creatorName={fundraiser.profiles?.name || 'Anonymous'}
-              goalAmount={fundraiser.goal_amount}
-              raisedAmount={totalRaised}
-              donorCount={donations.length}
-              progressPercentage={progressPercentage}
-              currency={fundraiser.currency}
-              onDonate={handleDonate}
-              loading={donating}
-              isFloating={true}
-            />
-          </div>
-
-          {/* Recent Donors */}
-          <RecentDonors
-            donations={donations}
-          />
         </div>
-      </div>
 
         {/* Fixed Mobile Donation Button */}
         <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border shadow-lg">
