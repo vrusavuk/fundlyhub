@@ -165,6 +165,7 @@ export function FundraiserGrid({
         )}
         role="grid"
         aria-label={`${fundraisers.length} fundraiser${fundraisers.length === 1 ? '' : 's'} found`}
+        data-campaign-grid
       >
         {fundraisers.map((fundraiser) => {
           const fundraiserStats = stats[fundraiser.id] || {};

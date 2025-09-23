@@ -52,7 +52,18 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
       text: 'Try Search',
       onClick: () => {
         const searchTrigger = document.querySelector('[data-search-trigger]') as HTMLElement;
-        searchTrigger?.click();
+        if (searchTrigger) {
+          searchTrigger.click();
+          setTimeout(() => {
+            const searchInput = document.querySelector('input[placeholder*="Search"]') as HTMLInputElement;
+            if (searchInput) {
+              searchInput.value = 'education';
+              const event = new Event('input', { bubbles: true });
+              searchInput.dispatchEvent(event);
+              searchInput.focus();
+            }
+          }, 200);
+        }
       }
     }
   },

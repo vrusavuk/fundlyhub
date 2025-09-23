@@ -164,6 +164,21 @@
     @apply bg-primary/30 text-primary-foreground;
     background: linear-gradient(90deg, hsl(var(--primary) / 0.25), hsl(var(--primary) / 0.35));
   }
+
+  /* Onboarding highlight style */
+  .onboarding-highlight {
+    @apply !ring-4 !ring-primary/50 !ring-offset-2 !ring-offset-background z-50 relative;
+    animation: onboarding-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes onboarding-pulse {
+    0%, 100% {
+      ring-color: hsl(var(--primary) / 0.5);
+    }
+    50% {
+      ring-color: hsl(var(--primary) / 0.8);
+    }
+  }
 }
 
 @layer components {

@@ -44,6 +44,7 @@ export function SearchTrigger({
       className={`hidden md:flex min-h-[44px] min-w-[44px] touch-target ${className || ''}`}
       onClick={handleSearchClick}
       title="Search (Ctrl+K)"
+      data-search-trigger
     >
       <Search className="h-5 w-5" />
     </Button>
