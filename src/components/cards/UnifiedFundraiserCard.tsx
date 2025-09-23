@@ -372,7 +372,7 @@ export function UnifiedFundraiserCard({
           </div>
           
           {/* Stats Row - Grouped with progress */}
-          <div className="flex justify-between items-center pt-2 border-t border-border/50 text-xs text-muted-foreground h-8">
+          <div className="flex justify-between items-center pt-2 pb-4 border-t border-border/50 text-xs text-muted-foreground">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
                 <Users className="h-3 w-3 flex-shrink-0" />
