@@ -152,16 +152,17 @@
     display: none;
   }
 
-  /* Search highlighting styles - consistent with search results page */
+  /* Enhanced search highlighting with better contrast */
   mark,
   .search-highlight {
-    @apply bg-yellow-200 text-yellow-900 rounded-sm px-0.5;
-    font-weight: inherit;
+    @apply bg-primary/20 text-primary font-medium px-1 py-0.5 rounded-sm;
+    background: linear-gradient(90deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.25));
   }
 
   .dark mark,
   .dark .search-highlight {
-    @apply bg-yellow-800/30 text-yellow-200;
+    @apply bg-primary/30 text-primary-foreground;
+    background: linear-gradient(90deg, hsl(var(--primary) / 0.25), hsl(var(--primary) / 0.35));
   }
 }
 

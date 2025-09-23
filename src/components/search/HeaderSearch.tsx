@@ -2,32 +2,14 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
-import { SearchResultItem } from "./SearchResultItem";
+import { EnhancedSearchDropdown } from "./EnhancedSearchDropdown";
 import { useEnhancedSearch } from "@/hooks/useEnhancedSearch";
+import { useSearchSuggestions } from "@/hooks/useSearchSuggestions";
 import { useGlobalSearch } from "@/contexts/SearchContext";
-import { Search, X, ArrowRight, Heart, User, Building2 } from "lucide-react";
-
-const getTypeIcon = (type: string) => {
-  switch (type) {
-    case 'campaign': return <Heart className="h-3 w-3" />;
-    case 'user': return <User className="h-3 w-3" />;
-    case 'organization': return <Building2 className="h-3 w-3" />;
-    default: return <Heart className="h-3 w-3" />;
-  }
-};
-
-const getTypeColor = (type: string) => {
-  switch (type) {
-    case 'campaign': return 'bg-accent/10 text-accent';
-    case 'user': return 'bg-primary/10 text-primary';
-    case 'organization': return 'bg-secondary text-secondary-foreground';
-    default: return 'bg-muted text-muted-foreground';
-  }
-};
+import { SearchSuggestion } from "@/lib/services/searchSuggestions.service";
+import { hapticFeedback } from "@/lib/utils/mobile";
+import { Search, X } from "lucide-react";
 
 interface HeaderSearchProps {
   isOpen: boolean;
@@ -38,7 +20,7 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
   const [query, setQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { setSearchQuery, clearSearch, searchQuery: globalSearchQuery } = useGlobalSearch();
@@ -48,26 +30,29 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
     enabled: !!query && query.length >= 2
   });
 
+  const { addRecentSearch, trackSearch } = useSearchSuggestions({
+    query,
+    enabled: showDropdown
+  });
+
   const isOnCampaignsPage = location.pathname === '/campaigns';
   const isOnSearchPage = location.pathname === '/search';
   const isOnIntegratedSearchPage = isOnCampaignsPage || isOnSearchPage;
   
-  // On campaigns page, show summary notifications instead of individual results
-  // On search page, don't show dropdown at all since results are on the page
+  // Show dropdown unless on search page where results are displayed inline
   const shouldShowDropdown = !isOnSearchPage;
   
-  // Get counts for different result types
+  // Get counts for different result types for campaigns page summary
   const campaignResults = results.filter(r => r.type === 'campaign');
   const userResults = results.filter(r => r.type === 'user');
   const organizationResults = results.filter(r => r.type === 'organization');
-  
-  const dropdownResults = isOnCampaignsPage 
-    ? [] // Don't show individual results on campaigns page
-    : results.slice(0, 5);
 
   useEffect(() => {
     if (isOpen) {
-      inputRef.current?.focus();
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+      
       // Sync with global search query when opening
       if (isOnIntegratedSearchPage && globalSearchQuery) {
         setQuery(globalSearchQuery);
@@ -75,9 +60,10 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
     }
   }, [isOpen, isOnIntegratedSearchPage, globalSearchQuery]);
 
+  // Handle click outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setShowDropdown(false);
       }
     };
@@ -107,20 +93,22 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
       }
     }
     
-    // On campaigns page, only show dropdown if there are user/org results
-    // Use a timeout to ensure results are calculated first
-    setTimeout(() => {
-      const showDropdownCondition = isOnCampaignsPage 
-        ? value.length >= 2 && shouldShowDropdown && (userResults.length > 0 || organizationResults.length > 0)
-        : value.length >= 2 && shouldShowDropdown;
-      
-      setShowDropdown(showDropdownCondition);
-    }, 100);
+    // Show dropdown when user types
+    setShowDropdown(shouldShowDropdown && value.length >= 0);
+    
+    // Haptic feedback for mobile
+    if (value.length > 0) {
+      hapticFeedback.light();
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
+      // Add to recent searches and track
+      addRecentSearch(query.trim());
+      trackSearch(query.trim(), results.length);
+      
       if (isOnSearchPage) {
         // Already on search page, just update the query
         setSearchQuery(query);
@@ -129,25 +117,56 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
       } else {
         // Navigate to search page
         navigate(`/search?q=${encodeURIComponent(query.trim())}`);
-        handleClose();
       }
+      
+      handleClose();
+      hapticFeedback.medium();
     }
   };
 
+  const handleSuggestionSelect = (suggestion: SearchSuggestion) => {
+    const selectedQuery = suggestion.text;
+    setQuery(selectedQuery);
+    
+    // Add to recent searches and track
+    addRecentSearch(selectedQuery, suggestion.category);
+    trackSearch(selectedQuery, 0, suggestion.category);
+    
+    // Navigate to search or update current page
+    if (isOnSearchPage) {
+      setSearchQuery(selectedQuery);
+      const newUrl = `/search?q=${encodeURIComponent(selectedQuery)}`;
+      window.history.replaceState({}, '', newUrl);
+    } else {
+      navigate(`/search?q=${encodeURIComponent(selectedQuery)}`);
+    }
+    
+    handleClose();
+    hapticFeedback.light();
+  };
+
   const handleResultClick = (result: any) => {
+    // Track the click
+    trackSearch(query, results.length, result.type);
+    addRecentSearch(query, result.type);
+    
     navigate(result.link);
     handleClose();
+    hapticFeedback.light();
   };
 
   const handleViewAllResults = () => {
     if (query.trim()) {
+      addRecentSearch(query.trim());
+      trackSearch(query.trim(), results.length);
+      
       if (isOnSearchPage) {
-        // Already on search page, just close the header search
         handleClose();
       } else {
         navigate(`/search?q=${encodeURIComponent(query.trim())}`);
         handleClose();
       }
+      hapticFeedback.medium();
     }
   };
 
@@ -165,9 +184,9 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="absolute top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border shadow-lg">
+    <div className="absolute top-0 left-0 right-0 z-50 bg-background/98 backdrop-blur-md border-b border-border shadow-2xl">
       <div className="w-full px-3 sm:px-4 md:px-6">
-        <div className="relative" ref={dropdownRef}>
+        <div className="relative" ref={containerRef}>
           {/* Search Input */}
           <form onSubmit={handleSubmit} className="flex items-center h-16 gap-4">
             <div className="flex-1 relative">
@@ -176,6 +195,7 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
                 ref={inputRef}
                 value={query}
                 onChange={(e) => handleInputChange(e.target.value)}
+                onFocus={() => setShowDropdown(shouldShowDropdown)}
                 placeholder={
                   isOnCampaignsPage 
                     ? "Search campaigns..." 
@@ -183,134 +203,58 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
                       ? "Search campaigns, users, organizations..."
                       : "Search campaigns, users, organizations..."
                 }
-                className="pl-10 pr-12 h-10 border-0 bg-muted/50 focus:bg-background transition-colors"
+                className={
+                  "pl-10 pr-12 h-12 sm:h-10 border-2 bg-background focus:bg-background transition-all duration-200 " +
+                  "focus:border-primary focus:shadow-lg focus:shadow-primary/20 " +
+                  "text-base sm:text-sm touch-manipulation"
+                }
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck="false"
               />
-              {query && isOnIntegratedSearchPage && (
+              {query && (
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   onClick={() => {
                     setQuery('');
-                    clearSearch();
+                    if (isOnIntegratedSearchPage) {
+                      clearSearch();
+                    }
                     setShowDropdown(false);
+                    hapticFeedback.light();
                   }}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-muted rounded-full"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-4 w-4" />
                 </Button>
               )}
             </div>
-            <Button type="button" variant="ghost" size="sm" onClick={handleClose}>
+            <Button 
+              type="button" 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleClose}
+              className="touch-target"
+            >
               <X className="h-4 w-4" />
             </Button>
           </form>
 
-          {/* Dropdown Results */}
-          {showDropdown && (
-            <Card className="absolute top-full left-0 right-0 mt-1 max-h-96 overflow-y-auto shadow-xl border z-50 bg-background">
-              <CardContent className="p-0">
-                {loading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <LoadingSpinner />
-                  </div>
-                ) : (
-                  <div className="divide-y divide-border">
-                    {/* For campaigns page, show summary notifications */}
-                    {isOnCampaignsPage ? (
-                      <div className="p-4 space-y-3">
-                        {(userResults.length > 0 || organizationResults.length > 0) ? (
-                          <>
-                            <div className="text-sm text-muted-foreground mb-3">
-                              Additional results found:
-                            </div>
-                            
-                            {userResults.length > 0 && (
-                              <button
-                                onClick={handleViewAllResults}
-                                className="w-full text-left p-3 bg-muted/30 hover:bg-muted/50 transition-colors rounded-md flex items-center gap-3"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <User className="h-4 w-4 text-primary" />
-                                  <Badge className="bg-primary/10 text-primary" variant="secondary">
-                                    User
-                                  </Badge>
-                                </div>
-                                <div className="flex-1">
-                                  <div className="text-sm font-medium">
-                                    {userResults.length} user{userResults.length > 1 ? 's' : ''} found
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    Click to view all search results
-                                  </div>
-                                </div>
-                                <ArrowRight className="h-4 w-4" />
-                              </button>
-                            )}
-                            
-                            {organizationResults.length > 0 && (
-                              <button
-                                onClick={handleViewAllResults}
-                                className="w-full text-left p-3 bg-muted/30 hover:bg-muted/50 transition-colors rounded-md flex items-center gap-3"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <Building2 className="h-4 w-4 text-secondary-foreground" />
-                                  <Badge className="bg-secondary text-secondary-foreground" variant="secondary">
-                                    Organization
-                                  </Badge>
-                                </div>
-                                <div className="flex-1">
-                                  <div className="text-sm font-medium">
-                                    {organizationResults.length} organization{organizationResults.length > 1 ? 's' : ''} found
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    Click to view all search results
-                                  </div>
-                                </div>
-                                <ArrowRight className="h-4 w-4" />
-                              </button>
-                            )}
-                          </>
-                        ) : (
-                          <div className="text-center text-muted-foreground text-sm py-4">
-                            {query.length < 2 ? "Type at least 2 characters to search" : "No users or organizations found"}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      /* Regular dropdown for other pages */
-                      dropdownResults.length === 0 ? (
-                        <div className="p-4 text-center text-muted-foreground">
-                          {query.length < 2 ? "Type at least 2 characters to search" : "No results found"}
-                        </div>
-                      ) : (
-                        <>
-                          {dropdownResults.map((result, index) => (
-                            <SearchResultItem
-                              key={`${result.type}-${result.id}-${index}`}
-                              result={result}
-                              searchQuery={query}
-                              variant="compact"
-                              onClick={() => handleResultClick(result)}
-                            />
-                          ))}
-                          
-                          {/* View All Results */}
-                          <button
-                            onClick={handleViewAllResults}
-                            className="w-full p-4 bg-muted/30 hover:bg-muted/50 transition-colors flex items-center justify-center gap-2 text-sm font-medium text-primary"
-                          >
-                            View all results for "{query}"
-                            <ArrowRight className="h-4 w-4" />
-                          </button>
-                        </>
-                      )
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
+          {/* Enhanced Search Dropdown */}
+          <EnhancedSearchDropdown
+            query={query}
+            searchResults={isOnCampaignsPage ? [...userResults, ...organizationResults] : results}
+            searchLoading={loading}
+            isVisible={showDropdown}
+            onSuggestionSelect={handleSuggestionSelect}
+            onResultClick={handleResultClick}
+            onViewAllResults={handleViewAllResults}
+            onClose={() => setShowDropdown(false)}
+            showResultsSection={!isOnCampaignsPage || (userResults.length > 0 || organizationResults.length > 0)}
+            maxHeight="max-h-[70vh]"
+          />
         </div>
       </div>
     </div>
