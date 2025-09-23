@@ -90,33 +90,49 @@ export function EnhancedSearchDropdown({
   const isLoading = searchLoading || suggestionsLoading;
 
   return (
-    <Card
-      ref={dropdownRef}
-      className={cn(
-        "absolute top-full left-0 right-0 mt-2 z-50",
-        "border border-border/20 shadow-strong",
-        "animate-in fade-in-0 slide-in-from-top-2 duration-200",
-        maxHeight,
-        className
-      )}
-      style={{
-        background: `
-          linear-gradient(135deg, 
-            hsl(var(--background) / 0.85) 0%, 
-            hsl(var(--background) / 0.75) 50%,
-            hsl(var(--background) / 0.80) 100%
-          )
-        `,
-        backdropFilter: 'blur(24px) saturate(2.2) brightness(1.1)',
-        WebkitBackdropFilter: 'blur(24px) saturate(2.2) brightness(1.1)',
-        boxShadow: `
-          0 12px 40px hsl(var(--foreground) / 0.15),
-          0 6px 20px hsl(var(--foreground) / 0.08),
-          inset 0 1px 0 hsl(var(--background) / 0.9),
-          inset 0 -1px 0 hsl(var(--foreground) / 0.05)
-        `
-      }}
-    >
+    <div className="relative">
+      {/* Localized blur backdrop - positioned exactly behind dropdown */}
+      <div
+        className={cn(
+          "absolute top-full left-0 right-0 mt-2 z-45",
+          "animate-in fade-in-0 slide-in-from-top-2 duration-200",
+          maxHeight,
+        )}
+        style={{
+          backdropFilter: 'blur(6px) saturate(1.2)',
+          WebkitBackdropFilter: 'blur(6px) saturate(1.2)',
+          borderRadius: 'calc(var(--radius))',
+        }}
+        aria-hidden="true"
+      />
+      
+      <Card
+        ref={dropdownRef}
+        className={cn(
+          "absolute top-full left-0 right-0 mt-2 z-50",
+          "border border-border/20 shadow-strong",
+          "animate-in fade-in-0 slide-in-from-top-2 duration-200",
+          maxHeight,
+          className
+        )}
+        style={{
+          background: `
+            linear-gradient(135deg, 
+              hsl(var(--background) / 0.85) 0%, 
+              hsl(var(--background) / 0.75) 50%,
+              hsl(var(--background) / 0.80) 100%
+            )
+          `,
+          backdropFilter: 'blur(24px) saturate(2.2) brightness(1.1)',
+          WebkitBackdropFilter: 'blur(24px) saturate(2.2) brightness(1.1)',
+          boxShadow: `
+            0 12px 40px hsl(var(--foreground) / 0.15),
+            0 6px 20px hsl(var(--foreground) / 0.08),
+            inset 0 1px 0 hsl(var(--background) / 0.9),
+            inset 0 -1px 0 hsl(var(--foreground) / 0.05)
+          `
+        }}
+      >
       <ScrollArea className="max-h-[70vh]">
         <div className="p-1">
           {/* Loading State */}
@@ -305,5 +321,6 @@ export function EnhancedSearchDropdown({
         </div>
       </ScrollArea>
     </Card>
+    </div>
   );
 }

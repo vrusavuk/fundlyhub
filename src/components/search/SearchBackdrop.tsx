@@ -14,7 +14,7 @@ interface SearchBackdropProps {
 
 export function SearchBackdrop({
   show,
-  opacity = 0.05,
+  opacity = 0.02,
   onClick,
   className
 }: SearchBackdropProps) {
@@ -29,8 +29,7 @@ export function SearchBackdrop({
       )}
       style={{
         backgroundColor: `hsl(var(--background) / ${opacity})`,
-        backdropFilter: 'blur(3px) saturate(1.1)',
-        WebkitBackdropFilter: 'blur(3px) saturate(1.1)',
+        // No backdrop blur - we'll handle this locally in the dropdown
       }}
       onClick={onClick}
       role="presentation"
