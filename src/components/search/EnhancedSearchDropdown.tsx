@@ -91,24 +91,37 @@ export function EnhancedSearchDropdown({
 
   return (
     <div className="relative">
+      {/* Blur layer positioned behind the dropdown */}
+      <div 
+        className={cn(
+          "absolute top-full left-0 right-0 mt-2 z-49",
+          "rounded-lg border border-border/20",
+          "animate-in fade-in-0 slide-in-from-top-2 duration-200",
+          maxHeight
+        )}
+        style={{
+          backdropFilter: 'blur(20px) saturate(1.8) brightness(1.1)',
+          WebkitBackdropFilter: 'blur(20px) saturate(1.8) brightness(1.1)',
+        }}
+      />
+      
+      {/* Dropdown content */}
       <Card
         ref={dropdownRef}
         className={cn(
           "absolute top-full left-0 right-0 mt-2 z-50",
-          "border border-border/20 shadow-strong",
+          "border border-border/30 shadow-strong",
           "animate-in fade-in-0 slide-in-from-top-2 duration-200",
           maxHeight,
           className
         )}
         style={{
-          background: `hsl(var(--background) / 0.2)`,
-          backdropFilter: 'blur(20px) saturate(1.8) brightness(1.1)',
-          WebkitBackdropFilter: 'blur(20px) saturate(1.8) brightness(1.1)',
-          border: '1px solid hsl(var(--border) / 0.3)',
+          background: `hsl(var(--background) / 0.85)`,
+          border: '1px solid hsl(var(--border) / 0.4)',
           boxShadow: `
             0 12px 40px hsl(var(--foreground) / 0.15),
             0 6px 20px hsl(var(--foreground) / 0.08),
-            inset 0 1px 0 hsl(var(--background) / 0.2)
+            inset 0 1px 0 hsl(var(--background) / 0.3)
           `
         }}
       >
