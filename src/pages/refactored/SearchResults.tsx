@@ -2,22 +2,26 @@
  * Refactored SearchResults page using new component architecture
  */
 import { useState, useEffect } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageContainer } from "@/components/ui/PageContainer";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { SearchResultsContainer } from "@/components/search/SearchResultsContainer";
 import { useEnhancedSearch } from "@/hooks/useEnhancedSearch";
-import { useNavigate } from "react-router-dom";
+import { useGlobalSearch } from "@/contexts/SearchContext";
+import { Search, X } from "lucide-react";
 
 export default function SearchResults() {
   console.log('🚀 SearchResults component mounting...');
   
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedType, setSelectedType] = useState<string>('all');
+  const [inputQuery, setInputQuery] = useState('');
   const navigate = useNavigate();
+  const { setSearchQuery } = useGlobalSearch();
   
   // Get query from URL params - this is the primary source
   const query = searchParams.get('q') || '';
@@ -32,11 +36,33 @@ export default function SearchResults() {
     enabled: !!query
   });
 
-  // Update search query in context when URL changes
+  // Sync input with URL query when component mounts or URL changes
   useEffect(() => {
     const urlQuery = searchParams.get('q') || '';
+    setInputQuery(urlQuery);
+    setSearchQuery(urlQuery);
     console.log('📍 URL query changed to:', urlQuery);
-  }, [searchParams]);
+  }, [searchParams, setSearchQuery]);
+
+  // Update URL when user types in search input
+  const handleSearchInputChange = (value: string) => {
+    setInputQuery(value);
+    
+    // Update URL in real-time
+    if (value.trim()) {
+      setSearchParams({ q: value.trim() });
+    } else {
+      setSearchParams({});
+    }
+  };
+
+  // Handle search form submission
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputQuery.trim()) {
+      setSearchParams({ q: inputQuery.trim() });
+    }
+  };
 
   const filteredResults = selectedType === 'all' 
     ? results 
@@ -48,16 +74,42 @@ export default function SearchResults() {
     navigate(result.link);
   };
 
-  if (!query) {
+  if (!query && !inputQuery) {
     return (
       <AppLayout>
-        <PageContainer maxWidth="md">
+        <PageContainer maxWidth="lg">
           <div className="text-center">
             <PageHeader
-              title="Search Results"
-              description="No search query provided"
+              title="Search"
+              description="Search for campaigns, users, and organizations"
             />
-            <Button asChild className="mt-4">
+            
+            {/* Search Input */}
+            <div className="max-w-md mx-auto mt-8">
+              <form onSubmit={handleSearchSubmit} className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  value={inputQuery}
+                  onChange={(e) => handleSearchInputChange(e.target.value)}
+                  placeholder="Search campaigns, users, organizations..."
+                  className="pl-10 pr-10"
+                  autoFocus
+                />
+                {inputQuery && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleSearchInputChange('')}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </form>
+            </div>
+            
+            <Button asChild className="mt-6">
               <Link to="/">Go Home</Link>
             </Button>
           </div>
@@ -89,9 +141,34 @@ export default function SearchResults() {
   );
 
   const headerActions = (
-    <span className="text-sm text-muted-foreground">
-      {filteredResults.length} results for "{query}"
-    </span>
+    <div className="flex items-center gap-4">
+      {/* Real-time search input */}
+      <div className="relative w-80">
+        <form onSubmit={handleSearchSubmit}>
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            value={inputQuery}
+            onChange={(e) => handleSearchInputChange(e.target.value)}
+            placeholder="Search campaigns, users, organizations..."
+            className="pl-10 pr-10"
+          />
+          {inputQuery && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => handleSearchInputChange('')}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </form>
+      </div>
+      <span className="text-sm text-muted-foreground whitespace-nowrap">
+        {filteredResults.length} results
+      </span>
+    </div>
   );
 
   return (
