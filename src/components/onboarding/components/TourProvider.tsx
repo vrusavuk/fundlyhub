@@ -36,38 +36,14 @@ export function TourProvider({
   const globalSearch = useGlobalSearch();
   const onboardingDemo = useOnboardingDemo();
 
-  // Enhanced search functionality for tours
-  const enhancedSearchForTour = {
-    openHeaderSearch: () => {
-      try {
-        // Force open header search regardless of page context during onboarding
-        const event = new CustomEvent('open-header-search');
-        document.dispatchEvent(event);
-        
-        // Also trigger the standard method as fallback
-        globalSearch.openHeaderSearch();
-      } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('Failed to open header search during tour:', error);
-        }
-      }
-    },
-    setSearchQuery: (query: string) => {
-      try {
-        globalSearch.setSearchQuery(query);
-      } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('Failed to set search query during tour:', error);
-        }
-      }
-    },
-    isHeaderSearchOpen: globalSearch.isHeaderSearchOpen
-  };
-  
   const currentStep = steps[currentStepIndex];
   const isLastStep = currentStepIndex === steps.length - 1;
 
   const startTour = useCallback(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Starting onboarding tour');
+    }
+    
     setIsActive(true);
     setCurrentStepIndex(0);
     
@@ -82,8 +58,57 @@ export function TourProvider({
     }
   }, [onboardingDemo]);
 
+  // Sync with isOpen prop changes
+  useEffect(() => {
+    if (isOpen && !isActive) {
+      startTour();
+    } else if (!isOpen && isActive) {
+      setIsActive(false);
+    }
+  }, [isOpen, isActive, startTour]);
+
+  const completeTour = useCallback(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Tour completed');
+    }
+    
+    try {
+      onboardingDemo.trackDemoInteraction('tour_completed');
+      onboardingDemo.setDemoMode(false);
+    } catch (error) {
+      console.warn('Failed to track tour completion:', error);
+    }
+    
+    setIsActive(false);
+    onComplete?.();
+    onClose?.();
+  }, [onboardingDemo, onComplete, onClose]);
+
+  const skipTour = useCallback(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Tour skipped');
+    }
+    
+    try {
+      onboardingDemo.trackDemoInteraction('tour_skipped', {
+        stepIndex: currentStepIndex
+      });
+      onboardingDemo.setDemoMode(false);
+    } catch (error) {
+      console.warn('Failed to track tour skip:', error);
+    }
+    
+    setIsActive(false);
+    onSkip?.();
+    onClose?.();
+  }, [currentStepIndex, onboardingDemo, onSkip, onClose]);
+
   const nextStep = useCallback(async () => {
     if (!currentStep) return;
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Tour: Next step', currentStepIndex + 1);
+    }
 
     try {
       // Execute current step action if it exists
@@ -112,7 +137,7 @@ export function TourProvider({
         setCurrentStepIndex(prev => prev + 1);
       }
     }
-  }, [currentStep, currentStepIndex, isLastStep, actionService, enhancedSearchForTour, onboardingDemo]);
+  }, [currentStep, currentStepIndex, isLastStep, actionService, onboardingDemo, completeTour]);
 
   const prevStep = useCallback(() => {
     if (currentStepIndex > 0) {
@@ -127,34 +152,6 @@ export function TourProvider({
       }
     }
   }, [currentStepIndex, onboardingDemo]);
-
-  const skipTour = useCallback(() => {
-    try {
-      onboardingDemo.trackDemoInteraction('tour_skipped', {
-        stepIndex: currentStepIndex
-      });
-      onboardingDemo.setDemoMode(false);
-    } catch (error) {
-      console.warn('Failed to track tour skip:', error);
-    }
-    
-    setIsActive(false);
-    onSkip?.();
-    onClose?.();
-  }, [currentStepIndex, onboardingDemo, onSkip, onClose]);
-
-  const completeTour = useCallback(() => {
-    try {
-      onboardingDemo.trackDemoInteraction('tour_completed');
-      onboardingDemo.setDemoMode(false);
-    } catch (error) {
-      console.warn('Failed to track tour completion:', error);
-    }
-    
-    setIsActive(false);
-    onComplete?.();
-    onClose?.();
-  }, [onboardingDemo, onComplete, onClose]);
 
   // Handle keyboard navigation
   useEffect(() => {
