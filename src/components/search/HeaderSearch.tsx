@@ -17,8 +17,6 @@ interface HeaderSearchProps {
 }
 
 export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
-  console.log('🔍 HeaderSearch render - isOpen:', isOpen);
-  
   const [query, setQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -63,12 +61,10 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
   }, [isOpen, isOnIntegratedSearchPage, globalSearchQuery]);
 
   const handleInputChange = (value: string) => {
-    console.log('🔍 HeaderSearch input changed:', value);
     setQuery(value);
     
     // Update global search context for integrated search pages
     if (isOnIntegratedSearchPage) {
-      console.log('🌐 Updating global search query to:', value);
       setSearchQuery(value);
       
       // Update URL for search page
@@ -106,35 +102,25 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
   };
 
   const handleSuggestionSelect = (suggestion: SearchSuggestion) => {
-    console.log('🔍 HeaderSearch.handleSuggestionSelect called with:', suggestion);
-    
     const selectedQuery = suggestion.text;
-    console.log('📝 Selected query:', selectedQuery);
     
     // Add to recent searches and track
     try {
       addRecentSearch(selectedQuery, suggestion.category);
       trackSearch(selectedQuery, 0, suggestion.category);
-      console.log('✅ Recent search and tracking completed');
     } catch (error) {
-      console.error('❌ Error in search tracking:', error);
+      console.error('Error in search tracking:', error);
     }
-    
-    console.log('📍 About to navigate to:', `/search?q=${encodeURIComponent(selectedQuery)}`);
-    console.log('🗂️ Current location:', location.pathname);
     
     // ALWAYS navigate to search page for suggestions, regardless of current page
     try {
       // Close the modal first to avoid any interference
       onClose();
-      console.log('🚪 Header search closed');
       
       // Force navigation to search page
-      console.log('🚀 Forcing navigation to search page...');
       navigate(`/search?q=${encodeURIComponent(selectedQuery)}`, { replace: false });
-      console.log('✅ Navigation completed');
     } catch (error) {
-      console.error('❌ Navigation failed:', error);
+      console.error('Navigation failed:', error);
     }
     
     hapticFeedback.light();
@@ -151,34 +137,23 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
   };
 
   const handleViewAllResults = () => {
-    console.log('👀 HeaderSearch.handleViewAllResults called');
-    console.log('🔍 Current query:', query);
-    console.log('📊 Results count:', results.length);
-    
     if (query.trim()) {
       try {
         addRecentSearch(query.trim());
         trackSearch(query.trim(), results.length);
-        console.log('✅ Search tracking completed');
         
         const targetUrl = `/search?q=${encodeURIComponent(query.trim())}`;
-        console.log('📍 About to navigate to:', targetUrl);
         
         // Close modal first to avoid interference
         onClose();
-        console.log('🚪 Header search closed');
         
         // Force navigation to search results page
-        console.log('🚀 Forcing navigation to search page...');
         navigate(targetUrl, { replace: false });
-        console.log('✅ Navigation completed');
         
         hapticFeedback.medium();
       } catch (error) {
-        console.error('❌ Error in handleViewAllResults:', error);
+        console.error('Error in handleViewAllResults:', error);
       }
-    } else {
-      console.log('⚠️ No query to search for');
     }
   };
 

@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { SearchProvider } from "@/contexts/SearchContext";
+import { EnhancedSearchProvider } from "@/contexts/EnhancedSearchContext";
 import { NavigationProvider } from '@/contexts/NavigationContext';
 import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider';
 import { OnboardingDemoProvider } from '@/components/onboarding/OnboardingDemoProvider';
@@ -33,7 +34,8 @@ const App = () => (
         <BrowserRouter>
           <NavigationProvider>
             <SearchProvider>
-              <OnboardingDemoProvider>
+              <EnhancedSearchProvider>
+                <OnboardingDemoProvider>
                 <OnboardingProvider>
                 <Routes>
               <Route path="/" element={<Index />} />
@@ -62,6 +64,7 @@ const App = () => (
                 </Routes>
                 </OnboardingProvider>
               </OnboardingDemoProvider>
+              </EnhancedSearchProvider>
             </SearchProvider>
           </NavigationProvider>
         </BrowserRouter>
