@@ -1,13 +1,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "@/hooks/useAuth";
-import { UnifiedSearchProvider } from "@/contexts/UnifiedSearchContext";
-import { NavigationProvider } from '@/contexts/NavigationContext';
-import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider';
-import { OnboardingDemoProvider } from '@/components/onboarding/OnboardingDemoProvider';
+import { Routes, Route, Navigate } from "react-router-dom";
+import { AppProviders } from '@/components/providers/AppProviders';
 import { PerformanceMonitor } from '@/components/performance/PerformanceMonitor';
 import { AppErrorBoundary } from '@/components/common/AppErrorBoundary';
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -25,21 +19,11 @@ import { UserProfile } from "./pages/UserProfile";
 import { OrganizationProfile } from "./pages/OrganizationProfile";
 import ApiDocs from "./pages/ApiDocs";
 
-// Query client for React Query
-const queryClient = new QueryClient();
-
 const App = () => (
   <AppErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <BrowserRouter>
-          <AuthProvider>
-            <UnifiedSearchProvider>
-              <NavigationProvider>
-                <OnboardingProvider>
-                  <OnboardingDemoProvider>
-                    <PerformanceMonitor />
-                    <Routes>
+    <AppProviders>
+      <PerformanceMonitor />
+      <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/campaigns" element={<AllCampaigns />} />
@@ -63,19 +47,12 @@ const App = () => (
                     <Route path="/fundraiser/:slug" element={<FundraiserDetail />} />
                     <Route path="/docs/*" element={<ApiDocs />} />
                     <Route path="/error-recovery" element={<ErrorRecovery />} />
-                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                    <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </OnboardingDemoProvider>
-                </OnboardingProvider>
-              </NavigationProvider>
-            </UnifiedSearchProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
       <Toaster />
       <Sonner />
-    </QueryClientProvider>
+    </AppProviders>
   </AppErrorBoundary>
 );
 
