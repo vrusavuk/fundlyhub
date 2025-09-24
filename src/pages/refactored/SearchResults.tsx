@@ -13,6 +13,8 @@ import { useEnhancedSearch } from "@/hooks/useEnhancedSearch";
 import { useNavigate } from "react-router-dom";
 
 export default function SearchResults() {
+  console.log('🚀 SearchResults component mounting...');
+  
   const [searchParams] = useSearchParams();
   const [selectedType, setSelectedType] = useState<string>('all');
   const navigate = useNavigate();
@@ -21,6 +23,9 @@ export default function SearchResults() {
   const query = searchParams.get('q') || '';
   
   console.log('🔍 SearchResults page loaded with query:', query);
+  console.log('🌐 Current URL:', window.location.href);
+  console.log('📋 Search params:', Object.fromEntries(searchParams.entries()));
+  console.log('🧭 Current route:', window.location.pathname);
   
   const { results, loading, error, hasMore, loadMore, retry } = useEnhancedSearch({
     query,

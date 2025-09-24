@@ -254,7 +254,14 @@ export function EnhancedSearchDropdown({
                         <Button
                           variant="ghost"
                           className="w-full mt-3 justify-center gap-2 text-primary hover:text-primary hover:bg-primary/10"
-                          onClick={onViewAllResults}
+                          onClick={() => {
+                            console.log('👀 View all results button clicked!');
+                            console.log('📊 Search results count:', searchResults.length);
+                            console.log('📝 Current query:', query);
+                            console.log('🔗 About to call onViewAllResults');
+                            onViewAllResults();
+                            console.log('✅ onViewAllResults called');
+                          }}
                         >
                           View all {searchResults.length} results
                           <ArrowRight className="h-4 w-4" />

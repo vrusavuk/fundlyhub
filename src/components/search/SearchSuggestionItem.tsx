@@ -85,7 +85,10 @@ export function SearchSuggestionItem({
 }: SearchSuggestionItemProps) {
   const handleClick = (e: React.MouseEvent) => {
     console.log('🖱️ SearchSuggestionItem clicked:', suggestion);
+    console.log('🎯 Event details:', { target: e.currentTarget, type: e.type });
+    console.log('🔗 About to call onSelect with:', suggestion.text);
     onSelect(suggestion);
+    console.log('✅ onSelect called successfully');
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

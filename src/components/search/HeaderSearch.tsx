@@ -107,22 +107,34 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
   };
 
   const handleSuggestionSelect = (suggestion: SearchSuggestion) => {
-    console.log('🔍 Suggestion selected:', suggestion);
+    console.log('🔍 HeaderSearch.handleSuggestionSelect called with:', suggestion);
     
     const selectedQuery = suggestion.text;
+    console.log('📝 Selected query:', selectedQuery);
     
     // Add to recent searches and track
-    addRecentSearch(selectedQuery, suggestion.category);
-    trackSearch(selectedQuery, 0, suggestion.category);
+    try {
+      addRecentSearch(selectedQuery, suggestion.category);
+      trackSearch(selectedQuery, 0, suggestion.category);
+      console.log('✅ Recent search and tracking completed');
+    } catch (error) {
+      console.error('❌ Error in search tracking:', error);
+    }
     
     console.log('📍 About to navigate to:', `/search?q=${encodeURIComponent(selectedQuery)}`);
+    console.log('🗂️ Current location:', location.pathname);
     
     // Close the header search immediately
     onClose();
+    console.log('🚪 Header search closed');
     
     // Navigate directly to search results page
-    navigate(`/search?q=${encodeURIComponent(selectedQuery)}`);
-    console.log('✅ Navigation called successfully');
+    try {
+      navigate(`/search?q=${encodeURIComponent(selectedQuery)}`);
+      console.log('✅ Navigation called successfully');
+    } catch (error) {
+      console.error('❌ Navigation failed:', error);
+    }
     
     hapticFeedback.light();
   };
@@ -138,16 +150,33 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
   };
 
   const handleViewAllResults = () => {
+    console.log('👀 HeaderSearch.handleViewAllResults called');
+    console.log('🔍 Current query:', query);
+    console.log('📊 Results count:', results.length);
+    
     if (query.trim()) {
-      addRecentSearch(query.trim());
-      trackSearch(query.trim(), results.length);
-      
-      // Close the header search immediately
-      onClose();
-      
-      // Navigate directly to search results page
-      navigate(`/search?q=${encodeURIComponent(query.trim())}`);
-      hapticFeedback.medium();
+      try {
+        addRecentSearch(query.trim());
+        trackSearch(query.trim(), results.length);
+        console.log('✅ Search tracking completed');
+        
+        // Close the header search immediately
+        onClose();
+        console.log('🚪 Header search closed');
+        
+        const targetUrl = `/search?q=${encodeURIComponent(query.trim())}`;
+        console.log('📍 About to navigate to:', targetUrl);
+        
+        // Navigate directly to search results page
+        navigate(targetUrl);
+        console.log('✅ Navigation called successfully');
+        
+        hapticFeedback.medium();
+      } catch (error) {
+        console.error('❌ Error in handleViewAllResults:', error);
+      }
+    } else {
+      console.log('⚠️ No query to search for');
     }
   };
 
