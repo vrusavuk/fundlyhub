@@ -94,11 +94,6 @@ export function EnhancedSearchDropdown({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isVisible, onClose]);
 
-  if (!isVisible) {
-    console.log('🚫 EnhancedSearchDropdown not visible, returning null');
-    return null;
-  }
-
   // Handle click outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -116,6 +111,12 @@ export function EnhancedSearchDropdown({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isVisible, onClose]);
+
+  // NOW SAFE TO DO CONDITIONAL RETURNS AFTER ALL HOOKS
+  if (!isVisible) {
+    console.log('🚫 EnhancedSearchDropdown not visible, returning null');
+    return null;
+  }
 
   const hasQuery = query.trim().length > 0;
   const hasResults = searchResults.length > 0;
