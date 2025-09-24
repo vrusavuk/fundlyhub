@@ -15,7 +15,7 @@ import CreateFundraiser from "./pages/CreateFundraiser";
 import FundraiserDetail from "./pages/FundraiserDetail";
 import AllCampaigns from "./pages/AllCampaigns";
 import FundlyGive from "./pages/FundlyGive";
-import SearchResults from "./pages/SearchResults";
+import SearchResults from "./pages/refactored/SearchResults";
 import NotFound from "./pages/NotFound";
 import { UserProfile } from "./pages/UserProfile";
 import { OrganizationProfile } from "./pages/OrganizationProfile";
