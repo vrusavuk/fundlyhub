@@ -71,20 +71,12 @@ export function UserMenu({
             </Button>
           </>
         ) : (
-          <>
-            <button 
-              className="text-foreground hover:text-primary transition-smooth py-2 text-left"
-              onClick={handleTakeTour}
-            >
-              Take Tour
-            </button>
-            <Button variant="outline" size="sm" className="justify-start min-h-[44px]" asChild>
-              <Link to="/auth" onClick={onMenuAction}>
-                <User className="h-4 w-4 mr-2" />
-                Sign In
-              </Link>
-            </Button>
-          </>
+          <Button variant="outline" size="sm" className="justify-start min-h-[44px]" asChild>
+            <Link to="/auth" onClick={onMenuAction}>
+              <User className="h-4 w-4 mr-2" />
+              Sign In
+            </Link>
+          </Button>
         )}
       </div>
     );
@@ -129,23 +121,12 @@ export function UserMenu({
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
-        <>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="hidden md:inline-flex text-muted-foreground hover:text-primary"
-            onClick={handleTakeTour}
-          >
-            <HelpCircle className="h-4 w-4 mr-2" />
-            Take Tour
-          </Button>
-          <Button variant="outline" size="sm" className="hidden md:inline-flex" asChild>
-            <Link to="/auth">
-              <User className="h-4 w-4 mr-2" />
-              Sign In
-            </Link>
-          </Button>
-        </>
+        <Button variant="outline" size="sm" className="hidden md:inline-flex" asChild>
+          <Link to="/auth">
+            <User className="h-4 w-4 mr-2" />
+            Sign In
+          </Link>
+        </Button>
       )}
     </div>
   );
