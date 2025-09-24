@@ -20,29 +20,18 @@ export function FloatingActionButton({ className }: FloatingActionButtonProps) {
   const { startOnboarding } = useOnboarding();
   const { user } = useAuth();
 
-  // Show/hide based on scroll position with debouncing
+  // Show/hide based on scroll position
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    
     const handleScroll = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        
-        requestAnimationFrame(() => {
-          setIsVisible(scrollTop > 200);
-          setShowScrollToTop(scrollTop > 600);
-        });
-      }, 16); // ~60fps
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      setIsVisible(scrollTop > 200);
+      setShowScrollToTop(scrollTop > 600);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll(); // Initial check
 
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      clearTimeout(timeoutId);
-    };
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleHelpClick = () => {
@@ -55,22 +44,27 @@ export function FloatingActionButton({ className }: FloatingActionButtonProps) {
     hapticFeedback.light();
   };
 
-  if (!isVisible) return null;
-
   return (
-    <div className={cn('fixed bottom-6 right-6 z-50 flex flex-col gap-3', className)}>
+    <div className={cn(
+      'fixed bottom-6 right-6 z-50 flex flex-col gap-3 transition-all duration-300 ease-out',
+      isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none',
+      className
+    )}>
       {/* Scroll to top button */}
-      {showScrollToTop && (
+      <div className={cn(
+        'transition-all duration-300 ease-out',
+        showScrollToTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+      )}>
         <AnimatedButton
           size="sm"
-          className="h-12 w-12 rounded-full shadow-lg animate-slide-up"
+          className="h-12 w-12 rounded-full shadow-lg"
           onClick={handleScrollToTop}
           variant="outline"
           haptic
         >
           <ChevronUp className="h-5 w-5" />
         </AnimatedButton>
-      )}
+      </div>
 
       {/* Help/Tour button - Only show for authenticated users */}
       {user && (
