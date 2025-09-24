@@ -5,7 +5,6 @@
 import React from 'react';
 import { HeaderSearch } from './HeaderSearch';
 import { RefactoredHeaderSearch } from './RefactoredHeaderSearch';
-import { useEnhancedSearch } from '@/contexts/UnifiedSearchContext';
 
 interface CompatibleHeaderSearchProps {
   isOpen: boolean;
@@ -18,13 +17,9 @@ export function CompatibleHeaderSearch({
   onClose, 
   useRefactored = false 
 }: CompatibleHeaderSearchProps) {
-  // Try to use enhanced search context if available
-  const enhancedSearchContext = React.useContext(
-    React.createContext<any>(null)
-  );
   
-  // If refactored version is requested and context is available, use it
-  if (useRefactored && enhancedSearchContext) {
+  // Use refactored version if requested
+  if (useRefactored) {
     try {
       return <RefactoredHeaderSearch isOpen={isOpen} onClose={onClose} />;
     } catch (error) {

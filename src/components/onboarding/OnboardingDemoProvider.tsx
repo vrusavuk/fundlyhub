@@ -33,7 +33,16 @@ const OnboardingDemoContext = createContext<OnboardingDemoContextType | undefine
 export function useOnboardingDemo() {
   const context = useContext(OnboardingDemoContext);
   if (!context) {
-    throw new Error('useOnboardingDemo must be used within OnboardingDemoProvider');
+    // Return a fallback object instead of throwing an error
+    return {
+      isDemoMode: false,
+      setDemoMode: () => {},
+      getDemoSearchResults: () => [],
+      getDemoSearchSuggestions: () => [],
+      simulateSearchInteraction: () => {},
+      trackDemoInteraction: () => {},
+      demoInteractions: []
+    };
   }
   return context;
 }

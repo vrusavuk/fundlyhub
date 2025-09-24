@@ -94,7 +94,7 @@ function searchReducer(state: SearchState, action: SearchAction): SearchState {
   }
 }
 
-const SearchContext = createContext<SearchContextType | undefined>(undefined);
+const UnifiedSearchContext = createContext<SearchContextType | undefined>(undefined);
 
 export function UnifiedSearchProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(searchReducer, initialState);
@@ -193,14 +193,14 @@ export function UnifiedSearchProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <SearchContext.Provider value={value}>
+    <UnifiedSearchContext.Provider value={value}>
       {children}
-    </SearchContext.Provider>
+    </UnifiedSearchContext.Provider>
   );
 }
 
 export function useUnifiedSearch() {
-  const context = useContext(SearchContext);
+  const context = useContext(UnifiedSearchContext);
   if (context === undefined) {
     throw new Error('useUnifiedSearch must be used within a UnifiedSearchProvider');
   }
@@ -210,5 +210,7 @@ export function useUnifiedSearch() {
 // Backward compatibility exports
 export const useGlobalSearch = useUnifiedSearch;
 export const useEnhancedSearch = useUnifiedSearch;
+
+// Legacy exports for smooth transition
 export const SearchProvider = UnifiedSearchProvider;
 export const EnhancedSearchProvider = UnifiedSearchProvider;
