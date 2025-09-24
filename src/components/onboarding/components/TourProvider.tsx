@@ -135,6 +135,15 @@ export function TourProvider({
     onClose?.();
   }, [currentStepIndex, onboardingDemo, onSkip, onClose]);
 
+  const handleAction = useCallback(async (action: any) => {
+    console.log('🎯 TourProvider: Handling action', action);
+    try {
+      await actionService.executeAction(action);
+    } catch (error) {
+      console.error('❌ TourProvider: Action execution failed:', error);
+    }
+  }, [actionService]);
+
   const nextStep = useCallback(async () => {
     if (!currentStep) return;
 
@@ -232,6 +241,7 @@ export function TourProvider({
             onNext={nextStep}
             onPrevious={currentStepIndex > 0 ? prevStep : undefined}
             onClose={skipTour}
+            onAction={handleAction}
           />
         </>
       )}
