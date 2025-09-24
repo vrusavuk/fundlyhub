@@ -81,7 +81,22 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
   }, [showDropdown]);
 
   const handleInputChange = (value: string) => {
+    console.log('🔍 HeaderSearch input changed:', value);
     setQuery(value);
+    
+    // Update global search context for integrated search pages
+    if (isOnIntegratedSearchPage) {
+      console.log('🌐 Updating global search query to:', value);
+      setSearchQuery(value);
+      
+      // Update URL for search page
+      if (isOnSearchPage && value.trim()) {
+        const newUrl = `/search?q=${encodeURIComponent(value.trim())}`;
+        if (window.location.pathname + window.location.search !== newUrl) {
+          window.history.replaceState({}, '', newUrl);
+        }
+      }
+    }
     
     // Show dropdown when user types
     setShowDropdown(shouldShowDropdown && value.length >= 0);
