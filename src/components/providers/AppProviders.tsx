@@ -1,6 +1,6 @@
 /**
- * App Providers - Consolidated provider wrapper
- * Reduces nesting complexity in App.tsx
+ * App Providers - Consolidated provider wrapper for cleaner architecture
+ * Reduces nesting complexity and provides centralized configuration
  */
 import { ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

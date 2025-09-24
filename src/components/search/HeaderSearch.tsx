@@ -1,3 +1,7 @@
+/**
+ * Main header search component with integrated functionality
+ * Provides comprehensive search with suggestions and results
+ */
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";

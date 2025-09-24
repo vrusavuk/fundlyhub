@@ -1,6 +1,6 @@
 /**
- * Floating Categories Component
- * Animated category circles for hero section
+ * Floating Categories Component - Animated hero elements
+ * Displays animated category circles with smooth floating animations
  */
 import yourCauseImage from "@/assets/categories/your-cause.jpg";
 import medicalImage from "@/assets/categories/medical.jpg";

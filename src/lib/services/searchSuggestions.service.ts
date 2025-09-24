@@ -260,8 +260,10 @@ export class SearchSuggestionsService {
    * Track search analytics (for future use)
    */
   trackSearch(query: string, resultCount: number, category?: string) {
-    // This could be expanded to track search analytics
-    console.debug('Search tracked:', { query, resultCount, category });
+    // Track search analytics for future use
+    if (process.env.NODE_ENV === 'development') {
+      console.debug('Search tracked:', { query, resultCount, category });
+    }
   }
 }
 

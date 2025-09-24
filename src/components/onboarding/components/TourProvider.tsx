@@ -47,14 +47,18 @@ export function TourProvider({
         // Also trigger the standard method as fallback
         globalSearch.openHeaderSearch();
       } catch (error) {
-        console.warn('Failed to open header search during tour:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Failed to open header search during tour:', error);
+        }
       }
     },
     setSearchQuery: (query: string) => {
       try {
         globalSearch.setSearchQuery(query);
       } catch (error) {
-        console.warn('Failed to set search query during tour:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Failed to set search query during tour:', error);
+        }
       }
     },
     isHeaderSearchOpen: globalSearch.isHeaderSearchOpen
@@ -72,7 +76,9 @@ export function TourProvider({
       onboardingDemo.setDemoMode(true);
       onboardingDemo.trackDemoInteraction('tour_started');
     } catch (error) {
-      console.warn('Failed to enable demo mode:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Failed to enable demo mode:', error);
+      }
     }
   }, [onboardingDemo]);
 

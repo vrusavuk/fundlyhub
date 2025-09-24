@@ -11,8 +11,7 @@ import CreateFundraiser from "./pages/CreateFundraiser";
 import FundraiserDetail from "./pages/FundraiserDetail";
 import AllCampaigns from "./pages/AllCampaigns";
 import FundlyGive from "./pages/FundlyGive";
-import SearchResults from "./pages/refactored/SearchResults";
-import SearchDemo from "./pages/SearchDemo";
+import SearchResults from "./pages/SearchResults";
 import NotFound from "./pages/NotFound";
 import ErrorRecovery from "./pages/ErrorRecovery";
 import { UserProfile } from "./pages/UserProfile";
@@ -28,7 +27,6 @@ const App = () => (
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/campaigns" element={<AllCampaigns />} />
                     <Route path="/search" element={<SearchResults />} />
-                    <Route path="/search-demo" element={<SearchDemo />} />
                     <Route path="/fundly-give" element={<FundlyGive />} />
                     <Route path="/profile/:userId" element={<UserProfile />} />
                     <Route path="/profile" element={

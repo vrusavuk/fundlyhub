@@ -1,6 +1,6 @@
 /**
- * Fundly Give Feature Section
- * Extracted from Index page for better modularity
+ * Fundly Give Feature Section - Product showcase component
+ * Highlights tax-deductible giving features with interactive demo
  */
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";

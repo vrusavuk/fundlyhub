@@ -1,6 +1,6 @@
 /**
- * Campaign Filters Hook
- * Extracted filtering logic from AllCampaigns page
+ * Campaign Filters Hook - Clean filtering logic
+ * Provides efficient client-side and server-side filtering capabilities
  */
 import { useState, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';

@@ -1,5 +1,6 @@
 /**
- * Refactored SearchResults page using new component architecture with proper skeleton loading
+ * Refactored SearchResults page using clean component architecture
+ * Optimized with proper skeleton loading and error handling
  */
 import { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";

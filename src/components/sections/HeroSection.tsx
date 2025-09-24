@@ -1,6 +1,6 @@
 /**
- * Hero Section Component
- * Extracted from Index page for better modularity
+ * Hero Section Component - Main landing page hero
+ * Modular component extracted from Index page for better maintainability
  */
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";

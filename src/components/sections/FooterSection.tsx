@@ -1,6 +1,6 @@
 /**
- * Footer Section Component
- * Extracted from Index page for better modularity
+ * Footer Section Component - Site-wide footer with navigation
+ * Contains company links, resources, and branding elements
  */
 import { Link } from 'react-router-dom';
 import { Heart } from "lucide-react";

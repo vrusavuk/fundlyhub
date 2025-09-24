@@ -26,7 +26,9 @@ export function PerformanceMonitor() {
         observer.observe({ entryTypes: ['paint'] });
       } catch (error) {
         // Fallback for browsers that don't support paint timing
-        console.warn('Paint timing not supported');
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Paint timing not supported');
+        }
       }
 
       // Track interaction responsiveness

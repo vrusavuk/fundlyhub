@@ -1,6 +1,6 @@
 /**
- * Enhanced search dropdown with better contrast, suggestions, and UX
- * Replaces the basic dropdown in HeaderSearch with improved functionality
+ * Enhanced search dropdown with optimized performance and UX
+ * Main search dropdown component using glass morphism design
  */
 import React, { useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

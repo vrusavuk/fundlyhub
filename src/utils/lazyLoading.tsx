@@ -22,7 +22,7 @@ export function LazyWrapper({ fallback, children }: LazyComponentProps) {
 
 // Lazy load pages for better performance
 export const LazyAllCampaigns = lazy(() => import('@/pages/AllCampaigns'));
-export const LazySearchResults = lazy(() => import('@/pages/refactored/SearchResults'));
+export const LazySearchResults = lazy(() => import('@/pages/SearchResults'));
 export const LazyFundraiserDetail = lazy(() => import('@/pages/FundraiserDetail'));
 export const LazyCreateFundraiser = lazy(() => import('@/pages/CreateFundraiser'));
 export const LazyUserProfile = lazy(() => import('@/pages/UserProfile').then(module => ({ default: module.UserProfile })));
