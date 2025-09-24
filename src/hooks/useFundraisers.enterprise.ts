@@ -87,7 +87,7 @@ export function useFundraisers(options: FundraiserQueryOptions = {}): UseFundrai
         error: error instanceof Error ? error.message : 'Failed to load fundraisers',
       }));
     }
-  }, [options, offset, limit]);
+  }, [JSON.stringify(options), offset, limit]); // Use JSON.stringify to stabilize options dependency
 
   const loadMore = useCallback(() => loadFundraisers(true), [loadFundraisers]);
 

@@ -55,11 +55,9 @@ const FundlyGive = () => {
 
     const handleMouseLeave = () => {
       clearTimeout(pauseTimeout);
-      if (!isManualScrolling) {
-        pauseTimeout = setTimeout(() => {
-          setIsPaused(false);
-        }, 1000);
-      }
+      pauseTimeout = setTimeout(() => {
+        setIsPaused(false);
+      }, 1000);
     };
 
     const handleScroll = () => {
@@ -108,7 +106,7 @@ const FundlyGive = () => {
       clearTimeout(pauseTimeout);
       clearTimeout(scrollTimeout);
     };
-  }, [isManualScrolling]);
+  }, []); // Removed isManualScrolling dependency to prevent infinite loop
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
