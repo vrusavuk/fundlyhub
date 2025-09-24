@@ -38,21 +38,22 @@ export function SearchDropdown({
       <Card
         ref={dropdownRef}
         className={cn(
-          "w-full mt-2 border shadow-2xl",
+          "w-full mt-2 border shadow-2xl backdrop-blur-md bg-background/90", 
           "animate-in fade-in-0 slide-in-from-top-2 duration-200",
           maxHeight,
           className
         )}
         style={{
-          background: `hsl(var(--background) / 0.85)`,
+          background: `hsla(var(--background), 0.85)`,
           backdropFilter: 'blur(24px) saturate(1.8)',
           WebkitBackdropFilter: 'blur(24px) saturate(1.8)',
-          border: '1px solid hsl(var(--border) / 0.2)',
+          border: '1px solid hsla(var(--border), 0.2)',
+          borderRadius: 'var(--radius)',
           boxShadow: `
-            0 20px 60px -10px hsl(var(--foreground) / 0.15),
-            0 8px 25px -5px hsl(var(--foreground) / 0.1),
-            inset 0 1px 0 hsl(var(--background) / 0.4),
-            inset 0 0 0 1px hsl(var(--border) / 0.05)
+            0 20px 60px -10px hsla(var(--foreground), 0.15),
+            0 8px 25px -5px hsla(var(--foreground), 0.1),
+            inset 0 1px 0 hsla(var(--background), 0.4),
+            inset 0 0 0 1px hsla(var(--border), 0.05)
           `
         }}
       >

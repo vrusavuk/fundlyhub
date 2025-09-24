@@ -176,14 +176,15 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
       <div 
         className="fixed top-0 left-0 right-0 z-50 border-b border-border/20 shadow-strong"
         style={{
-          background: `hsl(var(--background) / 0.9)`,
+          background: `hsla(var(--background), 0.9)`,
           backdropFilter: 'blur(20px) saturate(1.2)',
           WebkitBackdropFilter: 'blur(20px) saturate(1.2)',
+          borderRadius: 'var(--radius)',
           boxShadow: `
-            0 8px 32px -8px hsl(var(--foreground) / 0.15),
-            0 4px 16px -4px hsl(var(--foreground) / 0.1),
-            inset 0 1px 0 hsl(var(--background) / 0.5),
-            inset 0 -1px 0 hsl(var(--border) / 0.1)
+            0 8px 32px -8px hsla(var(--foreground), 0.15),
+            0 4px 16px -4px hsla(var(--foreground), 0.1),
+            inset 0 1px 0 hsla(var(--background), 0.5),
+            inset 0 -1px 0 hsla(var(--border), 0.1)
           `
         }}
       >
