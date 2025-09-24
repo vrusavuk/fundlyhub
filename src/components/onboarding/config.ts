@@ -19,7 +19,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
     icon: Sparkles,
     config: {
       showBackdrop: true,
-      backdropOpacity: 0.6,
+      backdropOpacity: 0.4,
       allowBackgroundInteraction: false
     }
   },
@@ -34,7 +34,8 @@ export const TOUR_STEPS: readonly TourStep[] = [
       payload: { query: 'education' }
     },
     config: {
-      showBackdrop: false, // No backdrop during interactive demo
+      showBackdrop: true,
+      backdropOpacity: 0.2,
       allowBackgroundInteraction: true
     }
   },
@@ -45,7 +46,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
     icon: Heart,
     config: {
       showBackdrop: true,
-      backdropOpacity: 0.4,
+      backdropOpacity: 0.3,
       allowBackgroundInteraction: false
     }
   },
@@ -56,7 +57,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
     icon: Eye,
     config: {
       showBackdrop: true,
-      backdropOpacity: 0.4,
+      backdropOpacity: 0.3,
       allowBackgroundInteraction: false
     }
   },
@@ -67,7 +68,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
     icon: Users,
     config: {
       showBackdrop: true,
-      backdropOpacity: 0.4,
+      backdropOpacity: 0.3,
       allowBackgroundInteraction: false
     }
   },
@@ -78,7 +79,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
     icon: CheckCircle,
     config: {
       showBackdrop: true,
-      backdropOpacity: 0.6,
+      backdropOpacity: 0.4,
       allowBackgroundInteraction: false
     }
   }

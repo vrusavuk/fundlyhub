@@ -221,7 +221,12 @@ export function TourProvider({
       {children}
       {isActive && currentStep && (
         <>
-          <TourBackdrop show={true} onClick={skipTour} />
+          <TourBackdrop 
+            show={currentStep.config?.showBackdrop !== false} 
+            opacity={currentStep.config?.backdropOpacity || 0.3}
+            allowInteraction={currentStep.config?.allowBackgroundInteraction || false}
+            onClick={skipTour} 
+          />
           <TourDialog
             step={currentStep}
             state={{
