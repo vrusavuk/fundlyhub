@@ -204,9 +204,6 @@ export function EnhancedSearchDropdown({
                    <div className="flex items-center gap-2 mb-3">
                      <Search className="h-4 w-4 text-muted-foreground" />
                      <h4 className="text-sm font-medium text-muted-foreground">Search suggestions</h4>
-                     <Badge variant="outline" className="text-xs text-primary">
-                       Click to search
-                     </Badge>
                    </div>
                   <div className="space-y-1">
                     {suggestions.slice(0, 3).map((suggestion) => (

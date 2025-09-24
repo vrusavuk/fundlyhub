@@ -127,21 +127,13 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
 
   const handleSuggestionSelect = (suggestion: SearchSuggestion) => {
     const selectedQuery = suggestion.text;
-    setQuery(selectedQuery);
     
     // Add to recent searches and track
     addRecentSearch(selectedQuery, suggestion.category);
     trackSearch(selectedQuery, 0, suggestion.category);
     
-    // Navigate to search or update current page
-    if (isOnSearchPage) {
-      setSearchQuery(selectedQuery);
-      const newUrl = `/search?q=${encodeURIComponent(selectedQuery)}`;
-      window.history.replaceState({}, '', newUrl);
-    } else {
-      navigate(`/search?q=${encodeURIComponent(selectedQuery)}`);
-    }
-    
+    // Always navigate to search results page
+    navigate(`/search?q=${encodeURIComponent(selectedQuery)}`);
     handleClose();
     hapticFeedback.light();
   };
