@@ -152,11 +152,6 @@ export function TourProvider({
     }
 
     try {
-      // Execute current step action if it exists
-      if (currentStep.action) {
-        await actionService.executeAction(currentStep.action);
-      }
-
       // Track interaction
       onboardingDemo.trackDemoInteraction('tour_step_completed', {
         stepIndex: currentStepIndex,
@@ -178,7 +173,7 @@ export function TourProvider({
         setCurrentStepIndex(prev => prev + 1);
       }
     }
-  }, [currentStep, currentStepIndex, isLastStep, actionService, onboardingDemo, completeTour]);
+  }, [currentStep, currentStepIndex, isLastStep, onboardingDemo, completeTour]);
 
   const prevStep = useCallback(() => {
     if (currentStepIndex > 0) {
