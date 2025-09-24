@@ -579,6 +579,69 @@ export type Database = {
         }
         Relationships: []
       }
+      user_preferences: {
+        Row: {
+          auto_save: boolean | null
+          created_at: string | null
+          default_category: string | null
+          email_notifications: boolean | null
+          font_size: string | null
+          has_completed_onboarding: boolean | null
+          has_skipped_onboarding: boolean | null
+          high_contrast: boolean | null
+          id: string
+          last_visited: string | null
+          push_notifications: boolean | null
+          recent_searches: string[] | null
+          reduced_motion: boolean | null
+          search_suggestions: boolean | null
+          theme: string
+          updated_at: string | null
+          user_id: string
+          view_mode: string
+        }
+        Insert: {
+          auto_save?: boolean | null
+          created_at?: string | null
+          default_category?: string | null
+          email_notifications?: boolean | null
+          font_size?: string | null
+          has_completed_onboarding?: boolean | null
+          has_skipped_onboarding?: boolean | null
+          high_contrast?: boolean | null
+          id?: string
+          last_visited?: string | null
+          push_notifications?: boolean | null
+          recent_searches?: string[] | null
+          reduced_motion?: boolean | null
+          search_suggestions?: boolean | null
+          theme?: string
+          updated_at?: string | null
+          user_id: string
+          view_mode?: string
+        }
+        Update: {
+          auto_save?: boolean | null
+          created_at?: string | null
+          default_category?: string | null
+          email_notifications?: boolean | null
+          font_size?: string | null
+          has_completed_onboarding?: boolean | null
+          has_skipped_onboarding?: boolean | null
+          high_contrast?: boolean | null
+          id?: string
+          last_visited?: string | null
+          push_notifications?: boolean | null
+          recent_searches?: string[] | null
+          reduced_motion?: boolean | null
+          search_suggestions?: boolean | null
+          theme?: string
+          updated_at?: string | null
+          user_id?: string
+          view_mode?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       public_fundraiser_stats: {

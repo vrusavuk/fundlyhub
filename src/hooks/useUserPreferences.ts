@@ -54,45 +54,114 @@ export function useUserPreferences() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Save preferences to localStorage only (no Supabase table for now)
+  // Save preferences to Supabase and localStorage
   const savePreferences = useCallback(async (newPreferences: Partial<UserPreferences>) => {
     try {
       const updatedPrefs = { ...preferences, ...newPreferences };
       setPreferences(updatedPrefs);
 
-      // Save to localStorage immediately
+      // Save to localStorage immediately for immediate feedback
       localStorage.setItem('userPreferences', JSON.stringify(updatedPrefs));
 
-      // Note: Supabase user_preferences table not yet implemented
-      // In production, this would sync with the database
+      // Sync with database if user is authenticated
+      if (user) {
+        const dbPrefs = {
+          user_id: user.id,
+          view_mode: updatedPrefs.viewMode,
+          theme: updatedPrefs.theme,
+          recent_searches: updatedPrefs.recentSearches,
+          search_suggestions: updatedPrefs.searchSuggestions,
+          email_notifications: updatedPrefs.emailNotifications,
+          push_notifications: updatedPrefs.pushNotifications,
+          reduced_motion: updatedPrefs.reducedMotion,
+          high_contrast: updatedPrefs.highContrast,
+          font_size: updatedPrefs.fontSize,
+          has_completed_onboarding: updatedPrefs.hasCompletedOnboarding,
+          has_skipped_onboarding: sessionStorage.getItem('onboardingSkipped') === 'true',
+          last_visited: updatedPrefs.lastVisited,
+          auto_save: updatedPrefs.autoSave,
+          default_category: updatedPrefs.defaultCategory,
+        };
+
+        const { error: upsertError } = await supabase
+          .from('user_preferences')
+          .upsert(dbPrefs, { onConflict: 'user_id' });
+
+        if (upsertError) {
+          console.error('Failed to sync preferences with database:', upsertError);
+          // Don't throw error - localStorage backup is still available
+        }
+      }
     } catch (err) {
       console.error('Failed to save user preferences:', err);
       setError('Failed to save preferences');
     }
-  }, [preferences]);
+  }, [preferences, user]);
 
-  // Load preferences from localStorage only (no Supabase table for now)
+  // Load preferences from Supabase and localStorage
   const loadPreferences = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Load from localStorage
+      let finalPrefs = { ...DEFAULT_PREFERENCES };
+
+      // Load from localStorage first as backup/cache
       const localPrefs = localStorage.getItem('userPreferences');
       if (localPrefs) {
         const parsed = JSON.parse(localPrefs);
-        setPreferences(prev => ({ ...prev, ...parsed }));
+        finalPrefs = { ...finalPrefs, ...parsed };
       }
 
-      // Note: Supabase user_preferences table not yet implemented
-      // In production, this would also load from the database
+      // Load from database if user is authenticated
+      if (user) {
+        const { data: dbPrefs, error: fetchError } = await supabase
+          .from('user_preferences')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (fetchError) {
+          console.error('Failed to load preferences from database:', fetchError);
+          // Continue with localStorage data
+        } else if (dbPrefs) {
+          // Map database fields to UserPreferences interface
+          const mappedPrefs: UserPreferences = {
+            viewMode: dbPrefs.view_mode as 'grid' | 'list',
+            theme: dbPrefs.theme as 'light' | 'dark' | 'system',
+            recentSearches: dbPrefs.recent_searches || [],
+            searchSuggestions: dbPrefs.search_suggestions,
+            emailNotifications: dbPrefs.email_notifications,
+            pushNotifications: dbPrefs.push_notifications,
+            reducedMotion: dbPrefs.reduced_motion,
+            highContrast: dbPrefs.high_contrast,
+            fontSize: dbPrefs.font_size as 'small' | 'medium' | 'large',
+            hasCompletedOnboarding: dbPrefs.has_completed_onboarding,
+            lastVisited: dbPrefs.last_visited,
+            autoSave: dbPrefs.auto_save,
+            defaultCategory: dbPrefs.default_category,
+          };
+
+          // Update sessionStorage for onboarding skip state
+          if (dbPrefs.has_skipped_onboarding) {
+            sessionStorage.setItem('onboardingSkipped', 'true');
+          }
+
+          finalPrefs = { ...finalPrefs, ...mappedPrefs };
+          
+          // Update localStorage cache
+          localStorage.setItem('userPreferences', JSON.stringify(finalPrefs));
+        }
+      }
+
+      setPreferences(finalPrefs);
     } catch (err) {
       console.error('Failed to load user preferences:', err);
       setError('Failed to load preferences');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   // Individual preference setters
   const setViewMode = useCallback((viewMode: 'grid' | 'list') => {
@@ -117,7 +186,15 @@ export function useUserPreferences() {
   }, [savePreferences]);
 
   const completeOnboarding = useCallback(() => {
+    // Clear skip state when completing
+    sessionStorage.removeItem('onboardingSkipped');
     savePreferences({ hasCompletedOnboarding: true });
+  }, [savePreferences]);
+
+  const skipOnboarding = useCallback(() => {
+    // Set skip state in sessionStorage and database
+    sessionStorage.setItem('onboardingSkipped', 'true');
+    savePreferences({ hasCompletedOnboarding: false });
   }, [savePreferences]);
 
   const updateLastVisited = useCallback(() => {
@@ -185,6 +262,7 @@ export function useUserPreferences() {
     addRecentSearch,
     clearRecentSearches,
     completeOnboarding,
+    skipOnboarding,
     updateLastVisited,
     loadPreferences
   };

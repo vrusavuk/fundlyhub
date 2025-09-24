@@ -43,7 +43,7 @@ interface OnboardingProviderProps {
 export function OnboardingProvider({ children }: OnboardingProviderProps) {
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
   const { user } = useAuth();
-  const { preferences, completeOnboarding: saveOnboardingComplete, loading } = useUserPreferences();
+  const { preferences, completeOnboarding: saveOnboardingComplete, skipOnboarding: saveOnboardingSkip, loading } = useUserPreferences();
 
   // Auto-start onboarding for new authenticated users only
   useEffect(() => {
@@ -77,8 +77,8 @@ export function OnboardingProvider({ children }: OnboardingProviderProps) {
 
   const skipOnboarding = useCallback(() => {
     setIsOnboardingOpen(false);
-    sessionStorage.setItem('onboardingSkipped', 'true');
-  }, []);
+    saveOnboardingSkip();
+  }, [saveOnboardingSkip]);
 
   const contextValue = useMemo(() => ({
     isOnboardingOpen,
@@ -94,6 +94,7 @@ export function OnboardingProvider({ children }: OnboardingProviderProps) {
           isOpen={isOnboardingOpen}
           onClose={handleCompleteOnboarding}
           onComplete={handleCompleteOnboarding}
+          onSkip={skipOnboarding}
         >
           {children}
         </TourProvider>
