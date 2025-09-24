@@ -86,6 +86,8 @@ export function SearchSuggestionItem({
   console.log('🎪 SearchSuggestionItem render:', suggestion.text, 'variant:', variant);
   
   const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log('🖱️ SearchSuggestionItem clicked:', suggestion);
     console.log('🎯 Event details:', { target: e.currentTarget, type: e.type });
     console.log('🔗 About to call onSelect with:', suggestion.text);
