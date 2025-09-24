@@ -285,6 +285,12 @@ export function EnhancedSearchDropdown({
                             onViewAllResults();
                             console.log('✅ onViewAllResults called');
                           }}
+                          onMouseDown={() => {
+                            console.log('🖱️ MouseDown on View All Results button');
+                          }}
+                          onMouseUp={() => {
+                            console.log('🖱️ MouseUp on View All Results button');
+                          }}
                         >
                           View all {searchResults.length} results
                           <ArrowRight className="h-4 w-4" />

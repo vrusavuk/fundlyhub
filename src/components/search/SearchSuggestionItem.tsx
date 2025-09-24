@@ -86,8 +86,6 @@ export function SearchSuggestionItem({
   console.log('🎪 SearchSuggestionItem render:', suggestion.text, 'variant:', variant);
   
   const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
     console.log('🖱️ SearchSuggestionItem clicked:', suggestion);
     console.log('🎯 Event details:', { target: e.currentTarget, type: e.type });
     console.log('🔗 About to call onSelect with:', suggestion.text);
@@ -123,15 +121,20 @@ export function SearchSuggestionItem({
       <button
         onClick={handleClick}
         onKeyDown={handleKeyDown}
-      className={cn(
-        "w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-accent/50 focus:bg-accent/50 focus:outline-none transition-all duration-200 rounded-md",
-        "touch-manipulation min-h-[44px] sm:min-h-[36px] group",
-        "hover:shadow-sm hover:border-primary/20 border border-transparent",
-        "cursor-pointer", // Ensure cursor shows it's clickable
-        className
-      )}
+        className={cn(
+          "w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-accent/50 focus:bg-accent/50 focus:outline-none transition-all duration-200 rounded-md",
+          "touch-manipulation min-h-[44px] sm:min-h-[36px] group",
+          "hover:shadow-sm hover:border-primary/20 border border-transparent",
+          "cursor-pointer",
+          className
+        )}
         role="option"
-        style={{ pointerEvents: 'auto' }} // Force pointer events
+        onMouseDown={(e) => {
+          console.log('🖱️ MouseDown on SearchSuggestionItem:', suggestion.text);
+        }}
+        onMouseUp={(e) => {
+          console.log('🖱️ MouseUp on SearchSuggestionItem:', suggestion.text);
+        }}
       >
         <div className={cn("flex-shrink-0", getTypeColor(suggestion.type))}>
           {getTypeIcon(suggestion.type)}
