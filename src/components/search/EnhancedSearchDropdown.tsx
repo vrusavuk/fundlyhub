@@ -51,6 +51,13 @@ export function EnhancedSearchDropdown({
   showResultsSection = true,
   maxHeight = 'max-h-[80vh]'
 }: EnhancedSearchDropdownProps) {
+  console.log('🎪 EnhancedSearchDropdown render:', { 
+    isVisible, 
+    query, 
+    searchResultsCount: searchResults.length,
+    searchLoading 
+  });
+  
   const dropdownRef = useRef<HTMLDivElement>(null);
   
   const {
@@ -63,6 +70,13 @@ export function EnhancedSearchDropdown({
     query,
     enabled: isVisible,
     maxSuggestions: 6
+  });
+  
+  console.log('🎯 Suggestions data:', {
+    suggestionsCount: suggestions.length,
+    recentCount: recentSearches.length,
+    trendingCount: trendingSearches.length,
+    suggestionsLoading
   });
 
   // Handle keyboard navigation
@@ -80,7 +94,10 @@ export function EnhancedSearchDropdown({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isVisible, onClose]);
 
-  if (!isVisible) return null;
+  if (!isVisible) {
+    console.log('🚫 EnhancedSearchDropdown not visible, returning null');
+    return null;
+  }
 
   const hasQuery = query.trim().length > 0;
   const hasResults = searchResults.length > 0;
@@ -149,7 +166,10 @@ export function EnhancedSearchDropdown({
                         key={suggestion.id}
                         suggestion={suggestion}
                         searchQuery=""
-                        onSelect={onSuggestionSelect}
+                        onSelect={(selectedSuggestion) => {
+                          console.log('📚 Recent search clicked:', selectedSuggestion);
+                          onSuggestionSelect(selectedSuggestion);
+                        }}
                         variant="compact"
                       />
                     ))}
@@ -175,7 +195,10 @@ export function EnhancedSearchDropdown({
                         key={suggestion.id}
                         suggestion={suggestion}
                         searchQuery=""
-                        onSelect={onSuggestionSelect}
+                        onSelect={(selectedSuggestion) => {
+                          console.log('🔥 Trending search clicked:', selectedSuggestion);
+                          onSuggestionSelect(selectedSuggestion);
+                        }}
                         variant="compact"
                       />
                     ))}

@@ -83,7 +83,11 @@ export function SearchSuggestionItem({
   className,
   variant = 'default'
 }: SearchSuggestionItemProps) {
+  console.log('🎪 SearchSuggestionItem render:', suggestion.text, 'variant:', variant);
+  
   const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log('🖱️ SearchSuggestionItem clicked:', suggestion);
     console.log('🎯 Event details:', { target: e.currentTarget, type: e.type });
     console.log('🔗 About to call onSelect with:', suggestion.text);
@@ -114,6 +118,7 @@ export function SearchSuggestionItem({
   };
 
   if (variant === 'compact') {
+    console.log('🎯 Rendering compact SearchSuggestionItem for:', suggestion.text);
     return (
       <button
         onClick={handleClick}
@@ -122,9 +127,11 @@ export function SearchSuggestionItem({
         "w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-accent/50 focus:bg-accent/50 focus:outline-none transition-all duration-200 rounded-md",
         "touch-manipulation min-h-[44px] sm:min-h-[36px] group",
         "hover:shadow-sm hover:border-primary/20 border border-transparent",
+        "cursor-pointer", // Ensure cursor shows it's clickable
         className
       )}
         role="option"
+        style={{ pointerEvents: 'auto' }} // Force pointer events
       >
         <div className={cn("flex-shrink-0", getTypeColor(suggestion.type))}>
           {getTypeIcon(suggestion.type)}
