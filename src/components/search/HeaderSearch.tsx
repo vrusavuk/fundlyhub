@@ -218,7 +218,12 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
       {/* Search Backdrop */}
       <SearchBackdrop 
         show={showDropdown} 
-        onClick={() => setShowDropdown(false)} 
+        onClick={(e) => {
+          // Only close if clicking on the backdrop itself, not on dropdown content
+          if (e.target === e.currentTarget) {
+            setShowDropdown(false);
+          }
+        }} 
       />
       
       {/* Search Header - FIXED positioning for scroll persistence */}
@@ -296,10 +301,15 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
       {/* Enhanced Search Dropdown - COMPLETELY OUTSIDE header, positioned to blur page content */}
       {showDropdown && (
         <div 
-          className="fixed inset-x-0 top-16 px-3 sm:px-4 md:px-6 pointer-events-none"
-          style={{ zIndex: 55 }}
+          className="fixed inset-x-0 top-16 px-3 sm:px-4 md:px-6 pointer-events-none z-50"
         >
-          <div className="pointer-events-auto">
+          <div 
+            className="pointer-events-auto"
+            onClick={(e) => {
+              // Stop propagation to prevent backdrop from handling clicks inside dropdown
+              e.stopPropagation();
+            }}
+          >
             <EnhancedSearchDropdown
               query={query}
               searchResults={isOnCampaignsPage ? [...userResults, ...organizationResults] : results}

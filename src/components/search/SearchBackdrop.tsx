@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 interface SearchBackdropProps {
   readonly show: boolean;
   readonly opacity?: number;
-  readonly onClick?: () => void;
+  readonly onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
   readonly className?: string;
 }
 
