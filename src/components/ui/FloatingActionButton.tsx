@@ -70,14 +70,13 @@ export function FloatingActionButton({ className }: FloatingActionButtonProps) {
       {user && (
         <AnimatedButton
           size="lg"
-          className="h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl animate-bounce-gentle"
+          className="h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl"
           onClick={handleHelpClick}
-          pulse
           haptic
         >
           <div className="relative">
             <HelpCircle className="h-6 w-6" />
-            <Sparkles className="absolute -top-1 -right-1 h-3 w-3 text-accent animate-pulse" />
+            <Sparkles className="absolute -top-1 -right-1 h-3 w-3 text-accent" />
           </div>
         </AnimatedButton>
       )}
