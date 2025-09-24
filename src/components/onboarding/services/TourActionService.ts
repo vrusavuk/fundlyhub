@@ -123,19 +123,29 @@ export class TourActionService {
   }
 
   private async handleNavigateAndScroll(path: string, scrollDemo: boolean = false): Promise<void> {
-    console.log('🌊 TourActionService: Navigate and scroll to:', path);
+    console.log('🌊 TourActionService: Navigate and scroll to:', path, 'in background');
     
     try {
-      // Navigate to the page first
-      if (typeof window !== 'undefined' && window.location) {
-        window.location.href = path;
+      // Open the page in a new tab to avoid interrupting the onboarding flow
+      if (typeof window !== 'undefined') {
+        const newTab = window.open(path, '_blank');
         
-        // Wait for navigation to complete
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        if (scrollDemo) {
-          // Start slow scrolling demo after page loads
-          await this.performScrollDemo();
+        if (newTab) {
+          console.log('✅ TourActionService: Opened campaigns page in new tab');
+          
+          if (scrollDemo) {
+            // Focus the new tab briefly to show it to the user
+            setTimeout(() => {
+              try {
+                newTab.focus();
+                console.log('🎯 TourActionService: Focused new tab to show campaigns page');
+              } catch (error) {
+                console.warn('Could not focus new tab:', error);
+              }
+            }, 500);
+          }
+        } else {
+          console.warn('❌ TourActionService: Could not open new tab (popup blocked?)');
         }
       }
     } catch (error) {

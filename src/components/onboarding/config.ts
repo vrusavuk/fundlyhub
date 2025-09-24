@@ -58,7 +58,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
   {
     id: 'campaigns',
     title: 'Discover Amazing Campaigns',
-    description: 'Browse through diverse fundraising campaigns. Let\'s take a look at some active campaigns and see the impact being made.',
+    description: 'Browse through diverse fundraising campaigns and see the impact being made. Click the button below to explore campaigns in a new tab while we continue the tour.',
     icon: Eye,
     action: {
       text: 'Explore Campaigns',
@@ -67,7 +67,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
     },
     config: {
       showBackdrop: true,
-      backdropOpacity: 0.2,
+      backdropOpacity: 0.3,
       allowBackgroundInteraction: true
     }
   },
