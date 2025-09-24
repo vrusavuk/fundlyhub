@@ -126,11 +126,15 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
   };
 
   const handleSuggestionSelect = (suggestion: SearchSuggestion) => {
+    console.log('🔍 Suggestion selected:', suggestion);
+    
     const selectedQuery = suggestion.text;
     
     // Add to recent searches and track
     addRecentSearch(selectedQuery, suggestion.category);
     trackSearch(selectedQuery, 0, suggestion.category);
+    
+    console.log('📍 About to navigate to:', `/search?q=${encodeURIComponent(selectedQuery)}`);
     
     // Update search query in context first
     setSearchQuery(selectedQuery);
@@ -140,7 +144,12 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
     onClose();
     
     // Navigate to search results page using React Router
-    navigate(`/search?q=${encodeURIComponent(selectedQuery)}`);
+    try {
+      navigate(`/search?q=${encodeURIComponent(selectedQuery)}`);
+      console.log('✅ Navigation called successfully');
+    } catch (error) {
+      console.error('❌ Navigation failed:', error);
+    }
     
     hapticFeedback.light();
   };
