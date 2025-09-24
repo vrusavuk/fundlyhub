@@ -24,6 +24,8 @@ export class TourActionService {
   }
 
   async executeAction(action: TourAction): Promise<void> {
+    console.log('🎯 TourActionService: Executing action', action.type, action.payload);
+    
     switch (action.type) {
       case 'demo-search':
         await this.handleDemoSearch(action.payload?.query as string ?? 'education');
@@ -40,52 +42,71 @@ export class TourActionService {
   }
 
   private async handleDemoSearch(query: string): Promise<void> {
+    console.log('🔍 TourActionService: Starting demo search with query:', query);
+    
     if (!this.searchService || !this.demoService) {
-      console.warn('Search or demo service not initialized');
+      console.error('❌ TourActionService: Search or demo service not initialized', {
+        searchService: !!this.searchService,
+        demoService: !!this.demoService
+      });
       return;
     }
 
     try {
+      console.log('✅ TourActionService: Services available, enabling demo mode');
+      
       // Enable demo mode first
       this.demoService.setDemoMode(true);
+      
+      console.log('🚀 TourActionService: Forcing header search to open');
       
       // Force open header search regardless of page
       this.forceOpenHeaderSearch();
       
       // Wait a bit for the search input to appear
+      console.log('⏳ TourActionService: Waiting for search input to appear');
       await new Promise(resolve => setTimeout(resolve, 300));
       
       // Wait for search input to be available
       const searchInput = await this.waitForElement('input[placeholder*="Search"], input[placeholder*="search"]');
+      console.log('✅ TourActionService: Search input found, starting typing simulation');
       
       // Simulate typing with proper event handling
       await this.simulateTyping(searchInput, query);
       
+      console.log('✅ TourActionService: Demo search completed successfully');
+      
     } catch (error) {
-      console.error('Failed to execute demo search:', error);
+      console.error('❌ TourActionService: Failed to execute demo search:', error);
       // Even if demo search fails, continue the tour
     }
   }
 
   private forceOpenHeaderSearch(): void {
+    console.log('🔓 TourActionService: Attempting to force open header search');
+    
     // For demo mode, we need to ensure the search opens regardless of page
     try {
       // First try the custom forceOpen method if available
       if (this.searchService && typeof (this.searchService as any).forceOpen === 'function') {
+        console.log('🎯 TourActionService: Using custom forceOpen method');
         (this.searchService as any).forceOpen();
       } else {
         // Fallback to standard method
+        console.log('🔄 TourActionService: Using standard openHeaderSearch method');
         this.searchService?.openHeaderSearch();
       }
       
       // Also dispatch custom event as additional fallback
+      console.log('📡 TourActionService: Dispatching custom event');
       document.dispatchEvent(new CustomEvent('open-header-search'));
       
       // Set demo mode indicator
       document.body.setAttribute('data-onboarding-active', 'true');
+      console.log('✅ TourActionService: Demo mode indicator set on body');
       
     } catch (error) {
-      console.warn('Failed to force open header search:', error);
+      console.error('❌ TourActionService: Failed to force open header search:', error);
     }
   }
 
@@ -100,17 +121,23 @@ export class TourActionService {
   }
 
   private async waitForElement(selector: string, timeout = 5000): Promise<HTMLInputElement> {
+    console.log('⏳ TourActionService: Waiting for element:', selector);
+    
     return new Promise((resolve, reject) => {
       const startTime = Date.now();
       
       const checkElement = () => {
         const element = document.querySelector(selector) as HTMLInputElement;
+        console.log('🔍 TourActionService: Checking for element...', !!element);
+        
         if (element && element.isConnected) {
+          console.log('✅ TourActionService: Element found!', element);
           resolve(element);
           return;
         }
         
         if (Date.now() - startTime > timeout) {
+          console.error('❌ TourActionService: Element not found within timeout:', selector);
           reject(new Error(`Element ${selector} not found within ${timeout}ms`));
           return;
         }

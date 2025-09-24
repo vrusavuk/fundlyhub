@@ -114,11 +114,15 @@ export function UnifiedSearchProvider({ children }: { children: ReactNode }) {
   }, [location.pathname]);
 
   const openHeaderSearch = useCallback(() => {
+    console.log('🔍 UnifiedSearchContext: openHeaderSearch called');
+    
     try {
       // If we're on a page that uses integrated search, focus the search input instead
       const isDemoMode = document.querySelector('[data-onboarding-active]') !== null;
+      console.log('🎯 UnifiedSearchContext: Demo mode active?', isDemoMode);
       
       if (!isDemoMode && shouldUseIntegratedSearch()) {
+        console.log('🔄 UnifiedSearchContext: Using integrated search, focusing input');
         const searchInput = document.querySelector('input[placeholder*="Search"]') as HTMLInputElement;
         if (searchInput) {
           searchInput.focus();
@@ -126,9 +130,10 @@ export function UnifiedSearchProvider({ children }: { children: ReactNode }) {
         }
       }
       
+      console.log('🚀 UnifiedSearchContext: Dispatching OPEN_HEADER_SEARCH');
       dispatch({ type: 'OPEN_HEADER_SEARCH' });
     } catch (error) {
-      console.warn('Error opening header search:', error);
+      console.error('❌ UnifiedSearchContext: Error opening header search:', error);
       dispatch({ type: 'OPEN_HEADER_SEARCH' });
     }
   }, [shouldUseIntegratedSearch]);
