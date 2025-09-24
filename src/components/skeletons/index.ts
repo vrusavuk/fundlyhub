@@ -10,6 +10,9 @@ export { FundraiserCardSkeleton } from './FundraiserCardSkeleton';
 export { ActivityItemSkeleton } from './ActivityItemSkeleton';
 export { ProfileHeaderSkeleton } from './ProfileHeaderSkeleton';
 export { SearchResultSkeleton } from './SearchResultSkeleton';
+export { SearchPageSkeleton } from './SearchPageSkeleton';
+export { SearchFiltersSkeleton } from './SearchFiltersSkeleton';
+export { SearchStatsSkeleton } from './SearchStatsSkeleton';
 
 // Page-level skeletons
 export { 
@@ -30,6 +33,7 @@ export type SkeletonVariant =
   | 'profile-page'
   | 'campaign-page'
   | 'search-results'
+  | 'search-page'
   | 'table'
   | 'cards';
 

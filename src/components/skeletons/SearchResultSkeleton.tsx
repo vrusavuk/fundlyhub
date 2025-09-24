@@ -2,7 +2,7 @@ import { Skeleton, SkeletonText, SkeletonAvatar } from "@/components/ui/enhanced
 
 interface SearchResultSkeletonProps {
   className?: string;
-  variant?: 'list' | 'card';
+  variant?: 'list' | 'card' | 'compact';
 }
 
 export function SearchResultSkeleton({ className, variant = 'list' }: SearchResultSkeletonProps) {
@@ -25,6 +25,19 @@ export function SearchResultSkeleton({ className, variant = 'list' }: SearchResu
           <Skeleton className="h-6 w-16 rounded-full" />
           <Skeleton className="h-6 w-20 rounded-full" />
         </div>
+      </div>
+    );
+  }
+
+  if (variant === 'compact') {
+    return (
+      <div className={`flex items-center gap-3 p-2 ${className}`}>
+        <SkeletonAvatar size="sm" />
+        <div className="flex-1 space-y-1">
+          <Skeleton className="h-3 w-1/2" />
+          <Skeleton className="h-2 w-1/3" />
+        </div>
+        <Skeleton className="h-4 w-8 rounded-full" />
       </div>
     );
   }

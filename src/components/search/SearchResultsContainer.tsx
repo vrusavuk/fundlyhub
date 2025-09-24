@@ -1,12 +1,15 @@
 /**
  * Search results container component
- * Handles different layouts and states for search results
+ * Handles different layouts and states for search results with proper skeleton loading
  */
 import { memo } from 'react';
 import { SearchResultItem } from './SearchResultItem';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { Button } from '@/components/ui/button';
+import { SearchResultSkeleton, SKELETON_COUNTS } from '@/components/skeletons';
+import { ScreenReaderOnly } from '@/components/accessibility/ScreenReaderOnly';
+import { cn } from '@/lib/utils';
 
 interface SearchResult {
   id: string;
@@ -46,10 +49,27 @@ export const SearchResultsContainer = memo<SearchResultsContainerProps>(({
   onRetry,
   onResultClick
 }) => {
+  // Initial loading state with skeleton
   if (loading && results.length === 0) {
     return (
-      <div className="flex justify-center py-12">
-        <LoadingSpinner />
+      <div className="space-y-4">
+        <ScreenReaderOnly>Loading search results, please wait...</ScreenReaderOnly>
+        <div role="status" aria-label="Loading search results">
+          <div className={cn(
+            variant === 'card' ? 'space-y-4' : 'divide-y divide-border'
+          )}>
+        {Array.from({ length: SKELETON_COUNTS.SEARCH_RESULTS }).map((_, index) => (
+          <SearchResultSkeleton
+            key={index}
+            variant={variant === 'compact' ? 'compact' : variant}
+            className={cn(
+              variant === 'list' && 'py-3 first:pt-0 last:pb-0',
+              className
+            )}
+          />
+        ))}
+          </div>
+        </div>
       </div>
     );
   }
