@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { EnhancedSearchDropdown } from "./EnhancedSearchDropdown";
-import { SearchBackdrop } from "./SearchBackdrop";
 import { useEnhancedSearch } from "@/hooks/useEnhancedSearch";
 import { useSearchSuggestions } from "@/hooks/useSearchSuggestions";
 import { useGlobalSearch } from "@/contexts/SearchContext";
@@ -214,13 +213,7 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
   if (!isOpen) return null;
 
   return (
-    <>
-      {/* Search Backdrop */}
-      <SearchBackdrop 
-        show={showDropdown} 
-        onClick={() => setShowDropdown(false)} 
-      />
-      
+    <>      
       {/* Search Header - FIXED positioning for scroll persistence */}
       <div 
         className="fixed top-0 left-0 right-0 z-50 border-b border-border/20 shadow-strong"
@@ -293,13 +286,29 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
       </div>
       </div>
 
-      {/* Enhanced Search Dropdown - COMPLETELY OUTSIDE header, positioned to blur page content */}
+      {/* Enhanced Search Dropdown - Properly positioned above everything */}
       {showDropdown && (
         <div 
-          className="fixed inset-x-0 top-16 px-3 sm:px-4 md:px-6 pointer-events-none"
-          style={{ zIndex: 55 }}
+          className="fixed inset-x-0 top-16 px-3 sm:px-4 md:px-6 z-60"
+          style={{ 
+            background: 'rgba(0, 0, 0, 0.05)',
+            backdropFilter: 'blur(2px)'
+          }}
+          onClick={(e) => {
+            // Only close if clicking the backdrop, not the dropdown content
+            if (e.target === e.currentTarget) {
+              console.log('📱 Backdrop clicked, closing dropdown');
+              setShowDropdown(false);
+            }
+          }}
         >
-          <div className="pointer-events-auto">
+          <div 
+            className="relative"
+            onClick={(e) => {
+              // Prevent backdrop click when clicking inside dropdown
+              e.stopPropagation();
+            }}
+          >
             <EnhancedSearchDropdown
               query={query}
               searchResults={isOnCampaignsPage ? [...userResults, ...organizationResults] : results}
