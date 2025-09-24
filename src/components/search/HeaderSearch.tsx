@@ -126,14 +126,16 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
     console.log('📍 About to navigate to:', `/search?q=${encodeURIComponent(selectedQuery)}`);
     console.log('🗂️ Current location:', location.pathname);
     
-    // Close the header search immediately
-    onClose();
-    console.log('🚪 Header search closed');
-    
-    // Navigate directly to search results page
+    // ALWAYS navigate to search page for suggestions, regardless of current page
     try {
-      navigate(`/search?q=${encodeURIComponent(selectedQuery)}`);
-      console.log('✅ Navigation called successfully');
+      // Close the modal first to avoid any interference
+      onClose();
+      console.log('🚪 Header search closed');
+      
+      // Force navigation to search page
+      console.log('🚀 Forcing navigation to search page...');
+      navigate(`/search?q=${encodeURIComponent(selectedQuery)}`, { replace: false });
+      console.log('✅ Navigation completed');
     } catch (error) {
       console.error('❌ Navigation failed:', error);
     }
@@ -162,16 +164,17 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
         trackSearch(query.trim(), results.length);
         console.log('✅ Search tracking completed');
         
-        // Close the header search immediately
-        onClose();
-        console.log('🚪 Header search closed');
-        
         const targetUrl = `/search?q=${encodeURIComponent(query.trim())}`;
         console.log('📍 About to navigate to:', targetUrl);
         
-        // Navigate directly to search results page
-        navigate(targetUrl);
-        console.log('✅ Navigation called successfully');
+        // Close modal first to avoid interference
+        onClose();
+        console.log('🚪 Header search closed');
+        
+        // Force navigation to search results page
+        console.log('🚀 Forcing navigation to search page...');
+        navigate(targetUrl, { replace: false });
+        console.log('✅ Navigation completed');
         
         hapticFeedback.medium();
       } catch (error) {
