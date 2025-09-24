@@ -114,11 +114,12 @@ export function SearchSuggestionItem({
       <button
         onClick={handleClick}
         onKeyDown={handleKeyDown}
-        className={cn(
-          "w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-accent/50 focus:bg-accent/50 focus:outline-none transition-colors rounded-md",
-          "touch-manipulation min-h-[44px] sm:min-h-[36px]",
-          className
-        )}
+      className={cn(
+        "w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-accent/50 focus:bg-accent/50 focus:outline-none transition-all duration-200 rounded-md",
+        "touch-manipulation min-h-[44px] sm:min-h-[36px] group",
+        "hover:shadow-sm hover:border-primary/20 border border-transparent",
+        className
+      )}
         role="option"
       >
         <div className={cn("flex-shrink-0", getTypeColor(suggestion.type))}>
@@ -137,7 +138,10 @@ export function SearchSuggestionItem({
               {getCategoryIcon(suggestion.category)}
             </div>
           )}
-          <ArrowUpRight className="h-3 w-3 text-muted-foreground" />
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <span className="hidden sm:inline">Search</span>
+            <ArrowUpRight className="h-3 w-3" />
+          </div>
         </div>
       </button>
     );
@@ -148,8 +152,9 @@ export function SearchSuggestionItem({
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       className={cn(
-        "w-full flex items-start gap-4 p-4 text-left hover:bg-accent/30 focus:bg-accent/50 focus:outline-none transition-colors",
-        "touch-manipulation min-h-[60px]",
+        "w-full flex items-start gap-4 p-4 text-left hover:bg-accent/30 focus:bg-accent/50 focus:outline-none transition-all duration-200",
+        "touch-manipulation min-h-[60px] group",
+        "hover:shadow-sm hover:border-primary/20 border border-transparent rounded-lg",
         className
       )}
       role="option"
@@ -185,7 +190,8 @@ export function SearchSuggestionItem({
         </div>
       </div>
 
-      <div className="flex-shrink-0 text-muted-foreground">
+      <div className="flex items-center gap-2 flex-shrink-0 text-muted-foreground">
+        <span className="text-xs font-medium">Search</span>
         <ArrowUpRight className="h-4 w-4" />
       </div>
     </button>
