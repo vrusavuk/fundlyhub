@@ -20,18 +20,29 @@ export function FloatingActionButton({ className }: FloatingActionButtonProps) {
   const { startOnboarding } = useOnboarding();
   const { user } = useAuth();
 
-  // Show/hide based on scroll position
+  // Show/hide based on scroll position with debouncing
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
     const handleScroll = () => {
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      setIsVisible(scrollTop > 200);
-      setShowScrollToTop(scrollTop > 600);
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        requestAnimationFrame(() => {
+          setIsVisible(scrollTop > 200);
+          setShowScrollToTop(scrollTop > 600);
+        });
+      }, 16); // ~60fps
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll(); // Initial check
 
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   const handleHelpClick = () => {
