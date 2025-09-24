@@ -24,7 +24,7 @@ export function TourBackdrop({
   return (
     <div
       className={cn(
-        'fixed inset-0 transition-all duration-300',
+        'fixed inset-0 z-40 transition-all duration-300',
         allowInteraction ? 'pointer-events-none' : 'pointer-events-auto',
         className
       )}

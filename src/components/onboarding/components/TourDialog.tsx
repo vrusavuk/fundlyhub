@@ -66,19 +66,20 @@ export function TourDialog({
   };
 
   return (
-    <Card
-      ref={dialogRef}
-      className={cn(
-        'relative w-full max-w-md bg-background/95 backdrop-blur-sm shadow-2xl border-2 border-primary/10',
-        'animate-scale-in transition-all duration-200',
-        'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2'
-      )}
-      tabIndex={-1}
-      role="dialog"
-      aria-labelledby="tour-title"
-      aria-describedby="tour-description"
-      aria-modal="true"
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <Card
+        ref={dialogRef}
+        className={cn(
+          'relative w-full max-w-md bg-background/95 backdrop-blur-sm shadow-2xl border-2 border-primary/10',
+          'animate-scale-in transition-all duration-200',
+          'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2'
+        )}
+        tabIndex={-1}
+        role="dialog"
+        aria-labelledby="tour-title"
+        aria-describedby="tour-description"
+        aria-modal="true"
+      >
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -191,5 +192,6 @@ export function TourDialog({
         </Button>
       </CardContent>
     </Card>
+    </div>
   );
 }
