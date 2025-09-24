@@ -35,20 +35,23 @@ export default function SearchResults() {
     enabled: !!activeQuery
   });
 
-  // Sync global search query with URL when it changes
+  // Sync global search context with URL on initial load only
   useEffect(() => {
-    if (searchQuery && searchQuery !== urlQuery) {
-      // Update URL to match global search query
-      setSearchParams({ q: searchQuery }, { replace: true });
-    }
-  }, [searchQuery, urlQuery, setSearchParams]);
-
-  // Sync global search context with URL when URL changes directly
-  useEffect(() => {
-    if (urlQuery && urlQuery !== searchQuery) {
+    if (urlQuery && !searchQuery) {
       setSearchQuery(urlQuery);
     }
-  }, [urlQuery, searchQuery, setSearchQuery]);
+  }, [urlQuery, setSearchQuery]); // Only depend on urlQuery and setSearchQuery
+
+  // Update URL when global search query changes (but not on every render)
+  useEffect(() => {
+    if (searchQuery && searchQuery !== urlQuery) {
+      const timeoutId = setTimeout(() => {
+        setSearchParams({ q: searchQuery }, { replace: true });
+      }, 100); // Debounce to prevent rapid updates
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [searchQuery]); // Only depend on searchQuery
 
   const filteredResults = selectedType === 'all' 
     ? results 
