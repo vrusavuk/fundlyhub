@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { AnimatedButton } from '@/components/animations/AnimatedButton';
 import { useOnboarding } from '@/components/onboarding/OnboardingProvider';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { cn } from '@/lib/utils';
 import { hapticFeedback } from '@/lib/utils/mobile';
 import { HelpCircle, Sparkles, ChevronUp } from 'lucide-react';
@@ -19,6 +20,13 @@ export function FloatingActionButton({ className }: FloatingActionButtonProps) {
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const { startOnboarding } = useOnboarding();
   const { user } = useAuth();
+  const { preferences, loading } = useUserPreferences();
+
+  // Check if onboarding button should be shown
+  const shouldShowOnboardingButton = user && !loading && (
+    !preferences.hasCompletedOnboarding && 
+    !sessionStorage.getItem('onboardingSkipped')
+  );
 
   // Show/hide based on scroll position
   useEffect(() => {
@@ -66,8 +74,8 @@ export function FloatingActionButton({ className }: FloatingActionButtonProps) {
         </AnimatedButton>
       </div>
 
-      {/* Help/Tour button - Only show for authenticated users */}
-      {user && (
+      {/* Help/Tour button - Only show if onboarding not completed or skipped */}
+      {shouldShowOnboardingButton && (
         <AnimatedButton
           size="lg"
           className="h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl"
