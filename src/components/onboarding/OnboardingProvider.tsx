@@ -1,7 +1,7 @@
 /**
  * Onboarding provider for managing onboarding state and tours
  */
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { TourProvider } from './components/TourProvider';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useAuth } from '@/hooks/useAuth';
@@ -51,30 +51,29 @@ export function OnboardingProvider({ children }: OnboardingProviderProps) {
     }
   }, [preferences.hasCompletedOnboarding, loading]);
 
-  const startOnboarding = () => {
+  const startOnboarding = useCallback(() => {
     setIsOnboardingOpen(true);
-  };
+  }, []);
 
-  const handleCompleteOnboarding = () => {
+  const handleCompleteOnboarding = useCallback(() => {
     setIsOnboardingOpen(false);
     saveOnboardingComplete();
-  };
+  }, [saveOnboardingComplete]);
 
-  const skipOnboarding = () => {
+  const skipOnboarding = useCallback(() => {
     setIsOnboardingOpen(false);
     sessionStorage.setItem('onboardingSkipped', 'true');
-  };
+  }, []);
+
+  const contextValue = useMemo(() => ({
+    isOnboardingOpen,
+    startOnboarding,
+    completeOnboarding: handleCompleteOnboarding,
+    skipOnboarding,
+  }), [isOnboardingOpen, startOnboarding, handleCompleteOnboarding, skipOnboarding]);
 
   return (
-    <OnboardingContext.Provider
-      value={{
-        isOnboardingOpen,
-        startOnboarding,
-        completeOnboarding: handleCompleteOnboarding,
-        skipOnboarding,
-      }}
-    >
-      {children}
+    <OnboardingContext.Provider value={contextValue}>
       <TourProvider
         isOpen={isOnboardingOpen}
         onClose={handleCompleteOnboarding}

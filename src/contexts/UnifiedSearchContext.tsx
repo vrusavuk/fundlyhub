@@ -2,7 +2,7 @@
  * Unified Search Context - Consolidated search state management
  * Provides comprehensive search functionality with error handling
  */
-import React, { createContext, useContext, useReducer, useEffect, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 
 interface SearchState {
@@ -189,7 +189,7 @@ export function UnifiedSearchProvider({ children }: { children: ReactNode }) {
     return () => document.removeEventListener('open-header-search', handleForceOpen);
   }, []);
 
-  const value: SearchContextType = {
+  const value: SearchContextType = useMemo(() => ({
     ...state,
     openHeaderSearch,
     closeHeaderSearch,
@@ -199,7 +199,17 @@ export function UnifiedSearchProvider({ children }: { children: ReactNode }) {
     setError,
     resetState,
     shouldUseIntegratedSearch,
-  };
+  }), [
+    state,
+    openHeaderSearch,
+    closeHeaderSearch,
+    setSearchQuery,
+    clearSearch,
+    setLoading,
+    setError,
+    resetState,
+    shouldUseIntegratedSearch,
+  ]);
 
   return (
     <UnifiedSearchContext.Provider value={value}>

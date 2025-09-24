@@ -2,7 +2,7 @@
  * Onboarding Demo Provider with enhanced error handling
  * Provides demo functionality for onboarding tours with fallback support
  */
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode, useMemo } from 'react';
 
 // Demo data interfaces
 interface DemoUser {
@@ -141,21 +141,6 @@ export function OnboardingDemoProvider({ children }: OnboardingDemoProviderProps
     );
   }, []);
 
-  const simulateSearchInteraction = useCallback((query: string) => {
-    if (!isDemoMode) return;
-    
-    // Simulate a realistic search interaction
-    trackDemoInteraction('search_performed', { query, timestamp: Date.now() });
-    
-    // Simulate some results being found
-    const results = getDemoSearchResults(query);
-    trackDemoInteraction('search_results_displayed', { 
-      query, 
-      resultCount: results.length,
-      timestamp: Date.now() 
-    });
-  }, [isDemoMode, getDemoSearchResults]);
-
   const trackDemoInteraction = useCallback((action: string, data?: any) => {
     if (!isDemoMode) return;
 
@@ -171,13 +156,35 @@ export function OnboardingDemoProvider({ children }: OnboardingDemoProviderProps
   const setDemoMode = useCallback((enabled: boolean) => {
     setIsDemoMode(enabled);
     if (enabled) {
-      trackDemoInteraction('demo_mode_enabled');
+      setDemoInteractions(prev => [...prev, { action: 'demo_mode_enabled', timestamp: Date.now() }]);
     } else {
-      trackDemoInteraction('demo_mode_disabled');
+      setDemoInteractions(prev => [...prev, { action: 'demo_mode_disabled', timestamp: Date.now() }]);
     }
   }, []);
 
-  const value: OnboardingDemoContextType = {
+  const simulateSearchInteraction = useCallback((query: string) => {
+    if (!isDemoMode) return;
+    
+    // Simulate a realistic search interaction
+    const timestamp = Date.now();
+    setDemoInteractions(prev => [
+      ...prev,
+      { action: 'search_performed', data: { query, timestamp }, timestamp },
+    ]);
+    
+    // Simulate some results being found
+    const results = getDemoSearchResults(query);
+    setDemoInteractions(prev => [
+      ...prev,
+      { 
+        action: 'search_results_displayed', 
+        data: { query, resultCount: results.length, timestamp }, 
+        timestamp 
+      }
+    ]);
+  }, [isDemoMode, getDemoSearchResults]);
+
+  const value: OnboardingDemoContextType = useMemo(() => ({
     isDemoMode,
     setDemoMode,
     getDemoSearchResults,
@@ -185,7 +192,15 @@ export function OnboardingDemoProvider({ children }: OnboardingDemoProviderProps
     simulateSearchInteraction,
     trackDemoInteraction,
     demoInteractions
-  };
+  }), [
+    isDemoMode,
+    setDemoMode,
+    getDemoSearchResults,
+    getDemoSearchSuggestions,
+    simulateSearchInteraction,
+    trackDemoInteraction,
+    demoInteractions
+  ]);
 
   return (
     <OnboardingDemoContext.Provider value={value}>

@@ -1,7 +1,7 @@
 /**
  * Navigation context for tracking user journey and generating smart breadcrumbs
  */
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 export interface BreadcrumbItem {
@@ -41,11 +41,11 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
     }
   }, [location]);
 
-  const addBreadcrumb = (item: BreadcrumbItem) => {
+  const addBreadcrumb = useCallback((item: BreadcrumbItem) => {
     setBreadcrumbs(prev => [...prev, item]);
-  };
+  }, []);
 
-  const navigateBack = () => {
+  const navigateBack = useCallback(() => {
     if (referrer) {
       navigate(referrer);
     } else if (window.history.length > 1) {
@@ -53,9 +53,9 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
     } else {
       navigate('/');
     }
-  };
+  }, [referrer, navigate]);
 
-  const value = {
+  const value = useMemo(() => ({
     breadcrumbs,
     setBreadcrumbs,
     addBreadcrumb,
@@ -63,7 +63,15 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
     setShouldShowBackButton,
     navigateBack,
     referrer,
-  };
+  }), [
+    breadcrumbs,
+    setBreadcrumbs,
+    addBreadcrumb,
+    shouldShowBackButton,
+    setShouldShowBackButton,
+    navigateBack,
+    referrer,
+  ]);
 
   return (
     <NavigationContext.Provider value={value}>
