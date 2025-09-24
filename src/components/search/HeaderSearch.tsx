@@ -249,9 +249,10 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
                     setShowDropdown(false);
                     hapticFeedback.light();
                   }}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-muted rounded-full"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-muted/50 rounded-full transition-colors duration-200"
+                  title="Clear search"
                 >
-                  <Delete className="h-4 w-4" />
+                  <Delete className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
                 </Button>
               )}
             </div>
