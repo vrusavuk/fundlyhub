@@ -24,6 +24,22 @@ export const TOUR_STEPS: readonly TourStep[] = [
     }
   },
   {
+    id: 'categories',
+    title: 'Browse by Categories',
+    description: 'Explore different cause categories to find campaigns that matter to you. Each category shows live statistics and trending causes.',
+    icon: Heart,
+    action: {
+      text: 'Show Categories',
+      type: 'highlight-section',
+      payload: { section: 'categories', scrollTo: true }
+    },
+    config: {
+      showBackdrop: true,
+      backdropOpacity: 0.2,
+      allowBackgroundInteraction: true
+    }
+  },
+  {
     id: 'search',
     title: 'Smart Search Experience',
     description: 'Our intelligent search helps you find campaigns by cause, location, or keywords. Try our demo search to see how it works!',
@@ -40,25 +56,19 @@ export const TOUR_STEPS: readonly TourStep[] = [
     }
   },
   {
-    id: 'categories',
-    title: 'Browse Categories',
-    description: 'Explore campaigns by category to find causes you care about. Each category shows live statistics and trending causes.',
-    icon: Heart,
-    config: {
-      showBackdrop: true,
-      backdropOpacity: 0.3,
-      allowBackgroundInteraction: false
-    }
-  },
-  {
     id: 'campaigns',
-    title: 'Discover Campaigns',
-    description: 'View campaign cards with progress, goals, and impact. Click any card to learn more and donate.',
+    title: 'Discover Amazing Campaigns',
+    description: 'Browse through diverse fundraising campaigns. Let\'s take a look at some active campaigns and see the impact being made.',
     icon: Eye,
+    action: {
+      text: 'Explore Campaigns',
+      type: 'navigate-and-scroll',
+      payload: { path: '/campaigns', scrollDemo: true }
+    },
     config: {
       showBackdrop: true,
-      backdropOpacity: 0.3,
-      allowBackgroundInteraction: false
+      backdropOpacity: 0.2,
+      allowBackgroundInteraction: true
     }
   },
   {
@@ -89,5 +99,7 @@ export const TOUR_CONFIG = {
   NAVIGATION_DEBOUNCE_MS: 300,
   AUTO_PROGRESS_DELAY_MS: 2000,
   DEMO_TYPING_DELAY_MS: 150,
-  DEMO_SEARCH_DELAY_MS: 500
+  DEMO_SEARCH_DELAY_MS: 500,
+  SCROLL_DEMO_DURATION_MS: 5000,
+  SCROLL_DEMO_STEPS: 50
 } as const;

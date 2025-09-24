@@ -14,7 +14,7 @@ export interface TourStep {
 
 export interface TourAction {
   readonly text: string;
-  readonly type: 'demo-search' | 'navigation' | 'custom';
+  readonly type: 'demo-search' | 'navigation' | 'custom' | 'highlight-section' | 'navigate-and-scroll';
   readonly payload?: Record<string, unknown>;
 }
 

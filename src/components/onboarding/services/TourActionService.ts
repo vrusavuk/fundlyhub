@@ -33,6 +33,18 @@ export class TourActionService {
       case 'navigation':
         await this.handleNavigation(action.payload?.path as string);
         break;
+      case 'highlight-section':
+        await this.handleHighlightSection(
+          action.payload?.section as string,
+          action.payload?.scrollTo as boolean
+        );
+        break;
+      case 'navigate-and-scroll':
+        await this.handleNavigateAndScroll(
+          action.payload?.path as string,
+          action.payload?.scrollDemo as boolean
+        );
+        break;
       case 'custom':
         await this.handleCustomAction(action.payload ?? {});
         break;
@@ -107,6 +119,159 @@ export class TourActionService {
       
     } catch (error) {
       console.error('❌ TourActionService: Failed to force open header search:', error);
+    }
+  }
+
+  private async handleNavigateAndScroll(path: string, scrollDemo: boolean = false): Promise<void> {
+    console.log('🌊 TourActionService: Navigate and scroll to:', path);
+    
+    try {
+      // Navigate to the page first
+      if (typeof window !== 'undefined' && window.location) {
+        window.location.href = path;
+        
+        // Wait for navigation to complete
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        if (scrollDemo) {
+          // Start slow scrolling demo after page loads
+          await this.performScrollDemo();
+        }
+      }
+    } catch (error) {
+      console.error('❌ TourActionService: Failed to navigate and scroll:', error);
+    }
+  }
+
+  private async handleHighlightSection(section: string, scrollTo: boolean = false): Promise<void> {
+    console.log('✨ TourActionService: Highlighting section:', section);
+    
+    try {
+      if (scrollTo) {
+        await this.scrollToSection(section);
+      }
+      
+      // Add highlight effect to the section
+      this.addSectionHighlight(section);
+      
+    } catch (error) {
+      console.error('❌ TourActionService: Failed to highlight section:', error);
+    }
+  }
+
+  private async scrollToSection(section: string): Promise<void> {
+    const selectors = {
+      categories: '[data-section="categories"], .categories-section, [class*="categories"]',
+      campaigns: '[data-section="campaigns"], .campaigns-section, [class*="campaigns"]',
+      hero: '[data-section="hero"], .hero-section, [class*="hero"]'
+    };
+    
+    const selector = selectors[section as keyof typeof selectors] || `[data-section="${section}"]`;
+    const element = document.querySelector(selector);
+    
+    if (element) {
+      console.log('📍 TourActionService: Scrolling to section element:', element);
+      element.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center',
+        inline: 'nearest'
+      });
+      
+      // Wait for scroll to complete
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } else {
+      console.warn('⚠️ TourActionService: Section element not found:', selector);
+    }
+  }
+
+  private addSectionHighlight(section: string): void {
+    // Remove existing highlights
+    document.querySelectorAll('.onboarding-highlight').forEach(el => {
+      el.classList.remove('onboarding-highlight');
+    });
+    
+    const selectors = {
+      categories: '[data-section="categories"], .categories-section, [class*="categories"]',
+      campaigns: '[data-section="campaigns"], .campaigns-section, [class*="campaigns"]'
+    };
+    
+    const selector = selectors[section as keyof typeof selectors] || `[data-section="${section}"]`;  
+    const element = document.querySelector(selector);
+    
+    if (element) {
+      element.classList.add('onboarding-highlight');
+      
+      // Add highlight styles if not already present
+      if (!document.getElementById('onboarding-highlight-styles')) {
+        const style = document.createElement('style');
+        style.id = 'onboarding-highlight-styles';
+        style.textContent = `
+          .onboarding-highlight {
+            position: relative !important;
+            z-index: 35 !important;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5), 0 0 30px rgba(59, 130, 246, 0.3) !important;
+            border-radius: 12px !important;
+            transition: all 0.3s ease-in-out !important;
+            transform: scale(1.02) !important;
+          }
+          
+          .onboarding-highlight::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            right: -8px;
+            bottom: -8px;
+            background: linear-gradient(45deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            border-radius: 16px;
+            z-index: -1;
+            animation: pulse-glow 2s ease-in-out infinite;
+          }
+          
+          @keyframes pulse-glow {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.02); }
+          }
+        `;
+        document.head.appendChild(style);
+      }
+      
+      console.log('✨ TourActionService: Added highlight to section:', element);
+      
+      // Auto-remove highlight after 10 seconds
+      setTimeout(() => {
+        element.classList.remove('onboarding-highlight');
+      }, 10000);
+    }
+  }
+
+  private async performScrollDemo(): Promise<void> {
+    console.log('🎬 TourActionService: Starting scroll demo');
+    
+    try {
+      const scrollHeight = document.documentElement.scrollHeight;
+      const windowHeight = window.innerHeight;
+      const maxScroll = scrollHeight - windowHeight;
+      
+      // Use config values for scroll demo
+      const duration = TOUR_CONFIG.SCROLL_DEMO_DURATION_MS;
+      const steps = TOUR_CONFIG.SCROLL_DEMO_STEPS;
+      const stepDelay = duration / steps;
+      const scrollStep = maxScroll / steps;
+      
+      for (let i = 0; i <= steps; i++) {
+        window.scrollTo({
+          top: scrollStep * i,
+          behavior: 'smooth'
+        });
+        
+        await new Promise(resolve => setTimeout(resolve, stepDelay));
+      }
+      
+      console.log('✅ TourActionService: Scroll demo completed');
+      
+    } catch (error) {
+      console.error('❌ TourActionService: Scroll demo failed:', error);
     }
   }
 
