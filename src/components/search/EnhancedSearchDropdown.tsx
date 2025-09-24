@@ -99,6 +99,17 @@ export function EnhancedSearchDropdown({
     return null;
   }
 
+  // Handle backdrop clicks
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    console.info('🎯 Backdrop clicked, closing dropdown');
+    onClose();
+  };
+
+  // Prevent dropdown content clicks from closing
+  const handleDropdownClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   const hasQuery = query.trim().length > 0;
   const hasResults = searchResults.length > 0;
   const hasSuggestions = suggestions.length > 0;
@@ -107,27 +118,38 @@ export function EnhancedSearchDropdown({
   const isLoading = searchLoading || suggestionsLoading;
 
   return (
-    <div className="relative">
-      <Card
-        ref={dropdownRef}
-        className={cn(
-          "w-full mt-2 border shadow-2xl",
-          "animate-in fade-in-0 slide-in-from-top-2 duration-200",
-          maxHeight,
-          className
-        )}
-        style={{
-          background: `hsl(var(--background) / 0.04)`,
-          backdropFilter: 'blur(50px) saturate(2.5) brightness(1.2)',
-          WebkitBackdropFilter: 'blur(50px) saturate(2.5) brightness(1.2)',
-          border: '1px solid hsl(var(--border) / 0.4)',
-          boxShadow: `
-            0 12px 40px hsl(var(--foreground) / 0.15),
-            0 6px 20px hsl(var(--foreground) / 0.08),
-            inset 0 1px 0 hsl(var(--background) / 0.2)
-          `
-        }}
-      >
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 z-40 backdrop-blur-sm bg-black/10"
+        onClick={handleBackdropClick}
+        role="presentation"
+        aria-hidden="true"
+      />
+      
+      {/* Dropdown Content */}
+      <div className="fixed inset-x-0 top-16 px-3 sm:px-4 md:px-6 z-50">
+        <Card
+          ref={dropdownRef}
+          className={cn(
+            "w-full mt-2 border shadow-2xl",
+            "animate-in fade-in-0 slide-in-from-top-2 duration-200",
+            maxHeight,
+            className
+          )}
+          style={{
+            background: `hsl(var(--background) / 0.04)`,
+            backdropFilter: 'blur(50px) saturate(2.5) brightness(1.2)',
+            WebkitBackdropFilter: 'blur(50px) saturate(2.5) brightness(1.2)',
+            border: '1px solid hsl(var(--border) / 0.4)',
+            boxShadow: `
+              0 12px 40px hsl(var(--foreground) / 0.15),
+              0 6px 20px hsl(var(--foreground) / 0.08),
+              inset 0 1px 0 hsl(var(--background) / 0.2)
+            `
+          }}
+          onClick={handleDropdownClick}
+        >
       <ScrollArea className="max-h-[70vh]">
         <div className="p-1">
           {/* Loading State */}
@@ -335,6 +357,7 @@ export function EnhancedSearchDropdown({
         </div>
       </ScrollArea>
     </Card>
-    </div>
+      </div>
+    </>
   );
 }
