@@ -17,9 +17,22 @@ const OnboardingContext = createContext<OnboardingContextType | undefined>(undef
 
 export function useOnboarding() {
   const context = useContext(OnboardingContext);
+  const { user } = useAuth();
+  
   if (!context) {
     throw new Error('useOnboarding must be used within OnboardingProvider');
   }
+  
+  // Return no-op functions for guests
+  if (!user) {
+    return {
+      isOnboardingOpen: false,
+      startOnboarding: () => {},
+      completeOnboarding: () => {},
+      skipOnboarding: () => {},
+    };
+  }
+  
   return context;
 }
 
@@ -32,9 +45,9 @@ export function OnboardingProvider({ children }: OnboardingProviderProps) {
   const { user } = useAuth();
   const { preferences, completeOnboarding: saveOnboardingComplete, loading } = useUserPreferences();
 
-  // Auto-start onboarding for new users
+  // Auto-start onboarding for new authenticated users only
   useEffect(() => {
-    if (loading) return;
+    if (loading || !user) return; // Only show for authenticated users
 
     // Check if user should see onboarding
     const shouldStartOnboarding = 
@@ -49,11 +62,13 @@ export function OnboardingProvider({ children }: OnboardingProviderProps) {
 
       return () => clearTimeout(timer);
     }
-  }, [preferences.hasCompletedOnboarding, loading]);
+  }, [preferences.hasCompletedOnboarding, loading, user]);
 
   const startOnboarding = useCallback(() => {
+    // Only allow starting onboarding for authenticated users
+    if (!user) return;
     setIsOnboardingOpen(true);
-  }, []);
+  }, [user]);
 
   const handleCompleteOnboarding = useCallback(() => {
     setIsOnboardingOpen(false);
@@ -74,13 +89,17 @@ export function OnboardingProvider({ children }: OnboardingProviderProps) {
 
   return (
     <OnboardingContext.Provider value={contextValue}>
-      <TourProvider
-        isOpen={isOnboardingOpen}
-        onClose={handleCompleteOnboarding}
-        onComplete={handleCompleteOnboarding}
-      >
-        {children}
-      </TourProvider>
+      {user ? (
+        <TourProvider
+          isOpen={isOnboardingOpen}
+          onClose={handleCompleteOnboarding}
+          onComplete={handleCompleteOnboarding}
+        >
+          {children}
+        </TourProvider>
+      ) : (
+        children
+      )}
     </OnboardingContext.Provider>
   );
 }

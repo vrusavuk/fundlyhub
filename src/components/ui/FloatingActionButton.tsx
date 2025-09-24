@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { AnimatedButton } from '@/components/animations/AnimatedButton';
 import { useOnboarding } from '@/components/onboarding/OnboardingProvider';
+import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { hapticFeedback } from '@/lib/utils/mobile';
 import { HelpCircle, Sparkles, ChevronUp } from 'lucide-react';
@@ -17,6 +18,7 @@ export function FloatingActionButton({ className }: FloatingActionButtonProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const { startOnboarding } = useOnboarding();
+  const { user } = useAuth();
 
   // Show/hide based on scroll position
   useEffect(() => {
@@ -59,19 +61,21 @@ export function FloatingActionButton({ className }: FloatingActionButtonProps) {
         </AnimatedButton>
       )}
 
-      {/* Help/Tour button */}
-      <AnimatedButton
-        size="lg"
-        className="h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl animate-bounce-gentle"
-        onClick={handleHelpClick}
-        pulse
-        haptic
-      >
-        <div className="relative">
-          <HelpCircle className="h-6 w-6" />
-          <Sparkles className="absolute -top-1 -right-1 h-3 w-3 text-accent animate-pulse" />
-        </div>
-      </AnimatedButton>
+      {/* Help/Tour button - Only show for authenticated users */}
+      {user && (
+        <AnimatedButton
+          size="lg"
+          className="h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl animate-bounce-gentle"
+          onClick={handleHelpClick}
+          pulse
+          haptic
+        >
+          <div className="relative">
+            <HelpCircle className="h-6 w-6" />
+            <Sparkles className="absolute -top-1 -right-1 h-3 w-3 text-accent animate-pulse" />
+          </div>
+        </AnimatedButton>
+      )}
     </div>
   );
 }
