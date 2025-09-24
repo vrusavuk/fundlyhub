@@ -58,6 +58,38 @@ export function TourProvider({
     }
   }, [onboardingDemo]);
 
+  // Initialize services when they're available
+  useEffect(() => {
+    try {
+      if (globalSearch && onboardingDemo) {
+        // Create service adapters that conform to the expected interfaces
+        const searchService = {
+          openHeaderSearch: globalSearch.openHeaderSearch,
+          setSearchQuery: globalSearch.setSearchQuery,
+          isHeaderSearchOpen: globalSearch.isHeaderSearchOpen,
+          forceOpen: () => {
+            // Custom force open for demo mode
+            globalSearch.openHeaderSearch();
+            // Also dispatch custom event as fallback
+            document.dispatchEvent(new CustomEvent('open-header-search'));
+          }
+        };
+
+        const demoService = {
+          setDemoMode: onboardingDemo.setDemoMode
+        };
+
+        actionService.setServices(searchService, demoService);
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.log('TourActionService services initialized');
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to initialize tour action services:', error);
+    }
+  }, [globalSearch, onboardingDemo, actionService]);
+
   // Sync with isOpen prop changes
   useEffect(() => {
     if (isOpen && !isActive) {

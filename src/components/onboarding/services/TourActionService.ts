@@ -52,6 +52,9 @@ export class TourActionService {
       // Force open header search regardless of page
       this.forceOpenHeaderSearch();
       
+      // Wait a bit for the search input to appear
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
       // Wait for search input to be available
       const searchInput = await this.waitForElement('input[placeholder*="Search"], input[placeholder*="search"]');
       
@@ -60,16 +63,29 @@ export class TourActionService {
       
     } catch (error) {
       console.error('Failed to execute demo search:', error);
+      // Even if demo search fails, continue the tour
     }
   }
 
   private forceOpenHeaderSearch(): void {
-    // Directly trigger the header search opening
-    if (this.searchService && typeof (this.searchService as any).forceOpen === 'function') {
-      (this.searchService as any).forceOpen();
-    } else {
-      // Fallback to standard method
-      this.searchService?.openHeaderSearch();
+    // For demo mode, we need to ensure the search opens regardless of page
+    try {
+      // First try the custom forceOpen method if available
+      if (this.searchService && typeof (this.searchService as any).forceOpen === 'function') {
+        (this.searchService as any).forceOpen();
+      } else {
+        // Fallback to standard method
+        this.searchService?.openHeaderSearch();
+      }
+      
+      // Also dispatch custom event as additional fallback
+      document.dispatchEvent(new CustomEvent('open-header-search'));
+      
+      // Set demo mode indicator
+      document.body.setAttribute('data-onboarding-active', 'true');
+      
+    } catch (error) {
+      console.warn('Failed to force open header search:', error);
     }
   }
 
