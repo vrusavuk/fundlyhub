@@ -62,23 +62,6 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
     }
   }, [isOpen, isOnIntegratedSearchPage, globalSearchQuery]);
 
-  // Handle click outside to close dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setShowDropdown(false);
-      }
-    };
-
-    if (showDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showDropdown]);
-
   const handleInputChange = (value: string) => {
     console.log('🔍 HeaderSearch input changed:', value);
     setQuery(value);
@@ -287,18 +270,20 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
       </div>
 
       {/* Enhanced Search Dropdown */}
-      <EnhancedSearchDropdown
-        query={query}
-        searchResults={isOnCampaignsPage ? [...userResults, ...organizationResults] : results}
-        searchLoading={loading}
-        isVisible={showDropdown}
-        onSuggestionSelect={handleSuggestionSelect}
-        onResultClick={handleResultClick}
-        onViewAllResults={handleViewAllResults}
-        onClose={() => setShowDropdown(false)}
-        showResultsSection={!isOnCampaignsPage || (userResults.length > 0 || organizationResults.length > 0)}
-        maxHeight="max-h-[70vh]"
-      />
+      {showDropdown && (
+        <EnhancedSearchDropdown
+          query={query}
+          searchResults={isOnCampaignsPage ? [...userResults, ...organizationResults] : results}
+          searchLoading={loading}
+          isVisible={showDropdown}
+          onSuggestionSelect={handleSuggestionSelect}
+          onResultClick={handleResultClick}
+          onViewAllResults={handleViewAllResults}
+          onClose={() => setShowDropdown(false)}
+          showResultsSection={!isOnCampaignsPage || (userResults.length > 0 || organizationResults.length > 0)}
+          maxHeight="max-h-[70vh]"
+        />
+      )}
     </>
   );
 }
