@@ -106,7 +106,7 @@ export function UnifiedSearchProvider({ children }: { children: ReactNode }) {
     if (!isSearchEnabledPage && state.searchQuery) {
       dispatch({ type: 'CLEAR_SEARCH' });
     }
-  }, [location.pathname, state.searchQuery]);
+  }, [location.pathname]); // Removed state.searchQuery to prevent infinite loop
 
   // Memoized functions for better performance
   const shouldUseIntegratedSearch = useCallback(() => {

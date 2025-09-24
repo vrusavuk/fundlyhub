@@ -6,10 +6,6 @@ import { Link } from 'react-router-dom';
 import { Heart } from "lucide-react";
 
 export function FooterSection() {
-  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-    console.log('FooterSection rendering');
-  }
-  
   return (
     <footer className="bg-foreground/5 mobile-section py-8 sm:py-12">
       <div className="max-w-7xl mx-auto mobile-container">
