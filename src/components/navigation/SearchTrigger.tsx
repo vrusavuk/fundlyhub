@@ -20,7 +20,10 @@ export function SearchTrigger({
   const { openHeaderSearch } = useGlobalSearch();
 
   const handleSearchClick = () => {
+    console.log('🎯 SearchTrigger clicked!');
+    console.log('📖 About to call openHeaderSearch');
     openHeaderSearch();
+    console.log('✅ openHeaderSearch called');
     onSearchOpen?.();
   };
 

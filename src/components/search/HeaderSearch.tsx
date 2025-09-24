@@ -18,6 +18,8 @@ interface HeaderSearchProps {
 }
 
 export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
+  console.log('🔍 HeaderSearch render - isOpen:', isOpen);
+  
   const [query, setQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
