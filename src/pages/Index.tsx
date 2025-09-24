@@ -10,6 +10,10 @@ import { FloatingActionButton } from "@/components/ui/FloatingActionButton";
 import { HeroSection, FundlyGiveSection, FooterSection } from "@/components/sections";
 
 const Index = () => {
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+    console.log('Index page rendering');
+  }
+  
   const navigate = useNavigate();
   const { fundraisers, stats, loading, error, refresh } = useFundraisers({ limit: 6 });
 

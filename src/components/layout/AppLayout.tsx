@@ -12,6 +12,10 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children, className, fullWidth = false }: AppLayoutProps) {
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+    console.log('AppLayout rendering');
+  }
+  
   return (
     <div className={`min-h-screen bg-gradient-subtle ${className || ''}`}>
       <Navigation />
