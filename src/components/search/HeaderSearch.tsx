@@ -81,19 +81,6 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
   const handleInputChange = (value: string) => {
     setQuery(value);
     
-    // Update global search context for integrated search pages
-    if (isOnIntegratedSearchPage) {
-      setSearchQuery(value);
-      
-      // Update URL for search page
-      if (isOnSearchPage && value.trim()) {
-        const newUrl = `/search?q=${encodeURIComponent(value.trim())}`;
-        if (window.location.pathname + window.location.search !== newUrl) {
-          window.history.replaceState({}, '', newUrl);
-        }
-      }
-    }
-    
     // Show dropdown when user types
     setShowDropdown(shouldShowDropdown && value.length >= 0);
     
@@ -110,17 +97,11 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
       addRecentSearch(query.trim());
       trackSearch(query.trim(), results.length);
       
-      if (isOnSearchPage) {
-        // Already on search page, just update the query
-        setSearchQuery(query);
-        const newUrl = `/search?q=${encodeURIComponent(query.trim())}`;
-        window.history.replaceState({}, '', newUrl);
-      } else {
-        // Navigate to search page
-        navigate(`/search?q=${encodeURIComponent(query.trim())}`);
-      }
-      
+      // Close the header search immediately
       handleClose();
+      
+      // Navigate directly to search results page
+      navigate(`/search?q=${encodeURIComponent(query.trim())}`);
       hapticFeedback.medium();
     }
   };
@@ -136,20 +117,12 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
     
     console.log('📍 About to navigate to:', `/search?q=${encodeURIComponent(selectedQuery)}`);
     
-    // Update search query in context first
-    setSearchQuery(selectedQuery);
-    
-    // Close dropdown without clearing the search query
-    setShowDropdown(false);
+    // Close the header search immediately
     onClose();
     
-    // Navigate to search results page using React Router
-    try {
-      navigate(`/search?q=${encodeURIComponent(selectedQuery)}`);
-      console.log('✅ Navigation called successfully');
-    } catch (error) {
-      console.error('❌ Navigation failed:', error);
-    }
+    // Navigate directly to search results page
+    navigate(`/search?q=${encodeURIComponent(selectedQuery)}`);
+    console.log('✅ Navigation called successfully');
     
     hapticFeedback.light();
   };
@@ -169,12 +142,11 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
       addRecentSearch(query.trim());
       trackSearch(query.trim(), results.length);
       
-      if (isOnSearchPage) {
-        handleClose();
-      } else {
-        navigate(`/search?q=${encodeURIComponent(query.trim())}`);
-        handleClose();
-      }
+      // Close the header search immediately
+      onClose();
+      
+      // Navigate directly to search results page
+      navigate(`/search?q=${encodeURIComponent(query.trim())}`);
       hapticFeedback.medium();
     }
   };
