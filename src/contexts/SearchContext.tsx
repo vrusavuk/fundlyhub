@@ -24,8 +24,11 @@ export function SearchProvider({ children }: { children: ReactNode }) {
 
   // Clear search when navigating away from search-enabled pages
   useEffect(() => {
-    const isSearchEnabledPage = location.pathname === '/campaigns' || location.pathname === '/search';
+    console.log('🧭 Navigation effect - pathname:', location.pathname);
+    const isSearchEnabledPage = location.pathname === '/search';
+    console.log('🔍 isSearchEnabledPage:', isSearchEnabledPage);
     if (!isSearchEnabledPage && searchQuery) {
+      console.log('🧹 Clearing search query');
       setSearchQuery('');
     }
   }, [location.pathname]);
@@ -49,7 +52,11 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   }, [isHeaderSearchOpen]);
 
   const shouldUseIntegratedSearch = () => {
-    return location.pathname === '/campaigns' || location.pathname === '/search';
+    console.log('🤔 Checking shouldUseIntegratedSearch for:', location.pathname);
+    // Only /search page has true integrated search, not /campaigns
+    const result = location.pathname === '/search';
+    console.log('✅ shouldUseIntegratedSearch result:', result);
+    return result;
   };
 
   const openHeaderSearch = () => {
