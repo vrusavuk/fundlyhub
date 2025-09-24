@@ -83,14 +83,9 @@ export function SearchSuggestionItem({
   className,
   variant = 'default'
 }: SearchSuggestionItemProps) {
-  console.log('🎪 SearchSuggestionItem render:', suggestion.text, 'variant:', variant);
   
   const handleClick = (e: React.MouseEvent) => {
-    console.log('🖱️ SearchSuggestionItem clicked:', suggestion);
-    console.log('🎯 Event details:', { target: e.currentTarget, type: e.type });
-    console.log('🔗 About to call onSelect with:', suggestion.text);
     onSelect(suggestion);
-    console.log('✅ onSelect called successfully');
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -116,7 +111,6 @@ export function SearchSuggestionItem({
   };
 
   if (variant === 'compact') {
-    console.log('🎯 Rendering compact SearchSuggestionItem for:', suggestion.text);
     return (
       <button
         onClick={handleClick}
@@ -129,12 +123,6 @@ export function SearchSuggestionItem({
           className
         )}
         role="option"
-        onMouseDown={(e) => {
-          console.log('🖱️ MouseDown on SearchSuggestionItem:', suggestion.text);
-        }}
-        onMouseUp={(e) => {
-          console.log('🖱️ MouseUp on SearchSuggestionItem:', suggestion.text);
-        }}
       >
         <div className={cn("flex-shrink-0", getTypeColor(suggestion.type))}>
           {getTypeIcon(suggestion.type)}

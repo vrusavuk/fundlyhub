@@ -15,7 +15,6 @@ import { LoadingState } from "@/components/common/LoadingState";
 import { ScreenReaderOnly } from "@/components/accessibility/ScreenReaderOnly";
 
 export default function AllCampaigns() {
-  console.log('🏕️ AllCampaigns component rendering');
   
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [activeFilters, setActiveFilters] = useState({
@@ -31,7 +30,7 @@ export default function AllCampaigns() {
   const campaignStats = useCampaignStats();
   const { categories } = useCategories();
 
-  console.log('🔍 Current searchQuery from context:', searchQuery);
+  
 
   // Get initial category from URL parameters  
   const initialCategory = searchParams.get('category') || 'All';
@@ -67,8 +66,6 @@ export default function AllCampaigns() {
 
   // Enhanced filtering for both server-side and client-side
   const filteredFundraisers = useMemo(() => {
-    console.log('🔍 AllCampaigns filtering with searchQuery:', searchQuery);
-    console.log('📊 Total fundraisers before filtering:', fundraisers.length);
     
     const filtered = fundraisers.filter((fundraiser) => {
       const matchesSearch = !searchQuery || 
@@ -108,13 +105,13 @@ export default function AllCampaigns() {
       const passesAllFilters = matchesSearch && matchesMultipleCategories && matchesLocation && matchesTimePeriod();
       
       if (searchQuery && matchesSearch) {
-        console.log('✅ Fundraiser matches search:', fundraiser.title);
+        
       }
       
       return passesAllFilters;
     });
     
-    console.log('📊 Filtered fundraisers count:', filtered.length);
+    
     return filtered;
   }, [fundraisers, searchQuery, activeFilters]);
 

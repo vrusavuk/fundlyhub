@@ -81,7 +81,6 @@ export class TourActionService {
 
   private async handleCustomAction(payload: Record<string, unknown>): Promise<void> {
     // Implement custom action logic as needed
-    console.log('Custom action executed with payload:', payload);
   }
 
   private async waitForElement(selector: string, timeout = 5000): Promise<HTMLInputElement> {

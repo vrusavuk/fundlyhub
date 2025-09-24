@@ -51,13 +51,6 @@ export function EnhancedSearchDropdown({
   showResultsSection = true,
   maxHeight = 'max-h-[80vh]'
 }: EnhancedSearchDropdownProps) {
-  console.log('🎪 EnhancedSearchDropdown render:', { 
-    isVisible, 
-    query, 
-    searchResultsCount: searchResults.length,
-    searchLoading 
-  });
-  
   const dropdownRef = useRef<HTMLDivElement>(null);
   
   const {
@@ -70,13 +63,6 @@ export function EnhancedSearchDropdown({
     query,
     enabled: isVisible,
     maxSuggestions: 6
-  });
-  
-  console.log('🎯 Suggestions data:', {
-    suggestionsCount: suggestions.length,
-    recentCount: recentSearches.length,
-    trendingCount: trendingSearches.length,
-    suggestionsLoading
   });
 
   // Handle keyboard navigation
@@ -98,7 +84,6 @@ export function EnhancedSearchDropdown({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        console.info('🎯 Click outside detected, closing dropdown');
         onClose();
       }
     };
@@ -115,7 +100,6 @@ export function EnhancedSearchDropdown({
 
   // NOW SAFE TO DO CONDITIONAL RETURNS AFTER ALL HOOKS
   if (!isVisible) {
-    console.log('🚫 EnhancedSearchDropdown not visible, returning null');
     return null;
   }
 
@@ -187,7 +171,6 @@ export function EnhancedSearchDropdown({
                         suggestion={suggestion}
                         searchQuery=""
                         onSelect={(selectedSuggestion) => {
-                          console.log('📚 Recent search clicked:', selectedSuggestion);
                           onSuggestionSelect(selectedSuggestion);
                         }}
                         variant="compact"
@@ -216,7 +199,6 @@ export function EnhancedSearchDropdown({
                         suggestion={suggestion}
                         searchQuery=""
                         onSelect={(selectedSuggestion) => {
-                          console.log('🔥 Trending search clicked:', selectedSuggestion);
                           onSuggestionSelect(selectedSuggestion);
                         }}
                         variant="compact"
@@ -298,18 +280,7 @@ export function EnhancedSearchDropdown({
                           variant="ghost"
                           className="w-full mt-3 justify-center gap-2 text-primary hover:text-primary hover:bg-primary/10"
                           onClick={() => {
-                            console.log('👀 View all results button clicked!');
-                            console.log('📊 Search results count:', searchResults.length);
-                            console.log('📝 Current query:', query);
-                            console.log('🔗 About to call onViewAllResults');
                             onViewAllResults();
-                            console.log('✅ onViewAllResults called');
-                          }}
-                          onMouseDown={() => {
-                            console.log('🖱️ MouseDown on View All Results button');
-                          }}
-                          onMouseUp={() => {
-                            console.log('🖱️ MouseUp on View All Results button');
                           }}
                         >
                           View all {searchResults.length} results

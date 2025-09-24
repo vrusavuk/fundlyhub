@@ -202,7 +202,7 @@ export function FundraiserGrid({
                 searchQuery={searchQuery}
                 onClick={() => onCardClick(fundraiser.slug)}
                 onDonate={variant === 'polished' ? () => {
-                  console.log('Donate to:', fundraiser.id);
+                  // Handle donation
                 } : undefined}
                 variant={variant}
               />

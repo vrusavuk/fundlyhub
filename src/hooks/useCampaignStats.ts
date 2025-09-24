@@ -22,7 +22,6 @@ export function useCampaignStats() {
     async function fetchStats() {
       try {
         setStats(prev => ({ ...prev, loading: true, error: null }));
-        console.log('Fetching campaign stats...');
 
         // Use the new database function to get campaign stats efficiently
         const { data, error } = await supabase
@@ -31,7 +30,6 @@ export function useCampaignStats() {
         if (error) throw error;
 
         const statsData = data?.[0];
-        console.log('Campaign stats from database:', statsData);
         
         const finalStats = {
           activeCampaigns: Number(statsData?.active_campaigns || 0),
@@ -41,7 +39,6 @@ export function useCampaignStats() {
           error: null
         };
 
-        console.log('Final stats:', finalStats);
         setStats(finalStats);
 
       } catch (error) {
@@ -67,28 +64,22 @@ export function useCampaignStats() {
           table: 'donations'
         },
         (payload) => {
-          console.log('Real-time donation received:', payload);
           // Add a small delay to ensure the database has processed the change
           setTimeout(() => {
-            console.log('Refreshing stats due to real-time update');
             fetchStats();
           }, 1000);
         }
       )
-      .subscribe((status) => {
-        console.log('Real-time subscription status:', status);
-      });
+      .subscribe();
     
     // Listen for donation events to refresh stats (fallback)
     const handleDonationMade = () => {
-      console.log('Custom donation event received');
       fetchStats();
     };
     
     window.addEventListener('donationMade', handleDonationMade);
     
     return () => {
-      console.log('Cleaning up real-time subscription');
       supabase.removeChannel(channel);
       window.removeEventListener('donationMade', handleDonationMade);
     };

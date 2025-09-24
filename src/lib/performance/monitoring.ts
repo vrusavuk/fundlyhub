@@ -22,13 +22,13 @@ export const usePerformanceMonitor = (componentName: string) => {
     
     // Log performance metrics in development
     if (process.env.NODE_ENV === 'development') {
-      console.log(`${componentName} mounted in ${mountDuration}ms`);
+      // Performance monitoring enabled
     }
 
     return () => {
       const totalLifetime = Date.now() - mountTime.current;
       if (process.env.NODE_ENV === 'development') {
-        console.log(`${componentName} total lifetime: ${totalLifetime}ms`);
+        // Component unmounted - lifetime tracking
       }
     };
   }, [componentName]);
@@ -40,7 +40,7 @@ export const usePerformanceMonitor = (componentName: string) => {
   const trackRenderComplete = useCallback(() => {
     const renderTime = Date.now() - renderStartTime.current;
     if (process.env.NODE_ENV === 'development') {
-      console.log(`${componentName} render time: ${renderTime}ms`);
+      // Render completed - timing tracking
     }
   }, [componentName]);
 
@@ -127,11 +127,9 @@ export const useMemoryMonitor = () => {
   const checkMemoryUsage = useCallback(() => {
     if ('memory' in performance) {
       const memory = (performance as any).memory;
-      console.log('Memory usage:', {
-        used: `${Math.round(memory.usedJSHeapSize / 1048576)} MB`,
-        total: `${Math.round(memory.totalJSHeapSize / 1048576)} MB`,
-        limit: `${Math.round(memory.jsHeapSizeLimit / 1048576)} MB`,
-      });
+      if (process.env.NODE_ENV === 'development') {
+        // Memory usage tracking available
+      }
     }
   }, []);
 
@@ -141,8 +139,7 @@ export const useMemoryMonitor = () => {
 // Bundle size analyzer (development only)
 export const logBundleInfo = () => {
   if (process.env.NODE_ENV === 'development') {
-    console.log('Bundle analysis available in development mode');
-    console.log('Consider adding webpack-bundle-analyzer for detailed analysis');
+    // Bundle analysis available - consider adding webpack-bundle-analyzer
   }
 };
 
@@ -179,7 +176,7 @@ export const checkPerformanceBudget = () => {
     // Check against budgets
     Object.entries(metrics).forEach(([metric, value]) => {
       const budget = budgets[metric as keyof typeof budgets];
-      if (value > budget) {
+      if (value > budget && process.env.NODE_ENV === 'development') {
         console.warn(`Performance budget exceeded for ${metric}: ${value}ms (budget: ${budget}ms)`);
       }
     });

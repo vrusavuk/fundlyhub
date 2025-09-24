@@ -123,9 +123,6 @@ export function OnboardingDemoProvider({ children }: OnboardingDemoProviderProps
     };
 
     setDemoInteractions(prev => [...prev, interaction]);
-    
-    // Optional: Log to console for debugging
-    console.log('[Demo Interaction]', interaction);
   }, [isDemoMode]);
 
   const setDemoMode = useCallback((enabled: boolean) => {

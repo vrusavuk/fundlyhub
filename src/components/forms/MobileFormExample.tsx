@@ -47,8 +47,6 @@ export function MobileFormExample() {
       title: "Success!",
       description: "Form submitted successfully with mobile-optimized UX.",
     });
-    
-    console.log('Form values:', values);
   };
 
   return (
