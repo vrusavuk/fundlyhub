@@ -1,9 +1,9 @@
 /**
- * Enhanced Search Context with improved state management
- * Replaces the original SearchContext with better architecture
+ * Unified Search Context - Consolidates SearchContext + EnhancedSearchContext
+ * Provides optimal state management with backward compatibility
  */
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { createContext, useContext, useReducer, useEffect, ReactNode, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 
 interface SearchState {
   isHeaderSearchOpen: boolean;
@@ -22,7 +22,15 @@ type SearchAction =
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'RESET_STATE' };
 
-interface SearchContextType extends SearchState {
+interface SearchContextType {
+  // State
+  isHeaderSearchOpen: boolean;
+  searchQuery: string;
+  isLoading: boolean;
+  error: string | null;
+  lastSearchTimestamp: number | null;
+  
+  // Actions
   openHeaderSearch: () => void;
   closeHeaderSearch: () => void;
   setSearchQuery: (query: string) => void;
@@ -88,10 +96,9 @@ function searchReducer(state: SearchState, action: SearchAction): SearchState {
 
 const SearchContext = createContext<SearchContextType | undefined>(undefined);
 
-export function EnhancedSearchProvider({ children }: { children: ReactNode }) {
+export function UnifiedSearchProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(searchReducer, initialState);
   const location = useLocation();
-  const navigate = useNavigate();
 
   // Clear search when navigating away from search-enabled pages
   useEffect(() => {
@@ -100,6 +107,50 @@ export function EnhancedSearchProvider({ children }: { children: ReactNode }) {
       dispatch({ type: 'CLEAR_SEARCH' });
     }
   }, [location.pathname, state.searchQuery]);
+
+  // Memoized functions for better performance
+  const shouldUseIntegratedSearch = useCallback(() => {
+    return location.pathname === '/campaigns' || location.pathname === '/search';
+  }, [location.pathname]);
+
+  const openHeaderSearch = useCallback(() => {
+    // If we're on a page that uses integrated search, focus the search input instead
+    const isDemoMode = document.querySelector('[data-onboarding-active]') !== null;
+    
+    if (!isDemoMode && shouldUseIntegratedSearch()) {
+      const searchInput = document.querySelector('input[placeholder*="Search"]') as HTMLInputElement;
+      if (searchInput) {
+        searchInput.focus();
+        return;
+      }
+    }
+    
+    dispatch({ type: 'OPEN_HEADER_SEARCH' });
+  }, [shouldUseIntegratedSearch]);
+
+  const closeHeaderSearch = useCallback(() => {
+    dispatch({ type: 'CLOSE_HEADER_SEARCH' });
+  }, []);
+
+  const setSearchQuery = useCallback((query: string) => {
+    dispatch({ type: 'SET_QUERY', payload: query });
+  }, []);
+
+  const clearSearch = useCallback(() => {
+    dispatch({ type: 'CLEAR_SEARCH' });
+  }, []);
+
+  const setLoading = useCallback((loading: boolean) => {
+    dispatch({ type: 'SET_LOADING', payload: loading });
+  }, []);
+
+  const setError = useCallback((error: string | null) => {
+    dispatch({ type: 'SET_ERROR', payload: error });
+  }, []);
+
+  const resetState = useCallback(() => {
+    dispatch({ type: 'RESET_STATE' });
+  }, []);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -117,26 +168,7 @@ export function EnhancedSearchProvider({ children }: { children: ReactNode }) {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [state.isHeaderSearchOpen]);
-
-  const shouldUseIntegratedSearch = () => {
-    return location.pathname === '/campaigns' || location.pathname === '/search';
-  };
-
-  const openHeaderSearch = () => {
-    // If we're on a page that uses integrated search, focus the search input instead
-    const isDemoMode = document.querySelector('[data-onboarding-active]') !== null;
-    
-    if (!isDemoMode && shouldUseIntegratedSearch()) {
-      const searchInput = document.querySelector('input[placeholder*="Search"]') as HTMLInputElement;
-      if (searchInput) {
-        searchInput.focus();
-        return;
-      }
-    }
-    
-    dispatch({ type: 'OPEN_HEADER_SEARCH' });
-  };
+  }, [state.isHeaderSearchOpen, openHeaderSearch, closeHeaderSearch]);
 
   // Listen for custom event to force open header search (for onboarding)
   useEffect(() => {
@@ -147,30 +179,6 @@ export function EnhancedSearchProvider({ children }: { children: ReactNode }) {
     document.addEventListener('open-header-search', handleForceOpen);
     return () => document.removeEventListener('open-header-search', handleForceOpen);
   }, []);
-
-  const closeHeaderSearch = () => {
-    dispatch({ type: 'CLOSE_HEADER_SEARCH' });
-  };
-
-  const setSearchQuery = (query: string) => {
-    dispatch({ type: 'SET_QUERY', payload: query });
-  };
-
-  const clearSearch = () => {
-    dispatch({ type: 'CLEAR_SEARCH' });
-  };
-
-  const setLoading = (loading: boolean) => {
-    dispatch({ type: 'SET_LOADING', payload: loading });
-  };
-
-  const setError = (error: string | null) => {
-    dispatch({ type: 'SET_ERROR', payload: error });
-  };
-
-  const resetState = () => {
-    dispatch({ type: 'RESET_STATE' });
-  };
 
   const value: SearchContextType = {
     ...state,
@@ -191,13 +199,16 @@ export function EnhancedSearchProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useEnhancedSearch() {
+export function useUnifiedSearch() {
   const context = useContext(SearchContext);
   if (context === undefined) {
-    throw new Error('useEnhancedSearch must be used within an EnhancedSearchProvider');
+    throw new Error('useUnifiedSearch must be used within a UnifiedSearchProvider');
   }
   return context;
 }
 
-// Compatibility export for existing code
-export const useGlobalSearch = useEnhancedSearch;
+// Backward compatibility exports
+export const useGlobalSearch = useUnifiedSearch;
+export const useEnhancedSearch = useUnifiedSearch;
+export const SearchProvider = UnifiedSearchProvider;
+export const EnhancedSearchProvider = UnifiedSearchProvider;

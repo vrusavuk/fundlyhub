@@ -3,7 +3,7 @@
  * Centralizes modal-specific logic and keyboard shortcuts
  */
 import { useState, useEffect, useCallback } from 'react';
-import { useGlobalSearch } from '@/contexts/SearchContext';
+import { useGlobalSearch } from '@/contexts/UnifiedSearchContext';
 
 interface UseSearchModalOptions {
   isOpen: boolean;

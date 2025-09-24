@@ -4,7 +4,7 @@
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useGlobalSearch } from '@/contexts/SearchContext';
+import { useGlobalSearch } from '@/contexts/UnifiedSearchContext';
 import { hapticFeedback } from '@/lib/utils/mobile';
 
 interface UseSearchInputOptions {

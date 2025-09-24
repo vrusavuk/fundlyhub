@@ -8,7 +8,7 @@ import { useEnhancedSearch as useEnhancedSearchHook } from '@/hooks/useEnhancedS
 import { useSearchSuggestions } from '@/hooks/useSearchSuggestions';
 import { useSearchInput } from '@/hooks/useSearchInput';
 import { useSearchNavigation } from '@/hooks/useSearchNavigation';
-import { useEnhancedSearch } from '@/contexts/EnhancedSearchContext';
+import { useEnhancedSearch } from '@/contexts/UnifiedSearchContext';
 
 // Modular components
 import { SearchModal } from './modular/SearchModal';

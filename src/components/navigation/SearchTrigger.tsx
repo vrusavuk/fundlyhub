@@ -4,7 +4,7 @@
  */
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
-import { useGlobalSearch } from '@/contexts/SearchContext';
+import { useGlobalSearch } from '@/contexts/UnifiedSearchContext';
 
 interface SearchTriggerProps {
   className?: string;

@@ -11,7 +11,7 @@ import { PageContainer } from "@/components/ui/PageContainer";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { FundraiserGrid } from "@/components/fundraisers/FundraiserGrid";
 import { useFundraisers } from "@/hooks/useFundraisers";
-import { useGlobalSearch } from "@/contexts/SearchContext";
+import { useGlobalSearch } from "@/contexts/UnifiedSearchContext";
 
 export default function AllCampaigns() {
   const [selectedCategory, setSelectedCategory] = useState("All");

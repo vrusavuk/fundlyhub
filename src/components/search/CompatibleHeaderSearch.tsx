@@ -5,7 +5,7 @@
 import React from 'react';
 import { HeaderSearch } from './HeaderSearch';
 import { RefactoredHeaderSearch } from './RefactoredHeaderSearch';
-import { useEnhancedSearch } from '@/contexts/EnhancedSearchContext';
+import { useEnhancedSearch } from '@/contexts/UnifiedSearchContext';
 
 interface CompatibleHeaderSearchProps {
   isOpen: boolean;

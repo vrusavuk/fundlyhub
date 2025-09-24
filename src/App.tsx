@@ -4,11 +4,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
-import { SearchProvider } from "@/contexts/SearchContext";
-import { EnhancedSearchProvider } from "@/contexts/EnhancedSearchContext";
+import { UnifiedSearchProvider } from "@/contexts/UnifiedSearchContext";
 import { NavigationProvider } from '@/contexts/NavigationContext';
 import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider';
 import { OnboardingDemoProvider } from '@/components/onboarding/OnboardingDemoProvider';
+import { PerformanceMonitor } from '@/components/performance/PerformanceMonitor';
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -28,50 +28,49 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <NavigationProvider>
-            <SearchProvider>
-              <EnhancedSearchProvider>
+    <TooltipProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <UnifiedSearchProvider>
+            <NavigationProvider>
+              <OnboardingProvider>
                 <OnboardingDemoProvider>
-                <OnboardingProvider>
-                <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/campaigns" element={<AllCampaigns />} />
-              <Route path="/search" element={<SearchResults />} />
-              <Route path="/search-demo" element={<SearchDemo />} />
-              <Route path="/fundly-give" element={<FundlyGive />} />
-              <Route path="/profile/:userId" element={<UserProfile />} />
-              <Route path="/profile" element={
-                <ProtectedRoute>
-                  <UserProfile />
-                </ProtectedRoute>
-              } />
-              <Route path="/organization/:orgId" element={<OrganizationProfile />} />
-              {/* Legacy route redirect for backward compatibility */}
-              <Route path="/fundlypay" element={<Navigate to="/fundly-give" replace />} />
-              <Route path="/create" element={
-                <ProtectedRoute>
-                  <CreateFundraiser />
-                </ProtectedRoute>
-              } />
-              <Route path="/fundraiser/:slug" element={<FundraiserDetail />} />
-              <Route path="/docs/*" element={<ApiDocs />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-                </Routes>
-                </OnboardingProvider>
-              </OnboardingDemoProvider>
-              </EnhancedSearchProvider>
-            </SearchProvider>
-          </NavigationProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
+                  <PerformanceMonitor />
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/campaigns" element={<AllCampaigns />} />
+                    <Route path="/search" element={<SearchResults />} />
+                    <Route path="/search-demo" element={<SearchDemo />} />
+                    <Route path="/fundly-give" element={<FundlyGive />} />
+                    <Route path="/profile/:userId" element={<UserProfile />} />
+                    <Route path="/profile" element={
+                      <ProtectedRoute>
+                        <UserProfile />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/organization/:orgId" element={<OrganizationProfile />} />
+                    {/* Legacy route redirect for backward compatibility */}
+                    <Route path="/fundlypay" element={<Navigate to="/fundly-give" replace />} />
+                    <Route path="/create" element={
+                      <ProtectedRoute>
+                        <CreateFundraiser />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/fundraiser/:slug" element={<FundraiserDetail />} />
+                    <Route path="/docs/*" element={<ApiDocs />} />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </OnboardingDemoProvider>
+              </OnboardingProvider>
+            </NavigationProvider>
+          </UnifiedSearchProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </TooltipProvider>
+    <Toaster />
+    <Sonner />
   </QueryClientProvider>
 );
 

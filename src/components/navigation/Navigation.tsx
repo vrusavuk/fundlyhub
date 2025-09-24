@@ -2,7 +2,7 @@
  * Navigation component using composition pattern
  * Combines smaller focused components for better maintainability
  */
-import { useGlobalSearch } from '@/contexts/SearchContext';
+import { useGlobalSearch } from '@/contexts/UnifiedSearchContext';
 import { HeaderSearch } from '@/components/search/HeaderSearch';
 import { BrandLogo } from './BrandLogo';
 import { NavigationMenu } from './NavigationMenu';

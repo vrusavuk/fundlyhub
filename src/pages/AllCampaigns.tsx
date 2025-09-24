@@ -10,7 +10,7 @@ import { SlidersHorizontal } from "lucide-react";
 import { useFundraisers } from "@/hooks/useFundraisers";
 import { useCampaignStats } from "@/hooks/useCampaignStats";
 import { useCategories } from "@/hooks/useCategories";
-import { useGlobalSearch } from "@/contexts/SearchContext";
+import { useGlobalSearch } from "@/contexts/UnifiedSearchContext";
 import { LoadingState } from "@/components/common/LoadingState";
 import { ScreenReaderOnly } from "@/components/accessibility/ScreenReaderOnly";
 

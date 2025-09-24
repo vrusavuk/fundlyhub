@@ -13,7 +13,7 @@ import { SearchPageSkeleton, Skeleton } from "@/components/skeletons";
 import { LoadingState } from "@/components/common/LoadingState";
 import { useEnhancedSearch } from "@/hooks/useEnhancedSearch";
 import { useNavigate } from "react-router-dom";
-import { useGlobalSearch } from "@/contexts/SearchContext";
+import { useGlobalSearch } from "@/contexts/UnifiedSearchContext";
 import { ScreenReaderOnly } from "@/components/accessibility/ScreenReaderOnly";
 
 export default function SearchResults() {

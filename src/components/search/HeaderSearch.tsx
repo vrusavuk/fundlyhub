@@ -6,7 +6,7 @@ import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { EnhancedSearchDropdown } from "./EnhancedSearchDropdown";
 import { useEnhancedSearch } from "@/hooks/useEnhancedSearch";
 import { useSearchSuggestions } from "@/hooks/useSearchSuggestions";
-import { useGlobalSearch } from "@/contexts/SearchContext";
+import { useGlobalSearch } from "@/contexts/UnifiedSearchContext";
 import { SearchSuggestion } from "@/lib/services/searchSuggestions.service";
 import { hapticFeedback } from "@/lib/utils/mobile";
 import { Search, X, Delete } from "lucide-react";

@@ -8,7 +8,7 @@ import { useTourState } from '../hooks/useTourState';
 import { TourActionService, SearchService, DemoService } from '../services/TourActionService';
 import { TourProviderProps, TourAction } from '../types';
 import { TOUR_STEPS } from '../config';
-import { useGlobalSearch } from '@/contexts/SearchContext';
+import { useGlobalSearch } from '@/contexts/UnifiedSearchContext';
 import { useOnboardingDemo } from '../OnboardingDemoProvider';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 
