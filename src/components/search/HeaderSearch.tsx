@@ -132,9 +132,16 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
     addRecentSearch(selectedQuery, suggestion.category);
     trackSearch(selectedQuery, 0, suggestion.category);
     
-    // Always navigate to search results page
+    // Update search query in context first
+    setSearchQuery(selectedQuery);
+    
+    // Close dropdown without clearing the search query
+    setShowDropdown(false);
+    onClose();
+    
+    // Navigate to search results page using React Router
     navigate(`/search?q=${encodeURIComponent(selectedQuery)}`);
-    handleClose();
+    
     hapticFeedback.light();
   };
 
