@@ -1,6 +1,6 @@
 /**
- * Unified Search Context - Consolidates SearchContext + EnhancedSearchContext
- * Provides optimal state management with backward compatibility
+ * Unified Search Context - Consolidated search state management
+ * Provides comprehensive search functionality with error handling
  */
 import React, { createContext, useContext, useReducer, useEffect, ReactNode, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -114,18 +114,23 @@ export function UnifiedSearchProvider({ children }: { children: ReactNode }) {
   }, [location.pathname]);
 
   const openHeaderSearch = useCallback(() => {
-    // If we're on a page that uses integrated search, focus the search input instead
-    const isDemoMode = document.querySelector('[data-onboarding-active]') !== null;
-    
-    if (!isDemoMode && shouldUseIntegratedSearch()) {
-      const searchInput = document.querySelector('input[placeholder*="Search"]') as HTMLInputElement;
-      if (searchInput) {
-        searchInput.focus();
-        return;
+    try {
+      // If we're on a page that uses integrated search, focus the search input instead
+      const isDemoMode = document.querySelector('[data-onboarding-active]') !== null;
+      
+      if (!isDemoMode && shouldUseIntegratedSearch()) {
+        const searchInput = document.querySelector('input[placeholder*="Search"]') as HTMLInputElement;
+        if (searchInput) {
+          searchInput.focus();
+          return;
+        }
       }
+      
+      dispatch({ type: 'OPEN_HEADER_SEARCH' });
+    } catch (error) {
+      console.warn('Error opening header search:', error);
+      dispatch({ type: 'OPEN_HEADER_SEARCH' });
     }
-    
-    dispatch({ type: 'OPEN_HEADER_SEARCH' });
   }, [shouldUseIntegratedSearch]);
 
   const closeHeaderSearch = useCallback(() => {
@@ -155,14 +160,18 @@ export function UnifiedSearchProvider({ children }: { children: ReactNode }) {
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Cmd/Ctrl + K to open search
-      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
-        event.preventDefault();
-        openHeaderSearch();
-      }
-      // Escape to close search
-      if (event.key === 'Escape' && state.isHeaderSearchOpen) {
-        closeHeaderSearch();
+      try {
+        // Cmd/Ctrl + K to open search
+        if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+          event.preventDefault();
+          openHeaderSearch();
+        }
+        // Escape to close search
+        if (event.key === 'Escape' && state.isHeaderSearchOpen) {
+          closeHeaderSearch();
+        }
+      } catch (error) {
+        console.warn('Error handling keyboard shortcut:', error);
       }
     };
 
@@ -199,11 +208,30 @@ export function UnifiedSearchProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useUnifiedSearch() {
+// Safe hook with comprehensive error handling
+export function useUnifiedSearch(): SearchContextType {
   const context = useContext(UnifiedSearchContext);
+  
   if (context === undefined) {
-    throw new Error('useUnifiedSearch must be used within a UnifiedSearchProvider');
+    // Instead of throwing, return a safe fallback object
+    console.warn('useUnifiedSearch used outside of provider, returning fallback');
+    return {
+      isHeaderSearchOpen: false,
+      searchQuery: '',
+      isLoading: false,
+      error: null,
+      lastSearchTimestamp: null,
+      openHeaderSearch: () => {},
+      closeHeaderSearch: () => {},
+      setSearchQuery: () => {},
+      clearSearch: () => {},
+      setLoading: () => {},
+      setError: () => {},
+      resetState: () => {},
+      shouldUseIntegratedSearch: () => false,
+    };
   }
+  
   return context;
 }
 

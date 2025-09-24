@@ -1,21 +1,32 @@
 /**
- * Onboarding demo provider for managing demo data and tour interactions
+ * Onboarding Demo Provider with enhanced error handling
+ * Provides demo functionality for onboarding tours with fallback support
  */
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 
-export interface DemoSearchResult {
+// Demo data interfaces
+interface DemoUser {
   id: string;
-  type: 'campaign' | 'user' | 'organization';
-  title: string;
-  description: string;
-  link: string;
-  metadata?: Record<string, any>;
+  name: string;
+  email: string;
+  avatar: string;
+  organization?: string;
 }
 
-export interface DemoSearchSuggestion {
+interface DemoSearchResult {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  imageUrl: string;
+  type: 'campaign' | 'user' | 'organization';
+}
+
+interface DemoSearchSuggestion {
+  id: string;
   text: string;
-  category?: 'campaign' | 'user' | 'organization';
-  type: 'suggestion' | 'recent' | 'trending';
+  type: 'recent' | 'trending' | 'suggestion';
+  category?: string;
 }
 
 interface OnboardingDemoContextType {
@@ -30,10 +41,12 @@ interface OnboardingDemoContextType {
 
 const OnboardingDemoContext = createContext<OnboardingDemoContextType | undefined>(undefined);
 
-export function useOnboardingDemo() {
+// Safe hook with fallback
+export function useOnboardingDemo(): OnboardingDemoContextType {
   const context = useContext(OnboardingDemoContext);
+  
+  // Always return a valid object, never throw
   if (!context) {
-    // Return a fallback object instead of throwing an error
     return {
       isDemoMode: false,
       setDemoMode: () => {},
@@ -44,83 +57,104 @@ export function useOnboardingDemo() {
       demoInteractions: []
     };
   }
+  
   return context;
 }
 
 // Demo data for realistic search interactions
-const DEMO_CAMPAIGNS: DemoSearchResult[] = [
-  {
-    id: 'demo-1',
-    type: 'campaign',
-    title: 'Building Schools in Rural Kenya',
-    description: 'Help us build educational facilities for underserved communities',
-    link: '/campaigns/demo-education-kenya',
-    metadata: { raised: '$45,230', goal: '$75,000', category: 'education' }
-  },
-  {
-    id: 'demo-2',
-    type: 'campaign',
-    title: 'Medical Equipment for Children\'s Hospital',
-    description: 'Funding critical medical equipment for pediatric care',
-    link: '/campaigns/demo-medical-equipment',
-    metadata: { raised: '$22,850', goal: '$50,000', category: 'medical' }
-  },
-  {
-    id: 'demo-3',
-    type: 'campaign',
-    title: 'Clean Water Initiative - Guatemala',
-    description: 'Bringing clean drinking water to remote villages',
-    link: '/campaigns/demo-water-guatemala',
-    metadata: { raised: '$67,420', goal: '$80,000', category: 'emergency' }
-  }
-];
-
-const DEMO_USERS: DemoSearchResult[] = [
+const DEMO_USERS: DemoUser[] = [
   {
     id: 'demo-user-1',
-    type: 'user',
-    title: 'Sarah Johnson',
-    description: 'Education advocate and community organizer',
-    link: '/profile/demo-sarah-johnson',
-    metadata: { campaigns: 3, raised: '$125,000' }
+    name: 'Sarah Johnson',
+    email: 'sarah@example.com',
+    avatar: '/placeholder.svg',
+    organization: 'Children\'s Art Foundation'
   },
   {
     id: 'demo-user-2',
-    type: 'user',
-    title: 'Dr. Michael Chen',
-    description: 'Medical professional supporting healthcare initiatives',
-    link: '/profile/demo-michael-chen',
-    metadata: { campaigns: 2, raised: '$89,500' }
+    name: 'Michael Chen',
+    email: 'michael@example.com',
+    avatar: '/placeholder.svg',
+    organization: 'Community Health Initiative'
   }
 ];
 
-const DEMO_ORGANIZATIONS: DemoSearchResult[] = [
+const DEMO_SEARCH_RESULTS: DemoSearchResult[] = [
+  {
+    id: 'demo-campaign-1',
+    title: 'Art Therapy for Children',
+    description: 'Supporting creative healing through art therapy programs for children facing trauma.',
+    category: 'Education',
+    imageUrl: '/src/assets/categories/education.jpg',
+    type: 'campaign'
+  },
+  {
+    id: 'demo-campaign-2',
+    title: 'Community Garden Project',
+    description: 'Building sustainable community gardens in urban neighborhoods.',
+    category: 'Environment',
+    imageUrl: '/src/assets/categories/education.jpg',
+    type: 'campaign'
+  },
   {
     id: 'demo-org-1',
-    type: 'organization',
-    title: 'Global Education Foundation',
-    description: 'Nonprofit focused on educational access worldwide',
-    link: '/organization/demo-education-foundation',
-    metadata: { campaigns: 12, raised: '$1,250,000' }
+    title: 'Local Arts Foundation',
+    description: 'Promoting arts education and creativity in local communities.',
+    category: 'Arts',
+    imageUrl: '/placeholder.svg',
+    type: 'organization'
   }
 ];
 
 const DEMO_SUGGESTIONS: DemoSearchSuggestion[] = [
-  { text: 'education', category: 'campaign', type: 'trending' },
-  { text: 'medical emergency', category: 'campaign', type: 'trending' },
-  { text: 'clean water', category: 'campaign', type: 'suggestion' },
-  { text: 'children\'s health', category: 'campaign', type: 'suggestion' },
-  { text: 'disaster relief', category: 'campaign', type: 'recent' },
-  { text: 'community building', category: 'campaign', type: 'recent' }
+  { id: 'demo-sug-1', text: 'art therapy', type: 'trending', category: 'education' },
+  { id: 'demo-sug-2', text: 'community health', type: 'trending', category: 'medical' },
+  { id: 'demo-sug-3', text: 'education support', type: 'suggestion', category: 'education' },
+  { id: 'demo-sug-4', text: 'environmental projects', type: 'recent', category: 'environment' }
 ];
 
 interface OnboardingDemoProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export function OnboardingDemoProvider({ children }: OnboardingDemoProviderProps) {
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [demoInteractions, setDemoInteractions] = useState<Array<{ action: string; data?: any; timestamp: number }>>([]);
+
+  const getDemoSearchResults = useCallback((query: string): DemoSearchResult[] => {
+    if (!query.trim()) return DEMO_SEARCH_RESULTS.slice(0, 3);
+    
+    const lowercaseQuery = query.toLowerCase();
+    return DEMO_SEARCH_RESULTS.filter(result =>
+      result.title.toLowerCase().includes(lowercaseQuery) ||
+      result.description.toLowerCase().includes(lowercaseQuery) ||
+      result.category.toLowerCase().includes(lowercaseQuery)
+    );
+  }, []);
+
+  const getDemoSearchSuggestions = useCallback((query: string): DemoSearchSuggestion[] => {
+    if (!query.trim()) return DEMO_SUGGESTIONS.slice(0, 4);
+    
+    const lowercaseQuery = query.toLowerCase();
+    return DEMO_SUGGESTIONS.filter(suggestion =>
+      suggestion.text.toLowerCase().includes(lowercaseQuery)
+    );
+  }, []);
+
+  const simulateSearchInteraction = useCallback((query: string) => {
+    if (!isDemoMode) return;
+    
+    // Simulate a realistic search interaction
+    trackDemoInteraction('search_performed', { query, timestamp: Date.now() });
+    
+    // Simulate some results being found
+    const results = getDemoSearchResults(query);
+    trackDemoInteraction('search_results_displayed', { 
+      query, 
+      resultCount: results.length,
+      timestamp: Date.now() 
+    });
+  }, [isDemoMode, getDemoSearchResults]);
 
   const trackDemoInteraction = useCallback((action: string, data?: any) => {
     if (!isDemoMode) return;
@@ -141,73 +175,7 @@ export function OnboardingDemoProvider({ children }: OnboardingDemoProviderProps
     } else {
       trackDemoInteraction('demo_mode_disabled');
     }
-  }, [trackDemoInteraction]);
-
-  const getDemoSearchResults = useCallback((query: string): DemoSearchResult[] => {
-    if (!isDemoMode || !query) return [];
-
-    const normalizedQuery = query.toLowerCase().trim();
-    const results: DemoSearchResult[] = [];
-
-    // Search in campaigns
-    const matchingCampaigns = DEMO_CAMPAIGNS.filter(campaign => 
-      campaign.title.toLowerCase().includes(normalizedQuery) ||
-      campaign.description.toLowerCase().includes(normalizedQuery) ||
-      campaign.metadata?.category?.toLowerCase().includes(normalizedQuery)
-    );
-
-    // Search in users
-    const matchingUsers = DEMO_USERS.filter(user =>
-      user.title.toLowerCase().includes(normalizedQuery) ||
-      user.description.toLowerCase().includes(normalizedQuery)
-    );
-
-    // Search in organizations
-    const matchingOrganizations = DEMO_ORGANIZATIONS.filter(org =>
-      org.title.toLowerCase().includes(normalizedQuery) ||
-      org.description.toLowerCase().includes(normalizedQuery)
-    );
-
-    // Combine results with campaigns first
-    results.push(...matchingCampaigns, ...matchingUsers, ...matchingOrganizations);
-
-    // If no specific matches, return some default results for demo purposes
-    if (results.length === 0 && normalizedQuery.length > 0) {
-      return DEMO_CAMPAIGNS.slice(0, 2);
-    }
-
-    return results.slice(0, 6); // Limit to 6 results
-  }, [isDemoMode]);
-
-  const getDemoSearchSuggestions = useCallback((query: string): DemoSearchSuggestion[] => {
-    if (!isDemoMode) return [];
-
-    if (!query || query.length === 0) {
-      // Return trending and recent suggestions when no query
-      return DEMO_SUGGESTIONS.filter(s => s.type === 'trending' || s.type === 'recent').slice(0, 6);
-    }
-
-    const normalizedQuery = query.toLowerCase();
-    const matchingSuggestions = DEMO_SUGGESTIONS.filter(suggestion =>
-      suggestion.text.toLowerCase().includes(normalizedQuery)
-    );
-
-    return matchingSuggestions.slice(0, 4);
-  }, [isDemoMode]);
-
-  const simulateSearchInteraction = useCallback((query: string) => {
-    if (!isDemoMode) return;
-
-    trackDemoInteraction('search_simulation', { query });
-    
-    // Simulate typing delay for realistic demo
-    setTimeout(() => {
-      trackDemoInteraction('search_results_shown', { 
-        query, 
-        resultCount: getDemoSearchResults(query).length 
-      });
-    }, 300);
-  }, [isDemoMode, getDemoSearchResults, trackDemoInteraction]);
+  }, []);
 
   const value: OnboardingDemoContextType = {
     isDemoMode,

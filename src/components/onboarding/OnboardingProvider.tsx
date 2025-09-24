@@ -79,7 +79,9 @@ export function OnboardingProvider({ children }: OnboardingProviderProps) {
         isOpen={isOnboardingOpen}
         onClose={handleCompleteOnboarding}
         onComplete={handleCompleteOnboarding}
-      />
+      >
+        {children}
+      </TourProvider>
     </OnboardingContext.Provider>
   );
 }

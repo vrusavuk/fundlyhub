@@ -1,123 +1,205 @@
 /**
- * Main tour provider component with dependency injection
+ * Tour Provider with enhanced error handling
+ * Manages onboarding tours and interactions with safe fallbacks
  */
-import React, { useEffect, useMemo } from 'react';
-import { TourDialog } from './TourDialog';
+import React, { useState, useEffect, useCallback, ReactNode } from 'react';
+import { TourStep } from '../types';
+import { TourActionService } from '../services/TourActionService';
 import { TourBackdrop } from './TourBackdrop';
-import { useTourState } from '../hooks/useTourState';
-import { TourActionService, SearchService, DemoService } from '../services/TourActionService';
-import { TourProviderProps, TourAction } from '../types';
+import { TourDialog } from './TourDialog';
 import { TOUR_STEPS } from '../config';
 import { useGlobalSearch } from '@/contexts/UnifiedSearchContext';
 import { useOnboardingDemo } from '../OnboardingDemoProvider';
-import { useUserPreferences } from '@/hooks/useUserPreferences';
 
-export function TourProvider({ isOpen, onClose, onComplete }: TourProviderProps) {
-  const { completeOnboarding } = useUserPreferences();
+interface TourProviderProps {
+  children: ReactNode;
+  steps?: readonly TourStep[];
+  isOpen?: boolean;
+  onComplete?: () => void;
+  onSkip?: () => void;
+  onClose?: () => void;
+}
+
+export function TourProvider({ 
+  children, 
+  steps = TOUR_STEPS,
+  isOpen = false,
+  onComplete, 
+  onSkip,
+  onClose
+}: TourProviderProps) {
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [isActive, setIsActive] = useState(isOpen);
+  const [actionService] = useState(() => TourActionService.getInstance());
+
+  // Safe context usage with fallbacks
   const globalSearch = useGlobalSearch();
-  const demo = useOnboardingDemo();
-  
-  const {
-    state,
-    currentStepData,
-    isFirstStep,
-    isLastStep,
-    actions
-  } = useTourState();
+  const onboardingDemo = useOnboardingDemo();
 
-  // Initialize action service with dependencies
-  const actionService = useMemo(() => {
-    const service = TourActionService.getInstance();
-    
-    // Create service adapters
-    const searchService: SearchService = {
-      openHeaderSearch: () => {
+  // Enhanced search functionality for tours
+  const enhancedSearchForTour = {
+    openHeaderSearch: () => {
+      try {
         // Force open header search regardless of page context during onboarding
         const event = new CustomEvent('open-header-search');
         document.dispatchEvent(event);
         
         // Also trigger the standard method as fallback
         globalSearch.openHeaderSearch();
-      },
-      setSearchQuery: globalSearch.setSearchQuery,
-      isHeaderSearchOpen: globalSearch.isHeaderSearchOpen
-    };
-    
-    const demoService: DemoService = {
-      setDemoMode: demo.setDemoMode
-    };
-    
-    service.setServices(searchService, demoService);
-    return service;
-  }, [globalSearch, demo]);
-
-  // Initialize tour when opened
-  useEffect(() => {
-    if (isOpen && !state.isActive) {
-      demo.setDemoMode(true);
-      actions.startTour(TOUR_STEPS);
-    } else if (!isOpen && state.isActive) {
-      demo.setDemoMode(false);
-      actions.endTour();
-    }
-  }, [isOpen, state.isActive, actions, demo]);
-
-  const handleNext = () => {
-    if (state.isNavigating) return;
-    
-    if (isLastStep) {
-      handleComplete();
-    } else {
-      actions.nextStep();
-    }
+      } catch (error) {
+        console.warn('Failed to open header search during tour:', error);
+      }
+    },
+    setSearchQuery: (query: string) => {
+      try {
+        globalSearch.setSearchQuery(query);
+      } catch (error) {
+        console.warn('Failed to set search query during tour:', error);
+      }
+    },
+    isHeaderSearchOpen: globalSearch.isHeaderSearchOpen
   };
+  
+  const currentStep = steps[currentStepIndex];
+  const isLastStep = currentStepIndex === steps.length - 1;
 
-  const handlePrevious = () => {
-    if (state.isNavigating || isFirstStep) return;
-    actions.previousStep();
-  };
-
-  const handleComplete = () => {
-    completeOnboarding();
-    demo.setDemoMode(false);
-    actions.endTour();
-    onComplete?.();
-    onClose();
-  };
-
-  const handleAction = async (action: TourAction) => {
+  const startTour = useCallback(() => {
+    setIsActive(true);
+    setCurrentStepIndex(0);
+    
+    // Enable demo mode for realistic interactions
     try {
-      await actionService.executeAction(action);
+      onboardingDemo.setDemoMode(true);
+      onboardingDemo.trackDemoInteraction('tour_started');
     } catch (error) {
-      console.error('Failed to execute tour action:', error);
+      console.warn('Failed to enable demo mode:', error);
     }
-  };
+  }, [onboardingDemo]);
 
-  if (!isOpen || !state.isActive || !currentStepData) {
-    return null;
-  }
+  const nextStep = useCallback(async () => {
+    if (!currentStep) return;
 
-  const stepConfig = currentStepData.config ?? {};
+    try {
+      // Execute current step action if it exists
+      if (currentStep.action) {
+        await actionService.executeAction(currentStep.action);
+      }
+
+      // Track interaction
+      onboardingDemo.trackDemoInteraction('tour_step_completed', {
+        stepIndex: currentStepIndex,
+        stepId: currentStep.id,
+        stepTitle: currentStep.title
+      });
+
+      if (isLastStep) {
+        completeTour();
+      } else {
+        setCurrentStepIndex(prev => prev + 1);
+      }
+    } catch (error) {
+      console.warn('Error during tour step execution:', error);
+      // Continue to next step even if there's an error
+      if (isLastStep) {
+        completeTour();
+      } else {
+        setCurrentStepIndex(prev => prev + 1);
+      }
+    }
+  }, [currentStep, currentStepIndex, isLastStep, actionService, enhancedSearchForTour, onboardingDemo]);
+
+  const prevStep = useCallback(() => {
+    if (currentStepIndex > 0) {
+      setCurrentStepIndex(prev => prev - 1);
+      
+      try {
+        onboardingDemo.trackDemoInteraction('tour_step_back', {
+          stepIndex: currentStepIndex - 1
+        });
+      } catch (error) {
+        console.warn('Failed to track step back:', error);
+      }
+    }
+  }, [currentStepIndex, onboardingDemo]);
+
+  const skipTour = useCallback(() => {
+    try {
+      onboardingDemo.trackDemoInteraction('tour_skipped', {
+        stepIndex: currentStepIndex
+      });
+      onboardingDemo.setDemoMode(false);
+    } catch (error) {
+      console.warn('Failed to track tour skip:', error);
+    }
+    
+    setIsActive(false);
+    onSkip?.();
+    onClose?.();
+  }, [currentStepIndex, onboardingDemo, onSkip, onClose]);
+
+  const completeTour = useCallback(() => {
+    try {
+      onboardingDemo.trackDemoInteraction('tour_completed');
+      onboardingDemo.setDemoMode(false);
+    } catch (error) {
+      console.warn('Failed to track tour completion:', error);
+    }
+    
+    setIsActive(false);
+    onComplete?.();
+    onClose?.();
+  }, [onboardingDemo, onComplete, onClose]);
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    if (!isActive) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      switch (event.key) {
+        case 'Escape':
+          event.preventDefault();
+          skipTour();
+          break;
+        case 'ArrowRight':
+        case ' ':
+        case 'Enter':
+          event.preventDefault();
+          nextStep();
+          break;
+        case 'ArrowLeft':
+          event.preventDefault();
+          prevStep();
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isActive, nextStep, prevStep, skipTour]);
 
   return (
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" data-onboarding-active="true">
-        <TourBackdrop
-          show={stepConfig.showBackdrop ?? true}
-          opacity={stepConfig.backdropOpacity ?? 0.6}
-          allowInteraction={stepConfig.allowBackgroundInteraction ?? false}
-          onClick={stepConfig.allowBackgroundInteraction ? undefined : onClose}
-        />
-        
-        <TourDialog
-          step={currentStepData}
-          state={state}
-          isFirstStep={isFirstStep}
-          isLastStep={isLastStep}
-          onNext={handleNext}
-          onPrevious={handlePrevious}
-          onClose={handleComplete}
-          onAction={handleAction}
-        />
-      </div>
+    <>
+      {children}
+      {isActive && currentStep && (
+        <>
+          <TourBackdrop show={true} onClick={skipTour} />
+          <TourDialog
+            step={currentStep}
+            state={{
+              isActive,
+              currentStep: currentStepIndex,
+              steps,
+              isNavigating: false,
+              completedSteps: []
+            }}
+            isFirstStep={currentStepIndex === 0}
+            isLastStep={isLastStep}
+            onNext={nextStep}
+            onPrevious={currentStepIndex > 0 ? prevStep : undefined}
+            onClose={skipTour}
+          />
+        </>
+      )}
+    </>
   );
 }
