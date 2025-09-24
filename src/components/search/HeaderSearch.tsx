@@ -9,7 +9,7 @@ import { useSearchSuggestions } from "@/hooks/useSearchSuggestions";
 import { useGlobalSearch } from "@/contexts/SearchContext";
 import { SearchSuggestion } from "@/lib/services/searchSuggestions.service";
 import { hapticFeedback } from "@/lib/utils/mobile";
-import { Search, X } from "lucide-react";
+import { Search, X, Delete } from "lucide-react";
 
 interface HeaderSearchProps {
   isOpen: boolean;
@@ -251,7 +251,7 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
                   }}
                   className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-muted rounded-full"
                 >
-                  <X className="h-4 w-4" />
+                  <Delete className="h-4 w-4" />
                 </Button>
               )}
             </div>
