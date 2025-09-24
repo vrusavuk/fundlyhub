@@ -10,17 +10,17 @@ import { PageContainer } from "@/components/ui/PageContainer";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { SearchResultsContainer } from "@/components/search/SearchResultsContainer";
 import { useEnhancedSearch } from "@/hooks/useEnhancedSearch";
-import { useGlobalSearch } from "@/contexts/SearchContext";
 import { useNavigate } from "react-router-dom";
 
 export default function SearchResults() {
   const [searchParams] = useSearchParams();
   const [selectedType, setSelectedType] = useState<string>('all');
-  const { searchQuery } = useGlobalSearch();
   const navigate = useNavigate();
   
-  // Use context search query if available, otherwise fall back to URL param
-  const query = searchQuery || searchParams.get('q') || '';
+  // Get query from URL params - this is the primary source
+  const query = searchParams.get('q') || '';
+  
+  console.log('🔍 SearchResults page loaded with query:', query);
   
   const { results, loading, error, hasMore, loadMore, retry } = useEnhancedSearch({
     query,
@@ -30,9 +30,7 @@ export default function SearchResults() {
   // Update search query in context when URL changes
   useEffect(() => {
     const urlQuery = searchParams.get('q') || '';
-    if (urlQuery && urlQuery !== searchQuery) {
-      // Don't update if user is actively typing
-    }
+    console.log('📍 URL query changed to:', urlQuery);
   }, [searchParams]);
 
   const filteredResults = selectedType === 'all' 
