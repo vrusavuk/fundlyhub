@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { EnhancedSearchDropdown } from "./EnhancedSearchDropdown";
-import { SearchBackdrop } from "./SearchBackdrop";
+
 import { useEnhancedSearch } from "@/hooks/useEnhancedSearch";
 import { useSearchSuggestions } from "@/hooks/useSearchSuggestions";
 import { useGlobalSearch } from "@/contexts/SearchContext";
@@ -215,17 +215,6 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
 
   return (
     <>
-      {/* Search Backdrop */}
-      <SearchBackdrop 
-        show={showDropdown} 
-        onClick={(e) => {
-          // Only close if clicking on the backdrop itself, not on dropdown content
-          if (e.target === e.currentTarget) {
-            setShowDropdown(false);
-          }
-        }} 
-      />
-      
       {/* Search Header - FIXED positioning for scroll persistence */}
       <div 
         className="fixed top-0 left-0 right-0 z-50 border-b border-border/20 shadow-strong"
@@ -298,32 +287,20 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
       </div>
       </div>
 
-      {/* Enhanced Search Dropdown - COMPLETELY OUTSIDE header, positioned to blur page content */}
+      {/* Enhanced Search Dropdown - Simplified without complex pointer-events */}
       {showDropdown && (
-        <div 
-          className="fixed inset-x-0 top-16 px-3 sm:px-4 md:px-6 pointer-events-none z-50"
-        >
-          <div 
-            className="pointer-events-auto"
-            onClick={(e) => {
-              // Stop propagation to prevent backdrop from handling clicks inside dropdown
-              e.stopPropagation();
-            }}
-          >
-            <EnhancedSearchDropdown
-              query={query}
-              searchResults={isOnCampaignsPage ? [...userResults, ...organizationResults] : results}
-              searchLoading={loading}
-              isVisible={showDropdown}
-              onSuggestionSelect={handleSuggestionSelect}
-              onResultClick={handleResultClick}
-              onViewAllResults={handleViewAllResults}
-              onClose={() => setShowDropdown(false)}
-              showResultsSection={!isOnCampaignsPage || (userResults.length > 0 || organizationResults.length > 0)}
-              maxHeight="max-h-[70vh]"
-            />
-          </div>
-        </div>
+        <EnhancedSearchDropdown
+          query={query}
+          searchResults={isOnCampaignsPage ? [...userResults, ...organizationResults] : results}
+          searchLoading={loading}
+          isVisible={showDropdown}
+          onSuggestionSelect={handleSuggestionSelect}
+          onResultClick={handleResultClick}
+          onViewAllResults={handleViewAllResults}
+          onClose={() => setShowDropdown(false)}
+          showResultsSection={!isOnCampaignsPage || (userResults.length > 0 || organizationResults.length > 0)}
+          maxHeight="max-h-[70vh]"
+        />
       )}
     </>
   );
