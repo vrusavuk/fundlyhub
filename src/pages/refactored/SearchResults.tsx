@@ -11,32 +11,44 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { SearchResultsContainer } from "@/components/search/SearchResultsContainer";
 import { useEnhancedSearch } from "@/hooks/useEnhancedSearch";
 import { useNavigate } from "react-router-dom";
+import { useGlobalSearch } from "@/contexts/SearchContext";
 
 export default function SearchResults() {
   console.log('🚀 SearchResults component mounting...');
   
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedType, setSelectedType] = useState<string>('all');
   const navigate = useNavigate();
+  const { searchQuery, setSearchQuery } = useGlobalSearch();
   
-  // Get query from URL params - this is the primary source
-  const query = searchParams.get('q') || '';
+  // Get query from URL params or global search context
+  const urlQuery = searchParams.get('q') || '';
+  const activeQuery = searchQuery || urlQuery;
   
-  console.log('🔍 SearchResults page loaded with query:', query);
-  console.log('🌐 Current URL:', window.location.href);
-  console.log('📋 Search params:', Object.fromEntries(searchParams.entries()));
-  console.log('🧭 Current route:', window.location.pathname);
+  console.log('🔍 SearchResults page loaded with query:', activeQuery);
+  console.log('📋 URL query:', urlQuery);
+  console.log('🌐 Global search query:', searchQuery);
+  console.log('🎯 Active query:', activeQuery);
   
   const { results, loading, error, hasMore, loadMore, retry } = useEnhancedSearch({
-    query,
-    enabled: !!query
+    query: activeQuery,
+    enabled: !!activeQuery
   });
 
-  // Update search query in context when URL changes
+  // Sync global search query with URL when it changes
   useEffect(() => {
-    const urlQuery = searchParams.get('q') || '';
-    console.log('📍 URL query changed to:', urlQuery);
-  }, [searchParams]);
+    if (searchQuery && searchQuery !== urlQuery) {
+      // Update URL to match global search query
+      setSearchParams({ q: searchQuery }, { replace: true });
+    }
+  }, [searchQuery, urlQuery, setSearchParams]);
+
+  // Sync global search context with URL when URL changes directly
+  useEffect(() => {
+    if (urlQuery && urlQuery !== searchQuery) {
+      setSearchQuery(urlQuery);
+    }
+  }, [urlQuery, searchQuery, setSearchQuery]);
 
   const filteredResults = selectedType === 'all' 
     ? results 
@@ -48,7 +60,7 @@ export default function SearchResults() {
     navigate(result.link);
   };
 
-  if (!query) {
+  if (!activeQuery) {
     return (
       <AppLayout>
         <PageContainer maxWidth="md">
@@ -90,7 +102,7 @@ export default function SearchResults() {
 
   const headerActions = (
     <span className="text-sm text-muted-foreground">
-      {filteredResults.length} results for "{query}"
+      {filteredResults.length} results for "{activeQuery}"
     </span>
   );
 
@@ -106,14 +118,14 @@ export default function SearchResults() {
 
         <SearchResultsContainer
           results={filteredResults}
-          searchQuery={query}
+          searchQuery={activeQuery}
           loading={loading}
           error={error}
           hasMore={hasMore}
           onLoadMore={loadMore}
           onRetry={retry}
           onResultClick={handleResultClick}
-          emptyMessage={`No results found for "${query}"`}
+          emptyMessage={`No results found for "${activeQuery}"`}
         />
       </PageContainer>
     </AppLayout>
