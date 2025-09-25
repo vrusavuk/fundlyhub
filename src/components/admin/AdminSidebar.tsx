@@ -125,34 +125,39 @@ export function AdminSidebar() {
 
   return (
     <TooltipProvider>
-      <Sidebar className={`${collapsed ? 'w-18' : 'w-64'} border-r bg-sidebar`}>
+      <Sidebar className={`${collapsed ? 'w-16' : 'w-64'} border-r bg-sidebar`}>
         <SidebarContent>
         {/* Header */}
         <div className="p-4 border-b border-sidebar-border">
-          <div className="flex items-center space-x-3">
-            <div className="flex-shrink-0 w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <Crown className="w-4 h-4 text-primary-foreground" />
-            </div>
-            {!collapsed && (
-              <div className="flex-1 min-w-0">
-                <h2 className="text-sm font-semibold text-sidebar-foreground truncate">
-                  Admin Panel
-                </h2>
-                {highestRole && (
-                  <Badge variant="secondary" className="text-xs mt-1">
-                    {highestRole.role_name.replace('_', ' ')}
-                  </Badge>
-                )}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0 w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <Crown className="w-4 h-4 text-primary-foreground" />
               </div>
-            )}
+              {!collapsed && (
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-sm font-semibold text-sidebar-foreground truncate">
+                    Admin Panel
+                  </h2>
+                  {highestRole && (
+                    <Badge variant="secondary" className="text-xs mt-1">
+                      {highestRole.role_name.replace('_', ' ')}
+                    </Badge>
+                  )}
+                </div>
+              )}
+            </div>
+            <SidebarTrigger className="h-8 w-8" />
           </div>
         </div>
 
         {/* Main Navigation */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-medium text-sidebar-foreground/70 px-4 mb-2">
-            Administration
-          </SidebarGroupLabel>
+          {!collapsed && (
+            <SidebarGroupLabel className="text-xs font-medium text-sidebar-foreground/70 px-4 mb-2">
+              Administration
+            </SidebarGroupLabel>
+          )}
           
           <SidebarGroupContent>
             <SidebarMenu>
@@ -165,9 +170,9 @@ export function AdminSidebar() {
                           <NavLink 
                             to={item.url} 
                             end={item.url === '/admin'}
-                            className={`${getNavClassName(isActive(item.url))} justify-center`}
+                            className={`${getNavClassName(isActive(item.url))} flex items-center justify-center h-10 w-10 mx-auto`}
                           >
-                            <item.icon className="w-4 h-4 flex-shrink-0" />
+                            <item.icon className="w-5 h-5 flex-shrink-0" />
                           </NavLink>
                         </TooltipTrigger>
                         <TooltipContent side="right">
@@ -178,9 +183,9 @@ export function AdminSidebar() {
                       <NavLink 
                         to={item.url} 
                         end={item.url === '/admin'}
-                        className={getNavClassName(isActive(item.url))}
+                        className={`${getNavClassName(isActive(item.url))} flex items-center space-x-3 px-3 py-2`}
                       >
-                        <item.icon className="w-4 h-4 flex-shrink-0" />
+                        <item.icon className="w-5 h-5 flex-shrink-0" />
                         <span className="font-medium">{item.title}</span>
                         {item.badge && (
                           <Badge variant="destructive" className="text-xs ml-auto">
@@ -242,11 +247,6 @@ export function AdminSidebar() {
           </div>
         )}
         </SidebarContent>
-
-        {/* Toggle button */}
-        <div className="p-2 border-t border-sidebar-border">
-          <SidebarTrigger className="w-full" />
-        </div>
       </Sidebar>
     </TooltipProvider>
   );
