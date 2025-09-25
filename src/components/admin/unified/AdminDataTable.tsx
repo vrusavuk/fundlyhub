@@ -6,7 +6,7 @@ import {
   SortingState, 
   VisibilityState 
 } from '@tanstack/react-table';
-import { DataTable } from '@/components/ui/data-table';
+import { EnhancedDataTable } from '@/components/ui/enhanced-data-table';
 import { AdminTableControls, BulkAction, TableAction } from './AdminTableControls';
 import { AdminContentContainer } from './AdminContentContainer';
 import { UserMobileCard, CampaignMobileCard, OrganizationMobileCard } from '@/components/ui/mobile-card';
@@ -74,6 +74,7 @@ export function AdminDataTable<TData, TValue>({
   enableColumnVisibility = true,
   enablePagination = true,
   mobileCardType,
+  className,
   density = 'comfortable',
   pageSizeOptions = [10, 25, 50, 100]
 }: AdminDataTableProps<TData, TValue>) {
@@ -123,23 +124,23 @@ export function AdminDataTable<TData, TValue>({
         />
         
         {/* Data Table */}
-        <DataTable
+        <EnhancedDataTable
           columns={columns}
           data={data}
           loading={loading}
           onRowClick={onRowClick}
           enableSelection={enableSelection}
           enableSorting={enableSorting}
-          enableFiltering={enableFiltering}
           enableColumnVisibility={enableColumnVisibility}
           enablePagination={enablePagination}
           searchPlaceholder={searchPlaceholder}
-          emptyStateTitle={emptyStateTitle}
-          emptyStateDescription={emptyStateDescription}
+          emptyTitle={emptyStateTitle}
+          emptyDescription={emptyStateDescription}
           onSelectionChange={handleSelectionChange}
           density={density}
           pageSizeOptions={pageSizeOptions}
           className="border-none shadow-none"
+          searchable={enableFiltering}
         />
       </div>
     </AdminContentContainer>
