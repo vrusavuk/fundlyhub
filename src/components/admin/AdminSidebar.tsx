@@ -170,37 +170,35 @@ export function AdminSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* System Status Section */}
-        <SidebarGroup>
-          <SidebarGroupLabel>System</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs px-2">
-                <span className="text-muted-foreground">Health</span>
-                <div className="flex items-center space-x-1">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-green-500 font-medium">Good</span>
+        {/* System Status Section - Only show when expanded */}
+        {state === "expanded" && (
+          <SidebarGroup>
+            <SidebarGroupLabel>System</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs px-2">
+                  <span className="text-muted-foreground">Health</span>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-green-500 font-medium">Good</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between text-xs px-2">
+                  <span className="text-muted-foreground">Active Users</span>
+                  <span className="text-foreground font-medium">1,247</span>
+                </div>
+                
+                <div className="flex items-center justify-between text-xs px-2">
+                  <span className="text-muted-foreground">Pending Reviews</span>
+                  <Badge variant="secondary" className="text-xs">
+                    23
+                  </Badge>
                 </div>
               </div>
-              
-              {state === "expanded" && (
-                <>
-                  <div className="flex items-center justify-between text-xs px-2">
-                    <span className="text-muted-foreground">Active Users</span>
-                    <span className="text-foreground font-medium">1,247</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between text-xs px-2">
-                    <span className="text-muted-foreground">Pending Reviews</span>
-                    <Badge variant="secondary" className="text-xs">
-                      23
-                    </Badge>
-                  </div>
-                </>
-              )}
-            </div>
-          </SidebarGroupContent>
-        </SidebarGroup>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter>
