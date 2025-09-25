@@ -7,6 +7,8 @@ import { AppErrorBoundary } from '@/components/common/AppErrorBoundary';
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminProtectedRoute } from "@/components/admin/AdminProtectedRoute";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { Outlet } from 'react-router-dom';
+import { CreateSampleAdmin } from '@/components/admin/CreateSampleAdmin';
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import CreateFundraiser from "./pages/CreateFundraiser";
@@ -26,8 +28,9 @@ const App = () => (
     <AppProviders>
       <PerformanceMonitor />
       <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/auth" element={<Auth />} />
+                     <Route path="/" element={<Index />} />
+                     <Route path="/admin-setup" element={<CreateSampleAdmin />} />
+                     <Route path="/auth" element={<Auth />} />
                     <Route path="/campaigns" element={<AllCampaigns />} />
                     <Route path="/search" element={<SearchResults />} />
                     <Route path="/fundly-give" element={<FundlyGive />} />
