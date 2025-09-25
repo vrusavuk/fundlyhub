@@ -460,14 +460,19 @@ export type Database = {
           account_locked_until: string | null
           account_status: string | null
           avatar: string | null
+          ban_reason: string | null
+          banned_at: string | null
           bio: string | null
           campaign_count: number | null
           created_at: string | null
+          deleted_at: string | null
+          deletion_reason: string | null
           email: string | null
           failed_login_attempts: number | null
           follower_count: number | null
           following_count: number | null
           id: string
+          is_verified: boolean | null
           last_login_at: string | null
           location: string | null
           name: string | null
@@ -479,20 +484,26 @@ export type Database = {
           total_funds_raised: number | null
           twofa_enabled: boolean | null
           updated_at: string | null
+          verified_at: string | null
           website: string | null
         }
         Insert: {
           account_locked_until?: string | null
           account_status?: string | null
           avatar?: string | null
+          ban_reason?: string | null
+          banned_at?: string | null
           bio?: string | null
           campaign_count?: number | null
           created_at?: string | null
+          deleted_at?: string | null
+          deletion_reason?: string | null
           email?: string | null
           failed_login_attempts?: number | null
           follower_count?: number | null
           following_count?: number | null
           id: string
+          is_verified?: boolean | null
           last_login_at?: string | null
           location?: string | null
           name?: string | null
@@ -504,20 +515,26 @@ export type Database = {
           total_funds_raised?: number | null
           twofa_enabled?: boolean | null
           updated_at?: string | null
+          verified_at?: string | null
           website?: string | null
         }
         Update: {
           account_locked_until?: string | null
           account_status?: string | null
           avatar?: string | null
+          ban_reason?: string | null
+          banned_at?: string | null
           bio?: string | null
           campaign_count?: number | null
           created_at?: string | null
+          deleted_at?: string | null
+          deletion_reason?: string | null
           email?: string | null
           failed_login_attempts?: number | null
           follower_count?: number | null
           following_count?: number | null
           id?: string
+          is_verified?: boolean | null
           last_login_at?: string | null
           location?: string | null
           name?: string | null
@@ -529,6 +546,7 @@ export type Database = {
           total_funds_raised?: number | null
           twofa_enabled?: boolean | null
           updated_at?: string | null
+          verified_at?: string | null
           website?: string | null
         }
         Relationships: []
@@ -708,6 +726,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_admin_notes: {
+        Row: {
+          admin_id: string
+          content: string
+          created_at: string
+          id: string
+          is_internal: boolean
+          note_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_id: string
+          content: string
+          created_at?: string
+          id?: string
+          is_internal?: boolean
+          note_type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_internal?: boolean
+          note_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_blocks: {
         Row: {
           blocked_id: string
@@ -726,6 +777,45 @@ export type Database = {
           blocker_id?: string
           created_at?: string
           id?: string
+        }
+        Relationships: []
+      }
+      user_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean
+          message_type: string
+          read_at: string | null
+          sender_id: string | null
+          sender_type: string
+          subject: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message_type?: string
+          read_at?: string | null
+          sender_id?: string | null
+          sender_type?: string
+          subject: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message_type?: string
+          read_at?: string | null
+          sender_id?: string | null
+          sender_type?: string
+          subject?: string
+          user_id?: string
         }
         Relationships: []
       }

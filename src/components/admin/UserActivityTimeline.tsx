@@ -53,7 +53,12 @@ export function UserActivityTimeline({ userId }: UserActivityTimelineProps) {
 
       if (error) throw error;
 
-      setActivities(data || []);
+      setActivities((data || []).map(activity => ({
+        ...activity,
+        metadata: typeof activity.metadata === 'string' 
+          ? JSON.parse(activity.metadata) 
+          : activity.metadata || {}
+      })));
     } catch (error) {
       console.error('Error fetching user activities:', error);
       toast({

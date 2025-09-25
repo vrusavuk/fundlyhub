@@ -63,18 +63,40 @@ export function UserNotesSystem({ userId, userName }: UserNotesSystemProps) {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase
-        .from('user_admin_notes')
-        .select(`
-          *,
-          admin_profile:profiles!admin_id(name, email)
-        `)
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+      // Use raw SQL query since the table may not be in types yet
+      const { data, error } = await supabase.rpc('exec_sql', {
+        query: `
+          SELECT 
+            un.*,
+            p.name as admin_name,
+            p.email as admin_email
+          FROM user_admin_notes un
+          LEFT JOIN profiles p ON un.admin_id = p.id
+          WHERE un.user_id = $1
+          ORDER BY un.created_at DESC
+        `,
+        params: [userId]
+      });
 
       if (error) throw error;
 
-      setNotes(data || []);
+      // Transform the data to match our interface
+      const notesData = (data || []).map((row: any) => ({
+        id: row.id,
+        user_id: row.user_id,
+        admin_id: row.admin_id,
+        note_type: row.note_type,
+        content: row.content,
+        is_internal: row.is_internal,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        admin_profile: {
+          name: row.admin_name,
+          email: row.admin_email
+        }
+      }));
+
+      setNotes(notesData);
     } catch (error) {
       console.error('Error fetching user notes:', error);
       toast({
@@ -93,13 +115,13 @@ export function UserNotesSystem({ userId, userName }: UserNotesSystemProps) {
     try {
       const { data: user } = await supabase.auth.getUser();
       
-      const { error } = await supabase
-        .from('user_admin_notes')
-        .insert({
-          user_id: userId,
-          admin_id: user.user?.id,
-          ...newNote
-        });
+      const { error } = await supabase.rpc('exec_sql', {
+        query: `
+          INSERT INTO user_admin_notes (user_id, admin_id, note_type, content, is_internal)
+          VALUES ($1, $2, $3, $4, $5)
+        `,
+        params: [userId, user.user?.id, newNote.note_type, newNote.content, newNote.is_internal]
+      });
 
       if (error) throw error;
 
@@ -139,15 +161,14 @@ export function UserNotesSystem({ userId, userName }: UserNotesSystemProps) {
     try {
       const { data: user } = await supabase.auth.getUser();
       
-      const { error } = await supabase
-        .from('user_admin_notes')
-        .update({
-          content: editingNote.content,
-          note_type: editingNote.note_type,
-          is_internal: editingNote.is_internal,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', editingNote.id);
+      const { error } = await supabase.rpc('exec_sql', {
+        query: `
+          UPDATE user_admin_notes 
+          SET content = $1, note_type = $2, is_internal = $3, updated_at = now()
+          WHERE id = $4
+        `,
+        params: [editingNote.content, editingNote.note_type, editingNote.is_internal, editingNote.id]
+      });
 
       if (error) throw error;
 
@@ -181,10 +202,10 @@ export function UserNotesSystem({ userId, userName }: UserNotesSystemProps) {
     try {
       const { data: user } = await supabase.auth.getUser();
       
-      const { error } = await supabase
-        .from('user_admin_notes')
-        .delete()
-        .eq('id', noteId);
+      const { error } = await supabase.rpc('exec_sql', {
+        query: `DELETE FROM user_admin_notes WHERE id = $1`,
+        params: [noteId]
+      });
 
       if (error) throw error;
 
