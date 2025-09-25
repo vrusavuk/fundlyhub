@@ -29,6 +29,9 @@ import {
 import { createUserColumns, UserData as UserColumnData } from '@/lib/data-table/user-columns';
 import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
 import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { MobileDataTable } from '@/components/admin/mobile/MobileDataTable';
+import { MobileStatsGrid } from '@/components/admin/mobile/MobileStatsGrid';
 import { 
   AdminPageLayout, 
   AdminFilters, 
@@ -75,6 +78,7 @@ interface UserFilters {
 
 export function UserManagement() {
   const { hasPermission, isSuperAdmin } = useRBAC();
+  const isMobile = useIsMobile();
   const { toast } = useToast();
   const [users, setUsers] = useState<ExtendedProfile[]>([]);
   const [loading, setLoading] = useState(true);

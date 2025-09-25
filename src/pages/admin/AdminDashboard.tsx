@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { MobileStatsGrid } from '@/components/admin/mobile/MobileStatsGrid';
 import { EnhancedPageHeader } from '@/components/admin/EnhancedPageHeader';
 
 interface PlatformStats {
@@ -48,6 +50,7 @@ interface SystemHealth {
 
 export function AdminDashboard() {
   const { hasPermission, isSuperAdmin } = useRBAC();
+  const isMobile = useIsMobile();
   const [stats, setStats] = useState<PlatformStats | null>(null);
   const [systemHealth, setSystemHealth] = useState<SystemHealth | null>(null);
   const [loading, setLoading] = useState(true);
@@ -199,42 +202,84 @@ export function AdminDashboard() {
       />
 
       {/* Enhanced Key Metrics */}
-      <AdminStatsGrid 
-        stats={[
-          {
-            title: 'Total Users',
-            value: stats?.totalUsers || 0,
-            icon: Users,
-            description: 'Platform registered users',
-            trend: {
-              value: stats?.monthlyGrowth || 0,
-              isPositive: (stats?.monthlyGrowth || 0) > 0
+      {isMobile ? (
+        <MobileStatsGrid 
+          stats={[
+            {
+              title: 'Total Users',
+              value: stats?.totalUsers || 0,
+              icon: Users,
+              description: 'Platform users',
+              change: {
+                value: `+${stats?.monthlyGrowth || 0}%`,
+                trend: (stats?.monthlyGrowth || 0) > 0 ? 'up' : 'neutral'
+              }
+            },
+            {
+              title: 'Active Campaigns', 
+              value: stats?.activeCampaigns || 0,
+              icon: Megaphone,
+              description: `${stats?.pendingCampaigns || 0} pending`,
+              color: 'success'
+            },
+            {
+              title: 'Organizations',
+              value: stats?.totalOrganizations || 0,
+              icon: Building2,
+              description: `${stats?.verifiedOrganizations || 0} verified`
+            },
+            {
+              title: 'Total Raised',
+              value: formatCurrency(stats?.totalFundsRaised || 0),
+              icon: DollarSign,
+              description: 'Lifetime',
+              change: {
+                value: '+15.2%',
+                trend: 'up'
+              },
+              color: 'success'
             }
-          },
-          {
-            title: 'Active Campaigns', 
-            value: stats?.activeCampaigns || 0,
-            icon: Megaphone,
-            description: `${stats?.pendingCampaigns || 0} pending approval`
-          },
-          {
-            title: 'Organizations',
-            value: stats?.totalOrganizations || 0,
-            icon: Building2,
-            description: `${stats?.verifiedOrganizations || 0} verified`
-          },
-          {
-            title: 'Total Raised',
-            value: formatCurrency(stats?.totalFundsRaised || 0),
-            icon: DollarSign,
-            description: 'Platform lifetime',
-            trend: {
-              value: 15.2,
-              isPositive: true
+          ]}
+          loading={loading}
+        />
+      ) : (
+        <AdminStatsGrid 
+          stats={[
+            {
+              title: 'Total Users',
+              value: stats?.totalUsers || 0,
+              icon: Users,
+              description: 'Platform registered users',
+              trend: {
+                value: stats?.monthlyGrowth || 0,
+                isPositive: (stats?.monthlyGrowth || 0) > 0
+              }
+            },
+            {
+              title: 'Active Campaigns', 
+              value: stats?.activeCampaigns || 0,
+              icon: Megaphone,
+              description: `${stats?.pendingCampaigns || 0} pending approval`
+            },
+            {
+              title: 'Organizations',
+              value: stats?.totalOrganizations || 0,
+              icon: Building2,
+              description: `${stats?.verifiedOrganizations || 0} verified`
+            },
+            {
+              title: 'Total Raised',
+              value: formatCurrency(stats?.totalFundsRaised || 0),
+              icon: DollarSign,
+              description: 'Platform lifetime',
+              trend: {
+                value: 15.2,
+                isPositive: true
+              }
             }
-          }
-        ]}
-      />
+          ]}
+        />
+      )}
 
       {/* ... keep existing code (main content tabs) */}
 

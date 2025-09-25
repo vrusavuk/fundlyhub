@@ -6,7 +6,7 @@ import { PerformanceMonitor } from '@/components/performance/PerformanceMonitor'
 import { AppErrorBoundary } from '@/components/common/AppErrorBoundary';
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminProtectedRoute } from "@/components/admin/AdminProtectedRoute";
-import { AdminLayout } from "@/components/admin/AdminLayout";
+import { ResponsiveAdminLayout } from "@/components/admin/mobile";
 import { Outlet } from 'react-router-dom';
 import { CreateSampleAdmin } from '@/components/admin/CreateSampleAdmin';
 import Index from "./pages/Index";
@@ -63,7 +63,7 @@ const App = () => (
                      {/* Admin Routes */}
                      <Route path="/admin/*" element={
                        <AdminProtectedRoute>
-                         <AdminLayout />
+                         <ResponsiveAdminLayout />
                        </AdminProtectedRoute>
                       }>
                          <Route index element={<AdminDashboard />} />
