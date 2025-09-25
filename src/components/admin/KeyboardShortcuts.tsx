@@ -33,9 +33,10 @@ interface Shortcut {
 
 interface KeyboardShortcutsProps {
   onSearchFocus?: () => void;
+  onSidebarToggle?: () => void;
 }
 
-export function KeyboardShortcuts({ onSearchFocus }: KeyboardShortcutsProps) {
+export function KeyboardShortcuts({ onSearchFocus, onSidebarToggle }: KeyboardShortcutsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [commandPalette, setCommandPalette] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -93,6 +94,12 @@ export function KeyboardShortcuts({ onSearchFocus }: KeyboardShortcutsProps) {
       category: 'global',
       icon: HelpCircle
     },
+    {
+      key: 'cmd+b',
+      description: 'Toggle Sidebar',
+      action: () => onSidebarToggle?.(),
+      category: 'global'
+    },
     // Action shortcuts
     {
       key: 'r',
@@ -130,6 +137,13 @@ export function KeyboardShortcuts({ onSearchFocus }: KeyboardShortcutsProps) {
       if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
         event.preventDefault();
         setCommandPalette(true);
+        return;
+      }
+
+      // Handle sidebar toggle
+      if ((event.metaKey || event.ctrlKey) && event.key === 'b') {
+        event.preventDefault();
+        onSidebarToggle?.();
         return;
       }
 
@@ -191,7 +205,7 @@ export function KeyboardShortcuts({ onSearchFocus }: KeyboardShortcutsProps) {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onSearchFocus, navigate, shortcuts]);
+  }, [onSearchFocus, onSidebarToggle, navigate, shortcuts]);
 
   const categoryLabels = {
     navigation: 'Navigation',
