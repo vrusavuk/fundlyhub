@@ -24,71 +24,61 @@ interface AdminNavItem {
   icon: React.ComponentType<{ className?: string }>;
   permission?: string;
   badge?: string;
-  description?: string;
 }
 
 const navigationItems: AdminNavItem[] = [
   {
     title: 'Dashboard',
     url: '/admin',
-    icon: BarChart3,
-    description: 'Platform overview and key metrics'
+    icon: BarChart3
   },
   {
     title: 'Analytics',
     url: '/admin/analytics',
     icon: PieChart,
-    permission: 'view_platform_analytics',
-    description: 'Detailed platform analytics and reports'
+    permission: 'view_platform_analytics'
   },
   {
     title: 'Users',
     url: '/admin/users',
     icon: Users,
-    permission: 'view_all_users',
-    description: 'User management and profiles'
+    permission: 'view_all_users'
   },
   {
     title: 'Campaigns',
     url: '/admin/campaigns',
     icon: FileText,
-    permission: 'manage_campaigns',
-    description: 'Campaign management and moderation'
+    permission: 'manage_campaigns'
   },
   {
     title: 'Organizations',
     url: '/admin/organizations',
     icon: Building2,
-    permission: 'view_all_organizations',
-    description: 'Organization verification and management'
+    permission: 'view_all_organizations'
   },
   {
     title: 'Notifications',
     url: '/admin/notifications',
     icon: Bell,
-    permission: 'manage_communications',
-    description: 'Notification center and communications'
+    permission: 'manage_communications'
   },
   {
     title: 'Roles & Permissions',
     url: '/admin/roles',
     icon: Shield,
-    permission: 'manage_roles',
-    description: 'Role-based access control'
+    permission: 'manage_roles'
   },
   {
     title: 'Audit Logs',
     url: '/admin/audit-logs',
     icon: Activity,
-    permission: 'view_audit_logs',
-    description: 'System activity and security logs'
+    permission: 'view_audit_logs'
   },
   {
     title: 'System Health',
     url: '/admin/system',
     icon: Database,
-    permission: 'manage_system_settings',
-    description: 'System monitoring and health checks'
+    permission: 'manage_system_settings'
   }
 ];
 
@@ -156,11 +146,6 @@ export function MobileSidebar() {
               <item.icon className="w-5 h-5 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <span className="block truncate">{item.title}</span>
-                {item.description && (
-                  <span className="text-xs opacity-75 truncate block">
-                    {item.description}
-                  </span>
-                )}
               </div>
               {item.badge && (
                 <Badge variant="destructive" className="text-xs">

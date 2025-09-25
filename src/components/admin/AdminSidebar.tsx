@@ -27,6 +27,7 @@ import {
   SidebarTrigger,
   useSidebar
 } from '@/components/ui/sidebar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useRBAC } from '@/hooks/useRBAC';
 import { Badge } from '@/components/ui/badge';
 
@@ -36,71 +37,61 @@ interface AdminNavItem {
   icon: React.ComponentType<{ className?: string }>;
   permission?: string;
   badge?: string;
-  description?: string;
 }
 
 const navigationItems: AdminNavItem[] = [
   {
     title: 'Dashboard',
     url: '/admin',
-    icon: BarChart3,
-    description: 'Platform overview and key metrics'
+    icon: BarChart3
   },
   {
     title: 'Analytics',
     url: '/admin/analytics',
     icon: PieChart,
-    permission: 'view_platform_analytics',
-    description: 'Detailed platform analytics and reports'
+    permission: 'view_platform_analytics'
   },
   {
     title: 'Users',
     url: '/admin/users',
     icon: Users,
-    permission: 'view_all_users',
-    description: 'User management and profiles'
+    permission: 'view_all_users'
   },
   {
     title: 'Campaigns',
     url: '/admin/campaigns',
     icon: FileText,
-    permission: 'manage_campaigns',
-    description: 'Campaign management and moderation'
+    permission: 'manage_campaigns'
   },
   {
     title: 'Organizations',
     url: '/admin/organizations',
     icon: Building2,
-    permission: 'view_all_organizations',
-    description: 'Organization verification and management'
+    permission: 'view_all_organizations'
   },
   {
     title: 'Notifications',
     url: '/admin/notifications',
     icon: Bell,
-    permission: 'manage_communications',
-    description: 'Notification center and communications'
+    permission: 'manage_communications'
   },
   {
     title: 'Roles & Permissions',
     url: '/admin/roles',
     icon: Shield,
-    permission: 'manage_roles',
-    description: 'Role-based access control'
+    permission: 'manage_roles'
   },
   {
     title: 'Audit Logs',
     url: '/admin/audit-logs',
     icon: Activity,
-    permission: 'view_audit_logs',
-    description: 'System activity and security logs'
+    permission: 'view_audit_logs'
   },
   {
     title: 'System Health',
     url: '/admin/system',
     icon: Database,
-    permission: 'manage_system_settings',
-    description: 'System monitoring and health checks'
+    permission: 'manage_system_settings'
   }
 ];
 
@@ -133,8 +124,9 @@ export function AdminSidebar() {
   );
 
   return (
-    <Sidebar className={`${collapsed ? 'w-18' : 'w-64'} border-r bg-sidebar`}>
-      <SidebarContent>
+    <TooltipProvider>
+      <Sidebar className={`${collapsed ? 'w-18' : 'w-64'} border-r bg-sidebar`}>
+        <SidebarContent>
         {/* Header */}
         <div className="p-4 border-b border-sidebar-border">
           <div className="flex items-center space-x-3">
@@ -167,28 +159,36 @@ export function AdminSidebar() {
               {visibleItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
-                      end={item.url === '/admin'}
-                      className={getNavClassName(isActive(item.url))}
-                    >
-                      <item.icon className="w-4 h-4 flex-shrink-0" />
-                      {!collapsed && (
-                        <div className="flex-1 min-w-0">
-                          <span className="font-medium">{item.title}</span>
-                          {item.description && (
-                            <p className="text-xs text-sidebar-foreground/60 truncate mt-0.5">
-                              {item.description}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                      {item.badge && !collapsed && (
-                        <Badge variant="destructive" className="text-xs">
-                          {item.badge}
-                        </Badge>
-                      )}
-                    </NavLink>
+                    {collapsed ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <NavLink 
+                            to={item.url} 
+                            end={item.url === '/admin'}
+                            className={`${getNavClassName(isActive(item.url))} justify-center`}
+                          >
+                            <item.icon className="w-4 h-4 flex-shrink-0" />
+                          </NavLink>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                          <p>{item.title}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <NavLink 
+                        to={item.url} 
+                        end={item.url === '/admin'}
+                        className={getNavClassName(isActive(item.url))}
+                      >
+                        <item.icon className="w-4 h-4 flex-shrink-0" />
+                        <span className="font-medium">{item.title}</span>
+                        {item.badge && (
+                          <Badge variant="destructive" className="text-xs ml-auto">
+                            {item.badge}
+                          </Badge>
+                        )}
+                      </NavLink>
+                    )}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -241,12 +241,13 @@ export function AdminSidebar() {
             </div>
           </div>
         )}
-      </SidebarContent>
+        </SidebarContent>
 
-      {/* Toggle button */}
-      <div className="p-2 border-t border-sidebar-border">
-        <SidebarTrigger className="w-full" />
-      </div>
-    </Sidebar>
+        {/* Toggle button */}
+        <div className="p-2 border-t border-sidebar-border">
+          <SidebarTrigger className="w-full" />
+        </div>
+      </Sidebar>
+    </TooltipProvider>
   );
 }
