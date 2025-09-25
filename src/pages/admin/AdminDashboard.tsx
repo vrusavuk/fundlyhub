@@ -19,6 +19,8 @@ import {
   BarChart3
 } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
+import { EnhancedPageHeader } from '@/components/admin/EnhancedPageHeader';
 
 interface PlatformStats {
   totalUsers: number;
@@ -186,76 +188,55 @@ export function AdminDashboard() {
 
   return (
     <div className="section-hierarchy">
-      {/* Page Header */}
-      <div className="flex items-center justify-between mobile-header-spacing">
-        <div className="content-hierarchy">
-          <h1 className="heading-large tracking-tight">Admin Dashboard</h1>
-          <p className="body-medium text-muted-foreground">
-            Platform overview and key performance indicators
-          </p>
-        </div>
-        <Badge variant={isSuperAdmin() ? 'destructive' : 'default'} className="shadow-soft">
-          {isSuperAdmin() ? 'Super Admin' : 'Admin'} Access
-        </Badge>
-      </div>
+      {/* Enhanced Page Header */}
+      <EnhancedPageHeader
+        title="Admin Dashboard"
+        description="Platform overview and key performance indicators"
+        badge={{
+          label: isSuperAdmin() ? 'Super Admin Access' : 'Admin Access',
+          variant: isSuperAdmin() ? 'destructive' : 'default'
+        }}
+      />
 
-      {/* Key Metrics */}
-      <div className="mobile-grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="card-enhanced">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="caption-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalUsers.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-success">+{stats?.monthlyGrowth}%</span> from last month
-            </p>
-          </CardContent>
-        </Card>
+      {/* Enhanced Key Metrics */}
+      <AdminStatsGrid 
+        stats={[
+          {
+            title: 'Total Users',
+            value: stats?.totalUsers || 0,
+            icon: Users,
+            description: 'Platform registered users',
+            trend: {
+              value: stats?.monthlyGrowth || 0,
+              isPositive: (stats?.monthlyGrowth || 0) > 0
+            }
+          },
+          {
+            title: 'Active Campaigns', 
+            value: stats?.activeCampaigns || 0,
+            icon: Megaphone,
+            description: `${stats?.pendingCampaigns || 0} pending approval`
+          },
+          {
+            title: 'Organizations',
+            value: stats?.totalOrganizations || 0,
+            icon: Building2,
+            description: `${stats?.verifiedOrganizations || 0} verified`
+          },
+          {
+            title: 'Total Raised',
+            value: formatCurrency(stats?.totalFundsRaised || 0),
+            icon: DollarSign,
+            description: 'Platform lifetime',
+            trend: {
+              value: 15.2,
+              isPositive: true
+            }
+          }
+        ]}
+      />
 
-        <Card className="card-enhanced">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="caption-medium">Active Campaigns</CardTitle>
-            <Megaphone className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.activeCampaigns}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats?.pendingCampaigns} pending approval
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="card-enhanced">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="caption-medium">Organizations</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalOrganizations}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats?.verifiedOrganizations} verified
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="card-enhanced card-featured">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="caption-medium">Total Raised</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold bg-gradient-success bg-clip-text text-transparent">
-              {formatCurrency(stats?.totalFundsRaised || 0)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              <TrendingUp className="inline w-3 h-3 mr-1" />
-              Platform lifetime
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* ... keep existing code (main content tabs) */}
 
       {/* Main Content */}
       <Tabs defaultValue="overview" className="space-y-4">

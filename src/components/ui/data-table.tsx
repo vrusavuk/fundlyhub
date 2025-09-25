@@ -32,6 +32,8 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
   Table,
@@ -50,6 +52,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { getTypographyClasses, getSpacingClasses } from "@/lib/design/typography";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -148,72 +151,99 @@ export function DataTable<TData, TValue>({
   }
 
   return (
-    <div className={cn("space-y-4", className)}>
-      {/* Table Controls */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          {enableFiltering && (
-            <Input
-              placeholder={searchPlaceholder}
-              value={globalFilter}
-              onChange={(event) => setGlobalFilter(event.target.value)}
-              className="max-w-sm"
-            />
-          )}
-          {enableSelection && table.getFilteredSelectedRowModel().rows.length > 0 && (
-            <Badge variant="secondary" className="font-normal">
-              {table.getFilteredSelectedRowModel().rows.length} selected
-            </Badge>
-          )}
+    <div className={cn(getSpacingClasses('section', 'md'), className)}>
+      {/* Enhanced Table Controls */}
+      {(enableFiltering || enableSelection || enableColumnVisibility) && (
+        <div className="card-enhanced p-4 mb-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex flex-1 items-center space-x-3">
+              {enableFiltering && (
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder={searchPlaceholder}
+                    value={globalFilter ?? ""}
+                    onChange={(event) => setGlobalFilter(event.target.value)}
+                    className="pl-10 h-9 w-[200px] lg:w-[300px] mobile-input-padding shadow-soft border-primary/10 focus:border-primary/20"
+                  />
+                </div>
+              )}
+              {enableSelection && table.getFilteredSelectedRowModel().rows.length > 0 && (
+                <div className="flex items-center space-x-3 px-3 py-1.5 bg-primary/5 border border-primary/10 rounded-md">
+                  <Badge variant="secondary" className="text-xs">
+                    {table.getFilteredSelectedRowModel().rows.length} selected
+                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => table.resetRowSelection()}
+                    className="h-7 px-2 text-xs hover:bg-primary/10"
+                  >
+                    Clear
+                  </Button>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              {enableColumnVisibility && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-9 shadow-soft border-primary/10 hover:bg-primary/5 hover:border-primary/20"
+                    >
+                      <Settings2 className="mr-2 h-4 w-4" />
+                      Columns
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-[180px] shadow-medium bg-background/95 backdrop-blur-sm border-primary/10">
+                    <DropdownMenuLabel className={getTypographyClasses('caption', 'md')}>Toggle columns</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {table
+                      .getAllColumns()
+                      .filter(
+                        (column) =>
+                          typeof column.accessorFn !== "undefined" && column.getCanHide()
+                      )
+                      .map((column) => {
+                        return (
+                          <DropdownMenuCheckboxItem
+                            key={column.id}
+                            className="capitalize text-sm hover:bg-primary/5"
+                            checked={column.getIsVisible()}
+                            onCheckedChange={(value) =>
+                              column.toggleVisibility(!!value)
+                            }
+                          >
+                            {column.id.replace('_', ' ')}
+                          </DropdownMenuCheckboxItem>
+                        )
+                      })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
+          </div>
         </div>
+      )}
 
-        <div className="flex items-center space-x-2">
-          {enableColumnVisibility && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Settings2 className="mr-2 h-4 w-4" />
-                  View
-                  <ChevronDown className="ml-2 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                {table
-                  .getAllColumns()
-                  .filter((column) => column.getCanHide())
-                  .map((column) => {
-                    return (
-                      <DropdownMenuCheckboxItem
-                        key={column.id}
-                        className="capitalize"
-                        checked={column.getIsVisible()}
-                        onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                      >
-                        {column.id}
-                      </DropdownMenuCheckboxItem>
-                    );
-                  })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
-      </div>
-
-      {/* Table */}
-      <div className="rounded-lg border bg-card shadow-sm">
+      {/* Enhanced Table */}
+      <div className="card-enhanced border border-primary/10 shadow-soft overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="border-b bg-muted/30">
+              <TableRow key={headerGroup.id} className="border-b border-primary/10 bg-muted/30">
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead 
-                      key={header.id} 
+                      key={header.id}
                       className={cn(
                         cellPadding[density],
-                        densityClasses[density],
-                        "font-semibold text-muted-foreground",
-                        header.column.getCanSort() && "cursor-pointer select-none hover:bg-muted/50 transition-colors"
+                        getTypographyClasses('caption', 'md', 'text-foreground'),
+                        "font-semibold bg-muted/50",
+                        header.column.getCanSort() && "cursor-pointer select-none hover:bg-primary/5 transition-colors"
                       )}
                       onClick={header.column.getToggleSortingHandler()}
                     >
@@ -243,24 +273,25 @@ export function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map((row, index) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   className={cn(
-                    "border-b border-border/50 hover:bg-muted/30 transition-colors",
-                    onRowClick && "cursor-pointer",
-                    row.getIsSelected() && "bg-primary/5 border-primary/20"
+                    "border-b border-muted/50 transition-colors duration-200",
+                    onRowClick && "cursor-pointer hover:bg-primary/5",
+                    row.getIsSelected() && "bg-primary/10 hover:bg-primary/15",
+                    index % 2 === 0 && "bg-background",
+                    index % 2 === 1 && "bg-muted/20"
                   )}
                   onClick={() => onRowClick?.(row)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell 
-                      key={cell.id} 
+                      key={cell.id}
                       className={cn(
                         cellPadding[density],
-                        densityClasses[density],
-                        "text-foreground"
+                        getTypographyClasses('body', 'md', 'text-foreground')
                       )}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -270,15 +301,28 @@ export function DataTable<TData, TValue>({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-32 text-center">
-                  <div className="flex flex-col items-center justify-center space-y-3 text-muted-foreground py-8">
-                    <div className="h-12 w-12 rounded-full bg-muted/50 flex items-center justify-center">
-                      <Search className="h-5 w-5" />
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-32 text-center bg-muted/10"
+                >
+                  <div className={cn(
+                    "flex flex-col items-center justify-center",
+                    getSpacingClasses('content', 'lg')
+                  )}>
+                    <div className="w-12 h-12 bg-muted/30 rounded-full flex items-center justify-center mb-3">
+                      <Search className="h-5 w-5 text-muted-foreground" />
                     </div>
-                    <div className="space-y-1">
-                      <div className="text-lg font-medium">{emptyStateTitle}</div>
-                      <div className="text-sm opacity-75">{emptyStateDescription}</div>
-                    </div>
+                    <p className={getTypographyClasses('heading', 'sm', 'text-muted-foreground')}>
+                      {emptyStateTitle}
+                    </p>
+                    {emptyStateDescription && (
+                      <p className={cn(
+                        getTypographyClasses('body', 'md', 'text-muted-foreground/70'),
+                        "mt-1"
+                      )}>
+                        {emptyStateDescription}
+                      </p>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
@@ -287,72 +331,91 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
 
-      {/* Pagination */}
+      {/* Enhanced Pagination */}
       {enablePagination && (
-        <div className="flex items-center justify-between space-x-2 py-4">
-          <div className="flex items-center space-x-2">
-            <p className="text-sm font-medium">Rows per page</p>
-            <Select
-              value={`${table.getState().pagination.pageSize}`}
-              onValueChange={(value) => {
-                table.setPageSize(Number(value));
-              }}
-            >
-              <SelectTrigger className="h-8 w-[70px]">
-                <SelectValue placeholder={table.getState().pagination.pageSize} />
-              </SelectTrigger>
-              <SelectContent side="top">
-                {pageSizeOptions.map((pageSize) => (
-                  <SelectItem key={pageSize} value={`${pageSize}`}>
-                    {pageSize}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center space-x-6 lg:space-x-8">
-            <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-              Page {table.getState().pagination.pageIndex + 1} of{" "}
-              {table.getPageCount()}
+        <div className="card-enhanced p-4 mt-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className={cn(
+              "flex-1",
+              getTypographyClasses('body', 'md', 'text-muted-foreground')
+            )}>
+              {table.getFilteredSelectedRowModel().rows.length > 0 && (
+                <span className="inline-flex items-center space-x-1">
+                  <Badge variant="secondary" className="text-xs">
+                    {table.getFilteredSelectedRowModel().rows.length}
+                  </Badge>
+                  <span>of {table.getFilteredRowModel().rows.length} selected</span>
+                </span>
+              )}
             </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                className="hidden h-8 w-8 p-0 lg:flex"
-                onClick={() => table.setPageIndex(0)}
-                disabled={!table.getCanPreviousPage()}
-              >
-                <span className="sr-only">Go to first page</span>
-                <ChevronsLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                className="h-8 w-8 p-0"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-              >
-                <span className="sr-only">Go to previous page</span>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                className="h-8 w-8 p-0"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-              >
-                <span className="sr-only">Go to next page</span>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                className="hidden h-8 w-8 p-0 lg:flex"
-                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                disabled={!table.getCanNextPage()}
-              >
-                <span className="sr-only">Go to last page</span>
-                <ChevronsRight className="h-4 w-4" />
-              </Button>
+            
+            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-6">
+              <div className="flex items-center space-x-2">
+                <p className={getTypographyClasses('caption', 'md')}>Rows per page</p>
+                <Select
+                  value={`${table.getState().pagination.pageSize}`}
+                  onValueChange={(value) => {
+                    table.setPageSize(Number(value))
+                  }}
+                >
+                  <SelectTrigger className="h-9 w-[70px] shadow-soft border-primary/10">
+                    <SelectValue placeholder={table.getState().pagination.pageSize} />
+                  </SelectTrigger>
+                  <SelectContent side="top" className="shadow-medium bg-background/95 backdrop-blur-sm">
+                    {pageSizeOptions.map((pageSize) => (
+                      <SelectItem key={pageSize} value={`${pageSize}`} className="hover:bg-primary/5">
+                        {pageSize}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className={cn(
+                "flex items-center justify-center px-3 py-1.5 bg-muted/30 rounded-md",
+                getTypographyClasses('caption', 'md')
+              )}>
+                Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+              </div>
+              
+              <div className="flex items-center space-x-1">
+                <Button
+                  variant="outline"
+                  className="h-9 w-9 p-0 shadow-soft border-primary/10 hover:bg-primary/5"
+                  onClick={() => table.setPageIndex(0)}
+                  disabled={!table.getCanPreviousPage()}
+                >
+                  <span className="sr-only">Go to first page</span>
+                  <ChevronsLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-9 w-9 p-0 shadow-soft border-primary/10 hover:bg-primary/5"
+                  onClick={() => table.previousPage()}
+                  disabled={!table.getCanPreviousPage()}
+                >
+                  <span className="sr-only">Go to previous page</span>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-9 w-9 p-0 shadow-soft border-primary/10 hover:bg-primary/5"
+                  onClick={() => table.nextPage()}
+                  disabled={!table.getCanNextPage()}
+                >
+                  <span className="sr-only">Go to next page</span>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-9 w-9 p-0 shadow-soft border-primary/10 hover:bg-primary/5"
+                  onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                  disabled={!table.getCanNextPage()}
+                >
+                  <span className="sr-only">Go to last page</span>
+                  <ChevronsRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
