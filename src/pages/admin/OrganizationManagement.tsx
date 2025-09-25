@@ -12,8 +12,10 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useRBAC } from '@/hooks/useRBAC';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { createOrganizationColumns, OrganizationData } from '@/lib/data-table/organization-columns';
 import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
+import { MobileStatsGrid } from '@/components/admin/mobile/MobileStatsGrid';
 import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
 import { 
   AdminPageLayout, 
@@ -30,6 +32,7 @@ interface OrganizationFilters {
 }
 
 export function OrganizationManagement() {
+  const isMobile = useIsMobile();
   const [organizations, setOrganizations] = useState<OrganizationData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrgs, setSelectedOrgs] = useState<OrganizationData[]>([]);
@@ -312,6 +315,36 @@ export function OrganizationManagement() {
       title: "Approved",
       value: organizations.filter(o => o.verification_status === 'approved').length,
       icon: CheckCircle,
+      description: "Verified organizations",
+      color: 'success' as const
+    },
+    {
+      title: "Pending Review",
+      value: organizations.filter(o => o.verification_status === 'pending').length,
+      icon: Clock,
+      description: "Awaiting verification",
+      color: 'warning' as const
+    },
+    {
+      title: "Rejected",
+      value: organizations.filter(o => o.verification_status === 'rejected').length,
+      icon: XCircle,
+      description: "Verification failed",
+      color: 'destructive' as const
+    },
+  ];
+
+  const desktopStats = [
+    {
+      title: "Total Organizations",
+      value: organizations.length,
+      icon: Building2,
+      description: "All registered organizations"
+    },
+    {
+      title: "Approved",
+      value: organizations.filter(o => o.verification_status === 'approved').length,
+      icon: CheckCircle,
       iconClassName: "text-success",
       description: "Verified organizations"
     },
@@ -339,7 +372,13 @@ export function OrganizationManagement() {
     <AdminPageLayout
       title="Organization Management"
       description="Manage and verify organization accounts"
-      stats={<AdminStatsGrid stats={stats} />}
+      stats={
+        isMobile ? (
+          <MobileStatsGrid stats={stats} loading={loading} />
+        ) : (
+          <AdminStatsGrid stats={desktopStats} />
+        )
+      }
       filters={
         <AdminFilters
           filters={filterConfig}
