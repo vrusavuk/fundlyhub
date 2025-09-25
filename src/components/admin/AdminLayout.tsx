@@ -5,10 +5,14 @@ import { useRBAC } from '@/hooks/useRBAC';
 import { Toaster } from '@/components/ui/toaster';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
+import { SmartBreadcrumb } from '@/components/navigation/SmartBreadcrumb';
+import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
 
 export function AdminLayout() {
   const { activeContext } = useRBAC();
+  
+  // Initialize breadcrumbs for admin pages
+  useBreadcrumbs();
 
   const handleSearchFocus = () => {
     // Focus the search input in the current page
@@ -28,19 +32,7 @@ export function AdminLayout() {
             <div className="flex items-center gap-2 px-4">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="mr-2 h-4" />
-              <Breadcrumb>
-                <BreadcrumbList>
-                  <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="/admin">
-                      Admin
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator className="hidden md:block" />
-                  <BreadcrumbItem>
-                    <BreadcrumbPage>Dashboard</BreadcrumbPage>
-                  </BreadcrumbItem>
-                </BreadcrumbList>
-              </Breadcrumb>
+              <SmartBreadcrumb />
             </div>
             
             <div className="ml-auto px-4">
