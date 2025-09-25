@@ -11,7 +11,8 @@ import {
   AlertTriangle,
   UserCheck,
   Crown,
-  PieChart
+  PieChart,
+  FileText
 } from 'lucide-react';
 import {
   Sidebar,
@@ -61,8 +62,8 @@ const navigationItems: AdminNavItem[] = [
   {
     title: 'Campaigns',
     url: '/admin/campaigns',
-    icon: Megaphone,
-    permission: 'view_all_campaigns',
+    icon: FileText,
+    permission: 'manage_campaigns',
     description: 'Campaign management and moderation'
   },
   {
@@ -81,7 +82,7 @@ const navigationItems: AdminNavItem[] = [
   },
   {
     title: 'Audit Logs',
-    url: '/admin/audit',
+    url: '/admin/audit-logs',
     icon: Activity,
     permission: 'view_audit_logs',
     description: 'System activity and security logs'

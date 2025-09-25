@@ -13,6 +13,10 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import CreateFundraiser from "./pages/CreateFundraiser";
 import FundraiserDetail from "./pages/FundraiserDetail";
+import { UserManagement } from '@/pages/admin/UserManagement';
+import { RoleManagement } from '@/pages/admin/RoleManagement';
+import { AuditLogs } from '@/pages/admin/AuditLogs';
+import { CampaignManagement } from '@/pages/admin/CampaignManagement';
 import AllCampaigns from "./pages/AllCampaigns";
 import FundlyGive from "./pages/FundlyGive";
 import SearchResults from "./pages/SearchResults";
@@ -57,10 +61,13 @@ const App = () => (
                        <AdminProtectedRoute>
                          <AdminLayout />
                        </AdminProtectedRoute>
-                     }>
-                       <Route index element={<AdminDashboard />} />
-                       {/* Additional admin routes will be added in future phases */}
-                     </Route>
+                      }>
+                        <Route index element={<AdminDashboard />} />
+                        <Route path="users" element={<UserManagement />} />
+                        <Route path="roles" element={<RoleManagement />} />
+                        <Route path="audit-logs" element={<AuditLogs />} />
+                        <Route path="campaigns" element={<CampaignManagement />} />
+                      </Route>
                      
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
