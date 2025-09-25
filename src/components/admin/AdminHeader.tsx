@@ -1,4 +1,4 @@
-import { Bell, Search, User, LogOut, Settings, Menu } from 'lucide-react';
+import { Bell, User, LogOut, Settings, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRBAC } from '@/hooks/useRBAC';
 import {
@@ -10,19 +10,17 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { HeaderSearch } from '@/components/search/HeaderSearch';
 
 export function AdminHeader() {
   const { user, signOut } = useAuth();
-  const { getHighestRole, isSuperAdmin } = useRBAC();
+  const { roles, isSuperAdmin } = useRBAC();
   const navigate = useNavigate();
   const { toast } = useToast();
-  
-  const highestRole = getHighestRole();
 
   const handleSignOut = async () => {
     try {
@@ -50,96 +48,92 @@ export function AdminHeader() {
   };
 
   return (
-    <header className="h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex items-center justify-between h-full px-6">
-        {/* Left side - Search */}
-        <div className="flex items-center space-x-4 flex-1">
-          <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input
-              placeholder="Search admin..."
-              className="pl-9 bg-muted/50 border-0 focus-visible:ring-1"
-            />
-          </div>
-        </div>
-
-        {/* Right side - Actions and User Menu */}
-        <div className="flex items-center space-x-3">
-          {/* Notifications */}
-          <Button variant="ghost" size="sm" className="relative">
-            <Bell className="w-4 h-4" />
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-1 -right-1 w-5 h-5 text-xs p-0 flex items-center justify-center"
-            >
-              3
-            </Badge>
+    <div className="flex items-center space-x-4">
+      {/* Search */}
+      <div className="flex-1 max-w-lg">
+        <HeaderSearch isOpen={false} onClose={() => {}} />
+      </div>
+      
+      {/* Notification badge */}
+      <Button variant="ghost" size="sm" className="relative">
+        <Bell className="h-4 w-4" />
+        <Badge 
+          variant="destructive" 
+          className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs p-0"
+        >
+          3
+        </Badge>
+      </Button>
+      
+      {/* Back to Site */}
+      <Button 
+        variant="outline" 
+        size="sm" 
+        onClick={handleBackToSite}
+        className="hidden sm:flex"
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back to Site
+      </Button>
+      
+      {/* User Menu */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.email} />
+              <AvatarFallback>
+                {user?.email?.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
           </Button>
-
-          {/* Back to Site */}
-          <Button variant="outline" size="sm" onClick={handleBackToSite}>
-            Back to Site
-          </Button>
-
-          {/* User Menu */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-80" align="end" forceMount>
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center space-x-2">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={user?.user_metadata?.avatar_url} alt="Admin" />
-                  <AvatarFallback className="bg-primary text-primary-foreground">
-                    {user?.email?.charAt(0).toUpperCase() || 'A'}
+                  <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.email} />
+                  <AvatarFallback className="text-xs">
+                    {user?.email?.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            
-            <DropdownMenuContent className="w-64" align="end" forceMount>
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <p className="text-sm font-medium leading-none">
-                      {user?.user_metadata?.name || user?.email}
-                    </p>
-                    {isSuperAdmin() && (
-                      <Badge variant="destructive" className="text-xs">
-                        Super Admin
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-xs leading-none text-muted-foreground">
+                <div className="flex flex-col space-y-1 flex-1 min-w-0">
+                  <p className="text-sm font-medium leading-none">
+                    {user?.user_metadata?.full_name || 'Admin User'}
+                  </p>
+                  <p className="text-xs leading-none text-muted-foreground truncate">
                     {user?.email}
                   </p>
-                  {highestRole && (
-                    <Badge variant="secondary" className="text-xs w-fit">
-                      {highestRole.role_name.replace('_', ' ')}
-                    </Badge>
-                  )}
                 </div>
-              </DropdownMenuLabel>
+              </div>
               
-              <DropdownMenuSeparator />
-              
-              <DropdownMenuItem onClick={() => navigate('/profile')}>
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </DropdownMenuItem>
-              
-              <DropdownMenuItem onClick={() => navigate('/admin/settings')}>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Admin Settings</span>
-              </DropdownMenuItem>
-              
-              <DropdownMenuSeparator />
-              
-              <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Sign out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-    </header>
+              {/* Role badges */}
+              <div className="flex flex-wrap gap-1">
+                {roles.map((role) => (
+                  <Badge key={role.role_name} variant="secondary" className="text-xs">
+                    {role.role_name.replace('_', ' ')}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => navigate('/profile')}>
+            <User className="mr-2 h-4 w-4" />
+            <span>Profile</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate('/admin/settings')}>
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Admin Settings</span>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleSignOut}>
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>Sign out</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }

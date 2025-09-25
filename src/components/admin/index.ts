@@ -1,9 +1,7 @@
 export { AdminLayout } from './AdminLayout';
 export { AdminHeader } from './AdminHeader';
 export { AdminSidebar } from './AdminSidebar';
-export { ProAdminSidebar } from './ProAdminSidebar';
 export { AdminProtectedRoute } from './AdminProtectedRoute';
-export { KeyboardShortcuts } from './KeyboardShortcuts';
 
 // Mobile components
 export * from './mobile';

@@ -1,14 +1,14 @@
 import { Outlet } from 'react-router-dom';
-import { ProAdminSidebar } from './ProAdminSidebar';
+import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
-import { KeyboardShortcuts } from '@/components/admin/KeyboardShortcuts';
 import { useRBAC } from '@/hooks/useRBAC';
 import { Toaster } from '@/components/ui/toaster';
-import { useSidebarState } from '@/hooks/useSidebarState';
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
+import { Separator } from '@/components/ui/separator';
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 
 export function AdminLayout() {
   const { activeContext } = useRBAC();
-  const { collapsed, toggle } = useSidebarState();
 
   const handleSearchFocus = () => {
     // Focus the search input in the current page
@@ -18,23 +18,40 @@ export function AdminLayout() {
     }
   };
 
-  // Handle keyboard shortcut for toggling sidebar
-  const handleKeyboardToggle = () => {
-    toggle();
-  };
-
   return (
-    <div className="min-h-screen flex w-full bg-background">
-      <ProAdminSidebar collapsed={collapsed} onToggle={toggle} />
-      
-      <div className="flex-1 flex flex-col min-h-screen">
-        <AdminHeader />
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <AdminSidebar />
         
-        <main className="flex-1 p-6 overflow-auto">
-          <div className="max-w-7xl mx-auto">
+        <SidebarInset>
+          <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+            <div className="flex items-center gap-2 px-4">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="mr-2 h-4" />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem className="hidden md:block">
+                    <BreadcrumbLink href="/admin">
+                      Admin
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator className="hidden md:block" />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>Dashboard</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
+            
+            <div className="ml-auto px-4">
+              <AdminHeader />
+            </div>
+          </header>
+          
+          <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
             {/* Context indicator */}
             {activeContext.type !== 'global' && (
-              <div className="mb-4 px-3 py-2 bg-muted/50 border border-border rounded-md">
+              <div className="px-3 py-2 bg-muted/50 border border-border rounded-md">
                 <p className="text-sm text-foreground font-medium">
                   Context: {activeContext.type === 'organization' ? 'Organization' : 'Campaign'} 
                   {activeContext.id && ` (${activeContext.id})`}
@@ -42,18 +59,16 @@ export function AdminLayout() {
               </div>
             )}
             
-            <Outlet />
+            <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min">
+              <div className="h-full p-6">
+                <Outlet />
+              </div>
+            </div>
           </div>
-        </main>
+        </SidebarInset>
       </div>
       
-      {/* Global Keyboard Shortcuts */}
-      <KeyboardShortcuts 
-        onSearchFocus={handleSearchFocus} 
-        onSidebarToggle={handleKeyboardToggle}
-      />
-      
       <Toaster />
-    </div>
+    </SidebarProvider>
   );
 }
