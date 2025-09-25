@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useRBAC } from '@/hooks/useRBAC';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -16,24 +15,19 @@ import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { 
-  FileText, 
   Search, 
   Filter, 
   MoreHorizontal, 
   CheckCircle, 
   XCircle, 
   Clock,
-  Star,
   Eye,
-  Edit,
   Trash2,
   AlertTriangle,
   TrendingUp,
   DollarSign,
   Users,
-  Calendar,
   Flag,
-  MessageSquare,
   Download,
   RefreshCw
 } from 'lucide-react';
@@ -43,6 +37,7 @@ import { DataTable } from '@/components/ui/data-table';
 import { EnhancedPageHeader } from '@/components/admin/EnhancedPageHeader';
 import { ContextualHelp, adminHelpContent } from '@/components/admin/ContextualHelp';
 import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
+import { createCampaignColumns } from '@/lib/data-table/campaign-columns';
 
 interface CampaignData {
   id: string;
@@ -380,25 +375,16 @@ export function CampaignManagement() {
   const getStatusBadge = (status: string) => {
     const variants = {
       draft: 'secondary',
-      pending: 'default',
-      active: 'default',
+      pending: 'warning',
+      active: 'success',
       paused: 'destructive',
       ended: 'destructive',
       closed: 'outline'
     } as const;
 
-    const colors = {
-      draft: 'text-gray-600',
-      pending: 'text-yellow-600',
-      active: 'text-green-600',
-      paused: 'text-red-600',
-      ended: 'text-red-600',
-      closed: 'text-gray-500'
-    };
-
     return (
       <Badge variant={variants[status as keyof typeof variants] || 'outline'}>
-        <div className={`flex items-center space-x-1 ${colors[status as keyof typeof colors]}`}>
+        <div className="flex items-center space-x-1">
           {status === 'pending' && <Clock className="h-3 w-3" />}
           {status === 'active' && <CheckCircle className="h-3 w-3" />}
           {(status === 'paused' || status === 'ended') && <XCircle className="h-3 w-3" />}
@@ -407,10 +393,6 @@ export function CampaignManagement() {
         </div>
       </Badge>
     );
-  };
-
-  const getProgressPercentage = (raised: number, goal: number) => {
-    return goal > 0 ? Math.min((raised / goal) * 100, 100) : 0;
   };
 
   const formatCurrency = (amount: number, currency = 'USD') => {
@@ -476,7 +458,6 @@ export function CampaignManagement() {
           {
             label: 'Export',
             onClick: () => {
-              // TODO: Implement export functionality
               toast({
                 title: 'Export Started',
                 description: 'Campaign data export will begin shortly'
@@ -487,205 +468,151 @@ export function CampaignManagement() {
           }
         ]}
       >
-        {/* Contextual Help */}
         <div className="flex items-center space-x-2 mt-2">
-          <ContextualHelp
-            content={adminHelpContent.campaigns}
-            variant="popover"
-            placement="bottom"
-          />
           <span className="text-sm text-muted-foreground">
-            Need help? Click the help icon for tips and shortcuts.
+            Need help? Use keyboard shortcuts or filters to manage campaigns efficiently.
           </span>
         </div>
       </EnhancedPageHeader>
 
       {/* Enhanced Filters */}
-      <Card className="card-enhanced">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center caption-medium">
-              <Filter className="mr-2 h-4 w-4" />
-              Filters & Search
-            </CardTitle>
-            <ContextualHelp
-              content={{
-                title: "Campaign Filters",
-                description: "Use these filters to quickly find specific campaigns",
-                tips: [
-                  "Combine multiple filters for precise results",
-                  "Use date ranges to find campaigns by creation time",
-                  "Amount ranges help filter by fundraising goals"
-                ],
-                shortcuts: [
-                  { key: "/", description: "Focus search input" },
-                  { key: "r", description: "Refresh campaign data" }
-                ]
-              }}
-              variant="tooltip"
-            />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-4">
-            <div className="relative xl:col-span-2">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search campaigns..."
-                className="pl-10"
-                value={filters.search}
-                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-              />
+      <Card className="mb-6">
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Search</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search campaigns..."
+                  value={filters.search}
+                  onChange={(e) => setFilters({...filters, search: e.target.value})}
+                  className="pl-10"
+                />
+              </div>
             </div>
-            
-            <Select
-              value={filters.status}
-              onValueChange={(value) => setFilters(prev => ({ ...prev, status: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="pending">Pending Review</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="paused">Paused</SelectItem>
-                <SelectItem value="ended">Ended</SelectItem>
-                <SelectItem value="closed">Closed</SelectItem>
-                <SelectItem value="draft">Draft</SelectItem>
-              </SelectContent>
-            </Select>
 
-            <Select
-              value={filters.category}
-              onValueChange={(value) => setFilters(prev => ({ ...prev, category: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="medical">Medical</SelectItem>
-                <SelectItem value="education">Education</SelectItem>
-                <SelectItem value="emergency">Emergency</SelectItem>
-                <SelectItem value="animal">Animal</SelectItem>
-                <SelectItem value="business">Business</SelectItem>
-                <SelectItem value="community">Community</SelectItem>
-              </SelectContent>
-            </Select>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Status</label>
+              <Select value={filters.status} onValueChange={(value) => setFilters({...filters, status: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All statuses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="paused">Paused</SelectItem>
+                  <SelectItem value="ended">Ended</SelectItem>
+                  <SelectItem value="closed">Closed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-            <Select
-              value={filters.visibility}
-              onValueChange={(value) => setFilters(prev => ({ ...prev, visibility: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Visibility" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Visibility</SelectItem>
-                <SelectItem value="public">Public</SelectItem>
-                <SelectItem value="unlisted">Unlisted</SelectItem>
-              </SelectContent>
-            </Select>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Category</label>
+              <Select value={filters.category} onValueChange={(value) => setFilters({...filters, category: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="medical">Medical</SelectItem>
+                  <SelectItem value="education">Education</SelectItem>
+                  <SelectItem value="emergency">Emergency</SelectItem>
+                  <SelectItem value="animal">Animal</SelectItem>
+                  <SelectItem value="business">Business</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-            <Select
-              value={filters.dateRange}
-              onValueChange={(value) => setFilters(prev => ({ ...prev, dateRange: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Date Range" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Time</SelectItem>
-                <SelectItem value="today">Today</SelectItem>
-                <SelectItem value="week">This Week</SelectItem>
-                <SelectItem value="month">This Month</SelectItem>
-                <SelectItem value="quarter">This Quarter</SelectItem>
-              </SelectContent>
-            </Select>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Date Range</label>
+              <Select value={filters.dateRange} onValueChange={(value) => setFilters({...filters, dateRange: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All time" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Time</SelectItem>
+                  <SelectItem value="today">Today</SelectItem>
+                  <SelectItem value="week">This Week</SelectItem>
+                  <SelectItem value="month">This Month</SelectItem>
+                  <SelectItem value="quarter">This Quarter</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-            <Select
-              value={filters.amountRange}
-              onValueChange={(value) => setFilters(prev => ({ ...prev, amountRange: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Goal Amount" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Amounts</SelectItem>
-                <SelectItem value="under-1k">Under $1K</SelectItem>
-                <SelectItem value="1k-5k">$1K - $5K</SelectItem>
-                <SelectItem value="5k-10k">$5K - $10K</SelectItem>
-                <SelectItem value="10k-50k">$10K - $50K</SelectItem>
-                <SelectItem value="over-50k">Over $50K</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <Filter className="h-4 w-4" />
+                <span className="text-sm text-muted-foreground">
+                  {totalCount} campaigns found
+                </span>
+              </div>
+            </div>
 
-            <Select
-              value={filters.sortBy}
-              onValueChange={(value) => setFilters(prev => ({ ...prev, sortBy: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Sort By" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="created_at">Created Date</SelectItem>
-                <SelectItem value="updated_at">Updated Date</SelectItem>
-                <SelectItem value="title">Title</SelectItem>
-                <SelectItem value="goal_amount">Goal Amount</SelectItem>
-                <SelectItem value="status">Status</SelectItem>
-              </SelectContent>
-            </Select>
+            {someSelected && (
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-muted-foreground">
+                  {selectedCampaigns.size} selected
+                </span>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      Bulk Actions
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => {
+                      setBulkAction({ type: 'approve' });
+                      setShowBulkDialog(true);
+                    }}>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Approve Selected
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => {
+                      setBulkAction({ type: 'suspend' });
+                      setShowBulkDialog(true);
+                    }}>
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Suspend Selected
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={() => {
+                        setBulkAction({ type: 'delete' });
+                        setShowBulkDialog(true);
+                      }}
+                      className="text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Selected
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Bulk Actions */}
-      {someSelected && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium">
-                  {selectedCampaigns.size} campaign{selectedCampaigns.size !== 1 ? 's' : ''} selected
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setBulkAction({ type: 'approve' });
-                    setShowBulkDialog(true);
-                  }}
-                >
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Approve
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setBulkAction({ type: 'suspend' });
-                    setShowBulkDialog(true);
-                  }}
-                >
-                  <XCircle className="mr-2 h-4 w-4" />
-                  Suspend
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => {
-                    setBulkAction({ type: 'delete' });
-                    setShowBulkDialog(true);
-                  }}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </Button>
-              </div>
+      {/* Enhanced Data Table */}
+      <Card>
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <LoadingSpinner />
             </div>
+          ) : (
+            <DataTable
+              data={campaigns}
+              columns={columns}
+              loading={loading}
+            />
+          )}
         </CardContent>
       </Card>
 
@@ -696,365 +623,124 @@ export function CampaignManagement() {
         onClearCompleted={optimisticUpdates.clearCompleted}
         onClearFailed={optimisticUpdates.clearFailed}
       />
-    </div>
-  );
-}
-      <Card className="card-enhanced">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center caption-medium">
-              <FileText className="mr-2 h-4 w-4" />
-              Campaigns ({totalCount})
-            </CardTitle>
-            <div className="flex items-center space-x-2">
-              {selectedCampaigns.size > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowBulkDialog(true)}
-                  className="shadow-soft border-primary/10 hover:bg-primary/5"
-                >
-                  Bulk Actions ({selectedCampaigns.size})
-                </Button>
-              )}
-              <ContextualHelp
-                content={{
-                  title: "Campaign Actions",
-                  description: "Manage individual campaigns or perform bulk operations",
-                  tips: [
-                    "Click on a row to view campaign details",
-                    "Use checkboxes to select multiple campaigns",
-                    "Bulk actions appear when campaigns are selected"
-                  ]
-                }}
-                variant="tooltip"
-              />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <DataTable
-            columns={columns}
-            data={campaigns}
-            loading={loading}
-            enableSelection={true}
-            enableSorting={true}
-            enableFiltering={true}
-            enableColumnVisibility={true}
-            enablePagination={false}
-            searchPlaceholder="Search campaigns..."
-            emptyStateTitle="No campaigns found"
-            emptyStateDescription="No campaigns match your current filters."
-            density="comfortable"
-            onSelectionChange={(selectedRows) => {
-              setSelectedCampaigns(new Set(selectedRows.map(row => row.id)));
-            }}
-          />
-          
-          {/* Custom pagination for server-side pagination */}
-          <div className="flex items-center justify-between space-x-2 py-4 border-t">
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-muted-foreground">
-                Showing {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, totalCount)} to{' '}
-                {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of {totalCount} campaigns
-              </span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(prev => prev - 1)}
-              >
-                Previous
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                Page {currentPage} of {Math.ceil(totalCount / ITEMS_PER_PAGE)}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={currentPage >= Math.ceil(totalCount / ITEMS_PER_PAGE)}
-                onClick={() => setCurrentPage(prev => prev + 1)}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Campaign Details Dialog */}
       <Dialog open={showCampaignDialog} onOpenChange={setShowCampaignDialog}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Campaign Details</DialogTitle>
             <DialogDescription>
-              Complete information and moderation tools for the selected campaign
+              Detailed information about the selected campaign
             </DialogDescription>
           </DialogHeader>
+          
           {selectedCampaign && (
-            <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="content">Content</TabsTrigger>
-                <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                <TabsTrigger value="moderation">Moderation</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="overview" className="space-y-4">
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="font-semibold mb-2">Campaign Information</h3>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-sm text-muted-foreground">Title:</span>
-                          <span className="text-sm font-medium">{selectedCampaign.title}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-muted-foreground">Category:</span>
-                          <span className="text-sm">{selectedCampaign.category}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-muted-foreground">Goal:</span>
-                          <span className="text-sm font-medium">
-                            {formatCurrency(selectedCampaign.goal_amount, selectedCampaign.currency)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-muted-foreground">Status:</span>
-                          {getStatusBadge(selectedCampaign.status)}
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-muted-foreground">Visibility:</span>
-                          <Badge variant="outline">{selectedCampaign.visibility}</Badge>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <h3 className="font-semibold mb-2">Beneficiary Information</h3>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-sm text-muted-foreground">Name:</span>
-                          <span className="text-sm">{selectedCampaign.beneficiary_name || 'Not specified'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-muted-foreground">Contact:</span>
-                          <span className="text-sm">{selectedCampaign.beneficiary_contact || 'Not specified'}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="font-semibold mb-2">Performance Metrics</h3>
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <DollarSign className="h-4 w-4 text-green-600" />
-                            <span className="text-sm">Total Raised</span>
-                          </div>
-                          <span className="font-medium">
-                            {formatCurrency(selectedCampaign.stats?.total_raised || 0, selectedCampaign.currency)}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <Users className="h-4 w-4 text-blue-600" />
-                            <span className="text-sm">Donors</span>
-                          </div>
-                          <span className="font-medium">{selectedCampaign.stats?.donor_count || 0}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <MessageSquare className="h-4 w-4 text-purple-600" />
-                            <span className="text-sm">Comments</span>
-                          </div>
-                          <span className="font-medium">{selectedCampaign.stats?.comment_count || 0}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <Eye className="h-4 w-4 text-orange-600" />
-                            <span className="text-sm">Views</span>
-                          </div>
-                          <span className="font-medium">{selectedCampaign.stats?.view_count || 0}</span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <h3 className="font-semibold mb-2">Timeline</h3>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-sm text-muted-foreground">Created:</span>
-                          <span className="text-sm">
-                            {new Date(selectedCampaign.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-muted-foreground">Updated:</span>
-                          <span className="text-sm">
-                            {new Date(selectedCampaign.updated_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                        {selectedCampaign.end_date && (
-                          <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">End Date:</span>
-                            <span className="text-sm">
-                              {new Date(selectedCampaign.end_date).toLocaleDateString()}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
+            <div className="space-y-6">
+              {/* Campaign Header */}
+              <div className="flex items-start space-x-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src={selectedCampaign.cover_image} alt={selectedCampaign.title} />
+                  <AvatarFallback>{selectedCampaign.title.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold">{selectedCampaign.title}</h3>
+                  <p className="text-muted-foreground mb-2">{selectedCampaign.summary}</p>
+                  <div className="flex items-center space-x-4">
+                    {getStatusBadge(selectedCampaign.status)}
+                    <Badge variant="outline">{selectedCampaign.category}</Badge>
+                    <Badge variant="outline">{selectedCampaign.visibility}</Badge>
                   </div>
                 </div>
-              </TabsContent>
-              
-              <TabsContent value="content" className="space-y-4">
-                <div>
-                  <h3 className="font-semibold mb-2">Campaign Summary</h3>
-                  <p className="text-sm text-muted-foreground">{selectedCampaign.summary}</p>
+              </div>
+
+              {/* Campaign Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center space-x-2">
+                      <DollarSign className="h-5 w-5 text-success" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Raised</p>
+                        <p className="text-lg font-semibold">
+                          {formatCurrency(selectedCampaign.stats?.total_raised || 0, selectedCampaign.currency)}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center space-x-2">
+                      <TrendingUp className="h-5 w-5 text-primary" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Goal</p>
+                        <p className="text-lg font-semibold">
+                          {formatCurrency(selectedCampaign.goal_amount, selectedCampaign.currency)}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center space-x-2">
+                      <Users className="h-5 w-5 text-accent" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Donors</p>
+                        <p className="text-lg font-semibold">{selectedCampaign.stats?.donor_count || 0}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center space-x-2">
+                      <Eye className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Views</p>
+                        <p className="text-lg font-semibold">{selectedCampaign.stats?.view_count || 0}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Admin Actions */}
+              {hasPermission('moderate_campaigns') && (
+                <div className="space-y-4 p-4 border rounded-lg">
+                  <h4 className="font-medium">Admin Actions</h4>
+                  <div className="flex flex-wrap gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleCampaignStatusChange(selectedCampaign.id, 'active')}
+                      disabled={selectedCampaign.status === 'active'}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Approve
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleCampaignStatusChange(selectedCampaign.id, 'paused')}
+                      disabled={selectedCampaign.status === 'paused'}
+                    >
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Suspend
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleCampaignStatusChange(selectedCampaign.id, 'closed')}
+                      disabled={selectedCampaign.status === 'closed'}
+                    >
+                      <Flag className="h-4 w-4 mr-2" />
+                      Close
+                    </Button>
+                  </div>
                 </div>
-                
-                {selectedCampaign.story_html && (
-                  <div>
-                    <h3 className="font-semibold mb-2">Campaign Story</h3>
-                    <div 
-                      className="text-sm prose prose-sm max-w-none"
-                      dangerouslySetInnerHTML={{ __html: selectedCampaign.story_html }}
-                    />
-                  </div>
-                )}
-                
-                {selectedCampaign.tags && selectedCampaign.tags.length > 0 && (
-                  <div>
-                    <h3 className="font-semibold mb-2">Tags</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedCampaign.tags.map((tag, index) => (
-                        <Badge key={index} variant="secondary">{tag}</Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </TabsContent>
-              
-              <TabsContent value="analytics" className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base flex items-center">
-                        <TrendingUp className="mr-2 h-4 w-4" />
-                        Funding Progress
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <Progress 
-                          value={getProgressPercentage(selectedCampaign.stats?.total_raised || 0, selectedCampaign.goal_amount)}
-                          className="h-3"
-                        />
-                        <div className="flex justify-between text-sm">
-                          <span>{formatCurrency(selectedCampaign.stats?.total_raised || 0)}</span>
-                          <span className="text-muted-foreground">
-                            {getProgressPercentage(selectedCampaign.stats?.total_raised || 0, selectedCampaign.goal_amount).toFixed(1)}%
-                          </span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base flex items-center">
-                        <Users className="mr-2 h-4 w-4" />
-                        Engagement
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-sm">Donors:</span>
-                          <span className="font-medium">{selectedCampaign.stats?.donor_count || 0}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm">Comments:</span>
-                          <span className="font-medium">{selectedCampaign.stats?.comment_count || 0}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm">Views:</span>
-                          <span className="font-medium">{selectedCampaign.stats?.view_count || 0}</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="moderation" className="space-y-4">
-                {hasPermission('moderate_campaigns') && (
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="font-semibold mb-2">Moderation Actions</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedCampaign.status === 'pending' && (
-                          <Button
-                            onClick={() => handleCampaignStatusChange(selectedCampaign.id, 'active')}
-                            className="bg-green-600 hover:bg-green-700"
-                          >
-                            <CheckCircle className="mr-2 h-4 w-4" />
-                            Approve Campaign
-                          </Button>
-                        )}
-                        {selectedCampaign.status === 'active' && (
-                          <Button
-                            onClick={() => handleCampaignStatusChange(selectedCampaign.id, 'paused')}
-                            variant="destructive"
-                          >
-                            <XCircle className="mr-2 h-4 w-4" />
-                            Pause Campaign
-                          </Button>
-                        )}
-                        {(selectedCampaign.status === 'paused' || selectedCampaign.status === 'ended') && (
-                          <Button
-                            onClick={() => handleCampaignStatusChange(selectedCampaign.id, 'active')}
-                            className="bg-green-600 hover:bg-green-700"
-                          >
-                            <CheckCircle className="mr-2 h-4 w-4" />
-                            Reactivate Campaign
-                          </Button>
-                        )}
-                        <Button
-                          onClick={() => handleCampaignStatusChange(selectedCampaign.id, 'closed')}
-                          variant="outline"
-                        >
-                          <Flag className="mr-2 h-4 w-4" />
-                          Close Campaign
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <h3 className="font-semibold mb-2">Content Review</h3>
-                      <div className="space-y-2">
-                        <div className="p-3 border rounded">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium">Content Guidelines Compliance</span>
-                            <Badge variant="default">Pending Review</Badge>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            This campaign requires manual review for content compliance.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
+              )}
+            </div>
           )}
         </DialogContent>
       </Dialog>
@@ -1063,27 +749,42 @@ export function CampaignManagement() {
       <Dialog open={showBulkDialog} onOpenChange={setShowBulkDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Bulk Action</DialogTitle>
+            <DialogTitle>
+              {bulkAction?.type === 'approve' && 'Approve Selected Campaigns'}
+              {bulkAction?.type === 'suspend' && 'Suspend Selected Campaigns'}
+              {bulkAction?.type === 'delete' && 'Delete Selected Campaigns'}
+            </DialogTitle>
             <DialogDescription>
-              Perform action on {selectedCampaigns.size} selected campaign{selectedCampaigns.size !== 1 ? 's' : ''}
+              This action will affect {selectedCampaigns.size} selected campaigns.
+              {bulkAction?.type === 'delete' && ' This action cannot be undone.'}
             </DialogDescription>
           </DialogHeader>
+          
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium">Reason (optional)</label>
+              <label className="text-sm font-medium mb-2 block">
+                Reason {bulkAction?.type === 'delete' ? '(Required)' : '(Optional)'}
+              </label>
               <Textarea
-                placeholder="Enter reason for this action..."
                 value={bulkReason}
                 onChange={(e) => setBulkReason(e.target.value)}
-                className="mt-1"
+                placeholder={`Provide a reason for ${bulkAction?.type}ing these campaigns...`}
+                required={bulkAction?.type === 'delete'}
               />
             </div>
+            
             <div className="flex justify-end space-x-2">
               <Button variant="outline" onClick={() => setShowBulkDialog(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleBulkAction}>
-                Confirm Action
+              <Button 
+                onClick={handleBulkAction}
+                variant={bulkAction?.type === 'delete' ? 'destructive' : 'default'}
+                disabled={bulkAction?.type === 'delete' && !bulkReason.trim()}
+              >
+                {bulkAction?.type === 'approve' && 'Approve'}
+                {bulkAction?.type === 'suspend' && 'Suspend'}
+                {bulkAction?.type === 'delete' && 'Delete'}
               </Button>
             </div>
           </div>
