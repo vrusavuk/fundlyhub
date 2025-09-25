@@ -4,7 +4,7 @@
  */
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { UserCircle, User, LogOut, HelpCircle } from 'lucide-react';
+import { UserCircle, User, LogOut, HelpCircle, Settings } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
+import { useRBAC } from '@/hooks/useRBAC';
 import { useOnboarding } from '@/components/onboarding/OnboardingProvider';
 
 interface UserMenuProps {
@@ -29,6 +30,7 @@ export function UserMenu({
   onMenuAction 
 }: UserMenuProps) {
   const { user, signOut } = useAuth();
+  const { canAccessAdmin } = useRBAC();
   const { startOnboarding } = useOnboarding();
 
   const handleSignOut = async () => {
@@ -54,6 +56,15 @@ export function UserMenu({
             >
               Profile
             </Link>
+            {canAccessAdmin && (
+              <Link 
+                to="/admin" 
+                className="text-foreground hover:text-primary transition-smooth py-2"
+                onClick={onMenuAction}
+              >
+                Admin Panel
+              </Link>
+            )}
             <button 
               className="text-foreground hover:text-primary transition-smooth py-2 text-left"
               onClick={handleTakeTour}
@@ -110,6 +121,14 @@ export function UserMenu({
                 Profile
               </Link>
             </DropdownMenuItem>
+            {canAccessAdmin && (
+              <DropdownMenuItem asChild>
+                <Link to="/admin">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Admin Panel
+                </Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={handleTakeTour}>
               <HelpCircle className="mr-2 h-4 w-4" />
               Take Tour
