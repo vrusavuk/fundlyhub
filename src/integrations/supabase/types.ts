@@ -893,6 +893,10 @@ export type Database = {
           role_name: string
         }[]
       }
+      has_existing_super_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_super_admin: {
         Args: { _user_id: string }
         Returns: boolean
