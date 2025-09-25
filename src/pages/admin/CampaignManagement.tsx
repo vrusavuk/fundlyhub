@@ -1,19 +1,23 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
-  Search, 
   CheckCircle, 
   XCircle, 
   Clock,
   Flag,
   Download,
-  RefreshCw
+  RefreshCw,
+  AlertTriangle,
+  TrendingUp,
+  DollarSign,
+  Users
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useRBAC } from '@/hooks/useRBAC';
-import { createCampaignColumns } from '@/lib/data-table/campaign-columns';
+import { createCampaignColumns, CampaignData } from '@/lib/data-table/campaign-columns';
 import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
 import { 
   AdminPageLayout, 
@@ -24,38 +28,6 @@ import {
   TableAction 
 } from '@/components/admin/unified';
 
-interface CampaignData {
-  id: string;
-  title: string;
-  slug: string;
-  summary: string;
-  story_html: string;
-  category: string;
-  goal_amount: number;
-  currency: string;
-  status: 'draft' | 'pending' | 'active' | 'closed' | 'paused' | 'ended';
-  visibility: 'public' | 'unlisted';
-  created_at: string;
-  updated_at: string;
-  end_date: string | null;
-  cover_image: string | null;
-  owner_user_id: string;
-  location: string | null;
-  tags: string[] | null;
-  beneficiary_name: string | null;
-  beneficiary_contact: string | null;
-  owner_profile?: {
-    name: string;
-    email: string;
-    avatar: string;
-  };
-  stats?: {
-    total_raised: number;
-    donor_count: number;
-    comment_count: number;
-    view_count: number;
-  };
-}
 
 interface CampaignFilters {
   search: string;
@@ -64,14 +36,6 @@ interface CampaignFilters {
   visibility: string;
   dateRange: string;
   amountRange: string;
-  sortBy: string;
-  sortOrder: 'asc' | 'desc';
-}
-
-interface BulkAction {
-  type: 'approve' | 'suspend' | 'feature' | 'delete' | 'change_status';
-  reason?: string;
-  status?: string;
 }
 
 export function CampaignManagement() {
@@ -79,23 +43,14 @@ export function CampaignManagement() {
   const { toast } = useToast();
   const [campaigns, setCampaigns] = useState<CampaignData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCampaigns, setSelectedCampaigns] = useState<Set<string>>(new Set());
-  const [selectedCampaign, setSelectedCampaign] = useState<CampaignData | null>(null);
-  const [showCampaignDialog, setShowCampaignDialog] = useState(false);
-  const [showBulkDialog, setShowBulkDialog] = useState(false);
-  const [bulkAction, setBulkAction] = useState<BulkAction | null>(null);
-  const [bulkReason, setBulkReason] = useState('');
-  const [totalCount, setTotalCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedCampaigns, setSelectedCampaigns] = useState<CampaignData[]>([]);
   const [filters, setFilters] = useState<CampaignFilters>({
     search: '',
     status: 'all',
     category: 'all',
     visibility: 'all',
     dateRange: 'all',
-    amountRange: 'all',
-    sortBy: 'created_at',
-    sortOrder: 'desc'
+    amountRange: 'all'
   });
 
   // Enhanced with optimistic updates
@@ -108,26 +63,6 @@ export function CampaignManagement() {
     }
   });
 
-  const ITEMS_PER_PAGE = 25;
-
-  // Create columns for the data table
-  const columns = createCampaignColumns(
-    // onViewDetails
-    (campaign) => {
-      setSelectedCampaign(campaign as CampaignData);
-      setShowCampaignDialog(true);
-    },
-    // onStatusChange
-    (campaignId, status) => {
-      handleCampaignStatusChange(campaignId, status);
-    },
-    // permissions
-    {
-      canModerate: hasPermission('moderate_campaigns'),
-      isSuperAdmin: isSuperAdmin(),
-    }
-  );
-
   const fetchCampaigns = async () => {
     try {
       setLoading(true);
@@ -137,7 +72,7 @@ export function CampaignManagement() {
         .select(`
           *,
           owner_profile:profiles!owner_user_id(name, email, avatar)
-        `, { count: 'exact' });
+        `);
 
       // Apply filters
       if (filters.search.trim()) {
@@ -197,34 +132,38 @@ export function CampaignManagement() {
         }
       }
 
-      // Apply sorting
-      query = query.order(filters.sortBy, { ascending: filters.sortOrder === 'asc' });
+      // Apply sorting and pagination
+      query = query.order('created_at', { ascending: false }).limit(100);
 
-      // Apply pagination
-      const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-      query = query.range(offset, offset + ITEMS_PER_PAGE - 1);
-
-      const { data, error, count } = await query;
+      const { data, error } = await query;
 
       if (error) throw error;
 
       // Fetch campaign stats
       const campaignIds = data?.map(c => c.id) || [];
-      const { data: stats } = await supabase
-        .rpc('get_fundraiser_totals', { fundraiser_ids: campaignIds });
+      let campaignsWithStats: CampaignData[] = data || [];
 
-      const campaignsWithStats: CampaignData[] = (data || []).map(campaign => ({
-        ...campaign,
-        stats: stats?.find(s => s.fundraiser_id === campaign.id) || {
-          total_raised: 0,
-          donor_count: 0,
-          comment_count: 0,
-          view_count: 0
+      if (campaignIds.length > 0) {
+        try {
+          const { data: stats } = await supabase
+            .rpc('get_fundraiser_totals', { fundraiser_ids: campaignIds });
+
+          campaignsWithStats = (data || []).map(campaign => ({
+            ...campaign,
+            stats: stats?.find(s => s.fundraiser_id === campaign.id) || {
+              total_raised: 0,
+              donor_count: 0,
+              comment_count: 0,
+              view_count: 0
+            }
+          })) as CampaignData[];
+        } catch (statsError) {
+          console.warn('Failed to fetch campaign stats:', statsError);
+          // Continue with campaigns without stats
         }
-      })) as CampaignData[];
+      }
 
       setCampaigns(campaignsWithStats);
-      setTotalCount(count || 0);
     } catch (error) {
       console.error('Error fetching campaigns:', error);
       toast({
@@ -247,7 +186,6 @@ export function CampaignManagement() {
         description: `Change campaign "${campaign.title}" status to ${newStatus}`,
         originalData: { ...campaign },
         rollbackFn: async () => {
-          // Rollback to original status
           await supabase
             .from('fundraisers')
             .update({ status: campaign.status })
@@ -255,27 +193,24 @@ export function CampaignManagement() {
         }
       },
       async () => {
-        // Optimistically update local state first
         setCampaigns(prev => prev.map(c => 
           c.id === campaignId 
-            ? { ...c, status: newStatus as any, updated_at: new Date().toISOString() }
+            ? { ...c, status: newStatus as CampaignData['status'], updated_at: new Date().toISOString() }
             : c
         ));
 
         const { error } = await supabase
           .from('fundraisers')
           .update({ 
-            status: newStatus as any,
+            status: newStatus as CampaignData['status'],
             updated_at: new Date().toISOString()
           })
           .eq('id', campaignId);
 
         if (error) throw error;
 
-        // Get current user
         const { data: user } = await supabase.auth.getUser();
         
-        // Log the action
         await supabase.rpc('log_audit_event', {
           _actor_id: user.user?.id,
           _action: `campaign_${newStatus}`,
@@ -289,127 +224,9 @@ export function CampaignManagement() {
     );
   };
 
-  const handleBulkAction = async () => {
-    if (!bulkAction || selectedCampaigns.size === 0) return;
-
-    try {
-      const campaignIds = Array.from(selectedCampaigns);
-      
-      switch (bulkAction.type) {
-        case 'approve':
-          await Promise.all(campaignIds.map(id => 
-            handleCampaignStatusChange(id, 'active', bulkReason)
-          ));
-          break;
-        case 'suspend':
-          await Promise.all(campaignIds.map(id => 
-            handleCampaignStatusChange(id, 'paused', bulkReason)
-          ));
-          break;
-        case 'delete':
-          const { error } = await supabase
-            .from('fundraisers')
-            .delete()
-            .in('id', campaignIds);
-          
-          if (error) throw error;
-          
-          // Get current user
-          const { data: user } = await supabase.auth.getUser();
-          
-          // Log bulk delete
-          await Promise.all(campaignIds.map(id =>
-            supabase.rpc('log_audit_event', {
-              _actor_id: user.user?.id,
-              _action: 'campaign_deleted',
-              _resource_type: 'campaign',
-              _resource_id: id,
-              _metadata: { reason: bulkReason || 'Bulk delete operation' }
-            })
-          ));
-          break;
-        case 'change_status':
-          if (bulkAction.status) {
-            await Promise.all(campaignIds.map(id => 
-              handleCampaignStatusChange(id, bulkAction.status!, bulkReason)
-            ));
-          }
-          break;
-      }
-
-      toast({
-        title: 'Bulk Action Complete',
-        description: `Updated ${campaignIds.length} campaigns`
-      });
-
-      setSelectedCampaigns(new Set());
-      setShowBulkDialog(false);
-      setBulkAction(null);
-      setBulkReason('');
-      fetchCampaigns();
-    } catch (error) {
-      console.error('Error performing bulk action:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to perform bulk action',
-        variant: 'destructive'
-      });
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      draft: 'secondary',
-      pending: 'warning',
-      active: 'success',
-      paused: 'destructive',
-      ended: 'destructive',
-      closed: 'outline'
-    } as const;
-
-    return (
-      <Badge variant={variants[status as keyof typeof variants] || 'outline'}>
-        <div className="flex items-center space-x-1">
-          {status === 'pending' && <Clock className="h-3 w-3" />}
-          {status === 'active' && <CheckCircle className="h-3 w-3" />}
-          {(status === 'paused' || status === 'ended') && <XCircle className="h-3 w-3" />}
-          {status === 'closed' && <Flag className="h-3 w-3" />}
-          <span className="capitalize">{status}</span>
-        </div>
-      </Badge>
-    );
-  };
-
-  const formatCurrency = (amount: number, currency = 'USD') => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
-
-  const selectAllCampaigns = (checked: boolean) => {
-    if (checked) {
-      setSelectedCampaigns(new Set(campaigns.map(c => c.id)));
-    } else {
-      setSelectedCampaigns(new Set());
-    }
-  };
-
-  const toggleCampaignSelection = (campaignId: string) => {
-    const newSelection = new Set(selectedCampaigns);
-    if (newSelection.has(campaignId)) {
-      newSelection.delete(campaignId);
-    } else {
-      newSelection.add(campaignId);
-    }
-    setSelectedCampaigns(newSelection);
-  };
-
   useEffect(() => {
     fetchCampaigns();
-  }, [filters, currentPage]);
+  }, [filters]);
 
   if (!hasPermission('manage_campaigns')) {
     return (
@@ -422,359 +239,251 @@ export function CampaignManagement() {
     );
   }
 
-  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
-  const allSelected = campaigns.length > 0 && selectedCampaigns.size === campaigns.length;
-  const someSelected = selectedCampaigns.size > 0;
+  // Create columns for the data table
+  const columns = createCampaignColumns(
+    // onViewDetails
+    (campaign) => {
+      console.log('View campaign details:', campaign);
+    },
+    // onStatusChange
+    (campaignId, status) => {
+      handleCampaignStatusChange(campaignId, status);
+    },
+    // permissions
+    {
+      canModerate: hasPermission('moderate_campaigns'),
+      isSuperAdmin: isSuperAdmin(),
+    }
+  );
+
+  // Define filter configuration
+  const filterConfig: FilterConfig[] = [
+    {
+      key: 'search',
+      label: 'Search',
+      type: 'search',
+      placeholder: 'Search campaigns by title, summary, or beneficiary...'
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      type: 'select',
+      options: [
+        { value: 'draft', label: 'Draft' },
+        { value: 'pending', label: 'Pending Review' },
+        { value: 'active', label: 'Active' },
+        { value: 'paused', label: 'Paused' },
+        { value: 'ended', label: 'Ended' },
+        { value: 'closed', label: 'Closed' }
+      ]
+    },
+    {
+      key: 'visibility',
+      label: 'Visibility',
+      type: 'select',
+      options: [
+        { value: 'public', label: 'Public' },
+        { value: 'unlisted', label: 'Unlisted' }
+      ]
+    },
+    {
+      key: 'dateRange',
+      label: 'Date Range',
+      type: 'select',
+      options: [
+        { value: 'today', label: 'Today' },
+        { value: 'week', label: 'This Week' },
+        { value: 'month', label: 'This Month' },
+        { value: 'quarter', label: 'This Quarter' }
+      ]
+    }
+  ];
+
+  // Define table actions
+  const tableActions: TableAction[] = [
+    {
+      key: 'refresh',
+      label: 'Refresh',
+      icon: RefreshCw,
+      variant: 'outline',
+      onClick: fetchCampaigns,
+      loading: loading
+    },
+    {
+      key: 'export',
+      label: 'Export',
+      icon: Download,
+      variant: 'outline',
+      onClick: () => {
+        toast({
+          title: 'Export Started',
+          description: 'Campaign data export will begin shortly'
+        });
+      }
+    }
+  ];
+
+  // Define bulk actions
+  const bulkActions: BulkAction[] = [
+    {
+      key: 'approve',
+      label: 'Approve Campaigns',
+      icon: CheckCircle,
+      variant: 'default'
+    },
+    {
+      key: 'pause',
+      label: 'Pause Campaigns',
+      icon: Clock,
+      variant: 'destructive',
+      requiresConfirmation: true
+    },
+    {
+      key: 'close',
+      label: 'Close Campaigns',
+      icon: XCircle,
+      variant: 'destructive',
+      requiresConfirmation: true
+    }
+  ];
+
+  // Calculate stats
+  const stats = [
+    {
+      title: "Total Campaigns",
+      value: campaigns.length,
+      icon: Flag,
+      description: "All fundraising campaigns"
+    },
+    {
+      title: "Active Campaigns",
+      value: campaigns.filter(c => c.status === 'active').length,
+      icon: CheckCircle,
+      iconClassName: "text-success",
+      description: "Currently fundraising"
+    },
+    {
+      title: "Pending Review",
+      value: campaigns.filter(c => c.status === 'pending').length,
+      icon: Clock,
+      iconClassName: "text-warning",
+      description: "Awaiting approval"
+    },
+    {
+      title: "Total Raised",
+      value: `$${campaigns.reduce((sum, c) => sum + (c.stats?.total_raised || 0), 0).toLocaleString()}`,
+      icon: DollarSign,
+      iconClassName: "text-success",
+      description: "Across all campaigns"
+    },
+  ];
+
+  // Handle bulk operations
+  const handleBulkActionClick = async (actionKey: string, selectedRows: CampaignData[]) => {
+    if (selectedRows.length === 0) {
+      toast({
+        title: "No Selection",
+        description: "Please select campaigns to perform bulk actions",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    switch (actionKey) {
+      case 'approve':
+        await Promise.all(selectedRows.map(campaign => 
+          handleCampaignStatusChange(campaign.id, 'active', 'Bulk approval')
+        ));
+        break;
+      case 'pause':
+        await Promise.all(selectedRows.map(campaign => 
+          handleCampaignStatusChange(campaign.id, 'paused', 'Bulk pause')
+        ));
+        break;
+      case 'close':
+        await Promise.all(selectedRows.map(campaign => 
+          handleCampaignStatusChange(campaign.id, 'closed', 'Bulk closure')
+        ));
+        break;
+    }
+
+    setSelectedCampaigns([]);
+  };
 
   return (
-    <div className="section-hierarchy">
-      {/* Enhanced Page Header */}
-      <EnhancedPageHeader
-        title="Campaign Management"
-        description="Manage and moderate fundraising campaigns"
-        actions={[
-          {
-            label: 'Refresh',
-            onClick: fetchCampaigns,
-            icon: RefreshCw,
-            variant: 'outline',
-            loading: loading
-          },
-          {
-            label: 'Export',
-            onClick: () => {
-              toast({
-                title: 'Export Started',
-                description: 'Campaign data export will begin shortly'
-              });
-            },
-            icon: Download,
-            variant: 'outline'
-          }
-        ]}
-      >
-        <div className="flex items-center space-x-2 mt-2">
-          <span className="text-sm text-muted-foreground">
-            Need help? Use keyboard shortcuts or filters to manage campaigns efficiently.
-          </span>
+    <AdminPageLayout
+      title="Campaign Management"
+      description="Manage and moderate fundraising campaigns"
+      stats={
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {stats.map((stat) => (
+            <div
+              key={stat.title}
+              className="card-enhanced p-4 border border-primary/10 shadow-soft"
+            >
+              <div className="flex items-center">
+                <div className={`p-2 rounded-md bg-primary/10 ${stat.iconClassName || ''}`}>
+                  <stat.icon className="h-4 w-4" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {stat.title}
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {stat.value}
+                  </p>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                {stat.description}
+              </p>
+            </div>
+          ))}
         </div>
-      </EnhancedPageHeader>
+      }
+      filters={
+        <AdminFilters
+          filters={filterConfig}
+          values={filters}
+          onChange={(key, value) => setFilters(prev => ({ ...prev, [key]: value }))}
+          onClear={() => setFilters({ 
+            search: '', 
+            status: 'all', 
+            category: 'all', 
+            visibility: 'all', 
+            dateRange: 'all', 
+            amountRange: 'all' 
+          })}
+        />
+      }
+    >
+      <AdminDataTable
+        columns={columns}
+        data={campaigns}
+        loading={loading}
+        title="Campaigns"
+        selectedRows={selectedCampaigns}
+        onSelectionChange={setSelectedCampaigns}
+        actions={tableActions}
+        bulkActions={bulkActions}
+        onBulkAction={handleBulkActionClick}
+        searchPlaceholder="Search campaigns by title, summary, or beneficiary..."
+        emptyStateTitle="No campaigns found"
+        emptyStateDescription="No campaigns match your current filters."
+        enableSelection={true}
+        enableSorting={true}
+        enableFiltering={true}
+        enableColumnVisibility={true}
+        enablePagination={true}
+        density="comfortable"
+      />
 
-      {/* Enhanced Filters */}
-      <Card className="mb-6">
-        <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Search</label>
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search campaigns..."
-                  value={filters.search}
-                  onChange={(e) => setFilters({...filters, search: e.target.value})}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">Status</label>
-              <Select value={filters.status} onValueChange={(value) => setFilters({...filters, status: value})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="paused">Paused</SelectItem>
-                  <SelectItem value="ended">Ended</SelectItem>
-                  <SelectItem value="closed">Closed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">Category</label>
-              <Select value={filters.category} onValueChange={(value) => setFilters({...filters, category: value})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="medical">Medical</SelectItem>
-                  <SelectItem value="education">Education</SelectItem>
-                  <SelectItem value="emergency">Emergency</SelectItem>
-                  <SelectItem value="animal">Animal</SelectItem>
-                  <SelectItem value="business">Business</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">Date Range</label>
-              <Select value={filters.dateRange} onValueChange={(value) => setFilters({...filters, dateRange: value})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All time" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Time</SelectItem>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="week">This Week</SelectItem>
-                  <SelectItem value="month">This Month</SelectItem>
-                  <SelectItem value="quarter">This Quarter</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Filter className="h-4 w-4" />
-                <span className="text-sm text-muted-foreground">
-                  {totalCount} campaigns found
-                </span>
-              </div>
-            </div>
-
-            {someSelected && (
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-muted-foreground">
-                  {selectedCampaigns.size} selected
-                </span>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      Bulk Actions
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => {
-                      setBulkAction({ type: 'approve' });
-                      setShowBulkDialog(true);
-                    }}>
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      Approve Selected
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => {
-                      setBulkAction({ type: 'suspend' });
-                      setShowBulkDialog(true);
-                    }}>
-                      <XCircle className="h-4 w-4 mr-2" />
-                      Suspend Selected
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem 
-                      onClick={() => {
-                        setBulkAction({ type: 'delete' });
-                        setShowBulkDialog(true);
-                      }}
-                      className="text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete Selected
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Enhanced Data Table */}
-      <Card>
-        <CardContent className="p-0">
-          {loading ? (
-            <div className="flex items-center justify-center h-64">
-              <LoadingSpinner />
-            </div>
-          ) : (
-            <DataTable
-              data={campaigns}
-              columns={columns}
-              loading={loading}
-            />
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Optimistic Update Indicator */}
       <OptimisticUpdateIndicator
         state={optimisticUpdates.state}
         onRollback={optimisticUpdates.rollbackAction}
         onClearCompleted={optimisticUpdates.clearCompleted}
         onClearFailed={optimisticUpdates.clearFailed}
       />
-
-      {/* Campaign Details Dialog */}
-      <Dialog open={showCampaignDialog} onOpenChange={setShowCampaignDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Campaign Details</DialogTitle>
-            <DialogDescription>
-              Detailed information about the selected campaign
-            </DialogDescription>
-          </DialogHeader>
-          
-          {selectedCampaign && (
-            <div className="space-y-6">
-              {/* Campaign Header */}
-              <div className="flex items-start space-x-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={selectedCampaign.cover_image} alt={selectedCampaign.title} />
-                  <AvatarFallback>{selectedCampaign.title.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold">{selectedCampaign.title}</h3>
-                  <p className="text-muted-foreground mb-2">{selectedCampaign.summary}</p>
-                  <div className="flex items-center space-x-4">
-                    {getStatusBadge(selectedCampaign.status)}
-                    <Badge variant="outline">{selectedCampaign.category}</Badge>
-                    <Badge variant="outline">{selectedCampaign.visibility}</Badge>
-                  </div>
-                </div>
-              </div>
-
-              {/* Campaign Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center space-x-2">
-                      <DollarSign className="h-5 w-5 text-success" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Raised</p>
-                        <p className="text-lg font-semibold">
-                          {formatCurrency(selectedCampaign.stats?.total_raised || 0, selectedCampaign.currency)}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center space-x-2">
-                      <TrendingUp className="h-5 w-5 text-primary" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Goal</p>
-                        <p className="text-lg font-semibold">
-                          {formatCurrency(selectedCampaign.goal_amount, selectedCampaign.currency)}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center space-x-2">
-                      <Users className="h-5 w-5 text-accent" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Donors</p>
-                        <p className="text-lg font-semibold">{selectedCampaign.stats?.donor_count || 0}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center space-x-2">
-                      <Eye className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Views</p>
-                        <p className="text-lg font-semibold">{selectedCampaign.stats?.view_count || 0}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Admin Actions */}
-              {hasPermission('moderate_campaigns') && (
-                <div className="space-y-4 p-4 border rounded-lg">
-                  <h4 className="font-medium">Admin Actions</h4>
-                  <div className="flex flex-wrap gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleCampaignStatusChange(selectedCampaign.id, 'active')}
-                      disabled={selectedCampaign.status === 'active'}
-                    >
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      Approve
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleCampaignStatusChange(selectedCampaign.id, 'paused')}
-                      disabled={selectedCampaign.status === 'paused'}
-                    >
-                      <XCircle className="h-4 w-4 mr-2" />
-                      Suspend
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleCampaignStatusChange(selectedCampaign.id, 'closed')}
-                      disabled={selectedCampaign.status === 'closed'}
-                    >
-                      <Flag className="h-4 w-4 mr-2" />
-                      Close
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Bulk Action Dialog */}
-      <Dialog open={showBulkDialog} onOpenChange={setShowBulkDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {bulkAction?.type === 'approve' && 'Approve Selected Campaigns'}
-              {bulkAction?.type === 'suspend' && 'Suspend Selected Campaigns'}
-              {bulkAction?.type === 'delete' && 'Delete Selected Campaigns'}
-            </DialogTitle>
-            <DialogDescription>
-              This action will affect {selectedCampaigns.size} selected campaigns.
-              {bulkAction?.type === 'delete' && ' This action cannot be undone.'}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">
-                Reason {bulkAction?.type === 'delete' ? '(Required)' : '(Optional)'}
-              </label>
-              <Textarea
-                value={bulkReason}
-                onChange={(e) => setBulkReason(e.target.value)}
-                placeholder={`Provide a reason for ${bulkAction?.type}ing these campaigns...`}
-                required={bulkAction?.type === 'delete'}
-              />
-            </div>
-            
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setShowBulkDialog(false)}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleBulkAction}
-                variant={bulkAction?.type === 'delete' ? 'destructive' : 'default'}
-                disabled={bulkAction?.type === 'delete' && !bulkReason.trim()}
-              >
-                {bulkAction?.type === 'approve' && 'Approve'}
-                {bulkAction?.type === 'suspend' && 'Suspend'}
-                {bulkAction?.type === 'delete' && 'Delete'}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+    </AdminPageLayout>
   );
 }

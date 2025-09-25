@@ -66,7 +66,7 @@ export function OrganizationManagement() {
 
       // Apply status filter
       if (filters.status !== 'all') {
-        query = query.eq('verification_status', filters.status);
+        query = query.eq('verification_status', filters.status as 'pending' | 'approved' | 'rejected');
       }
 
       const { data: orgsData, error: orgsError } = await query;

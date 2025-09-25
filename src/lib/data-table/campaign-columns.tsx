@@ -21,7 +21,7 @@ export interface CampaignData {
   location?: string;
   goal_amount: number;
   currency: string;
-  status: string;
+  status: 'draft' | 'pending' | 'active' | 'paused' | 'ended' | 'closed';
   created_at: string;
   owner_profile?: {
     name?: string;
