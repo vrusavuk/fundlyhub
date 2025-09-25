@@ -180,11 +180,11 @@ export function UnifiedFundraiserCard({
     <Card 
       className={cn(
         // Fixed height and consistent styling
-        "group cursor-pointer overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 border-0 shadow-lg bg-card/50 backdrop-blur-sm",
+        "group cursor-pointer overflow-hidden transition-colors duration-200 hover:bg-muted/30 border shadow-minimal bg-card",
         // CRITICAL: Fixed minimum height for consistent grid
         "min-h-[480px] flex flex-col",
-        isFeatured && "ring-2 ring-primary/20 shadow-primary/5",
-        isTrending && "bg-gradient-to-br from-card to-primary/5"
+        isFeatured && "border-primary/30 shadow-standard",
+        isTrending && "bg-gradient-to-br from-card to-muted/20"
       )}
       onClick={handleCardClick}
     >
@@ -199,7 +199,7 @@ export function UnifiedFundraiserCard({
             src={coverImage}
             alt={title}
             className={cn(
-              "h-full w-full object-cover transition-all duration-700 group-hover:scale-110",
+              "h-full w-full object-cover",
               imageLoaded ? "opacity-100" : "opacity-0"
             )}
             onLoad={() => setImageLoaded(true)}

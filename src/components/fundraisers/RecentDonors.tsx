@@ -67,7 +67,7 @@ export function RecentDonors({ donations, className }: RecentDonorsProps) {
               {recentDonors.map((donation, index) => (
                 <Avatar 
                   key={donation.id} 
-                  className="h-10 w-10 border-2 border-background relative hover:z-10 transition-transform hover:scale-110"
+                  className="h-10 w-10 border-2 border-background relative hover:z-10 transition-colors"
                   style={{ zIndex: recentDonors.length - index }}
                 >
                   <AvatarImage src={donation.profiles?.avatar} />

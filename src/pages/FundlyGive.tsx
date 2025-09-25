@@ -177,10 +177,10 @@ const FundlyGive = () => {
 
           <div className="grid md:grid-cols-3 gap-8 mb-20">
             {/* Payroll Giving */}
-            <Card className="relative group hover:shadow-lg transition-all duration-300">
+            <Card className="relative group hover:bg-muted/30 transition-colors duration-200">
               <CardHeader className="text-center pb-4">
-                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
-                  <Building2 className="h-8 w-8 text-primary" />
+                <div className="w-16 h-16 bg-muted/50 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-muted/70 transition-colors">
+                  <Building2 className="h-8 w-8 text-foreground" />
                 </div>
                 <CardTitle className="text-xl">Payroll Giving Integration</CardTitle>
               </CardHeader>
@@ -202,7 +202,7 @@ const FundlyGive = () => {
             </Card>
 
             {/* Card Payments */}
-            <Card className="relative group hover:shadow-lg transition-all duration-300 border-primary/20">
+            <Card className="relative group hover:bg-muted/30 transition-colors duration-200 border-muted/30">
               <CardHeader className="text-center pb-4">
                 <div className="w-16 h-16 bg-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-accent/20 transition-colors">
                   <CreditCard className="h-8 w-8 text-accent" />
@@ -227,7 +227,7 @@ const FundlyGive = () => {
             </Card>
 
             {/* ACH Recurring */}
-            <Card className="relative group hover:shadow-lg transition-all duration-300">
+            <Card className="relative group hover:bg-muted/30 transition-colors duration-200">
               <CardHeader className="text-center pb-4">
                 <div className="w-16 h-16 bg-success/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-success/20 transition-colors">
                   <Shield className="h-8 w-8 text-success" />

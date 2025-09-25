@@ -66,13 +66,13 @@ export function ContextualHelp({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-auto p-1 hover:bg-primary/5">
+            <Button variant="ghost" size="sm" className="h-auto p-1 hover:bg-muted/50">
               {HelpIcon}
             </Button>
           </TooltipTrigger>
           <TooltipContent 
             side={placement} 
-            className="max-w-xs shadow-medium bg-background/95 backdrop-blur-sm border-primary/10"
+            className="max-w-xs shadow-elevated bg-background/95 backdrop-blur-sm border-border"
           >
             <div className={getSpacingClasses('content', 'sm')}>
               <p className={getTypographyClasses('body', 'sm', 'text-foreground')}>
@@ -106,14 +106,14 @@ export function ContextualHelp({
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-auto p-1 hover:bg-primary/5">
+        <Button variant="ghost" size="sm" className="h-auto p-1 hover:bg-muted/50">
           {HelpIcon}
         </Button>
       </PopoverTrigger>
       
       <PopoverContent 
         side={placement} 
-        className="w-80 shadow-medium bg-background/95 backdrop-blur-sm border-primary/10"
+        className="w-80 shadow-elevated bg-background/95 backdrop-blur-sm border-border"
         align="start"
       >
         <div className={getSpacingClasses('content', 'md')}>
@@ -125,7 +125,7 @@ export function ContextualHelp({
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 hover:bg-primary/5"
+              className="h-6 w-6 p-0 hover:bg-muted/50"
               onClick={() => setIsOpen(false)}
             >
               <X className="h-3 w-3" />

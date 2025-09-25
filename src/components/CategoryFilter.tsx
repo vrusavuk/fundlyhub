@@ -63,7 +63,7 @@ export function CategoryFilter() {
             return (
               <Card 
                 key={category.category_id}
-                className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-2 hover:border-primary/20 relative"
+                className="group cursor-pointer transition-colors duration-200 hover:bg-muted/50 border hover:border-muted-foreground/20 relative"
                 onClick={() => handleCategoryClick(category.category_name)}
                 role="button"
                 tabIndex={0}

@@ -76,7 +76,7 @@ const Index = () => {
           <p className="body-large text-white/90 mb-8">
             Start your fundraiser today and connect with people who want to help
           </p>
-          <Button variant="accent" size="lg" className="cta-primary text-lg px-8 py-6 shadow-glow hover:shadow-hard transition-all duration-300" asChild>
+          <Button variant="accent" size="lg" className="cta-primary text-lg px-8 py-6" asChild>
             <Link to="/create">
               Start Your Campaign Now
               <ArrowRight className="ml-2 h-5 w-5" />

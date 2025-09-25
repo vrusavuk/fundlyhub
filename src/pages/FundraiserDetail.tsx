@@ -360,12 +360,12 @@ export default function FundraiserDetail() {
                   to={`/profile/${fundraiser.owner_user_id}`}
                   className="flex items-center gap-3 hover:bg-muted/50 rounded-lg p-2 transition-colors group"
                 >
-                  <Avatar className="h-12 w-12 group-hover:scale-105 transition-transform">
+                  <Avatar className="h-12 w-12 transition-colors">
                     <AvatarFallback>{fundraiser.profiles?.name?.charAt(0) || 'A'}</AvatarFallback>
                   </Avatar>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-medium group-hover:text-primary transition-colors">
+                      <span className="font-medium transition-colors">
                         {fundraiser.profiles?.name || 'Anonymous'}
                       </span>
                       <Badge variant="outline" className="text-xs">
@@ -393,14 +393,14 @@ export default function FundraiserDetail() {
                       to={`/organization/${fundraiser.organizations.id}`}
                       className="flex items-center gap-3 hover:bg-muted/50 rounded-lg p-2 transition-colors group"
                     >
-                      <Avatar className="h-10 w-10 group-hover:scale-105 transition-transform">
-                        <AvatarFallback className="bg-primary text-primary-foreground">
+                      <Avatar className="h-10 w-10 transition-colors">
+                        <AvatarFallback className="bg-muted text-foreground">
                           {fundraiser.organizations.dba_name?.charAt(0) || fundraiser.organizations.legal_name?.charAt(0) || 'O'}
                         </AvatarFallback>
                       </Avatar>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm group-hover:text-primary transition-colors">
+                          <span className="font-medium text-sm transition-colors">
                             {fundraiser.organizations.dba_name || fundraiser.organizations.legal_name}
                           </span>
                           <Badge variant="outline" className="text-xs">

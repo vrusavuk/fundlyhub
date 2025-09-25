@@ -44,7 +44,7 @@ export function HeroSection() {
             <Button 
               variant="hero" 
               size="lg" 
-              className="text-base sm:text-lg px-8 sm:px-10 py-4 sm:py-6 font-semibold shadow-lg hover:shadow-xl transition-all duration-300" 
+              className="text-base sm:text-lg px-8 sm:px-10 py-4 sm:py-6 font-semibold shadow-standard" 
               asChild
             >
               <Link to="/create">

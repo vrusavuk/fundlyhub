@@ -63,10 +63,8 @@ export function AnimatedCard({
         
         // Hover effects
         hover && [
-          'hover:shadow-lg',
-          scale && 'hover:scale-[1.02]',
-          lift && 'hover:-translate-y-1',
-          glow && 'hover:shadow-primary/20'
+          'hover:bg-muted/50',
+          'transition-colors duration-200'
         ],
         
         // Focus effects

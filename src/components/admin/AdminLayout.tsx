@@ -29,8 +29,8 @@ export function AdminLayout() {
             <div className="max-w-7xl mx-auto">
               {/* Context indicator */}
               {activeContext.type !== 'global' && (
-                <div className="mb-4 px-3 py-2 bg-primary/10 border border-primary/20 rounded-md">
-                  <p className="text-sm text-primary font-medium">
+                <div className="mb-4 px-3 py-2 bg-muted/50 border border-border rounded-md">
+                  <p className="text-sm text-foreground font-medium">
                     Context: {activeContext.type === 'organization' ? 'Organization' : 'Campaign'} 
                     {activeContext.id && ` (${activeContext.id})`}
                   </p>

@@ -44,21 +44,21 @@ export function EnhancedAdminHeader({
 
   return (
     <header className={cn(
-      "sticky top-0 z-50 w-full bg-background/95 backdrop-blur-sm border-b border-primary/10",
+      "sticky top-0 z-50 w-full bg-background/95 backdrop-blur-sm border-b border-border",
       "shadow-soft",
       className
     )}>
       <div className="flex h-16 items-center justify-between px-6">
         {/* Left Section */}
         <div className="flex items-center space-x-4">
-          <SidebarTrigger className="hover:bg-primary/5 hover:text-primary" />
+          <SidebarTrigger className="hover:bg-muted/50" />
           
           {showSearch && (
             <div className="relative w-64 lg:w-80">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder={searchPlaceholder}
-                className="pl-10 h-9 shadow-soft border-primary/10 focus:border-primary/20"
+                className="pl-10 h-9 shadow-minimal border-border focus:border-muted-foreground/30"
                 onChange={(e) => onSearchChange?.(e.target.value)}
               />
             </div>
@@ -68,7 +68,7 @@ export function EnhancedAdminHeader({
         {/* Right Section */}
         <div className="flex items-center space-x-3">
           {/* Notifications */}
-          <Button variant="ghost" size="sm" className="relative hover:bg-primary/5">
+          <Button variant="ghost" size="sm" className="relative hover:bg-muted/50">
             <Bell className="h-4 w-4" />
             <Badge 
               variant="destructive" 
@@ -79,17 +79,17 @@ export function EnhancedAdminHeader({
           </Button>
 
           {/* Help */}
-          <Button variant="ghost" size="sm" className="hover:bg-primary/5">
+          <Button variant="ghost" size="sm" className="hover:bg-muted/50">
             <HelpCircle className="h-4 w-4" />
           </Button>
 
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-primary/5">
-                <Avatar className="h-9 w-9 border border-primary/20">
+              <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-muted/50">
+                <Avatar className="h-9 w-9 border border-border">
                   <AvatarImage src={user?.user_metadata?.avatar_url} alt="Admin" />
-                  <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                  <AvatarFallback className="bg-muted text-foreground font-semibold">
                     {user?.email?.charAt(0).toUpperCase() || 'A'}
                   </AvatarFallback>
                 </Avatar>
@@ -97,7 +97,7 @@ export function EnhancedAdminHeader({
             </DropdownMenuTrigger>
             
             <DropdownMenuContent 
-              className="w-64 shadow-medium bg-background/95 backdrop-blur-sm border-primary/10" 
+              className="w-64 shadow-elevated bg-background/95 backdrop-blur-sm border-border" 
               align="end" 
               forceMount
             >
@@ -122,12 +122,12 @@ export function EnhancedAdminHeader({
               
               <DropdownMenuSeparator />
               
-              <DropdownMenuItem className="hover:bg-primary/5">
+              <DropdownMenuItem className="hover:bg-muted/50">
                 <User className="mr-2 h-4 w-4" />
                 <span>Profile</span>
               </DropdownMenuItem>
               
-              <DropdownMenuItem className="hover:bg-primary/5">
+              <DropdownMenuItem className="hover:bg-muted/50">
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Settings</span>
               </DropdownMenuItem>
