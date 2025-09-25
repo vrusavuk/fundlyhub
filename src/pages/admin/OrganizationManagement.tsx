@@ -1,43 +1,42 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { 
   Building2, 
-  Search, 
-  Filter,
   CheckCircle,
   XCircle,
   Clock,
-  AlertTriangle,
-  Users,
-  DollarSign,
-  Target,
   Download,
   RefreshCw
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useRBAC } from '@/hooks/useRBAC';
-import { DataTable } from '@/components/ui/data-table';
 import { createOrganizationColumns, OrganizationData } from '@/lib/data-table/organization-columns';
 import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
-import { EnhancedPageHeader } from '@/components/admin/EnhancedPageHeader';
 import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
+import { 
+  AdminPageLayout, 
+  AdminFilters, 
+  AdminDataTable, 
+  FilterConfig,
+  BulkAction,
+  TableAction 
+} from '@/components/admin/unified';
 
+interface OrganizationFilters {
+  search: string;
+  status: string;
+}
 
 export function OrganizationManagement() {
   const [organizations, setOrganizations] = useState<OrganizationData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrgs, setSelectedOrgs] = useState<OrganizationData[]>([]);
+  const [filters, setFilters] = useState<OrganizationFilters>({
+    search: '',
+    status: 'all'
+  });
   const { toast } = useToast();
   const { hasPermission } = useRBAC();
 
@@ -55,11 +54,22 @@ export function OrganizationManagement() {
     try {
       setLoading(true);
       
-      // Fetch organizations with basic data
-      const { data: orgsData, error: orgsError } = await supabase
+      let query = supabase
         .from('organizations')
         .select('*')
         .order('created_at', { ascending: false });
+
+      // Apply search filter
+      if (filters.search.trim()) {
+        query = query.or(`legal_name.ilike.%${filters.search}%,dba_name.ilike.%${filters.search}%`);
+      }
+
+      // Apply status filter
+      if (filters.status !== 'all') {
+        query = query.eq('verification_status', filters.status);
+      }
+
+      const { data: orgsData, error: orgsError } = await query;
 
       if (orgsError) throw orgsError;
 
@@ -105,13 +115,12 @@ export function OrganizationManagement() {
 
   useEffect(() => {
     fetchOrganizations();
-  }, []);
+  }, [filters]);
 
   // Create columns for the data table
   const columns = createOrganizationColumns(
     // onViewDetails
     (org) => {
-      // TODO: Implement view details dialog
       console.log('View details for:', org);
     },
     // onStatusUpdate
@@ -135,7 +144,6 @@ export function OrganizationManagement() {
         description: `Change organization "${organization.legal_name}" status to ${newStatus}`,
         originalData: { ...organization },
         rollbackFn: async () => {
-          // Rollback to original status
           await supabase
             .from('organizations')
             .update({ verification_status: organization.verification_status })
@@ -143,7 +151,6 @@ export function OrganizationManagement() {
         }
       },
       async () => {
-        // Optimistically update local state first
         setOrganizations(prev => 
           prev.map(org => 
             org.id === orgId 
@@ -162,10 +169,8 @@ export function OrganizationManagement() {
 
         if (error) throw error;
 
-        // Get current user
         const { data: user } = await supabase.auth.getUser();
         
-        // Log the action
         await supabase.rpc('log_audit_event', {
           _actor_id: user.user?.id,
           _action: `organization_${newStatus}`,
@@ -180,14 +185,7 @@ export function OrganizationManagement() {
   };
 
   const handleBulkAction = async (action: string) => {
-    if (selectedOrgs.length === 0) {
-      toast({
-        title: "No Selection",
-        description: "Please select organizations to perform bulk actions",
-        variant: "destructive"
-      });
-      return;
-    }
+    if (selectedOrgs.length === 0) return;
 
     try {
       let updateData: any = {};
@@ -214,7 +212,6 @@ export function OrganizationManagement() {
 
       if (error) throw error;
 
-      // Update local state
       setOrganizations(prev => 
         prev.map(org => 
           orgIds.includes(org.id)
@@ -238,6 +235,71 @@ export function OrganizationManagement() {
       });
     }
   };
+
+  // Define filter configuration
+  const filterConfig: FilterConfig[] = [
+    {
+      key: 'search',
+      label: 'Search',
+      type: 'search',
+      placeholder: 'Search organizations by name...'
+    },
+    {
+      key: 'status',
+      label: 'Verification Status',
+      type: 'select',
+      options: [
+        { value: 'pending', label: 'Pending' },
+        { value: 'approved', label: 'Approved' },
+        { value: 'rejected', label: 'Rejected' }
+      ]
+    }
+  ];
+
+  const tableActions: TableAction[] = [
+    {
+      key: 'refresh',
+      label: 'Refresh',
+      icon: RefreshCw,
+      variant: 'outline',
+      onClick: fetchOrganizations,
+      loading: loading
+    },
+    {
+      key: 'export',
+      label: 'Export',
+      icon: Download,
+      variant: 'outline',
+      onClick: () => {
+        toast({
+          title: 'Export Started',
+          description: 'Organization data export will begin shortly'
+        });
+      }
+    }
+  ];
+
+  const bulkActions: BulkAction[] = [
+    {
+      key: 'approve',
+      label: 'Approve All',
+      icon: CheckCircle,
+      variant: 'default'
+    },
+    {
+      key: 'reject',
+      label: 'Reject All',
+      icon: XCircle,
+      variant: 'destructive',
+      requiresConfirmation: true
+    },
+    {
+      key: 'pending',
+      label: 'Mark as Pending',
+      icon: Clock,
+      variant: 'outline'
+    }
+  ];
 
   const stats = [
     {
@@ -269,106 +331,51 @@ export function OrganizationManagement() {
     },
   ];
 
+  const handleBulkActionClick = async (actionKey: string, selectedRows: OrganizationData[]) => {
+    await handleBulkAction(actionKey);
+  };
+
   return (
-    <div className="section-hierarchy">
-      {/* Enhanced Page Header */}
-      <EnhancedPageHeader
-        title="Organization Management"
-        description="Manage and verify organization accounts"
-        actions={[
-          {
-            label: 'Refresh',
-            onClick: fetchOrganizations,
-            icon: RefreshCw,
-            variant: 'outline',
-            loading: loading
-          },
-          {
-            label: 'Export',
-            onClick: () => {
-              toast({
-                title: 'Export Started',
-                description: 'Organization data export will begin shortly'
-              });
-            },
-            icon: Download,
-            variant: 'outline'
-          }
-        ]}
-      />
-
-      {/* Enhanced Stats */}
-      <AdminStatsGrid stats={stats} />
-
-      {/* Bulk Actions */}
-      {selectedOrgs.length > 0 && (
-        <Card className="border-primary/20 bg-primary/5">
-          <CardContent className="pt-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Badge variant="secondary" className="font-medium">
-                  {selectedOrgs.length} selected
-                </Badge>
-                <span className="text-sm text-muted-foreground">
-                  organizations ready for bulk action
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button 
-                  size="sm" 
-                  variant="default"
-                  onClick={() => handleBulkAction('approve')}
-                  className="bg-success hover:bg-success/90"
-                >
-                  <CheckCircle className="w-4 h-4 mr-1" />
-                  Approve All
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="destructive" 
-                  onClick={() => handleBulkAction('reject')}
-                >
-                  <XCircle className="w-4 h-4 mr-1" />
-                  Reject All
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => setSelectedOrgs([])}
-                >
-                  Clear Selection
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Enhanced Organizations DataTable */}
-      <DataTable
+    <AdminPageLayout
+      title="Organization Management"
+      description="Manage and verify organization accounts"
+      stats={<AdminStatsGrid stats={stats} />}
+      filters={
+        <AdminFilters
+          filters={filterConfig}
+          values={filters}
+          onChange={(key, value) => setFilters(prev => ({ ...prev, [key]: value }))}
+          onClear={() => setFilters({ search: '', status: 'all' })}
+        />
+      }
+    >
+      <AdminDataTable
         columns={columns}
         data={organizations}
         loading={loading}
+        title="Organizations"
+        selectedRows={selectedOrgs}
+        onSelectionChange={setSelectedOrgs}
+        actions={tableActions}
+        bulkActions={bulkActions}
+        onBulkAction={handleBulkActionClick}
+        searchPlaceholder="Search organizations by name..."
+        emptyStateTitle="No organizations found"
+        emptyStateDescription="No organizations match your current filters."
         enableSelection={true}
         enableSorting={true}
         enableFiltering={true}
         enableColumnVisibility={true}
         enablePagination={true}
-        searchPlaceholder="Search organizations..."
-        emptyStateTitle="No organizations found"
-        emptyStateDescription="No organizations match your current search and filter criteria."
-        onSelectionChange={setSelectedOrgs}
         density="comfortable"
-        className="border rounded-lg"
       />
 
-      {/* Optimistic Update Indicator */}
       <OptimisticUpdateIndicator
         state={optimisticUpdates.state}
         onRollback={optimisticUpdates.rollbackAction}
         onClearCompleted={optimisticUpdates.clearCompleted}
         onClearFailed={optimisticUpdates.clearFailed}
       />
-    </div>
+    </AdminPageLayout>
   );
 }

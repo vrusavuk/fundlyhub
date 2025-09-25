@@ -1,43 +1,28 @@
 import { useState, useEffect } from 'react';
-import { useRBAC } from '@/hooks/useRBAC';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Textarea } from '@/components/ui/textarea';
-import { Progress } from '@/components/ui/progress';
-import { useToast } from '@/hooks/use-toast';
 import { 
   Search, 
-  Filter, 
-  MoreHorizontal, 
   CheckCircle, 
   XCircle, 
   Clock,
-  Eye,
-  Trash2,
-  AlertTriangle,
-  TrendingUp,
-  DollarSign,
-  Users,
   Flag,
   Download,
   RefreshCw
 } from 'lucide-react';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { DataTable } from '@/components/ui/data-table';
-import { EnhancedPageHeader } from '@/components/admin/EnhancedPageHeader';
-import { ContextualHelp, adminHelpContent } from '@/components/admin/ContextualHelp';
-import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useRBAC } from '@/hooks/useRBAC';
 import { createCampaignColumns } from '@/lib/data-table/campaign-columns';
+import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
+import { 
+  AdminPageLayout, 
+  AdminFilters, 
+  AdminDataTable, 
+  FilterConfig,
+  BulkAction,
+  TableAction 
+} from '@/components/admin/unified';
 
 interface CampaignData {
   id: string;

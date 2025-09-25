@@ -1,42 +1,35 @@
 import { useState, useEffect } from 'react';
 import { useRBAC } from '@/hooks/useRBAC';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Users, 
-  Search, 
-  Filter, 
-  MoreHorizontal, 
   UserCheck, 
   UserX, 
-  Shield, 
-  Lock,
-  Unlock,
+  Shield,
   AlertTriangle,
-  Eye,
-  Edit,
-  Trash2,
-  Plus,
   Download,
-  RefreshCw
+  RefreshCw,
+  Plus
 } from 'lucide-react';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { DataTable } from '@/components/ui/data-table';
 import { createUserColumns, UserData as UserColumnData } from '@/lib/data-table/user-columns';
-import { EnhancedPageHeader } from '@/components/admin/EnhancedPageHeader';
 import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
 import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
+import { 
+  AdminPageLayout, 
+  AdminFilters, 
+  AdminDataTable, 
+  FilterConfig,
+  BulkAction,
+  TableAction 
+} from '@/components/admin/unified';
 
 interface ExtendedProfile {
   id: string;
@@ -64,8 +57,6 @@ interface UserFilters {
   search: string;
   status: string;
   role: string;
-  sortBy: string;
-  sortOrder: 'asc' | 'desc';
 }
 
 export function UserManagement() {
@@ -78,10 +69,9 @@ export function UserManagement() {
   const [filters, setFilters] = useState<UserFilters>({
     search: '',
     status: 'all',
-    role: 'all',
-    sortBy: 'created_at',
-    sortOrder: 'desc'
+    role: 'all'
   });
+  const [selectedUsers, setSelectedUsers] = useState<ExtendedProfile[]>([]);
 
   // Enhanced with optimistic updates
   const optimisticUpdates = useOptimisticUpdates({
@@ -156,7 +146,7 @@ export function UserManagement() {
       }
 
       // Apply sorting
-      query = query.order(filters.sortBy, { ascending: filters.sortOrder === 'asc' });
+      query = query.order('created_at', { ascending: false });
 
       const { data, error } = await query.limit(100);
 
@@ -383,6 +373,92 @@ export function UserManagement() {
     );
   }
 
+  // Define filter configuration
+  const filterConfig: FilterConfig[] = [
+    {
+      key: 'search',
+      label: 'Search',
+      type: 'search',
+      placeholder: 'Search users by name or email...'
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      type: 'select',
+      options: [
+        { value: 'active', label: 'Active' },
+        { value: 'inactive', label: 'Inactive' },
+        { value: 'suspended', label: 'Suspended' }
+      ]
+    },
+    {
+      key: 'role',
+      label: 'Role', 
+      type: 'select',
+      options: [
+        { value: 'visitor', label: 'Visitor' },
+        { value: 'creator', label: 'Creator' },
+        { value: 'moderator', label: 'Moderator' },
+        { value: 'platform_admin', label: 'Platform Admin' },
+        { value: 'super_admin', label: 'Super Admin' }
+      ]
+    }
+  ];
+
+  // Define table actions
+  const tableActions: TableAction[] = [
+    {
+      key: 'refresh',
+      label: 'Refresh',
+      icon: RefreshCw,
+      variant: 'outline',
+      onClick: fetchUsers,
+      loading: loading
+    },
+    {
+      key: 'export',
+      label: 'Export',
+      icon: Download,
+      variant: 'outline',
+      onClick: exportUsers
+    },
+    ...(hasPermission('create_users') ? [{
+      key: 'add',
+      label: 'Add User',
+      icon: Plus,
+      variant: 'default' as const,
+      onClick: () => {
+        toast({
+          title: 'Feature Coming Soon',
+          description: 'User creation interface will be available soon'
+        });
+      }
+    }] : [])
+  ];
+
+  // Define bulk actions
+  const bulkActions: BulkAction[] = [
+    {
+      key: 'suspend',
+      label: 'Suspend Users',
+      icon: UserX,
+      variant: 'destructive',
+      requiresConfirmation: true
+    },
+    {
+      key: 'activate',
+      label: 'Activate Users',
+      icon: UserCheck,
+      variant: 'default'
+    },
+    {
+      key: 'export_selected',
+      label: 'Export Selected',
+      icon: Download,
+      variant: 'outline'
+    }
+  ];
+
   // Calculate user stats
   const userStats = [
     {
@@ -414,147 +490,66 @@ export function UserManagement() {
     },
   ];
 
+  // Handle bulk operations
+  const handleBulkAction = async (actionKey: string, selectedRows: ExtendedProfile[]) => {
+    switch (actionKey) {
+      case 'suspend':
+        // Handle bulk suspension
+        toast({
+          title: 'Feature Coming Soon',
+          description: 'Bulk user suspension will be available soon'
+        });
+        break;
+      case 'activate':
+        // Handle bulk activation
+        toast({
+          title: 'Feature Coming Soon', 
+          description: 'Bulk user activation will be available soon'
+        });
+        break;
+      case 'export_selected':
+        // Handle export of selected users
+        exportUsers();
+        break;
+    }
+  };
+
   return (
-    <div className="section-hierarchy">
-      {/* Enhanced Page Header */}
-      <EnhancedPageHeader
-        title="User Management"
-        description="Manage platform users, roles, and permissions"
-        actions={[
-          {
-            label: 'Refresh',
-            onClick: fetchUsers,
-            icon: RefreshCw,
-            variant: 'outline',
-            loading: loading
-          },
-          {
-            label: 'Export',
-            onClick: exportUsers,
-            icon: Download,
-            variant: 'outline'
-          },
-          ...(hasPermission('create_users') ? [{
-            label: 'Add User',
-            onClick: () => {
-              toast({
-                title: 'Feature Coming Soon',
-                description: 'User creation interface will be available soon'
-              });
-            },
-            icon: Plus,
-            variant: 'default' as const
-          }] : [])
-        ]}
-      />
-
-      {/* Enhanced Stats */}
-      <AdminStatsGrid stats={userStats} />
-
-      {/* Filters */}
-      <Card className="card-enhanced">
-        <CardHeader>
-          <CardTitle className="flex items-center caption-medium">
-            <Filter className="mr-2 h-4 w-4" />
-            Filters
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="mobile-grid grid-cols-1 md:grid-cols-5">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search users..."
-                className="pl-10 mobile-input-padding"
-                value={filters.search}
-                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-              />
-            </div>
-            
-            <Select
-              value={filters.status}
-              onValueChange={(value) => setFilters(prev => ({ ...prev, status: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-                <SelectItem value="suspended">Suspended</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={filters.role}
-              onValueChange={(value) => setFilters(prev => ({ ...prev, role: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="visitor">Visitor</SelectItem>
-                <SelectItem value="creator">Creator</SelectItem>
-                <SelectItem value="moderator">Moderator</SelectItem>
-                <SelectItem value="platform_admin">Platform Admin</SelectItem>
-                <SelectItem value="super_admin">Super Admin</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={filters.sortBy}
-              onValueChange={(value) => setFilters(prev => ({ ...prev, sortBy: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="created_at">Created Date</SelectItem>
-                <SelectItem value="last_login_at">Last Login</SelectItem>
-                <SelectItem value="name">Name</SelectItem>
-                <SelectItem value="campaign_count">Campaigns</SelectItem>
-                <SelectItem value="total_funds_raised">Funds Raised</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={filters.sortOrder}
-              onValueChange={(value: 'asc' | 'desc') => setFilters(prev => ({ ...prev, sortOrder: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Order" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="desc">Descending</SelectItem>
-                <SelectItem value="asc">Ascending</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Enhanced Users Table */}
-      <div className="flex items-center mb-4">
-        <Users className="mr-2 h-4 w-4" />
-        <h2 className="text-lg font-semibold">Users ({users.length})</h2>
-      </div>
-      
-      <DataTable
+    <AdminPageLayout
+      title="User Management"
+      description="Manage platform users, roles, and permissions"
+      stats={<AdminStatsGrid stats={userStats} />}
+      filters={
+        <AdminFilters
+          filters={filterConfig}
+          values={filters}
+          onChange={(key, value) => setFilters(prev => ({ ...prev, [key]: value }))}
+          onClear={() => setFilters({ search: '', status: 'all', role: 'all' })}
+        />
+      }
+    >
+      <AdminDataTable
         columns={columns}
         data={users}
         loading={loading}
+        title="Users"
+        selectedRows={selectedUsers}
+        onSelectionChange={setSelectedUsers}
+        onRowClick={(row) => viewUserDetails(row.original as ExtendedProfile)}
+        actions={tableActions}
+        bulkActions={bulkActions}
+        onBulkAction={handleBulkAction}
+        searchPlaceholder="Search users by name or email..."
+        emptyStateTitle="No users found"
+        emptyStateDescription="No users match your current filters. Try adjusting your search criteria."
+        error={null}
+        retry={fetchUsers}
         enableSelection={true}
         enableSorting={true}
         enableFiltering={true}
         enableColumnVisibility={true}
         enablePagination={true}
-        searchPlaceholder="Search users..."
-        emptyStateTitle="No users found"
-        emptyStateDescription="No users match your current filters."
         density="comfortable"
-        className="border rounded-lg"
       />
 
       {/* Optimistic Update Indicator */}
@@ -628,6 +623,6 @@ export function UserManagement() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminPageLayout>
   );
 }
