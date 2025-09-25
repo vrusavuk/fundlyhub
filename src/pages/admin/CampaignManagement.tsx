@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -12,20 +12,48 @@ import {
   AlertTriangle,
   TrendingUp,
   DollarSign,
-  Users
+  Users,
+  Megaphone,
+  Plus,
+  Eye,
+  Edit,
+  Trash2,
+  Archive,
+  Calendar,
+  Search,
+  Filter,
+  Upload,
+  Mail,
+  Settings
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useRBAC } from '@/hooks/useRBAC';
+import { useSupabaseRealtime } from '@/hooks/useSupabaseRealtime';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { createCampaignColumns, CampaignData } from '@/lib/data-table/campaign-columns';
 import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
 import { 
   AdminPageLayout, 
   AdminFilters, 
-  AdminDataTable, 
+  AdminDataTable,
+  AdvancedSearch,
+  BulkOperations,
+  QuickActions,
+  RealTimeIndicator,
+  PerformanceMonitor,
+  MobileSearch,
+  MobileFilters,
+  MobileStats,
+  MobileActionBar,
+  MobileStickyHeader,
   FilterConfig,
   BulkAction,
-  TableAction 
+  TableAction,
+  SearchFilter,
+  ActiveFilter,
+  BulkOperation,
+  QuickAction
 } from '@/components/admin/unified';
 
 
@@ -41,9 +69,17 @@ interface CampaignFilters {
 export function CampaignManagement() {
   const { hasPermission, isSuperAdmin } = useRBAC();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
+  
+  // Enhanced state for Phase 4
   const [campaigns, setCampaigns] = useState<CampaignData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCampaigns, setSelectedCampaigns] = useState<CampaignData[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([]);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  
+  // Legacy filters for compatibility
   const [filters, setFilters] = useState<CampaignFilters>({
     search: '',
     status: 'all',
