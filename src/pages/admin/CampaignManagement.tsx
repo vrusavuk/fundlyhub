@@ -39,6 +39,8 @@ import {
 } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { DataTable } from '@/components/ui/data-table';
+import { createCampaignColumns, CampaignData as CampaignColumnData } from '@/lib/data-table/campaign-columns';
 
 interface CampaignData {
   id: string;
@@ -115,6 +117,24 @@ export function CampaignManagement() {
   });
 
   const ITEMS_PER_PAGE = 25;
+
+  // Create columns for the data table
+  const columns = createCampaignColumns(
+    // onViewDetails
+    (campaign) => {
+      setSelectedCampaign(campaign as CampaignData);
+      setShowCampaignDialog(true);
+    },
+    // onStatusChange
+    (campaignId, status) => {
+      handleCampaignStatusChange(campaignId, status);
+    },
+    // permissions
+    {
+      canModerate: hasPermission('moderate_campaigns'),
+      isSuperAdmin: isSuperAdmin(),
+    }
+  );
 
   const fetchCampaigns = async () => {
     try {
@@ -612,11 +632,38 @@ export function CampaignManagement() {
       {/* Campaigns Table */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center">
-              <FileText className="mr-2 h-4 w-4" />
-              Campaigns ({totalCount})
-            </CardTitle>
+          <CardTitle className="flex items-center">
+            <FileText className="mr-2 h-4 w-4" />
+            Campaigns ({totalCount})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DataTable
+            columns={columns}
+            data={campaigns}
+            loading={loading}
+            enableSelection={true}
+            enableSorting={true}
+            enableFiltering={true}
+            enableColumnVisibility={true}
+            enablePagination={false}
+            searchPlaceholder="Search campaigns..."
+            emptyStateTitle="No campaigns found"
+            emptyStateDescription="No campaigns match your current filters."
+            density="comfortable"
+            onSelectionChange={(selectedRows) => {
+              setSelectedCampaigns(new Set(selectedRows.map(row => row.id)));
+            }}
+          />
+          
+          {/* Custom pagination for server-side pagination */}
+          <div className="flex items-center justify-between space-x-2 py-4 border-t">
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-muted-foreground">
+                Showing {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, totalCount)} to{' '}
+                {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of {totalCount} campaigns
+              </span>
+            </div>
             <div className="flex items-center space-x-2">
               <Button
                 variant="outline"
@@ -627,200 +674,18 @@ export function CampaignManagement() {
                 Previous
               </Button>
               <span className="text-sm text-muted-foreground">
-                Page {currentPage} of {totalPages}
+                Page {currentPage} of {Math.ceil(totalCount / ITEMS_PER_PAGE)}
               </span>
               <Button
                 variant="outline"
                 size="sm"
-                disabled={currentPage === totalPages}
+                disabled={currentPage >= Math.ceil(totalCount / ITEMS_PER_PAGE)}
                 onClick={() => setCurrentPage(prev => prev + 1)}
               >
                 Next
               </Button>
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex justify-center py-8">
-              <LoadingSpinner size="lg" />
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">
-                    <Checkbox
-                      checked={allSelected}
-                      onCheckedChange={selectAllCampaigns}
-                    />
-                  </TableHead>
-                  <TableHead>Campaign</TableHead>
-                  <TableHead>Owner</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Progress</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {campaigns.map((campaign) => (
-                  <TableRow key={campaign.id}>
-                    <TableCell>
-                      <Checkbox
-                        checked={selectedCampaigns.has(campaign.id)}
-                        onCheckedChange={() => toggleCampaignSelection(campaign.id)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-start space-x-3">
-                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                          {campaign.cover_image ? (
-                            <img 
-                              src={campaign.cover_image} 
-                              alt={campaign.title}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <FileText className="h-6 w-6 text-muted-foreground" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="font-medium truncate">{campaign.title}</div>
-                          <div className="text-sm text-muted-foreground truncate">
-                            {campaign.summary}
-                          </div>
-                          <div className="flex items-center space-x-2 mt-1">
-                            <Badge variant="outline" className="text-xs">
-                              {campaign.category}
-                            </Badge>
-                            {campaign.location && (
-                              <span className="text-xs text-muted-foreground">
-                                📍 {campaign.location}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        <Avatar className="h-6 w-6">
-                          <AvatarImage src={campaign.owner_profile?.avatar} />
-                          <AvatarFallback className="text-xs">
-                            {campaign.owner_profile?.name?.charAt(0) || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="text-sm font-medium">
-                            {campaign.owner_profile?.name || 'Unknown'}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {campaign.owner_profile?.email}
-                          </div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{getStatusBadge(campaign.status)}</TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between text-sm">
-                          <span>
-                            {formatCurrency(campaign.stats?.total_raised || 0, campaign.currency)}
-                          </span>
-                          <span className="text-muted-foreground">
-                            {formatCurrency(campaign.goal_amount, campaign.currency)}
-                          </span>
-                        </div>
-                        <Progress 
-                          value={getProgressPercentage(campaign.stats?.total_raised || 0, campaign.goal_amount)}
-                          className="h-2"
-                        />
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <span>{campaign.stats?.donor_count || 0} donors</span>
-                          <span>
-                            {getProgressPercentage(campaign.stats?.total_raised || 0, campaign.goal_amount).toFixed(1)}%
-                          </span>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        {new Date(campaign.created_at).toLocaleDateString()}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {new Date(campaign.created_at).toLocaleTimeString()}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => {
-                            setSelectedCampaign(campaign);
-                            setShowCampaignDialog(true);
-                          }}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
-                          </DropdownMenuItem>
-                          {hasPermission('moderate_campaigns') && (
-                            <>
-                              <DropdownMenuSeparator />
-                              {campaign.status === 'pending' && (
-                                <DropdownMenuItem 
-                                  onClick={() => handleCampaignStatusChange(campaign.id, 'active')}
-                                >
-                                  <CheckCircle className="mr-2 h-4 w-4" />
-                                  Approve
-                                </DropdownMenuItem>
-                              )}
-                              {campaign.status === 'active' && (
-                                <DropdownMenuItem 
-                                  onClick={() => handleCampaignStatusChange(campaign.id, 'paused')}
-                                >
-                                  <XCircle className="mr-2 h-4 w-4" />
-                                  Pause
-                                </DropdownMenuItem>
-                              )}
-                              {(campaign.status === 'paused' || campaign.status === 'ended') && (
-                                <DropdownMenuItem 
-                                  onClick={() => handleCampaignStatusChange(campaign.id, 'active')}
-                                >
-                                  <CheckCircle className="mr-2 h-4 w-4" />
-                                  Reactivate
-                                </DropdownMenuItem>
-                              )}
-                              <DropdownMenuItem 
-                                onClick={() => handleCampaignStatusChange(campaign.id, 'closed')}
-                              >
-                                <Flag className="mr-2 h-4 w-4" />
-                                Close Campaign
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                          {isSuperAdmin && (
-                            <>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive">
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete Campaign
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
         </CardContent>
       </Card>
 
