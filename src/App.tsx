@@ -13,10 +13,13 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import CreateFundraiser from "./pages/CreateFundraiser";
 import FundraiserDetail from "./pages/FundraiserDetail";
-import { UserManagement } from '@/pages/admin/UserManagement';
-import { RoleManagement } from '@/pages/admin/RoleManagement';
-import { AuditLogs } from '@/pages/admin/AuditLogs';
-import { CampaignManagement } from '@/pages/admin/CampaignManagement';
+import { AdminDashboard } from './pages/admin/AdminDashboard';
+import { Analytics } from './pages/admin/Analytics';
+import { UserManagement } from './pages/admin/UserManagement';
+import { RoleManagement } from './pages/admin/RoleManagement';
+import { AuditLogs } from './pages/admin/AuditLogs';
+import { CampaignManagement } from './pages/admin/CampaignManagement';
+import { SystemHealth } from './pages/admin/SystemHealth';
 import AllCampaigns from "./pages/AllCampaigns";
 import FundlyGive from "./pages/FundlyGive";
 import SearchResults from "./pages/SearchResults";
@@ -25,7 +28,6 @@ import ErrorRecovery from "./pages/ErrorRecovery";
 import { UserProfile } from "./pages/UserProfile";
 import { OrganizationProfile } from "./pages/OrganizationProfile";
 import ApiDocs from "./pages/ApiDocs";
-import { AdminDashboard } from "./pages/admin/AdminDashboard";
 
 const App = () => (
   <AppErrorBoundary>
@@ -62,11 +64,13 @@ const App = () => (
                          <AdminLayout />
                        </AdminProtectedRoute>
                       }>
-                        <Route index element={<AdminDashboard />} />
-                        <Route path="users" element={<UserManagement />} />
-                        <Route path="roles" element={<RoleManagement />} />
-                        <Route path="audit-logs" element={<AuditLogs />} />
-                        <Route path="campaigns" element={<CampaignManagement />} />
+                         <Route index element={<AdminDashboard />} />
+                         <Route path="analytics" element={<Analytics />} />
+                         <Route path="users" element={<UserManagement />} />
+                         <Route path="roles" element={<RoleManagement />} />
+                         <Route path="audit-logs" element={<AuditLogs />} />
+                         <Route path="campaigns" element={<CampaignManagement />} />
+                         <Route path="system" element={<SystemHealth />} />
                       </Route>
                      
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
