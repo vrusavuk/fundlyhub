@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRBAC } from '@/hooks/useRBAC';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
+import { useRealTimeUpdates } from '@/hooks/useRealTimeUpdates';
+import { useKeyboardShortcuts, CommonShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { 
   Users, 
   UserCheck, 
@@ -17,7 +19,12 @@ import {
   AlertTriangle,
   Download,
   RefreshCw,
-  Plus
+  Plus,
+  Search,
+  Calendar,
+  Mail,
+  Archive,
+  Trash2
 } from 'lucide-react';
 import { createUserColumns, UserData as UserColumnData } from '@/lib/data-table/user-columns';
 import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
@@ -26,9 +33,16 @@ import {
   AdminPageLayout, 
   AdminFilters, 
   AdminDataTable, 
+  AdvancedSearch,
+  BulkOperations,
+  QuickActions,
   FilterConfig,
   BulkAction,
-  TableAction 
+  TableAction,
+  SearchFilter,
+  ActiveFilter,
+  BulkOperation,
+  QuickAction 
 } from '@/components/admin/unified';
 
 interface ExtendedProfile {
