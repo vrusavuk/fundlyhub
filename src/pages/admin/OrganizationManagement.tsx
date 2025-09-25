@@ -345,25 +345,22 @@ export function OrganizationManagement() {
       )}
 
       {/* Enhanced Organizations DataTable */}
-      <Card>
-        <CardContent className="p-0">
-          <DataTable
-            columns={columns}
-            data={organizations}
-            loading={loading}
-            enableSelection={true}
-            enableSorting={true}
-            enableFiltering={true}
-            enableColumnVisibility={true}
-            enablePagination={true}
-            searchPlaceholder="Search organizations..."
-            emptyStateTitle="No organizations found"
-            emptyStateDescription="No organizations match your current search and filter criteria."
-            onSelectionChange={setSelectedOrgs}
-            density="comfortable"
-          />
-        </CardContent>
-      </Card>
+      <DataTable
+        columns={columns}
+        data={organizations}
+        loading={loading}
+        enableSelection={true}
+        enableSorting={true}
+        enableFiltering={true}
+        enableColumnVisibility={true}
+        enablePagination={true}
+        searchPlaceholder="Search organizations..."
+        emptyStateTitle="No organizations found"
+        emptyStateDescription="No organizations match your current search and filter criteria."
+        onSelectionChange={setSelectedOrgs}
+        density="comfortable"
+        className="border rounded-lg"
+      />
 
       {/* Optimistic Update Indicator */}
       <OptimisticUpdateIndicator
