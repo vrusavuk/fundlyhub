@@ -9,6 +9,11 @@ export * from './mobile';
 // Unified components  
 export * from './unified';
 
+// Settings components
+export * from './settings/SettingCard';
+export * from './settings/SettingsCategory';
+export * from './settings/AuditTrail';
+
 // Other admin components
 export { CreateSampleAdmin } from './CreateSampleAdmin';
 export { ContextualHelp } from './ContextualHelp';

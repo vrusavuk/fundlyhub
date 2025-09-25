@@ -1,0 +1,159 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useRBAC } from '@/hooks/useRBAC';
+
+export interface SystemSetting {
+  id: string;
+  setting_key: string;
+  setting_value: any;
+  category: string;
+  description?: string;
+  is_sensitive: boolean;
+  requires_restart: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SettingUpdate {
+  setting_key: string;
+  setting_value: any;
+  change_reason?: string;
+}
+
+export function useSystemSettings() {
+  const [settings, setSettings] = useState<Record<string, SystemSetting>>({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+  const { hasPermission, isSuperAdmin } = useRBAC();
+
+  const fetchSettings = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const { data, error } = await supabase
+        .from('system_settings')
+        .select('*')
+        .order('category', { ascending: true });
+
+      if (error) throw error;
+
+      const settingsMap = data?.reduce((acc, setting) => {
+        acc[setting.setting_key] = setting;
+        return acc;
+      }, {} as Record<string, SystemSetting>) || {};
+
+      setSettings(settingsMap);
+    } catch (err) {
+      console.error('Error fetching settings:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load settings');
+      toast({
+        title: "Error",
+        description: "Failed to load system settings",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  const updateSetting = useCallback(async (update: SettingUpdate) => {
+    try {
+      setSaving(true);
+
+      const { error } = await supabase
+        .from('system_settings')
+        .update({ 
+          setting_value: update.setting_value,
+          updated_at: new Date().toISOString()
+        })
+        .eq('setting_key', update.setting_key);
+
+      if (error) throw error;
+
+      // Update local state
+      setSettings(prev => ({
+        ...prev,
+        [update.setting_key]: {
+          ...prev[update.setting_key],
+          setting_value: update.setting_value,
+          updated_at: new Date().toISOString()
+        }
+      }));
+
+      toast({
+        title: "Setting Updated",
+        description: `Successfully updated ${update.setting_key}`,
+      });
+
+      return true;
+    } catch (err) {
+      console.error('Error updating setting:', err);
+      toast({
+        title: "Update Failed",
+        description: err instanceof Error ? err.message : 'Failed to update setting',
+        variant: "destructive"
+      });
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }, [toast]);
+
+  const updateMultipleSettings = useCallback(async (updates: SettingUpdate[]) => {
+    try {
+      setSaving(true);
+      const results = await Promise.all(
+        updates.map(update => updateSetting(update))
+      );
+      return results.every(result => result);
+    } finally {
+      setSaving(false);
+    }
+  }, [updateSetting]);
+
+  const getSettingValue = useCallback((key: string, defaultValue?: any) => {
+    return settings[key]?.setting_value ?? defaultValue;
+  }, [settings]);
+
+  const getSettingsByCategory = useCallback((category: string) => {
+    return Object.values(settings).filter(setting => setting.category === category);
+  }, [settings]);
+
+  const canEditCategory = useCallback((category: string) => {
+    if (isSuperAdmin()) return true;
+    
+    // Platform admins can edit specific categories
+    if (hasPermission('manage_platform_settings')) {
+      return ['user_management', 'content_moderation', 'notifications'].includes(category);
+    }
+    
+    return false;
+  }, [isSuperAdmin, hasPermission]);
+
+  const canViewSensitive = useCallback(() => {
+    return isSuperAdmin();
+  }, [isSuperAdmin]);
+
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
+
+  return {
+    settings: Object.values(settings),
+    settingsMap: settings,
+    loading,
+    saving,
+    error,
+    updateSetting,
+    updateMultipleSettings,
+    getSettingValue,
+    getSettingsByCategory,
+    canEditCategory,
+    canViewSensitive,
+    refreshSettings: fetchSettings
+  };
+}
