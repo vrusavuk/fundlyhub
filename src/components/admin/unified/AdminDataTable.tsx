@@ -9,6 +9,8 @@ import {
 import { DataTable } from '@/components/ui/data-table';
 import { AdminTableControls, BulkAction, TableAction } from './AdminTableControls';
 import { AdminContentContainer } from './AdminContentContainer';
+import { UserMobileCard, CampaignMobileCard, OrganizationMobileCard } from '@/components/ui/mobile-card';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
 interface AdminDataTableProps<TData, TValue> {
@@ -41,8 +43,8 @@ interface AdminDataTableProps<TData, TValue> {
   enableFiltering?: boolean;
   enableColumnVisibility?: boolean;
   enablePagination?: boolean;
-  
-  // Styling
+  // Mobile card renderer
+  mobileCardType?: 'user' | 'campaign' | 'organization';
   className?: string;
   density?: 'compact' | 'comfortable' | 'spacious';
   
@@ -71,10 +73,11 @@ export function AdminDataTable<TData, TValue>({
   enableFiltering = true,
   enableColumnVisibility = true,
   enablePagination = true,
-  className,
+  mobileCardType,
   density = 'comfortable',
   pageSizeOptions = [10, 25, 50, 100]
 }: AdminDataTableProps<TData, TValue>) {
+  const isMobile = useIsMobile();
   const [internalSelection, setInternalSelection] = useState<TData[]>([]);
   
   // Use external selection if provided, otherwise internal
