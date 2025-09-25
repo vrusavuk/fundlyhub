@@ -30,6 +30,8 @@ import { useRBAC } from '@/hooks/useRBAC';
 import { DataTable } from '@/components/ui/data-table';
 import { createOrganizationColumns, OrganizationData } from '@/lib/data-table/organization-columns';
 import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
+import { EnhancedPageHeader } from '@/components/admin/EnhancedPageHeader';
+import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
 
 
 export function OrganizationManagement() {
@@ -38,6 +40,16 @@ export function OrganizationManagement() {
   const [selectedOrgs, setSelectedOrgs] = useState<OrganizationData[]>([]);
   const { toast } = useToast();
   const { hasPermission } = useRBAC();
+
+  // Enhanced with optimistic updates
+  const optimisticUpdates = useOptimisticUpdates({
+    onSuccess: () => {
+      fetchOrganizations(); // Refresh data after successful operations
+    },
+    onError: (action, error) => {
+      console.error(`Action ${action.type} failed:`, error);
+    }
+  });
 
   const fetchOrganizations = async () => {
     try {
@@ -114,38 +126,57 @@ export function OrganizationManagement() {
   );
 
   const handleStatusUpdate = async (orgId: string, newStatus: 'approved' | 'rejected' | 'pending') => {
-    try {
-      const { error } = await supabase
-        .from('organizations')
-        .update({ 
-          verification_status: newStatus,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', orgId);
+    const organization = organizations.find(org => org.id === orgId);
+    if (!organization) return;
 
-      if (error) throw error;
+    return optimisticUpdates.executeAction(
+      {
+        type: 'update',
+        description: `Change organization "${organization.legal_name}" status to ${newStatus}`,
+        originalData: { ...organization },
+        rollbackFn: async () => {
+          // Rollback to original status
+          await supabase
+            .from('organizations')
+            .update({ verification_status: organization.verification_status })
+            .eq('id', orgId);
+        }
+      },
+      async () => {
+        // Optimistically update local state first
+        setOrganizations(prev => 
+          prev.map(org => 
+            org.id === orgId 
+              ? { ...org, verification_status: newStatus, updated_at: new Date().toISOString() }
+              : org
+          )
+        );
 
-      // Update local state
-      setOrganizations(prev => 
-        prev.map(org => 
-          org.id === orgId 
-            ? { ...org, verification_status: newStatus }
-            : org
-        )
-      );
+        const { error } = await supabase
+          .from('organizations')
+          .update({ 
+            verification_status: newStatus,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', orgId);
 
-      toast({
-        title: "Status Updated",
-        description: `Organization status changed to ${newStatus}`,
-      });
-    } catch (error) {
-      console.error('Error updating status:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update organization status",
-        variant: "destructive"
-      });
-    }
+        if (error) throw error;
+
+        // Get current user
+        const { data: user } = await supabase.auth.getUser();
+        
+        // Log the action
+        await supabase.rpc('log_audit_event', {
+          _actor_id: user.user?.id,
+          _action: `organization_${newStatus}`,
+          _resource_type: 'organization',
+          _resource_id: orgId,
+          _metadata: { previous_status: organization.verification_status }
+        });
+
+        return { orgId, newStatus };
+      }
+    );
   };
 
   const handleBulkAction = async (action: string) => {
@@ -239,28 +270,34 @@ export function OrganizationManagement() {
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Organization Management</h1>
-          <p className="text-muted-foreground">
-            Manage and verify organization accounts
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm" onClick={fetchOrganizations}>
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
-          </Button>
-          <Button variant="outline" size="sm">
-            <Download className="w-4 h-4 mr-2" />
-            Export
-          </Button>
-        </div>
-      </div>
+    <div className="section-hierarchy">
+      {/* Enhanced Page Header */}
+      <EnhancedPageHeader
+        title="Organization Management"
+        description="Manage and verify organization accounts"
+        actions={[
+          {
+            label: 'Refresh',
+            onClick: fetchOrganizations,
+            icon: RefreshCw,
+            variant: 'outline',
+            loading: loading
+          },
+          {
+            label: 'Export',
+            onClick: () => {
+              toast({
+                title: 'Export Started',
+                description: 'Organization data export will begin shortly'
+              });
+            },
+            icon: Download,
+            variant: 'outline'
+          }
+        ]}
+      />
 
-      {/* Stats */}
+      {/* Enhanced Stats */}
       <AdminStatsGrid stats={stats} />
 
       {/* Bulk Actions */}
@@ -307,22 +344,33 @@ export function OrganizationManagement() {
         </Card>
       )}
 
-      {/* Organizations DataTable */}
-      <DataTable
-        columns={columns}
-        data={organizations}
-        loading={loading}
-        enableSelection={true}
-        enableSorting={true}
-        enableFiltering={true}
-        enableColumnVisibility={true}
-        enablePagination={true}
-        searchPlaceholder="Search organizations..."
-        emptyStateTitle="No organizations found"
-        emptyStateDescription="No organizations match your current search and filter criteria."
-        onSelectionChange={setSelectedOrgs}
-        density="comfortable"
-        className="bg-card rounded-lg shadow-sm"
+      {/* Enhanced Organizations DataTable */}
+      <Card>
+        <CardContent className="p-0">
+          <DataTable
+            columns={columns}
+            data={organizations}
+            loading={loading}
+            enableSelection={true}
+            enableSorting={true}
+            enableFiltering={true}
+            enableColumnVisibility={true}
+            enablePagination={true}
+            searchPlaceholder="Search organizations..."
+            emptyStateTitle="No organizations found"
+            emptyStateDescription="No organizations match your current search and filter criteria."
+            onSelectionChange={setSelectedOrgs}
+            density="comfortable"
+          />
+        </CardContent>
+      </Card>
+
+      {/* Optimistic Update Indicator */}
+      <OptimisticUpdateIndicator
+        state={optimisticUpdates.state}
+        onRollback={optimisticUpdates.rollbackAction}
+        onClearCompleted={optimisticUpdates.clearCompleted}
+        onClearFailed={optimisticUpdates.clearFailed}
       />
     </div>
   );

@@ -27,12 +27,16 @@ import {
   Edit,
   Trash2,
   Plus,
-  Download
+  Download,
+  RefreshCw
 } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { DataTable } from '@/components/ui/data-table';
 import { createUserColumns, UserData as UserColumnData } from '@/lib/data-table/user-columns';
+import { EnhancedPageHeader } from '@/components/admin/EnhancedPageHeader';
+import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
+import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
 
 interface ExtendedProfile {
   id: string;
@@ -77,6 +81,16 @@ export function UserManagement() {
     role: 'all',
     sortBy: 'created_at',
     sortOrder: 'desc'
+  });
+
+  // Enhanced with optimistic updates
+  const optimisticUpdates = useOptimisticUpdates({
+    onSuccess: () => {
+      fetchUsers(); // Refresh data after successful operations
+    },
+    onError: (action, error) => {
+      console.error(`Action ${action.type} failed:`, error);
+    }
   });
 
   // Create columns for the data table
@@ -369,29 +383,73 @@ export function UserManagement() {
     );
   }
 
+  // Calculate user stats
+  const userStats = [
+    {
+      title: "Total Users",
+      value: users.length,
+      icon: Users,
+      description: "All registered users"
+    },
+    {
+      title: "Active Users",
+      value: users.filter(u => u.account_status === 'active').length,
+      icon: UserCheck,
+      iconClassName: "text-success",
+      description: "Currently active accounts"
+    },
+    {
+      title: "Suspended Users", 
+      value: users.filter(u => u.account_status === 'suspended').length,
+      icon: UserX,
+      iconClassName: "text-destructive",
+      description: "Temporarily suspended"
+    },
+    {
+      title: "Platform Admins",
+      value: users.filter(u => u.role === 'platform_admin' || u.role === 'super_admin').length,
+      icon: Shield,
+      iconClassName: "text-warning",
+      description: "Administrators"
+    },
+  ];
+
   return (
     <div className="section-hierarchy">
-      {/* Header */}
-      <div className="flex items-center justify-between mobile-header-spacing">
-        <div className="content-hierarchy">
-          <h1 className="heading-large tracking-tight">User Management</h1>
-          <p className="body-medium text-muted-foreground">
-            Manage platform users, roles, and permissions
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button onClick={exportUsers} variant="outline" className="shadow-soft">
-            <Download className="mr-2 h-4 w-4" />
-            Export
-          </Button>
-          {hasPermission('create_users') && (
-            <Button className="cta-primary shadow-medium">
-              <Plus className="mr-2 h-4 w-4" />
-              Add User
-            </Button>
-          )}
-        </div>
-      </div>
+      {/* Enhanced Page Header */}
+      <EnhancedPageHeader
+        title="User Management"
+        description="Manage platform users, roles, and permissions"
+        actions={[
+          {
+            label: 'Refresh',
+            onClick: fetchUsers,
+            icon: RefreshCw,
+            variant: 'outline',
+            loading: loading
+          },
+          {
+            label: 'Export',
+            onClick: exportUsers,
+            icon: Download,
+            variant: 'outline'
+          },
+          ...(hasPermission('create_users') ? [{
+            label: 'Add User',
+            onClick: () => {
+              toast({
+                title: 'Feature Coming Soon',
+                description: 'User creation interface will be available soon'
+              });
+            },
+            icon: Plus,
+            variant: 'default' as const
+          }] : [])
+        ]}
+      />
+
+      {/* Enhanced Stats */}
+      <AdminStatsGrid stats={userStats} />
 
       {/* Filters */}
       <Card className="card-enhanced">
@@ -477,15 +535,15 @@ export function UserManagement() {
         </CardContent>
       </Card>
 
-      {/* Users Table */}
-      <Card className="card-enhanced">
+      {/* Enhanced Users Table */}
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center caption-medium">
+          <CardTitle className="flex items-center">
             <Users className="mr-2 h-4 w-4" />
             Users ({users.length})
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <DataTable
             columns={columns}
             data={users}
@@ -498,11 +556,17 @@ export function UserManagement() {
             searchPlaceholder="Search users..."
             emptyStateTitle="No users found"
             emptyStateDescription="No users match your current filters."
-            density="comfortable"
-            pageSizeOptions={[25, 50, 100]}
           />
         </CardContent>
       </Card>
+
+      {/* Optimistic Update Indicator */}
+      <OptimisticUpdateIndicator
+        state={optimisticUpdates.state}
+        onRollback={optimisticUpdates.rollbackAction}
+        onClearCompleted={optimisticUpdates.clearCompleted}
+        onClearFailed={optimisticUpdates.clearFailed}
+      />
 
       {/* User Details Dialog */}
       <Dialog open={showUserDialog} onOpenChange={setShowUserDialog}>
@@ -514,76 +578,56 @@ export function UserManagement() {
             </DialogDescription>
           </DialogHeader>
           {selectedUser && (
-            <Tabs defaultValue="profile" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="profile">Profile</TabsTrigger>
-                <TabsTrigger value="roles">Roles</TabsTrigger>
-                <TabsTrigger value="activity">Activity</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="profile" className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium">Name</label>
-                    <p className="text-sm text-muted-foreground">{selectedUser.name || 'Not provided'}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Email</label>
-                    <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Account Status</label>
-                    <p className="text-sm">{getStatusBadge(selectedUser)}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Role</label>
-                    <p className="text-sm">{getRoleBadge(selectedUser.role)}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Campaigns Created</label>
-                    <p className="text-sm text-muted-foreground">{selectedUser.campaign_count}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Total Funds Raised</label>
-                    <p className="text-sm text-muted-foreground">${selectedUser.total_funds_raised.toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Followers</label>
-                    <p className="text-sm text-muted-foreground">{selectedUser.follower_count}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Member Since</label>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(selectedUser.created_at).toLocaleDateString()}
-                    </p>
+            <div className="space-y-4">
+              <div className="flex items-start space-x-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src={selectedUser.avatar} alt={selectedUser.name} />
+                  <AvatarFallback>{selectedUser.name?.charAt(0) || 'U'}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold">{selectedUser.name || 'Unnamed User'}</h3>
+                  <p className="text-muted-foreground mb-2">{selectedUser.email}</p>
+                  <div className="flex items-center space-x-2">
+                    {getStatusBadge(selectedUser)}
+                    {getRoleBadge(selectedUser.role)}
                   </div>
                 </div>
-              </TabsContent>
-              
-              <TabsContent value="roles" className="space-y-4">
-                {selectedUser.user_roles && selectedUser.user_roles.length > 0 ? (
-                  <div className="space-y-2">
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">Campaigns</label>
+                  <p className="text-sm text-muted-foreground">{selectedUser.campaign_count}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Funds Raised</label>
+                  <p className="text-sm text-muted-foreground">${selectedUser.total_funds_raised?.toLocaleString() || '0'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Followers</label>
+                  <p className="text-sm text-muted-foreground">{selectedUser.follower_count}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Joined</label>
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(selectedUser.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+
+              {selectedUser.user_roles && selectedUser.user_roles.length > 0 && (
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Roles</label>
+                  <div className="flex flex-wrap gap-2">
                     {selectedUser.user_roles.map((role, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 border rounded">
-                        <div>
-                          <div className="font-medium">{role.role_name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            Context: {role.context_type} | Level: {role.hierarchy_level}
-                          </div>
-                        </div>
-                        <Badge variant="outline">{role.role_name}</Badge>
-                      </div>
+                      <Badge key={index} variant="outline">
+                        {role.role_name} ({role.context_type})
+                      </Badge>
                     ))}
                   </div>
-                ) : (
-                  <p className="text-muted-foreground">No additional roles assigned</p>
-                )}
-              </TabsContent>
-              
-              <TabsContent value="activity" className="space-y-4">
-                <p className="text-muted-foreground">Activity log would be implemented here</p>
-              </TabsContent>
-            </Tabs>
+                </div>
+              )}
+            </div>
           )}
         </DialogContent>
       </Dialog>
