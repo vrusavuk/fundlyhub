@@ -113,7 +113,7 @@ export function UserManagement() {
 
       // Apply role filter
       if (filters.role !== 'all') {
-        query = query.eq('role', filters.role);
+        query = query.eq('role', filters.role as any);
       }
 
       // Apply sorting

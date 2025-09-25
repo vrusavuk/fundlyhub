@@ -81,8 +81,7 @@ export function AuditLogs() {
       let query = supabase
         .from('audit_logs')
         .select(`
-          *,
-          actor_profile:profiles!actor_id(name, email)
+          *
         `, { count: 'exact' });
 
       // Apply filters
@@ -122,7 +121,19 @@ export function AuditLogs() {
 
       if (error) throw error;
 
-      setLogs((data || []) as AuditLog[]);
+      // Fetch profile data for actors
+      const actorIds = [...new Set(data?.map(log => log.actor_id) || [])];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, name, email')
+        .in('id', actorIds);
+
+      const logsWithProfiles = (data || []).map(log => ({
+        ...log,
+        actor_profile: profiles?.find(p => p.id === log.actor_id)
+      }));
+
+      setLogs(logsWithProfiles as AuditLog[]);
       setTotalCount(count || 0);
     } catch (error) {
       console.error('Error fetching audit logs:', error);
@@ -151,8 +162,7 @@ export function AuditLogs() {
       let query = supabase
         .from('audit_logs')
         .select(`
-          *,
-          actor_profile:profiles!actor_id(name, email)
+          *
         `);
 
       // Apply same filters as current view
@@ -188,15 +198,25 @@ export function AuditLogs() {
 
       if (error) throw error;
 
-      const csvData = (data || []).map(log => ({
-        Timestamp: log.created_at,
-        Actor: log.actor_profile?.name || log.actor_profile?.email || log.actor_id,
-        Action: log.action,
-        Resource: log.resource_type,
-        'Resource ID': log.resource_id || '',
-        'IP Address': log.ip_address || '',
-        Metadata: JSON.stringify(log.metadata || {})
-      }));
+      // Fetch profile data for export
+      const actorIds = [...new Set(data?.map(log => log.actor_id) || [])];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, name, email')
+        .in('id', actorIds);
+
+      const csvData = (data || []).map(log => {
+        const actorProfile = profiles?.find(p => p.id === log.actor_id);
+        return {
+          Timestamp: log.created_at,
+          Actor: actorProfile?.name || actorProfile?.email || log.actor_id,
+          Action: log.action,
+          Resource: log.resource_type,
+          'Resource ID': log.resource_id || '',
+          'IP Address': log.ip_address || '',
+          Metadata: JSON.stringify(log.metadata || {})
+        };
+      });
 
       const csv = [
         Object.keys(csvData[0] || {}).join(','),
