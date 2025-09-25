@@ -25,11 +25,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarTrigger,
+  SidebarHeader,
   useSidebar
 } from '@/components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useRBAC } from '@/hooks/useRBAC';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface AdminNavItem {
   title: string;
@@ -125,20 +127,18 @@ export function AdminSidebar() {
 
   return (
     <TooltipProvider>
-      <Sidebar className={`${collapsed ? 'w-16' : 'w-64'} border-r bg-sidebar`}>
-        <SidebarContent>
-        {/* Header */}
-        <div className="p-4 border-b border-sidebar-border">
+      <Sidebar 
+        variant="sidebar" 
+        collapsible="icon"
+        className="border-r border-border bg-card"
+      >
+        <SidebarHeader className="border-b border-border p-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Crown className="w-4 h-4 text-primary-foreground" />
-              </div>
+            <div className="flex items-center space-x-2">
+              <Crown className="h-6 w-6 text-primary" />
               {!collapsed && (
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-sm font-semibold text-sidebar-foreground truncate">
-                    Admin Panel
-                  </h2>
+                <div className="flex flex-col">
+                  <span className="font-semibold text-foreground">Admin Panel</span>
                   {highestRole && (
                     <Badge variant="secondary" className="text-xs mt-1">
                       {highestRole.role_name.replace('_', ' ')}
@@ -149,103 +149,110 @@ export function AdminSidebar() {
             </div>
             <SidebarTrigger className="h-8 w-8" />
           </div>
-        </div>
+        </SidebarHeader>
 
-        {/* Main Navigation */}
-        <SidebarGroup>
-          {!collapsed && (
-            <SidebarGroupLabel className="text-xs font-medium text-sidebar-foreground/70 px-4 mb-2">
-              Administration
-            </SidebarGroupLabel>
-          )}
-          
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {visibleItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    {collapsed ? (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <NavLink 
-                            to={item.url} 
-                            end={item.url === '/admin'}
-                            className={`${getNavClassName(isActive(item.url))} flex items-center justify-center h-10 w-10 mx-auto`}
-                          >
-                            <item.icon className="w-5 h-5 flex-shrink-0" />
-                          </NavLink>
-                        </TooltipTrigger>
-                        <TooltipContent side="right">
-                          <p>{item.title}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    ) : (
-                      <NavLink 
-                        to={item.url} 
-                        end={item.url === '/admin'}
-                        className={`${getNavClassName(isActive(item.url))} flex items-center space-x-3 px-3 py-2`}
-                      >
-                        <item.icon className="w-5 h-5 flex-shrink-0" />
-                        <span className="font-medium">{item.title}</span>
-                        {item.badge && (
-                          <Badge variant="destructive" className="text-xs ml-auto">
-                            {item.badge}
-                          </Badge>
-                        )}
-                      </NavLink>
-                    )}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* System Status */}
-        {!collapsed && (
+        <SidebarContent className="px-2">
           <SidebarGroup>
-            <SidebarGroupLabel className="text-xs font-medium text-sidebar-foreground/70 px-4 mb-2">
-              System Status
-            </SidebarGroupLabel>
-            
-            <div className="px-4 space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-sidebar-foreground/60">System Health</span>
-                <div className="flex items-center space-x-1">
-                  <div className="w-2 h-2 bg-success rounded-full"></div>
-                  <span className="text-success font-medium">Good</span>
+            <SidebarGroupContent>
+              <SidebarMenu className="space-y-1">
+                {visibleItems.map((item) => {
+                  const isActiveRoute = isActive(item.url);
+                  
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <Tooltip delayDuration={collapsed ? 300 : 0}>
+                        <TooltipTrigger asChild>
+                          <SidebarMenuButton 
+                            asChild 
+                            className={cn(
+                              "w-full justify-start transition-colors duration-200",
+                              isActiveRoute 
+                                ? "bg-primary/10 text-primary border-r-2 border-primary font-medium" 
+                                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                            )}
+                          >
+                            <NavLink 
+                              to={item.url}
+                              end={item.url === '/admin'}
+                              className="flex items-center gap-3 px-3 py-2 rounded-md"
+                            >
+                              <item.icon className="h-4 w-4 flex-shrink-0" />
+                              {!collapsed && (
+                                <>
+                                  <span className="flex-1">{item.title}</span>
+                                  {item.badge && (
+                                    <Badge variant="destructive" className="text-xs ml-auto">
+                                      {item.badge}
+                                    </Badge>
+                                  )}
+                                </>
+                              )}
+                            </NavLink>
+                          </SidebarMenuButton>
+                        </TooltipTrigger>
+                        {collapsed && (
+                          <TooltipContent side="right" className="font-medium">
+                            {item.title}
+                            {item.badge && (
+                              <span className="ml-2 px-2 py-1 text-xs bg-destructive text-destructive-foreground rounded-full">
+                                {item.badge}
+                              </span>
+                            )}
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          {/* System Status */}
+          {!collapsed && (
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-xs font-medium text-muted-foreground px-4 mb-2">
+                System Status
+              </SidebarGroupLabel>
+              
+              <div className="px-4 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">System Health</span>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-green-500 font-medium">Good</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">Active Users</span>
+                  <span className="text-foreground font-medium">1,247</span>
+                </div>
+                
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">Pending Reviews</span>
+                  <Badge variant="secondary" className="text-xs">
+                    23
+                  </Badge>
                 </div>
               </div>
-              
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-sidebar-foreground/60">Active Users</span>
-                <span className="text-sidebar-foreground font-medium">1,247</span>
-              </div>
-              
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-sidebar-foreground/60">Pending Reviews</span>
-                <Badge variant="secondary" className="text-xs">
-                  23
-                </Badge>
-              </div>
-            </div>
-          </SidebarGroup>
-        )}
+            </SidebarGroup>
+          )}
 
-        {/* Super Admin Warning */}
-        {isSuperAdmin() && !collapsed && (
-          <div className="px-4 py-3 mx-4 mb-4 bg-warning/10 border border-warning/20 rounded-lg">
-            <div className="flex items-start space-x-2">
-              <AlertTriangle className="w-4 h-4 text-warning flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-medium text-warning">Super Admin</p>
-                <p className="text-xs text-warning/80 mt-1">
-                  You have full platform access. Use with caution.
-                </p>
+          {/* Super Admin Warning */}
+          {isSuperAdmin() && !collapsed && (
+            <div className="px-4 py-3 mx-4 mb-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+              <div className="flex items-start space-x-2">
+                <AlertTriangle className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-medium text-yellow-500">Super Admin</p>
+                  <p className="text-xs text-yellow-500/80 mt-1">
+                    You have full platform access. Use with caution.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
         </SidebarContent>
       </Sidebar>
     </TooltipProvider>
