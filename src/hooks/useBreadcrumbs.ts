@@ -91,6 +91,32 @@ export function useBreadcrumbs() {
         breadcrumbs.push({ label: 'Fundly Give', href: '/fundly-give' });
         break;
 
+      case 'admin':
+        // Handle admin routes
+        breadcrumbs.push({ label: 'Dashboard', href: '/admin' });
+        
+        if (secondSegment) {
+          const adminRoutes: Record<string, string> = {
+            'users': 'User Management',
+            'campaigns': 'Campaign Management',
+            'organizations': 'Organization Management',
+            'roles': 'Role Management', 
+            'analytics': 'Analytics',
+            'settings': 'System Settings',
+            'audit-logs': 'Audit Logs',
+            'notifications': 'Notification Center',
+            'system-health': 'System Health',
+            'design-system': 'Design System'
+          };
+          
+          const routeLabel = adminRoutes[secondSegment] || secondSegment.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+          breadcrumbs.push({ 
+            label: routeLabel, 
+            href: location.pathname 
+          });
+        }
+        break;
+
       default:
         // For other routes, don't add breadcrumbs (they'll use back button or no navigation)
         return;
