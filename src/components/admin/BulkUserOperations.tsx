@@ -184,14 +184,16 @@ export function BulkUserOperations({
   };
 
   const sendUserMessage = async (userId: string, message: string) => {
-    // Use raw SQL since table may not be in types yet
-    await supabase.rpc('exec_sql', {
-      query: `
-        INSERT INTO user_messages (user_id, sender_type, subject, content, message_type)
-        VALUES ($1, 'system', 'System Message', $2, 'admin_notice')
-      `,
-      params: [userId, message]
-    });
+    // Use direct table insert since user_messages table exists
+    await supabase
+      .from('user_messages')
+      .insert({
+        user_id: userId,
+        sender_type: 'system',
+        subject: 'System Message',
+        content: message,
+        message_type: 'admin_notice'
+      });
   };
 
   const deleteUser = async (userId: string, reason?: string) => {
@@ -207,26 +209,25 @@ export function BulkUserOperations({
   };
 
   const verifyUser = async (userId: string) => {
-    // Use raw SQL to update the profile with new fields
-    await supabase.rpc('exec_sql', {
-      query: `
-        UPDATE profiles 
-        SET is_verified = true, verified_at = now()
-        WHERE id = $1
-      `,
-      params: [userId]
-    });
+    // Update profile with verification status
+    await supabase
+      .from('profiles')
+      .update({
+        is_verified: true,
+        verified_at: new Date().toISOString()
+      })
+      .eq('id', userId);
   };
 
   const banUser = async (userId: string, reason?: string) => {
-    await supabase.rpc('exec_sql', {
-      query: `
-        UPDATE profiles 
-        SET account_status = 'banned', ban_reason = $2, banned_at = now()
-        WHERE id = $1
-      `,
-      params: [userId, reason || 'Administrative ban']
-    });
+    await supabase
+      .from('profiles')
+      .update({
+        account_status: 'banned',
+        ban_reason: reason || 'Administrative ban',
+        banned_at: new Date().toISOString()
+      })
+      .eq('id', userId);
   };
 
   const getOperationIcon = (type: string) => {
