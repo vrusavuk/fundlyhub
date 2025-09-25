@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { 
   Select,
   SelectContent,
@@ -13,66 +11,31 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { 
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { 
   Building2, 
   Search, 
-  Filter, 
-  MoreHorizontal,
+  Filter,
   CheckCircle,
   XCircle,
   Clock,
   AlertTriangle,
-  Eye,
-  Edit,
-  Trash2,
   Users,
   DollarSign,
   Target,
-  Plus,
   Download,
   RefreshCw
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useRBAC } from '@/hooks/useRBAC';
+import { DataTable } from '@/components/ui/data-table';
+import { createOrganizationColumns, OrganizationData } from '@/lib/data-table/organization-columns';
+import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
 
-interface OrganizationData {
-  id: string;
-  legal_name: string;
-  dba_name: string | null;
-  ein: string | null;
-  website: string | null;
-  verification_status: 'pending' | 'approved' | 'rejected';
-  created_at: string;
-  updated_at: string;
-  categories: string[] | null;
-  country: string | null;
-  member_count?: number;
-  campaign_count?: number;
-  total_raised?: number;
-}
 
 export function OrganizationManagement() {
   const [organizations, setOrganizations] = useState<OrganizationData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [selectedOrgs, setSelectedOrgs] = useState<string[]>([]);
+  const [selectedOrgs, setSelectedOrgs] = useState<OrganizationData[]>([]);
   const { toast } = useToast();
   const { hasPermission } = useRBAC();
 
@@ -132,25 +95,23 @@ export function OrganizationManagement() {
     fetchOrganizations();
   }, []);
 
-  const filteredOrganizations = organizations.filter(org => {
-    const matchesSearch = org.legal_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (org.dba_name?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
-    const matchesStatus = statusFilter === 'all' || org.verification_status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return <Badge className="bg-success text-success-foreground"><CheckCircle className="w-3 h-3 mr-1" />Approved</Badge>;
-      case 'rejected':
-        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Rejected</Badge>;
-      case 'pending':
-        return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
+  // Create columns for the data table
+  const columns = createOrganizationColumns(
+    // onViewDetails
+    (org) => {
+      // TODO: Implement view details dialog
+      console.log('View details for:', org);
+    },
+    // onStatusUpdate
+    (orgId, status) => {
+      handleStatusUpdate(orgId, status);
+    },
+    // permissions
+    {
+      canManageOrganizations: hasPermission('manage_organizations'),
+      canViewDetails: hasPermission('view_organization_details'),
     }
-  };
+  );
 
   const handleStatusUpdate = async (orgId: string, newStatus: 'approved' | 'rejected' | 'pending') => {
     try {
@@ -199,6 +160,7 @@ export function OrganizationManagement() {
 
     try {
       let updateData: any = {};
+      const orgIds = selectedOrgs.map(org => org.id);
       
       switch (action) {
         case 'approve':
@@ -217,14 +179,14 @@ export function OrganizationManagement() {
       const { error } = await supabase
         .from('organizations')
         .update({ ...updateData, updated_at: new Date().toISOString() })
-        .in('id', selectedOrgs);
+        .in('id', orgIds);
 
       if (error) throw error;
 
       // Update local state
       setOrganizations(prev => 
         prev.map(org => 
-          selectedOrgs.includes(org.id)
+          orgIds.includes(org.id)
             ? { ...org, ...updateData }
             : org
         )
@@ -234,7 +196,7 @@ export function OrganizationManagement() {
       
       toast({
         title: "Bulk Action Completed",
-        description: `Updated ${selectedOrgs.length} organizations`,
+        description: `Updated ${orgIds.length} organizations`,
       });
     } catch (error) {
       console.error('Error performing bulk action:', error);
@@ -246,25 +208,35 @@ export function OrganizationManagement() {
     }
   };
 
-  const stats = {
-    total: organizations.length,
-    approved: organizations.filter(o => o.verification_status === 'approved').length,
-    pending: organizations.filter(o => o.verification_status === 'pending').length,
-    rejected: organizations.filter(o => o.verification_status === 'rejected').length,
-  };
-
-  if (loading) {
-    return (
-      <div className="space-y-6 animate-pulse">
-        <div className="grid gap-4 md:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-24 bg-muted rounded-lg" />
-          ))}
-        </div>
-        <div className="h-96 bg-muted rounded-lg" />
-      </div>
-    );
-  }
+  const stats = [
+    {
+      title: "Total Organizations",
+      value: organizations.length,
+      icon: Building2,
+      description: "All registered organizations"
+    },
+    {
+      title: "Approved",
+      value: organizations.filter(o => o.verification_status === 'approved').length,
+      icon: CheckCircle,
+      iconClassName: "text-success",
+      description: "Verified organizations"
+    },
+    {
+      title: "Pending Review",
+      value: organizations.filter(o => o.verification_status === 'pending').length,
+      icon: Clock,
+      iconClassName: "text-warning",
+      description: "Awaiting verification"
+    },
+    {
+      title: "Rejected",
+      value: organizations.filter(o => o.verification_status === 'rejected').length,
+      icon: XCircle,
+      iconClassName: "text-destructive",
+      description: "Verification failed"
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -289,233 +261,69 @@ export function OrganizationManagement() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Organizations</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
+      <AdminStatsGrid stats={stats} />
+
+      {/* Bulk Actions */}
+      {selectedOrgs.length > 0 && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="pt-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Badge variant="secondary" className="font-medium">
+                  {selectedOrgs.length} selected
+                </Badge>
+                <span className="text-sm text-muted-foreground">
+                  organizations ready for bulk action
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button 
+                  size="sm" 
+                  variant="default"
+                  onClick={() => handleBulkAction('approve')}
+                  className="bg-success hover:bg-success/90"
+                >
+                  <CheckCircle className="w-4 h-4 mr-1" />
+                  Approve All
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="destructive" 
+                  onClick={() => handleBulkAction('reject')}
+                >
+                  <XCircle className="w-4 h-4 mr-1" />
+                  Reject All
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => setSelectedOrgs([])}
+                >
+                  Clear Selection
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Approved</CardTitle>
-            <CheckCircle className="h-4 w-4 text-success" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-success">{stats.approved}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Review</CardTitle>
-            <Clock className="h-4 w-4 text-warning" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-warning">{stats.pending}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Rejected</CardTitle>
-            <XCircle className="h-4 w-4 text-destructive" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-destructive">{stats.rejected}</div>
-          </CardContent>
-        </Card>
-      </div>
+      )}
 
-      {/* Filters and Actions */}
-      <div className="flex items-center justify-between space-x-2">
-        <div className="flex items-center space-x-2">
-          <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search organizations..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8 w-64"
-            />
-          </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {selectedOrgs.length > 0 && (
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-muted-foreground">
-              {selectedOrgs.length} selected
-            </span>
-            <Button size="sm" onClick={() => handleBulkAction('approve')}>
-              <CheckCircle className="w-4 h-4 mr-1" />
-              Approve
-            </Button>
-            <Button size="sm" variant="destructive" onClick={() => handleBulkAction('reject')}>
-              <XCircle className="w-4 h-4 mr-1" />
-              Reject
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Organizations Table */}
-      <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-12">
-                <input
-                  type="checkbox"
-                  checked={selectedOrgs.length === filteredOrganizations.length && filteredOrganizations.length > 0}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setSelectedOrgs(filteredOrganizations.map(o => o.id));
-                    } else {
-                      setSelectedOrgs([]);
-                    }
-                  }}
-                />
-              </TableHead>
-              <TableHead>Organization</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Members</TableHead>
-              <TableHead>Campaigns</TableHead>
-              <TableHead>Total Raised</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead className="w-12"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredOrganizations.map((org) => (
-              <TableRow key={org.id}>
-                <TableCell>
-                  <input
-                    type="checkbox"
-                    checked={selectedOrgs.includes(org.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedOrgs(prev => [...prev, org.id]);
-                      } else {
-                        setSelectedOrgs(prev => prev.filter(id => id !== org.id));
-                      }
-                    }}
-                  />
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback>
-                        {org.legal_name.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-medium">{org.legal_name}</div>
-                      {org.dba_name && (
-                        <div className="text-sm text-muted-foreground">
-                          DBA: {org.dba_name}
-                        </div>
-                      )}
-                      {org.website && (
-                        <div className="text-xs text-muted-foreground">
-                          {org.website}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>{getStatusBadge(org.verification_status)}</TableCell>
-                <TableCell>
-                  <Badge variant="outline">
-                    <Users className="w-3 h-3 mr-1" />
-                    {org.member_count || 0}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline">
-                    <Target className="w-3 h-3 mr-1" />
-                    {org.campaign_count || 0}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline">
-                    <DollarSign className="w-3 h-3 mr-1" />
-                    ${(org.total_raised || 0).toLocaleString()}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {new Date(org.created_at).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem>
-                        <Eye className="w-4 h-4 mr-2" />
-                        View Details
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem 
-                        onClick={() => handleStatusUpdate(org.id, 'approved')}
-                        disabled={org.verification_status === 'approved'}
-                      >
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Approve
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => handleStatusUpdate(org.id, 'rejected')}
-                        disabled={org.verification_status === 'rejected'}
-                      >
-                        <XCircle className="w-4 h-4 mr-2" />
-                        Reject
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => handleStatusUpdate(org.id, 'pending')}
-                        disabled={org.verification_status === 'pending'}
-                      >
-                        <Clock className="w-4 h-4 mr-2" />
-                        Mark Pending
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-
-        {filteredOrganizations.length === 0 && (
-          <div className="text-center py-8">
-            <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium">No organizations found</h3>
-            <p className="text-muted-foreground">
-              {searchTerm || statusFilter !== 'all' 
-                ? 'Try adjusting your search or filters'
-                : 'No organizations have been registered yet'
-              }
-            </p>
-          </div>
-        )}
-      </Card>
+      {/* Organizations DataTable */}
+      <DataTable
+        columns={columns}
+        data={organizations}
+        loading={loading}
+        enableSelection={true}
+        enableSorting={true}
+        enableFiltering={true}
+        enableColumnVisibility={true}
+        enablePagination={true}
+        searchPlaceholder="Search organizations..."
+        emptyStateTitle="No organizations found"
+        emptyStateDescription="No organizations match your current search and filter criteria."
+        onSelectionChange={setSelectedOrgs}
+        density="comfortable"
+        className="bg-card rounded-lg shadow-sm"
+      />
     </div>
   );
 }

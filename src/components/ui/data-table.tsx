@@ -21,6 +21,7 @@ import {
   Settings2,
   SortAsc,
   SortDesc,
+  Search,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -199,11 +200,11 @@ export function DataTable<TData, TValue>({
       </div>
 
       {/* Table */}
-      <div className="rounded-md border bg-card">
+      <div className="rounded-lg border bg-card shadow-sm">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="border-b bg-muted/30">
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead 
@@ -211,7 +212,8 @@ export function DataTable<TData, TValue>({
                       className={cn(
                         cellPadding[density],
                         densityClasses[density],
-                        header.column.getCanSort() && "cursor-pointer select-none hover:bg-muted/50"
+                        "font-semibold text-muted-foreground",
+                        header.column.getCanSort() && "cursor-pointer select-none hover:bg-muted/50 transition-colors"
                       )}
                       onClick={header.column.getToggleSortingHandler()}
                     >
@@ -220,13 +222,13 @@ export function DataTable<TData, TValue>({
                           ? null
                           : flexRender(header.column.columnDef.header, header.getContext())}
                         {enableSorting && header.column.getCanSort() && (
-                          <div className="flex flex-col">
+                          <div className="flex flex-col opacity-60 hover:opacity-100 transition-opacity">
                             {header.column.getIsSorted() === "desc" ? (
-                              <SortDesc className="h-3 w-3" />
+                              <SortDesc className="h-3 w-3 text-primary" />
                             ) : header.column.getIsSorted() === "asc" ? (
-                              <SortAsc className="h-3 w-3" />
+                              <SortAsc className="h-3 w-3 text-primary" />
                             ) : (
-                              <div className="h-3 w-3 opacity-50">
+                              <div className="h-3 w-3">
                                 <SortAsc className="h-3 w-3" />
                               </div>
                             )}
@@ -246,8 +248,9 @@ export function DataTable<TData, TValue>({
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   className={cn(
-                    onRowClick && "cursor-pointer hover:bg-muted/50",
-                    "transition-colors"
+                    "border-b border-border/50 hover:bg-muted/30 transition-colors",
+                    onRowClick && "cursor-pointer",
+                    row.getIsSelected() && "bg-primary/5 border-primary/20"
                   )}
                   onClick={() => onRowClick?.(row)}
                 >
@@ -256,7 +259,8 @@ export function DataTable<TData, TValue>({
                       key={cell.id} 
                       className={cn(
                         cellPadding[density],
-                        densityClasses[density]
+                        densityClasses[density],
+                        "text-foreground"
                       )}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -266,10 +270,15 @@ export function DataTable<TData, TValue>({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  <div className="flex flex-col items-center justify-center space-y-2 text-muted-foreground">
-                    <div className="text-lg font-medium">{emptyStateTitle}</div>
-                    <div className="text-sm">{emptyStateDescription}</div>
+                <TableCell colSpan={columns.length} className="h-32 text-center">
+                  <div className="flex flex-col items-center justify-center space-y-3 text-muted-foreground py-8">
+                    <div className="h-12 w-12 rounded-full bg-muted/50 flex items-center justify-center">
+                      <Search className="h-5 w-5" />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-lg font-medium">{emptyStateTitle}</div>
+                      <div className="text-sm opacity-75">{emptyStateDescription}</div>
+                    </div>
                   </div>
                 </TableCell>
               </TableRow>
