@@ -620,6 +620,42 @@ export type Database = {
         }
         Relationships: []
       }
+      settings_audit_log: {
+        Row: {
+          change_reason: string | null
+          changed_by: string
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          new_value: Json | null
+          old_value: Json | null
+          setting_key: string
+          user_agent: string | null
+        }
+        Insert: {
+          change_reason?: string | null
+          changed_by: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          new_value?: Json | null
+          old_value?: Json | null
+          setting_key: string
+          user_agent?: string | null
+        }
+        Update: {
+          change_reason?: string | null
+          changed_by?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          new_value?: Json | null
+          old_value?: Json | null
+          setting_key?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           created_at: string
@@ -641,6 +677,48 @@ export type Database = {
           following_id?: string
           following_type?: string
           id?: string
+        }
+        Relationships: []
+      }
+      system_settings: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_sensitive: boolean
+          requires_restart: boolean
+          setting_key: string
+          setting_value: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_sensitive?: boolean
+          requires_restart?: boolean
+          setting_key: string
+          setting_value?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_sensitive?: boolean
+          requires_restart?: boolean
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
       }
