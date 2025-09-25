@@ -163,25 +163,6 @@ export function UserManagement() {
 
   // Create columns for the data table
   const columns = userColumns;
-    // onViewDetails
-    (user) => {
-      viewUserDetails(user);
-    },
-    // onSuspendUser
-    (userId, reason, duration) => {
-      suspendUser(userId, reason, duration);
-    },
-    // onUnsuspendUser
-    (userId) => {
-      unsuspendUser(userId);
-    },
-    // permissions
-    {
-      canManageUsers: hasPermission('manage_users'),
-      canViewDetails: hasPermission('view_user_details'),
-      isSuperAdmin: isSuperAdmin(),
-    }
-  );
 
   const suspendUser = async (userId: string, reason: string, duration: number) => {
     if (!hasPermission('manage_user_accounts')) {
