@@ -77,9 +77,9 @@ export default {
         'gradient-hero': 'var(--gradient-hero)',
       },
       boxShadow: {
-        'soft': 'var(--shadow-soft)',
-        'medium': 'var(--shadow-medium)',
-        'strong': 'var(--shadow-strong)',
+        'minimal': 'var(--shadow-minimal)',
+        'standard': 'var(--shadow-standard)',
+        'elevated': 'var(--shadow-elevated)',
       },
       transitionProperty: {
         'smooth': 'var(--transition-smooth)',

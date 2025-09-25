@@ -30,9 +30,9 @@ export function AdminStatsCard({
   
   return (
     <Card className={cn(
-      "group relative card-enhanced transition-all duration-300 hover:shadow-medium hover:-translate-y-0.5",
-      "border border-primary/10 hover:border-primary/20",
-      isImportant && "ring-1 ring-primary/20",
+      "transition-colors duration-200 hover:bg-muted/50",
+      "border border-border shadow-minimal",
+      isImportant && "border-primary/30",
       className
     )}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
@@ -43,17 +43,16 @@ export function AdminStatsCard({
           {title}
         </CardTitle>
         <div className={cn(
-          "p-2 rounded-lg bg-primary/10 group-hover:bg-primary/15 transition-colors",
-          "border border-primary/20"
+          "p-2 rounded-lg bg-muted/50 transition-colors",
+          "border border-border"
         )}>
-          <Icon className={cn("h-4 w-4 text-primary", iconClassName)} />
+          <Icon className={cn("h-4 w-4 text-muted-foreground", iconClassName)} />
         </div>
       </CardHeader>
       <CardContent className={getSpacingClasses('content', 'sm')}>
         <div className={cn(
           getTypographyClasses('display', 'sm', 'text-foreground'),
-          "font-bold tracking-tight",
-          isImportant && "bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent"
+          "font-bold tracking-tight"
         )}>
           {typeof value === 'number' ? value.toLocaleString() : value}
         </div>

@@ -62,42 +62,29 @@ export function EnhancedButton({
       case 'cta':
         return cn(
           baseClasses,
-          "bg-primary text-primary-foreground hover:bg-primary-hover",
-          "shadow-lg hover:shadow-xl hover:-translate-y-0.5",
-          "border-0 text-base px-8 py-3",
-          gradient && "bg-gradient-to-r from-primary to-primary-hover",
-          pulse && "animate-pulse"
+          "bg-primary text-primary-foreground hover:bg-primary/90",
+          "shadow-standard border-0 text-base px-8 py-3"
         );
       
       case 'hero':
         return cn(
           baseClasses,
-          "bg-gradient-to-r from-primary via-primary-hover to-accent",
-          "text-white font-bold text-lg px-10 py-4",
-          "shadow-2xl hover:shadow-primary/25",
-          "hover:scale-105 active:scale-95",
-          "border-0"
+          "bg-primary text-primary-foreground font-bold text-lg px-10 py-4",
+          "shadow-standard border-0 hover:bg-primary/90"
         );
       
       case 'premium':
         return cn(
           baseClasses,
-          "bg-gradient-to-r from-accent via-primary to-secondary",
-          "text-white font-bold",
-          "shadow-xl hover:shadow-2xl",
-          "border-2 border-accent/20",
-          "hover:border-accent/40",
-          "before:absolute before:inset-0 before:bg-gradient-to-r before:from-white/0 before:via-white/20 before:to-white/0",
-          "before:translate-x-[-100%] before:transition-transform before:duration-700",
-          "hover:before:translate-x-[100%]"
+          "bg-accent text-accent-foreground font-bold",
+          "shadow-standard border border-border hover:bg-accent/90"
         );
       
       case 'success':
         return cn(
           baseClasses,
           "bg-success text-success-foreground hover:bg-success/90",
-          "shadow-md hover:shadow-lg hover:shadow-success/20",
-          "border-0"
+          "shadow-minimal border-0"
         );
       
       default:
@@ -154,10 +141,7 @@ export function EnhancedButton({
         </span>
         
         {iconElement && iconPosition === 'right' && (
-          <span className={cn(
-            "transition-transform duration-200",
-            !loading && "group-hover:translate-x-1"
-          )}>
+          <span className="transition-transform duration-200">
             {iconElement}
           </span>
         )}

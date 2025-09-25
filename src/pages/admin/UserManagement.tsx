@@ -536,29 +536,26 @@ export function UserManagement() {
       </Card>
 
       {/* Enhanced Users Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Users className="mr-2 h-4 w-4" />
-            Users ({users.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <DataTable
-            columns={columns}
-            data={users}
-            loading={loading}
-            enableSelection={true}
-            enableSorting={true}
-            enableFiltering={true}
-            enableColumnVisibility={true}
-            enablePagination={true}
-            searchPlaceholder="Search users..."
-            emptyStateTitle="No users found"
-            emptyStateDescription="No users match your current filters."
-          />
-        </CardContent>
-      </Card>
+      <div className="flex items-center mb-4">
+        <Users className="mr-2 h-4 w-4" />
+        <h2 className="text-lg font-semibold">Users ({users.length})</h2>
+      </div>
+      
+      <DataTable
+        columns={columns}
+        data={users}
+        loading={loading}
+        enableSelection={true}
+        enableSorting={true}
+        enableFiltering={true}
+        enableColumnVisibility={true}
+        enablePagination={true}
+        searchPlaceholder="Search users..."
+        emptyStateTitle="No users found"
+        emptyStateDescription="No users match your current filters."
+        density="comfortable"
+        className="border rounded-lg"
+      />
 
       {/* Optimistic Update Indicator */}
       <OptimisticUpdateIndicator
