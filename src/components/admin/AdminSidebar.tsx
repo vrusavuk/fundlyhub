@@ -12,7 +12,8 @@ import {
   UserCheck,
   Crown,
   PieChart,
-  FileText
+  FileText,
+  Bell
 } from 'lucide-react';
 import {
   Sidebar,
@@ -72,6 +73,13 @@ const navigationItems: AdminNavItem[] = [
     icon: Building2,
     permission: 'view_all_organizations',
     description: 'Organization verification and management'
+  },
+  {
+    title: 'Notifications',
+    url: '/admin/notifications',
+    icon: Bell,
+    permission: 'manage_communications',
+    description: 'Notification center and communications'
   },
   {
     title: 'Roles & Permissions',

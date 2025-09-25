@@ -21,6 +21,7 @@ import { AuditLogs } from './pages/admin/AuditLogs';
 import { CampaignManagement } from './pages/admin/CampaignManagement';
 import { OrganizationManagement } from './pages/admin/OrganizationManagement';
 import { SystemHealth } from './pages/admin/SystemHealth';
+import { AdminNotificationCenter } from './pages/admin/NotificationCenter';
 import AllCampaigns from "./pages/AllCampaigns";
 import FundlyGive from "./pages/FundlyGive";
 import SearchResults from "./pages/SearchResults";
@@ -70,9 +71,10 @@ const App = () => (
                          <Route path="users" element={<UserManagement />} />
                          <Route path="roles" element={<RoleManagement />} />
                          <Route path="audit-logs" element={<AuditLogs />} />
-                         <Route path="campaigns" element={<CampaignManagement />} />
-                         <Route path="organizations" element={<OrganizationManagement />} />
-                         <Route path="system" element={<SystemHealth />} />
+                          <Route path="campaigns" element={<CampaignManagement />} />
+                          <Route path="organizations" element={<OrganizationManagement />} />
+                          <Route path="notifications" element={<AdminNotificationCenter />} />
+                          <Route path="system" element={<SystemHealth />} />
                       </Route>
                      
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
