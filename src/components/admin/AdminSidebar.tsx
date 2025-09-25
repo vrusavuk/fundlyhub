@@ -93,6 +93,12 @@ const navigationItems: AdminNavItem[] = [
     url: '/admin/system',
     icon: Database,
     permission: 'manage_system_settings'
+  },
+  {
+    title: 'Settings',
+    url: '/admin/settings',
+    icon: Settings,
+    permission: 'manage_system_settings'
   }
 ];
 
