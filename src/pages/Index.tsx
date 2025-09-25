@@ -28,11 +28,11 @@ const Index = () => {
       <CategoryFilter />
 
       {/* Featured Campaigns */}
-      <section className="mobile-section py-16 sm:py-20 bg-secondary/20">
+      <section className="section-hierarchy py-16 sm:py-20 bg-secondary/30">
         <div className="max-w-7xl mx-auto mobile-container">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-4">Featured Fundlies</h2>
-            <p className="text-xl text-muted-foreground">Support these urgent causes making a difference right now</p>
+          <div className="text-center content-hierarchy mb-12">
+            <h2 className="heading-large mb-4 bg-gradient-primary bg-clip-text text-transparent">Featured Fundlies</h2>
+            <p className="body-large text-muted-foreground">Support these urgent causes making a difference right now</p>
           </div>
           
           <FundraiserGrid
@@ -46,15 +46,15 @@ const Index = () => {
           />
           
           {!loading && fundraisers.length === 0 && !error && (
-            <div className="text-center py-12">
-              <Button className="mt-4" asChild>
+            <div className="text-center component-hierarchy py-12">
+              <Button className="cta-primary mt-4" asChild>
                 <Link to="/create">Be the first to create one!</Link>
               </Button>
             </div>
           )}
           
-          <div className="text-center mt-12">
-            <Button variant="outline" size="lg" asChild>
+          <div className="text-center component-hierarchy mt-12">
+            <Button variant="outline" size="lg" className="cta-secondary" asChild>
               <Link to="/campaigns">
                 View All Campaigns
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -68,15 +68,15 @@ const Index = () => {
 
 
       {/* CTA Section */}
-      <section className="mobile-section py-16 sm:py-20 bg-gradient-hero">
+      <section className="section-hierarchy py-16 sm:py-20 bg-gradient-hero shadow-glow">
         <div className="max-w-4xl mx-auto mobile-container text-center">
-          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">
+          <h2 className="heading-large text-white mb-6">
             Ready to make a difference?
           </h2>
-          <p className="text-xl text-white/90 mb-8">
+          <p className="body-large text-white/90 mb-8">
             Start your fundraiser today and connect with people who want to help
           </p>
-          <Button variant="accent" size="lg" className="text-lg px-8 py-6" asChild>
+          <Button variant="accent" size="lg" className="cta-primary text-lg px-8 py-6 shadow-glow hover:shadow-hard transition-all duration-300" asChild>
             <Link to="/create">
               Start Your Campaign Now
               <ArrowRight className="ml-2 h-5 w-5" />

@@ -31,6 +31,8 @@ import {
 } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DataTable } from '@/components/ui/data-table';
+import { createUserColumns, UserData as UserColumnData } from '@/lib/data-table/user-columns';
 
 interface ExtendedProfile {
   id: string;
@@ -76,6 +78,28 @@ export function UserManagement() {
     sortBy: 'created_at',
     sortOrder: 'desc'
   });
+
+  // Create columns for the data table
+  const columns = createUserColumns(
+    // onViewDetails
+    (user) => {
+      viewUserDetails(user as ExtendedProfile);
+    },
+    // onSuspendUser
+    (userId, reason, duration) => {
+      suspendUser(userId, reason, duration);
+    },
+    // onUnsuspendUser
+    (userId) => {
+      unsuspendUser(userId);
+    },
+    // permissions
+    {
+      canManageUsers: hasPermission('manage_user_accounts'),
+      canViewDetails: hasPermission('view_user_details'),
+      isSuperAdmin: isSuperAdmin(),
+    }
+  );
 
   const fetchUsers = async () => {
     try {
@@ -342,22 +366,22 @@ export function UserManagement() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="section-hierarchy">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
-          <p className="text-muted-foreground">
+      <div className="flex items-center justify-between mobile-header-spacing">
+        <div className="content-hierarchy">
+          <h1 className="heading-large tracking-tight">User Management</h1>
+          <p className="body-medium text-muted-foreground">
             Manage platform users, roles, and permissions
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button onClick={exportUsers} variant="outline">
+          <Button onClick={exportUsers} variant="outline" className="shadow-soft">
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
           {hasPermission('create_users') && (
-            <Button>
+            <Button className="cta-primary shadow-medium">
               <Plus className="mr-2 h-4 w-4" />
               Add User
             </Button>
@@ -366,20 +390,20 @@ export function UserManagement() {
       </div>
 
       {/* Filters */}
-      <Card>
+      <Card className="card-enhanced">
         <CardHeader>
-          <CardTitle className="flex items-center">
+          <CardTitle className="flex items-center caption-medium">
             <Filter className="mr-2 h-4 w-4" />
             Filters
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="mobile-grid grid-cols-1 md:grid-cols-5">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search users..."
-                className="pl-10"
+                className="pl-10 mobile-input-padding"
                 value={filters.search}
                 onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
               />
@@ -450,98 +474,29 @@ export function UserManagement() {
       </Card>
 
       {/* Users Table */}
-      <Card>
+      <Card className="card-enhanced">
         <CardHeader>
-          <CardTitle className="flex items-center">
+          <CardTitle className="flex items-center caption-medium">
             <Users className="mr-2 h-4 w-4" />
             Users ({users.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="flex justify-center py-8">
-              <LoadingSpinner size="lg" />
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Campaigns</TableHead>
-                  <TableHead>Raised</TableHead>
-                  <TableHead>Last Login</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      <div className="flex items-center space-x-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={user.avatar || undefined} />
-                          <AvatarFallback>
-                            {user.name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-medium">{user.name || 'Unnamed User'}</div>
-                          <div className="text-sm text-muted-foreground">{user.email}</div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{getRoleBadge(user.role)}</TableCell>
-                    <TableCell>{getStatusBadge(user)}</TableCell>
-                    <TableCell>{user.campaign_count}</TableCell>
-                    <TableCell>${user.total_funds_raised.toLocaleString()}</TableCell>
-                    <TableCell>
-                      {user.last_login_at ? new Date(user.last_login_at).toLocaleDateString() : 'Never'}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => viewUserDetails(user)}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
-                          </DropdownMenuItem>
-                          {hasPermission('manage_user_accounts') && (
-                            <>
-                              {user.account_status === 'suspended' ? (
-                                <DropdownMenuItem onClick={() => unsuspendUser(user.id)}>
-                                  <Unlock className="mr-2 h-4 w-4" />
-                                  Unsuspend
-                                </DropdownMenuItem>
-                              ) : (
-                                <DropdownMenuItem 
-                                  onClick={() => suspendUser(user.id, 'Administrative action', 30)}
-                                >
-                                  <Lock className="mr-2 h-4 w-4" />
-                                  Suspend
-                                </DropdownMenuItem>
-                              )}
-                            </>
-                          )}
-                          {hasPermission('manage_user_roles') && (
-                            <DropdownMenuItem>
-                              <Shield className="mr-2 h-4 w-4" />
-                              Manage Roles
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+          <DataTable
+            columns={columns}
+            data={users}
+            loading={loading}
+            enableSelection={true}
+            enableSorting={true}
+            enableFiltering={true}
+            enableColumnVisibility={true}
+            enablePagination={true}
+            searchPlaceholder="Search users..."
+            emptyStateTitle="No users found"
+            emptyStateDescription="No users match your current filters."
+            density="comfortable"
+            pageSizeOptions={[25, 50, 100]}
+          />
         </CardContent>
       </Card>
 

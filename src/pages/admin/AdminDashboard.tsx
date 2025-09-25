@@ -185,25 +185,25 @@ export function AdminDashboard() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="section-hierarchy">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-          <p className="text-muted-foreground">
+      <div className="flex items-center justify-between mobile-header-spacing">
+        <div className="content-hierarchy">
+          <h1 className="heading-large tracking-tight">Admin Dashboard</h1>
+          <p className="body-medium text-muted-foreground">
             Platform overview and key performance indicators
           </p>
         </div>
-        <Badge variant={isSuperAdmin() ? 'destructive' : 'default'}>
+        <Badge variant={isSuperAdmin() ? 'destructive' : 'default'} className="shadow-soft">
           {isSuperAdmin() ? 'Super Admin' : 'Admin'} Access
         </Badge>
       </div>
 
       {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+      <div className="mobile-grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="card-enhanced">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <CardTitle className="caption-medium">Total Users</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -214,9 +214,9 @@ export function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="card-enhanced">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Campaigns</CardTitle>
+            <CardTitle className="caption-medium">Active Campaigns</CardTitle>
             <Megaphone className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -227,9 +227,9 @@ export function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="card-enhanced">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Organizations</CardTitle>
+            <CardTitle className="caption-medium">Organizations</CardTitle>
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -240,13 +240,13 @@ export function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="card-enhanced card-featured">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Raised</CardTitle>
+            <CardTitle className="caption-medium">Total Raised</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold bg-gradient-success bg-clip-text text-transparent">
               {formatCurrency(stats?.totalFundsRaised || 0)}
             </div>
             <p className="text-xs text-muted-foreground">

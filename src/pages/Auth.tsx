@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Auth() {
@@ -77,55 +78,58 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center">
+    <div className="min-h-screen flex items-center justify-center section-hierarchy bg-gradient-subtle p-4">
+      <Card className="w-full max-w-md card-enhanced shadow-glow">
+        <CardHeader className="mobile-card-spacing text-center">
+          <CardTitle className="heading-medium">
             {isLogin ? 'Welcome back' : 'Create account'}
           </CardTitle>
-          <CardDescription className="text-center">
+          <CardDescription className="body-medium text-muted-foreground">
             {isLogin 
               ? 'Sign in to your account to continue' 
               : 'Enter your details to create your account'
             }
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <CardContent className="mobile-card-spacing">
+          <form onSubmit={handleSubmit} className="mobile-form-spacing">
             {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+              <div className="component-hierarchy">
+                <Label htmlFor="name" className="label-small">Full Name</Label>
                 <Input
                   id="name"
                   type="text"
                   placeholder="Enter your full name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  className="mobile-input-padding"
                   required
                 />
               </div>
             )}
             
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+            <div className="component-hierarchy">
+              <Label htmlFor="email" className="label-small">Email</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="mobile-input-padding"
                 required
               />
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+            <div className="component-hierarchy">
+              <Label htmlFor="password" className="label-small">Password</Label>
               <Input
                 id="password"
                 type="password"
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                className="mobile-input-padding"
                 required
                 minLength={6}
               />
@@ -133,12 +137,12 @@ export default function Auth() {
             
             <Button
               type="submit"
-              className="w-full"
+              className="w-full cta-primary touch-button shadow-medium hover:shadow-glow transition-all duration-300"
               disabled={loading}
             >
               {loading ? (
                 <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  <LoadingSpinner size="sm" className="mr-2" />
                   {isLogin ? 'Signing in...' : 'Creating account...'}
                 </div>
               ) : (
@@ -147,10 +151,10 @@ export default function Auth() {
             </Button>
           </form>
           
-          <div className="mt-4 text-center">
+          <div className="mt-6 text-center">
             <button
               type="button"
-              className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              className="caption-medium text-muted-foreground hover:text-primary story-link transition-colors"
               onClick={() => setIsLogin(!isLogin)}
             >
               {isLogin 

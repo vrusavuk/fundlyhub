@@ -129,141 +129,150 @@ export default function CreateFundraiser() {
 
   return (
     <AppLayout>
-      <PageContainer maxWidth="md">
+      <PageContainer maxWidth="md" className="section-hierarchy">
         <PageHeader 
           title="Create New Fundraiser"
+          description="Start your journey to make a difference"
+          className="text-center"
         />
-        <Card>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Fundraiser Title *</Label>
+        <Card className="card-enhanced shadow-glow">
+          <CardContent className="mobile-card-spacing">
+            <form onSubmit={handleSubmit} className="mobile-form-spacing">
+              <div className="component-hierarchy">
+                <Label htmlFor="title" className="label-small">Fundraiser Title *</Label>
+                <Input
+                  id="title"
+                  placeholder="Give your fundraiser a compelling title"
+                  value={formData.title}
+                  onChange={(e) => handleChange('title', e.target.value)}
+                  className="mobile-input-padding"
+                  required
+                />
+              </div>
+
+              <div className="component-hierarchy">
+                <Label htmlFor="summary" className="label-small">Short Summary *</Label>
+                <Textarea
+                  id="summary"
+                  placeholder="Write a brief summary of your fundraiser"
+                  value={formData.summary}
+                  onChange={(e) => handleChange('summary', e.target.value)}
+                  rows={3}
+                  className="mobile-input-padding"
+                  required
+                />
+              </div>
+
+              <div className="mobile-grid grid-cols-1 md:grid-cols-2">
+                <div className="component-hierarchy">
+                  <Label htmlFor="goalAmount" className="label-small">Goal Amount (USD) *</Label>
                   <Input
-                    id="title"
-                    placeholder="Give your fundraiser a compelling title"
-                    value={formData.title}
-                    onChange={(e) => handleChange('title', e.target.value)}
+                    id="goalAmount"
+                    type="number"
+                    placeholder="10000"
+                    value={formData.goalAmount}
+                    onChange={(e) => handleChange('goalAmount', e.target.value)}
+                    min="1"
+                    step="0.01"
+                    className="mobile-input-padding"
                     required
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="summary">Short Summary *</Label>
-                  <Textarea
-                    id="summary"
-                    placeholder="Write a brief summary of your fundraiser"
-                    value={formData.summary}
-                    onChange={(e) => handleChange('summary', e.target.value)}
-                    rows={3}
-                    required
-                  />
+                <div className="component-hierarchy">
+                  <Label htmlFor="category" className="label-small">Category *</Label>
+                  <Select value={formData.category} onValueChange={(value) => handleChange('category', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.name}>
+                          <span className="flex items-center gap-2">
+                            <span>{cat.emoji}</span>
+                            <span>{cat.name}</span>
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
+              </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="goalAmount">Goal Amount (USD) *</Label>
-                    <Input
-                      id="goalAmount"
-                      type="number"
-                      placeholder="10000"
-                      value={formData.goalAmount}
-                      onChange={(e) => handleChange('goalAmount', e.target.value)}
-                      min="1"
-                      step="0.01"
-                      required
-                    />
-                  </div>
+              <div className="component-hierarchy">
+                <Label htmlFor="beneficiaryName" className="label-small">Beneficiary Name</Label>
+                <Input
+                  id="beneficiaryName"
+                  placeholder="Who will benefit from this fundraiser?"
+                  value={formData.beneficiaryName}
+                  onChange={(e) => handleChange('beneficiaryName', e.target.value)}
+                  className="mobile-input-padding"
+                />
+              </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="category">Category *</Label>
-                    <Select value={formData.category} onValueChange={(value) => handleChange('category', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((cat) => (
-                          <SelectItem key={cat.id} value={cat.name}>
-                            <span className="flex items-center gap-2">
-                              <span>{cat.emoji}</span>
-                              <span>{cat.name}</span>
-                            </span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+              <div className="component-hierarchy">
+                <Label htmlFor="location" className="label-small">Location</Label>
+                <Input
+                  id="location"
+                  placeholder="City, State/Country"
+                  value={formData.location}
+                  onChange={(e) => handleChange('location', e.target.value)}
+                  className="mobile-input-padding"
+                />
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="beneficiaryName">Beneficiary Name</Label>
-                  <Input
-                    id="beneficiaryName"
-                    placeholder="Who will benefit from this fundraiser?"
-                    value={formData.beneficiaryName}
-                    onChange={(e) => handleChange('beneficiaryName', e.target.value)}
-                  />
-                </div>
+              <div className="component-hierarchy">
+                <Label htmlFor="coverImage" className="label-small">Cover Image URL</Label>
+                <Input
+                  id="coverImage"
+                  type="url"
+                  placeholder="https://example.com/image.jpg"
+                  value={formData.coverImage}
+                  onChange={(e) => handleChange('coverImage', e.target.value)}
+                  className="mobile-input-padding"
+                />
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="location">Location</Label>
-                  <Input
-                    id="location"
-                    placeholder="City, State/Country"
-                    value={formData.location}
-                    onChange={(e) => handleChange('location', e.target.value)}
-                  />
-                </div>
+              <div className="component-hierarchy">
+                <Label htmlFor="story" className="label-small">Full Story *</Label>
+                <Textarea
+                  id="story"
+                  placeholder="Tell your story in detail. Explain why you're raising funds and how the money will be used."
+                  value={formData.story}
+                  onChange={(e) => handleChange('story', e.target.value)}
+                  rows={8}
+                  className="mobile-input-padding"
+                  required
+                />
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="coverImage">Cover Image URL</Label>
-                  <Input
-                    id="coverImage"
-                    type="url"
-                    placeholder="https://example.com/image.jpg"
-                    value={formData.coverImage}
-                    onChange={(e) => handleChange('coverImage', e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="story">Full Story *</Label>
-                  <Textarea
-                    id="story"
-                    placeholder="Tell your story in detail. Explain why you're raising funds and how the money will be used."
-                    value={formData.story}
-                    onChange={(e) => handleChange('story', e.target.value)}
-                    rows={8}
-                    required
-                  />
-                </div>
-
-                <div className="flex gap-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => navigate('/')}
-                    className="flex-1"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className="flex-1"
-                  >
-                    {loading ? (
-                      <div className="flex items-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Creating...
-                      </div>
-                    ) : (
-                      'Create Fundraiser'
-                    )}
-                  </Button>
-                </div>
-          </form>
-        </CardContent>
-      </Card>
+              <div className="mobile-grid grid-cols-1 md:grid-cols-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate('/')}
+                  className="cta-secondary touch-button"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="cta-primary touch-button shadow-medium hover:shadow-glow transition-all duration-300"
+                >
+                  {loading ? (
+                    <div className="flex items-center">
+                      <LoadingSpinner size="sm" className="mr-2" />
+                      Creating...
+                    </div>
+                  ) : (
+                    'Create Fundraiser'
+                  )}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       </PageContainer>
     </AppLayout>
   );
