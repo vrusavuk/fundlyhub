@@ -2,11 +2,20 @@ import { Outlet } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
+import { KeyboardShortcuts } from '@/components/admin/KeyboardShortcuts';
 import { useRBAC } from '@/hooks/useRBAC';
 import { Toaster } from '@/components/ui/toaster';
 
 export function AdminLayout() {
   const { activeContext } = useRBAC();
+
+  const handleSearchFocus = () => {
+    // Focus the search input in the current page
+    const searchInput = document.querySelector('input[placeholder*="Search"]') as HTMLInputElement;
+    if (searchInput) {
+      searchInput.focus();
+    }
+  };
 
   return (
     <SidebarProvider>
@@ -33,6 +42,10 @@ export function AdminLayout() {
           </main>
         </div>
       </div>
+      
+      {/* Global Keyboard Shortcuts */}
+      <KeyboardShortcuts onSearchFocus={handleSearchFocus} />
+      
       <Toaster />
     </SidebarProvider>
   );

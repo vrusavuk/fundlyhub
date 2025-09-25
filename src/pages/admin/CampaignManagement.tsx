@@ -40,7 +40,9 @@ import {
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { DataTable } from '@/components/ui/data-table';
-import { createCampaignColumns, CampaignData as CampaignColumnData } from '@/lib/data-table/campaign-columns';
+import { EnhancedPageHeader } from '@/components/admin/EnhancedPageHeader';
+import { ContextualHelp, adminHelpContent } from '@/components/admin/ContextualHelp';
+import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
 
 interface CampaignData {
   id: string;
@@ -114,6 +116,16 @@ export function CampaignManagement() {
     amountRange: 'all',
     sortBy: 'created_at',
     sortOrder: 'desc'
+  });
+
+  // Enhanced with optimistic updates
+  const optimisticUpdates = useOptimisticUpdates({
+    onSuccess: () => {
+      fetchCampaigns(); // Refresh data after successful operations
+    },
+    onError: (action, error) => {
+      console.error(`Action ${action.type} failed:`, error);
+    }
   });
 
   const ITEMS_PER_PAGE = 25;
@@ -246,43 +258,55 @@ export function CampaignManagement() {
   };
 
   const handleCampaignStatusChange = async (campaignId: string, newStatus: string, reason?: string) => {
-    try {
-      const { error } = await supabase
-        .from('fundraisers')
-        .update({ 
-          status: newStatus as any,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', campaignId);
+    const campaign = campaigns.find(c => c.id === campaignId);
+    if (!campaign) return;
 
-      if (error) throw error;
+    return optimisticUpdates.executeAction(
+      {
+        type: 'update',
+        description: `Change campaign "${campaign.title}" status to ${newStatus}`,
+        originalData: { ...campaign },
+        rollbackFn: async () => {
+          // Rollback to original status
+          await supabase
+            .from('fundraisers')
+            .update({ status: campaign.status })
+            .eq('id', campaignId);
+        }
+      },
+      async () => {
+        // Optimistically update local state first
+        setCampaigns(prev => prev.map(c => 
+          c.id === campaignId 
+            ? { ...c, status: newStatus as any, updated_at: new Date().toISOString() }
+            : c
+        ));
 
-      // Get current user
-      const { data: user } = await supabase.auth.getUser();
-      
-      // Log the action
-      await supabase.rpc('log_audit_event', {
-        _actor_id: user.user?.id,
-        _action: `campaign_${newStatus}`,
-        _resource_type: 'campaign',
-        _resource_id: campaignId,
-        _metadata: { reason: reason || 'Administrative action' }
-      });
+        const { error } = await supabase
+          .from('fundraisers')
+          .update({ 
+            status: newStatus as any,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', campaignId);
 
-      toast({
-        title: 'Campaign Updated',
-        description: `Campaign status changed to ${newStatus}`
-      });
+        if (error) throw error;
 
-      fetchCampaigns();
-    } catch (error) {
-      console.error('Error updating campaign:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update campaign',
-        variant: 'destructive'
-      });
-    }
+        // Get current user
+        const { data: user } = await supabase.auth.getUser();
+        
+        // Log the action
+        await supabase.rpc('log_audit_event', {
+          _actor_id: user.user?.id,
+          _action: `campaign_${newStatus}`,
+          _resource_type: 'campaign',
+          _resource_id: campaignId,
+          _metadata: { reason: reason || 'Administrative action' }
+        });
+
+        return { campaignId, newStatus };
+      }
+    );
   };
 
   const handleBulkAction = async () => {
@@ -436,34 +460,71 @@ export function CampaignManagement() {
   const someSelected = selectedCampaigns.size > 0;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Campaign Management</h1>
-          <p className="text-muted-foreground">
-            Manage and moderate fundraising campaigns
-          </p>
+    <div className="section-hierarchy">
+      {/* Enhanced Page Header */}
+      <EnhancedPageHeader
+        title="Campaign Management"
+        description="Manage and moderate fundraising campaigns"
+        actions={[
+          {
+            label: 'Refresh',
+            onClick: fetchCampaigns,
+            icon: RefreshCw,
+            variant: 'outline',
+            loading: loading
+          },
+          {
+            label: 'Export',
+            onClick: () => {
+              // TODO: Implement export functionality
+              toast({
+                title: 'Export Started',
+                description: 'Campaign data export will begin shortly'
+              });
+            },
+            icon: Download,
+            variant: 'outline'
+          }
+        ]}
+      >
+        {/* Contextual Help */}
+        <div className="flex items-center space-x-2 mt-2">
+          <ContextualHelp
+            content={adminHelpContent.campaigns}
+            variant="popover"
+            placement="bottom"
+          />
+          <span className="text-sm text-muted-foreground">
+            Need help? Click the help icon for tips and shortcuts.
+          </span>
         </div>
-        <div className="flex items-center space-x-2">
-          <Button onClick={fetchCampaigns} variant="outline">
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
-          </Button>
-          <Button variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            Export
-          </Button>
-        </div>
-      </div>
+      </EnhancedPageHeader>
 
-      {/* Filters */}
-      <Card>
+      {/* Enhanced Filters */}
+      <Card className="card-enhanced">
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <Filter className="mr-2 h-4 w-4" />
-            Filters & Search
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center caption-medium">
+              <Filter className="mr-2 h-4 w-4" />
+              Filters & Search
+            </CardTitle>
+            <ContextualHelp
+              content={{
+                title: "Campaign Filters",
+                description: "Use these filters to quickly find specific campaigns",
+                tips: [
+                  "Combine multiple filters for precise results",
+                  "Use date ranges to find campaigns by creation time",
+                  "Amount ranges help filter by fundraising goals"
+                ],
+                shortcuts: [
+                  { key: "/", description: "Focus search input" },
+                  { key: "r", description: "Refresh campaign data" }
+                ]
+              }}
+              variant="tooltip"
+            />
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-4">
@@ -625,17 +686,51 @@ export function CampaignManagement() {
                 </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+        </CardContent>
+      </Card>
 
-      {/* Campaigns Table */}
-      <Card>
+      {/* Optimistic Update Indicator */}
+      <OptimisticUpdateIndicator
+        state={optimisticUpdates.state}
+        onRollback={optimisticUpdates.rollbackAction}
+        onClearCompleted={optimisticUpdates.clearCompleted}
+        onClearFailed={optimisticUpdates.clearFailed}
+      />
+    </div>
+  );
+}
+      <Card className="card-enhanced">
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <FileText className="mr-2 h-4 w-4" />
-            Campaigns ({totalCount})
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center caption-medium">
+              <FileText className="mr-2 h-4 w-4" />
+              Campaigns ({totalCount})
+            </CardTitle>
+            <div className="flex items-center space-x-2">
+              {selectedCampaigns.size > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowBulkDialog(true)}
+                  className="shadow-soft border-primary/10 hover:bg-primary/5"
+                >
+                  Bulk Actions ({selectedCampaigns.size})
+                </Button>
+              )}
+              <ContextualHelp
+                content={{
+                  title: "Campaign Actions",
+                  description: "Manage individual campaigns or perform bulk operations",
+                  tips: [
+                    "Click on a row to view campaign details",
+                    "Use checkboxes to select multiple campaigns",
+                    "Bulk actions appear when campaigns are selected"
+                  ]
+                }}
+                variant="tooltip"
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <DataTable
