@@ -46,6 +46,7 @@ export function useSmartNavigation() {
     if (isMobile) {
       const deepHierarchyPaths = [
         '/search',
+        '/admin',
       ];
       return deepHierarchyPaths.some(breadcrumbPath => path.startsWith(breadcrumbPath)) && breadcrumbs.length > 2;
     }
@@ -56,6 +57,7 @@ export function useSmartNavigation() {
       '/profile/',
       '/organization/',
       '/search',
+      '/admin',
     ];
 
     return breadcrumbPaths.some(breadcrumbPath => path.startsWith(breadcrumbPath)) && breadcrumbs.length > 1;
