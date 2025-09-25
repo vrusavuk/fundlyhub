@@ -19,6 +19,7 @@ import { UserManagement } from './pages/admin/UserManagement';
 import { RoleManagement } from './pages/admin/RoleManagement';
 import { AuditLogs } from './pages/admin/AuditLogs';
 import { CampaignManagement } from './pages/admin/CampaignManagement';
+import { OrganizationManagement } from './pages/admin/OrganizationManagement';
 import { SystemHealth } from './pages/admin/SystemHealth';
 import AllCampaigns from "./pages/AllCampaigns";
 import FundlyGive from "./pages/FundlyGive";
@@ -70,6 +71,7 @@ const App = () => (
                          <Route path="roles" element={<RoleManagement />} />
                          <Route path="audit-logs" element={<AuditLogs />} />
                          <Route path="campaigns" element={<CampaignManagement />} />
+                         <Route path="organizations" element={<OrganizationManagement />} />
                          <Route path="system" element={<SystemHealth />} />
                       </Route>
                      
