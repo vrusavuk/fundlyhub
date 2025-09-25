@@ -1,8 +1,8 @@
 import { Menu, Search, Bell, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { AdminSidebar } from '../AdminSidebar';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { MobileSidebar } from './MobileSidebar';
 import { useRBAC } from '@/hooks/useRBAC';
 
 export function MobileAdminHeader() {
@@ -10,18 +10,24 @@ export function MobileAdminHeader() {
   const highestRole = getHighestRole();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:hidden">
-      <div className="container flex h-14 items-center px-4">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
+      <div className="flex h-14 items-center px-4">
         {/* Mobile Menu */}
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="ghost" size="sm" className="mr-2 px-2">
               <Menu className="h-5 w-5" />
-              <span className="sr-only">Toggle menu</span>
+              <span className="sr-only">Toggle navigation menu</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-72">
-            <AdminSidebar />
+          <SheetContent side="left" className="p-0 w-80 max-w-[90vw]">
+            <SheetHeader className="sr-only">
+              <SheetTitle>Navigation Menu</SheetTitle>
+              <SheetDescription>
+                Admin panel navigation and settings
+              </SheetDescription>
+            </SheetHeader>
+            <MobileSidebar />
           </SheetContent>
         </Sheet>
 

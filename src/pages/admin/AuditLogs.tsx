@@ -25,6 +25,7 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface AuditLog {
   id: string;
@@ -59,6 +60,7 @@ const ACTION_CATEGORIES = {
 
 export function AuditLogs() {
   const { hasPermission, isSuperAdmin } = useRBAC();
+  const isMobile = useIsMobile();
   const { toast } = useToast();
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);

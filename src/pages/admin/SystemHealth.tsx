@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SystemStatus {
   status: 'healthy' | 'warning' | 'critical';
@@ -49,6 +50,7 @@ interface SecurityMetrics {
 }
 
 export function SystemHealth() {
+  const isMobile = useIsMobile();
   const [loading, setLoading] = useState(true);
   const [systemStatus, setSystemStatus] = useState<SystemStatus>({
     status: 'healthy',

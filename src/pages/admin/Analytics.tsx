@@ -22,6 +22,9 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { MobileStatsGrid } from '@/components/admin/mobile/MobileStatsGrid';
+import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
 
 interface AnalyticsData {
   totalUsers: number;
@@ -44,6 +47,7 @@ interface CategoryAnalytics {
 }
 
 export function Analytics() {
+  const isMobile = useIsMobile();
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [categories, setCategories] = useState<CategoryAnalytics[]>([]);
   const [loading, setLoading] = useState(true);
@@ -195,16 +199,16 @@ export function Analytics() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Analytics</h1>
           <p className="text-muted-foreground">
             Platform performance metrics and insights
           </p>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-full sm:w-32">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -214,45 +218,94 @@ export function Analytics() {
               <SelectItem value="1y">1 year</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="sm" onClick={fetchAnalytics}>
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
-          </Button>
-          <Button variant="outline" size="sm">
-            <Download className="w-4 h-4 mr-2" />
-            Export
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={fetchAnalytics} className="flex-1 sm:flex-none">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh
+            </Button>
+            <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
+              <Download className="w-4 h-4 mr-2" />
+              Export
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <MetricCard
-          title="Total Users"
-          value={data?.totalUsers || 0}
-          change={data?.userGrowth}
-          icon={Users}
+      {isMobile ? (
+        <MobileStatsGrid 
+          stats={[
+            {
+              title: 'Total Users',
+              value: data?.totalUsers || 0,
+              icon: Users,
+              description: 'Registered users',
+              change: data?.userGrowth ? {
+                value: `+${data.userGrowth}%`,
+                trend: data.userGrowth > 0 ? 'up' : 'neutral'
+              } : undefined
+            },
+            {
+              title: 'Active Campaigns',
+              value: data?.activeFundraisers || 0,
+              icon: Target,
+              description: 'Currently running',
+              color: 'success'
+            },
+            {
+              title: 'Total Raised',
+              value: `$${(data?.totalRaised || 0).toLocaleString()}`,
+              icon: DollarSign,
+              description: 'Platform lifetime',
+              change: data?.revenueGrowth ? {
+                value: `+${data.revenueGrowth}%`,
+                trend: data.revenueGrowth > 0 ? 'up' : 'neutral'
+              } : undefined,
+              color: 'success'
+            },
+            {
+              title: 'Conversion Rate',
+              value: `${(data?.conversionRate || 0).toFixed(1)}%`,
+              icon: TrendingUp,
+              description: 'User to donor',
+              change: {
+                value: '+2.4%',
+                trend: 'up'
+              },
+              color: 'warning'
+            }
+          ]}
+          loading={loading}
         />
-        <MetricCard
-          title="Active Campaigns"
-          value={data?.activeFundraisers || 0}
-          icon={Target}
-        />
-        <MetricCard
-          title="Total Raised"
-          value={data?.totalRaised || 0}
-          change={data?.revenueGrowth}
-          icon={DollarSign}
-          format="currency"
-        />
-        <MetricCard
-          title="Conversion Rate"
-          value={data?.conversionRate || 0}
-          change={2.4}
-          icon={TrendingUp}
-          format="percentage"
-        />
-      </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <MetricCard
+            title="Total Users"
+            value={data?.totalUsers || 0}
+            change={data?.userGrowth}
+            icon={Users}
+          />
+          <MetricCard
+            title="Active Campaigns"
+            value={data?.activeFundraisers || 0}
+            icon={Target}
+          />
+          <MetricCard
+            title="Total Raised"
+            value={data?.totalRaised || 0}
+            change={data?.revenueGrowth}
+            icon={DollarSign}
+            format="currency"
+          />
+          <MetricCard
+            title="Conversion Rate"
+            value={data?.conversionRate || 0}
+            change={2.4}
+            icon={TrendingUp}
+            format="percentage"
+          />
+        </div>
+      )}
 
       {/* Detailed Analytics */}
       <Tabs defaultValue="overview" className="space-y-4">
@@ -263,7 +316,7 @@ export function Analytics() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">

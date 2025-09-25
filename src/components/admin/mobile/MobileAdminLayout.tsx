@@ -9,14 +9,12 @@ export function ResponsiveAdminLayout() {
 
   if (isMobile) {
     return (
-      <SidebarProvider>
-        <div className="min-h-screen bg-background">
-          <MobileAdminHeader />
-          <main className="container px-4 py-6">
-            <Outlet />
-          </main>
-        </div>
-      </SidebarProvider>
+      <div className="min-h-screen bg-background">
+        <MobileAdminHeader />
+        <main className="px-4 py-6">
+          <Outlet />
+        </main>
+      </div>
     );
   }
 

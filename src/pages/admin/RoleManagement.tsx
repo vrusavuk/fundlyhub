@@ -25,6 +25,7 @@ import {
   X
 } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Role {
   id: string;
@@ -55,6 +56,7 @@ interface RolePermission {
 
 export function RoleManagement() {
   const { hasPermission, isSuperAdmin } = useRBAC();
+  const isMobile = useIsMobile();
   const { toast } = useToast();
   const [roles, setRoles] = useState<Role[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
