@@ -5,6 +5,8 @@ import { AppProviders } from '@/components/providers/AppProviders';
 import { PerformanceMonitor } from '@/components/performance/PerformanceMonitor';
 import { AppErrorBoundary } from '@/components/common/AppErrorBoundary';
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AdminProtectedRoute } from "@/components/admin/AdminProtectedRoute";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import CreateFundraiser from "./pages/CreateFundraiser";
@@ -17,6 +19,7 @@ import ErrorRecovery from "./pages/ErrorRecovery";
 import { UserProfile } from "./pages/UserProfile";
 import { OrganizationProfile } from "./pages/OrganizationProfile";
 import ApiDocs from "./pages/ApiDocs";
+import { AdminDashboard } from "./pages/admin/AdminDashboard";
 
 const App = () => (
   <AppErrorBoundary>
@@ -43,8 +46,19 @@ const App = () => (
                       </ProtectedRoute>
                     } />
                     <Route path="/fundraiser/:slug" element={<FundraiserDetail />} />
-                    <Route path="/docs/*" element={<ApiDocs />} />
-                    <Route path="/error-recovery" element={<ErrorRecovery />} />
+                     <Route path="/docs/*" element={<ApiDocs />} />
+                     <Route path="/error-recovery" element={<ErrorRecovery />} />
+                     
+                     {/* Admin Routes */}
+                     <Route path="/admin/*" element={
+                       <AdminProtectedRoute>
+                         <AdminLayout />
+                       </AdminProtectedRoute>
+                     }>
+                       <Route index element={<AdminDashboard />} />
+                       {/* Additional admin routes will be added in future phases */}
+                     </Route>
+                     
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
