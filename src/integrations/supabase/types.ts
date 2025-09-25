@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          actor_id: string
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          resource_id: string | null
+          resource_type: string
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          resource_id?: string | null
+          resource_type: string
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          resource_id?: string | null
+          resource_type?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           color_class: string
@@ -392,63 +428,177 @@ export type Database = {
         }
         Relationships: []
       }
+      permissions: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          display_name: string
+          id: string
+          name: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description?: string | null
+          display_name: string
+          id?: string
+          name: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          display_name?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
+          account_locked_until: string | null
+          account_status: string | null
           avatar: string | null
           bio: string | null
           campaign_count: number | null
           created_at: string | null
           email: string | null
+          failed_login_attempts: number | null
           follower_count: number | null
           following_count: number | null
           id: string
+          last_login_at: string | null
           location: string | null
           name: string | null
           profile_visibility: string | null
           role: Database["public"]["Enums"]["user_role"] | null
           social_links: Json | null
+          suspended_until: string | null
+          suspension_reason: string | null
           total_funds_raised: number | null
           twofa_enabled: boolean | null
           updated_at: string | null
           website: string | null
         }
         Insert: {
+          account_locked_until?: string | null
+          account_status?: string | null
           avatar?: string | null
           bio?: string | null
           campaign_count?: number | null
           created_at?: string | null
           email?: string | null
+          failed_login_attempts?: number | null
           follower_count?: number | null
           following_count?: number | null
           id: string
+          last_login_at?: string | null
           location?: string | null
           name?: string | null
           profile_visibility?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
           social_links?: Json | null
+          suspended_until?: string | null
+          suspension_reason?: string | null
           total_funds_raised?: number | null
           twofa_enabled?: boolean | null
           updated_at?: string | null
           website?: string | null
         }
         Update: {
+          account_locked_until?: string | null
+          account_status?: string | null
           avatar?: string | null
           bio?: string | null
           campaign_count?: number | null
           created_at?: string | null
           email?: string | null
+          failed_login_attempts?: number | null
           follower_count?: number | null
           following_count?: number | null
           id?: string
+          last_login_at?: string | null
           location?: string | null
           name?: string | null
           profile_visibility?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
           social_links?: Json | null
+          suspended_until?: string | null
+          suspension_reason?: string | null
           total_funds_raised?: number | null
           twofa_enabled?: boolean | null
           updated_at?: string | null
           website?: string | null
+        }
+        Relationships: []
+      }
+      role_permissions: {
+        Row: {
+          created_at: string | null
+          id: string
+          permission_id: string | null
+          role_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          permission_id?: string | null
+          role_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          permission_id?: string | null
+          role_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_permission_id_fkey"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roles: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_name: string
+          hierarchy_level: number | null
+          id: string
+          is_system_role: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_name: string
+          hierarchy_level?: number | null
+          id?: string
+          is_system_role?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_name?: string
+          hierarchy_level?: number | null
+          id?: string
+          is_system_role?: boolean | null
+          name?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -642,6 +792,50 @@ export type Database = {
         }
         Relationships: []
       }
+      user_role_assignments: {
+        Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          context_id: string | null
+          context_type: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          role_id: string | null
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          context_id?: string | null
+          context_type?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          role_id?: string | null
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          context_id?: string | null
+          context_type?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          role_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_role_assignments_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       public_fundraiser_stats: {
@@ -690,6 +884,31 @@ export type Database = {
           total_raised: number
         }[]
       }
+      get_user_roles: {
+        Args: { _context_id?: string; _context_type?: string; _user_id: string }
+        Returns: {
+          context_id: string
+          context_type: string
+          hierarchy_level: number
+          role_name: string
+        }[]
+      }
+      is_super_admin: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
+      log_audit_event: {
+        Args: {
+          _action: string
+          _actor_id: string
+          _ip_address?: unknown
+          _metadata?: Json
+          _resource_id?: string
+          _resource_type: string
+          _user_agent?: string
+        }
+        Returns: string
+      }
       update_follow_counts: {
         Args: {
           affected_org_id?: string
@@ -701,6 +920,15 @@ export type Database = {
       update_user_campaign_count: {
         Args: { user_id: string }
         Returns: undefined
+      }
+      user_has_permission: {
+        Args: {
+          _context_id?: string
+          _context_type?: string
+          _permission_name: string
+          _user_id: string
+        }
+        Returns: boolean
       }
     }
     Enums: {
