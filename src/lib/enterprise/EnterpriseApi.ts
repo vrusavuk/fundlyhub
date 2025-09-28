@@ -468,33 +468,38 @@ export class EnterpriseApi extends EnterpriseService {
   }
 
   /**
-   * Health check implementation
+   * Health check implementation with real DB latency measurement
    */
   async healthCheck(): Promise<HealthCheck> {
-    const [cacheHealth, securityHealth] = await Promise.all([
+    const startTime = Date.now();
+    
+    // Run health checks concurrently
+    const [cacheHealth, securityHealth, dbHealth] = await Promise.all([
       this.cache.healthCheck(),
-      this.security.healthCheck()
+      this.security.healthCheck(),
+      this.checkDatabaseHealthWithLatency()
     ]);
-
-    const dbCheck = await this.checkDatabaseHealth();
     
     const allChecks = {
-      database: dbCheck,
+      database: dbHealth.healthy,
       cache: cacheHealth.status !== 'unhealthy',
       security: securityHealth.status !== 'unhealthy'
     };
 
     const allIssues = [
-      ...(dbCheck ? [] : ['Database connection failed']),
+      ...dbHealth.issues,
       ...cacheHealth.issues,
       ...securityHealth.issues
     ];
 
     const allHealthy = Object.values(allChecks).every(check => check);
     
-    // Gather comprehensive metrics
-    const startTime = process.env.NODE_ENV === 'test' ? Date.now() : (global as any).__start_time || Date.now();
-    const uptime = Math.floor((Date.now() - startTime) / 1000);
+    // Gather comprehensive metrics with real data
+    const cacheMetrics = (cacheHealth.metrics as any) || {};
+    const securityMetrics = (securityHealth.metrics as any) || {};
+    const appStartTime = (global as any).__start_time || Date.now();
+    const uptime = Math.floor((Date.now() - appStartTime) / 1000);
+    const healthCheckDuration = Date.now() - startTime;
     
     return {
       status: allHealthy ? 'healthy' : (allIssues.length > 2 ? 'unhealthy' : 'degraded'),
@@ -503,35 +508,80 @@ export class EnterpriseApi extends EnterpriseService {
       timestamp: new Date().toISOString(),
       metrics: {
         database: {
-          latencyP95: 0, // Would be populated from actual metrics
+          latencyP95: dbHealth.latency,
           connectionCount: 1,
           queryRate: 0
         },
         cache: {
-          hitRate: (cacheHealth.metrics as any)?.hitRate || 0,
-          missRate: (cacheHealth.metrics as any)?.missRate || 0,
-          evictionRate: (cacheHealth.metrics as any)?.evictionRate || 0,
-          memoryUsage: (cacheHealth.metrics as any)?.memoryUsage || 0
+          hitRate: cacheMetrics.hitRate || 0,
+          missRate: 100 - (cacheMetrics.hitRate || 0),
+          evictionRate: cacheMetrics.evictions || 0,
+          memoryUsage: cacheMetrics.memoryUsage || 0
         },
         api: {
           requestRate: 0,
           errorRate: 0,
-          averageResponseTime: 0,
-          p95ResponseTime: 0
+          averageResponseTime: healthCheckDuration,
+          p95ResponseTime: healthCheckDuration
         },
         security: {
-          blockedRequests: (securityHealth.metrics as any)?.blockedRequests || 0,
-          rateLimitHits: (securityHealth.metrics as any)?.rateLimitHits || 0,
-          suspiciousActivity: (securityHealth.metrics as any)?.suspiciousIPs || 0
+          blockedRequests: securityMetrics.blockedRequests || 0,
+          rateLimitHits: securityMetrics.rateLimitHits || 0,
+          suspiciousActivity: securityMetrics.suspiciousIPs || 0
         },
         circuitBreakers: {},
         uptime: {
           seconds: uptime,
-          startTime: new Date(startTime).toISOString()
+          startTime: new Date(appStartTime).toISOString()
         },
         version: process.env.npm_package_version || '1.0.0'
       }
     };
+  }
+
+  /**
+   * Check database health with real latency measurement using abortable client
+   */
+  private async checkDatabaseHealthWithLatency(): Promise<{ healthy: boolean; latency: number; issues: string[] }> {
+    const issues: string[] = [];
+    
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      
+      const startTime = Date.now();
+      
+      // Use abortable client for health check
+      const result = await this.abortableSupabase.withSignal(controller.signal)
+        .from('categories')
+        .select('id')
+        .limit(1)
+        .execute();
+      
+      clearTimeout(timeout);
+      const latency = Date.now() - startTime;
+      
+      const healthy = latency < 1000; // Consider healthy if under 1 second
+      
+      if (!healthy) {
+        issues.push(`Database latency high: ${latency}ms`);
+      }
+      
+      return {
+        healthy,
+        latency,
+        issues
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
+      issues.push(`Database connection failed: ${errorMessage}`);
+      
+      return {
+        healthy: false,
+        latency: 5000, // Max timeout as latency
+        issues
+      };
+    }
   }
 
   /**
