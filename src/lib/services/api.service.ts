@@ -166,3 +166,6 @@ class ApiService {
 }
 
 export const apiService = new ApiService();
+
+// Re-export the enterprise API as the enhanced version
+export { enterpriseApi as enhancedApiService } from '../enterprise';
