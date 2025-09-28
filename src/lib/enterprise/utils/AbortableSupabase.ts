@@ -6,16 +6,26 @@ import { supabase } from '@/integrations/supabase/client';
 
 export class AbortableSupabase {
   private client: SupabaseClient;
+  private currentSignal?: AbortSignal;
 
   constructor(client: SupabaseClient = supabase) {
     this.client = client;
   }
 
   /**
+   * Create a new instance with the provided signal
+   */
+  withSignal(signal?: AbortSignal): AbortableSupabase {
+    const instance = new AbortableSupabase(this.client);
+    instance.currentSignal = signal;
+    return instance;
+  }
+
+  /**
    * Create abortable query builder
    */
   from(table: string) {
-    return new AbortableQueryBuilder(this.client, table);
+    return new AbortableQueryBuilder(this.client, table, this.currentSignal);
   }
 
   /**
@@ -58,11 +68,13 @@ export class AbortableQueryBuilder {
   private client: SupabaseClient;
   private table: string;
   private queryChain: any;
+  private signal?: AbortSignal;
 
-  constructor(client: SupabaseClient, table: string) {
+  constructor(client: SupabaseClient, table: string, signal?: AbortSignal) {
     this.client = client;
     this.table = table;
     this.queryChain = client.from(table);
+    this.signal = signal;
   }
 
   select(columns?: string) {
@@ -129,6 +141,8 @@ export class AbortableQueryBuilder {
    * Execute query with abort signal support
    */
   async execute(signal?: AbortSignal): Promise<any> {
+    const effectiveSignal = signal || this.signal;
+    
     return new Promise((resolve, reject) => {
       let completed = false;
 
@@ -140,12 +154,12 @@ export class AbortableQueryBuilder {
         }
       };
 
-      if (signal) {
-        if (signal.aborted) {
+      if (effectiveSignal) {
+        if (effectiveSignal.aborted) {
           reject(new Error('Query aborted'));
           return;
         }
-        signal.addEventListener('abort', abortHandler);
+        effectiveSignal.addEventListener('abort', abortHandler);
       }
 
       // Execute the query
@@ -153,8 +167,8 @@ export class AbortableQueryBuilder {
         .then((result: any) => {
           if (!completed) {
             completed = true;
-            if (signal) {
-              signal.removeEventListener('abort', abortHandler);
+            if (effectiveSignal) {
+              effectiveSignal.removeEventListener('abort', abortHandler);
             }
             resolve(result);
           }
@@ -162,8 +176,8 @@ export class AbortableQueryBuilder {
         .catch((error: any) => {
           if (!completed) {
             completed = true;
-            if (signal) {
-              signal.removeEventListener('abort', abortHandler);
+            if (effectiveSignal) {
+              effectiveSignal.removeEventListener('abort', abortHandler);
             }
             reject(error);
           }

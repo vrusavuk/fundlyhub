@@ -29,6 +29,7 @@ export interface ApiOptions {
   };
   validation?: {
     schema?: any;
+    asyncValidators?: Array<(data: any) => Promise<ValidationResult<any>>>;
     async?: boolean;
     skip?: boolean;
   };
@@ -38,6 +39,7 @@ export interface ApiOptions {
   pagination?: CursorPaginationParams;
   userTier?: string;
   userId?: string;
+  tenantId?: string;
   search?: SearchOptions;
 }
 
@@ -68,14 +70,18 @@ export class EnterpriseApi extends EnterpriseService {
    * Execute database query with enterprise-grade features
    */
   async query<T>(
-    queryBuilder: () => any,
+    queryBuilder: (sb: any) => any,
     endpoint: string,
     options: ApiOptions = {}
   ): Promise<ServiceResponse<T>> {
     const context = this.createContext(endpoint, 'QUERY');
+    context.userId = options.userId || context.userId;
     
     return this.requestManager.execute(
       async (signal) => {
+        // Use abortable Supabase with signal
+        const sb = this.abortableSupabase.withSignal(signal);
+        
         // Rate limiting check
         if (!options.security?.skipRateLimit) {
           const rateLimitKey = this.rateLimiter.generateKey(context);
@@ -90,63 +96,52 @@ export class EnterpriseApi extends EnterpriseService {
           }
         }
 
-        return this.executeOperation(
-          context,
-          async () => {
-            // Security validation
-            if (!options.security?.skipValidation) {
-              const validationResult = await this.security.validateRequest(context);
-              if (!validationResult.valid) {
-                throw new Error(`Security validation failed: ${validationResult.violations.join(', ')}`);
-              }
+        // Create scoped cache key
+        const scope = options.tenantId ? `t:${options.tenantId}` : 
+                      context.userId ? `u:${context.userId}` : 'public';
+        const scopedCacheKey = options.cache?.key ? `${scope}:${options.cache.key}` : undefined;
+
+        const runQuery = async () => {
+          // Security validation
+          if (!options.security?.skipValidation) {
+            const validationResult = await this.security.validateRequest(context);
+            if (!validationResult.valid) {
+              throw new Error(`Security validation failed: ${validationResult.violations.join(', ')}`);
             }
-
-            // Try cache first
-            if (!options.cache?.skip && options.cache?.key) {
-              const cached = await this.cache.get<T>(options.cache.key);
-              if (cached !== null) {
-                return cached;
-              }
-            }
-
-            // Execute query with pagination support
-            let query = queryBuilder();
-            if (options.pagination) {
-              query = this.cursorPagination.buildQuery(query, options.pagination);
-            }
-
-            const { data, error } = await query;
-            if (error) throw error;
-
-            // Process pagination results
-            let result = data;
-            if (options.pagination && Array.isArray(data)) {
-              const paginationResult = this.cursorPagination.processResults(data, options.pagination);
-              result = paginationResult as any;
-            }
-
-            // Cache result
-            if (!options.cache?.skip && options.cache?.key) {
-              await this.cache.set(
-                options.cache.key,
-                result,
-                {
-                  ttl: options.cache.ttl,
-                  tags: options.cache.tags
-                }
-              );
-            }
-
-            return result;
-          },
-          {
-            skipCache: options.cache?.skip,
-            skipValidation: options.security?.skipValidation,
-            skipSecurity: options.security?.skipValidation,
-            cacheKey: options.cache?.key,
-            cacheTTL: options.cache?.ttl
           }
-        );
+
+          // Execute query with pagination support
+          let query = queryBuilder(sb);
+          if (options.pagination) {
+            query = this.cursorPagination.buildQuery(query, options.pagination);
+          }
+
+          const { data, error } = await query;
+          if (error) throw error;
+
+          // Process pagination results
+          return options.pagination && Array.isArray(data)
+            ? this.cursorPagination.processResults(data, options.pagination)
+            : data;
+        };
+
+        // Use single-flight caching with stale-while-revalidate
+        if (scopedCacheKey && !options.cache?.skip) {
+          return this.cache.staleWhileRevalidate(
+            scopedCacheKey,
+            runQuery,
+            {
+              ttl: options.cache.ttl || 300000, // 5 minutes default
+              tags: options.cache.tags || [],
+              staleTime: options.cache.staleTime || 60000, // 1 minute stale time
+              scope: options.tenantId ? 'tenant' : context.userId ? 'user' : 'public',
+              userId: context.userId,
+              tenantId: options.tenantId
+            }
+          );
+        }
+
+        return runQuery();
       },
       endpoint,
       {
@@ -161,12 +156,13 @@ export class EnterpriseApi extends EnterpriseService {
    * Execute mutation with enterprise-grade features including idempotency
    */
   async mutate<T>(
-    mutationBuilder: (sanitizedData: any) => any,
+    mutationBuilder: (sanitizedData: any, sb: any) => any,
     data: any,
     endpoint: string,
     options: ApiOptions = {}
   ): Promise<ServiceResponse<T>> {
     const context = this.createContext(endpoint, 'MUTATE');
+    context.userId = options.userId || context.userId;
     
     // Generate idempotency key if not provided
     const idempotencyKey = options.idempotencyKey || 
@@ -174,6 +170,9 @@ export class EnterpriseApi extends EnterpriseService {
 
     return this.requestManager.execute(
       async (signal) => {
+        // Use abortable Supabase with signal
+        const sb = this.abortableSupabase.withSignal(signal);
+        
         // Rate limiting check
         if (!options.security?.skipRateLimit) {
           const rateLimitKey = this.rateLimiter.generateKey(context);
@@ -188,66 +187,82 @@ export class EnterpriseApi extends EnterpriseService {
           }
         }
 
-        // Execute with idempotency protection
-        return this.idempotencyManager.executeWithIdempotency(
-          idempotencyKey,
-          async () => {
-            return this.executeOperation(
-              context,
-              async () => {
-                // Security validation and sanitization
-                let sanitizedData = data;
-                if (!options.security?.skipValidation) {
-                  const validationResult = await this.security.validateRequest(context, data);
-                  if (!validationResult.valid) {
-                    throw new Error(`Security validation failed: ${validationResult.violations.join(', ')}`);
-                  }
-                  sanitizedData = validationResult.sanitizedData;
+        let auditOutcome = 'error';
+        let auditMetadata: any = {};
+
+        try {
+          // Execute with idempotency protection
+          const result = await this.idempotencyManager.executeWithIdempotency(
+            idempotencyKey,
+            async () => {
+              // Security validation and sanitization
+              let sanitizedData = data;
+              if (!options.security?.skipValidation) {
+                const validationResult = await this.security.validateRequest(context, data);
+                if (!validationResult.valid) {
+                  throw new Error(`Security validation failed: ${validationResult.violations.join(', ')}`);
                 }
-
-                // Input validation with schema
-                if (!options.validation?.skip && options.validation?.schema) {
-                  sanitizedData = options.validation.schema(sanitizedData);
-                }
-
-                // Process financial data with precise math
-                sanitizedData = this.processFinancialData(sanitizedData);
-
-                // Execute mutation
-                const mutation = mutationBuilder(sanitizedData);
-                const { data: result, error } = await mutation;
-                
-                if (error) throw error;
-
-                // Invalidate related caches
-                if (options.cache?.tags) {
-                  for (const tag of options.cache.tags) {
-                    await this.cache.invalidateByTag(tag);
-                  }
-                }
-
-                // Log audit event for mutations
-                await this.logAuditEvent(endpoint, 'mutation', result?.id, context, {
-                  data: sanitizedData
-                });
-
-                return result;
-              },
-              {
-                skipCache: options.cache?.skip,
-                skipValidation: options.security?.skipValidation,
-                skipSecurity: options.security?.skipValidation,
-                cacheKey: options.cache?.key,
-                cacheTTL: options.cache?.ttl
+                sanitizedData = validationResult.sanitizedData;
               }
-            );
+
+              // Enhanced validation with ValidationEngine
+              if (!options.validation?.skip && options.validation?.schema) {
+                const validationResult = await ValidationEngine.validate(sanitizedData, {
+                  schema: options.validation.schema,
+                  asyncValidators: options.validation.asyncValidators
+                });
+                
+                if (!validationResult.valid) {
+                  throw new Error(`Validation failed: ${validationResult.errors?.map(e => e.message).join(', ')}`);
+                }
+                
+                sanitizedData = validationResult.data;
+              }
+
+              // Process financial data with precise math
+              sanitizedData = this.processFinancialData(sanitizedData);
+
+              // Execute mutation
+              const mutation = mutationBuilder(sanitizedData, sb);
+              const { data: result, error } = await mutation;
+              
+              if (error) throw error;
+
+              // Invalidate related caches concurrently
+              if (options.cache?.tags) {
+                await this.cache.invalidateByTags(options.cache.tags);
+              }
+
+              return result;
+            }
+          );
+
+          auditOutcome = 'success';
+          auditMetadata = { endpoint, outcome: 'success', resourceId: result?.id };
+          
+          return this.createResponse('success', result as T, {}, context);
+        } catch (error) {
+          auditMetadata = { 
+            endpoint, 
+            outcome: 'error', 
+            error: (error as Error).message,
+            code: (error as any).code || 'UNKNOWN'
+          };
+          
+          throw error;
+        } finally {
+          // Always log audit event
+          try {
+            await this.logAuditEvent('mutation', 'resource', auditMetadata.resourceId, context, auditMetadata);
+          } catch (auditError) {
+            console.error('Audit logging failed:', auditError);
           }
-        );
+        }
       },
       endpoint,
       {
         timeout: options.timeout,
-        retries: options.retries,
+        retries: options.idempotencyKey ? options.retries : 0, // No retries without idempotency
         deduplicationKey: idempotencyKey
       }
     );
@@ -294,67 +309,84 @@ export class EnterpriseApi extends EnterpriseService {
    */
   async getFundraisers(params: any = {}, options: ApiOptions = {}) {
     return this.query(
-      () => {
-        let query = supabase
+      (sb) => {
+        let query = sb
           .from('fundraisers')
           .select(`
-            *,
+            id,
+            title,
+            summary,
+            goal_amount,
+            total_raised,
+            currency,
+            status,
+            visibility,
+            created_at,
+            updated_at,
+            owner_user_id,
+            category_id,
+            location,
+            tags,
             categories(name, emoji, color_class),
-            profiles(name, avatar),
-            public_fundraiser_stats(total_raised, donor_count)
+            profiles(name, avatar_url)
           `)
           .eq('visibility', 'public')
           .eq('status', 'active');
 
-        // Apply filters
-        if (params.category) query = query.eq('category_id', params.category);
-        if (params.location) query = query.ilike('location', `%${params.location}%`);
+        // Apply secure filters
+        if (params.category) {
+          query = query.eq('category_id', params.category);
+        }
+        
+        if (params.location) {
+          query = SecureSearch.applyILike(query, 'location', params.location);
+        }
+        
         if (params.query) {
-          query = query.or(`title.ilike.%${params.query}%,summary.ilike.%${params.query}%`);
+          // Use secure FTS instead of raw ILIKE
+          query = SecureSearch.applyFTS(query, 'fts', params.query);
         }
 
         // Apply sorting
-        switch (params.sort) {
-          case 'popular':
-            query = query.order('total_raised', { ascending: false });
-            break;
-          case 'goal':
-            query = query.order('goal_amount', { ascending: false });
-            break;
-          default:
-            query = query.order('created_at', { ascending: false });
-        }
-
-        // Apply pagination
-        if (params.limit) query = query.limit(params.limit);
-        if (params.offset) {
-          query = query.range(params.offset, params.offset + (params.limit || 20) - 1);
+        if (params.sort === 'popular') {
+          query = query.order('total_raised', { ascending: false });
+        } else if (params.sort === 'goal') {
+          query = query.order('goal_amount', { ascending: false });
+        } else {
+          query = query.order('created_at', { ascending: false });
         }
 
         return query;
       },
       'get_fundraisers',
       {
+        ...options,
+        pagination: options.pagination || {
+          limit: params.limit || 10,
+          cursor: params.cursor
+        },
         cache: {
           key: `fundraisers_${JSON.stringify(params)}`,
           ttl: 300000, // 5 minutes
           tags: ['fundraisers', 'public_data'],
+          staleTime: 60000, // 1 minute stale time
           ...options.cache
-        },
-        ...options
+        }
       }
     );
   }
 
   async createFundraiser(data: any, options: ApiOptions = {}) {
     return this.mutate(
-      (sanitizedData) => {
-        return supabase
+      (sanitizedData, sb) => {
+        const slug = this.generateSlug(sanitizedData.title) + '-' + Date.now();
+        return sb
           .from('fundraisers')
           .insert({
             ...sanitizedData,
-            slug: this.generateSlug(sanitizedData.title),
-            status: 'draft'
+            status: 'pending',
+            visibility: 'public',
+            slug
           })
           .select()
           .single();
@@ -362,26 +394,44 @@ export class EnterpriseApi extends EnterpriseService {
       data,
       'create_fundraiser',
       {
+        ...options,
+        idempotencyKey: options.idempotencyKey || `fundraiser_${data.title}_${Date.now()}`,
         cache: {
-          tags: ['fundraisers', 'user_data']
-        },
-        validation: {
-          schema: options.validation?.schema
-        },
-        ...options
+          tags: ['fundraisers', 'user_campaigns'],
+          ...options.cache
+        }
       }
     );
   }
 
   async createDonation(data: any, options: ApiOptions = {}) {
+    const toCents = (amount: number | string) => Math.round(Number(amount) * 100);
+    
     return this.mutate(
-      (sanitizedData) => {
-        return supabase
+      (sanitizedData, sb) => {
+        const amountCents = toCents(sanitizedData.amount);
+        const tipCents = toCents(sanitizedData.tip_amount || 0);
+        const netCents = amountCents - tipCents;
+        
+        if (tipCents > amountCents) {
+          throw new Error('Tip amount cannot exceed donation amount');
+        }
+        
+        return sb
           .from('donations')
           .insert({
-            ...sanitizedData,
-            net_amount: sanitizedData.amount - (sanitizedData.tip_amount || 0),
-            payment_status: 'pending'
+            fundraiser_id: sanitizedData.fundraiser_id,
+            donor_id: sanitizedData.donor_id,
+            amount_cents: amountCents,
+            tip_cents: tipCents,
+            net_cents: netCents,
+            currency: sanitizedData.currency || 'USD',
+            payment_status: 'pending',
+            payment_method: sanitizedData.payment_method,
+            donor_name: sanitizedData.donor_name,
+            donor_email: sanitizedData.donor_email,
+            message: sanitizedData.message,
+            is_anonymous: sanitizedData.is_anonymous || false
           })
           .select()
           .single();
@@ -389,13 +439,12 @@ export class EnterpriseApi extends EnterpriseService {
       data,
       'create_donation',
       {
+        ...options,
+        idempotencyKey: options.idempotencyKey || `donation_${data.fundraiser_id}_${Date.now()}`,
         cache: {
-          tags: ['donations', 'fundraiser_stats']
-        },
-        validation: {
-          schema: options.validation?.schema
-        },
-        ...options
+          tags: ['donations', 'fundraiser_stats'],
+          ...options.cache
+        }
       }
     );
   }

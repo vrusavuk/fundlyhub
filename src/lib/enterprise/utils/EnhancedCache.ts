@@ -59,6 +59,22 @@ export class EnhancedCache extends EnterpriseCache {
   }
 
   /**
+   * Cache with scoped keys and single-flight protection
+   */
+  async scopedSingleFlight<T>(
+    key: string,
+    producer: () => Promise<T>,
+    context: { userId?: string; tenantId?: string },
+    options: SingleFlightOptions = {}
+  ): Promise<T> {
+    const scope = context.tenantId ? `t:${context.tenantId}` : 
+                  context.userId ? `u:${context.userId}` : 'public';
+    const scopedKey = `${scope}:${key}`;
+    
+    return this.singleFlight(scopedKey, producer, options);
+  }
+
+  /**
    * Enhanced get with scoped keys
    */
   async get<T>(key: string, options: SingleFlightOptions = {}): Promise<T | null> {

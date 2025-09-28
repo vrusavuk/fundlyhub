@@ -192,4 +192,20 @@ export class SecureSearch {
 
     return allowedSorts[sort as keyof typeof allowedSorts] || null;
   }
+
+  /**
+   * Apply Full-Text Search to query builder
+   */
+  static applyFTS(queryBuilder: any, column: string, searchTerm: string): any {
+    const sanitized = this.sanitizeSearchQuery(searchTerm);
+    return queryBuilder.textSearch(column, sanitized, { type: 'websearch' });
+  }
+
+  /**
+   * Apply secure ILIKE to query builder
+   */
+  static applyILike(queryBuilder: any, column: string, searchTerm: string): any {
+    const escaped = this.escapeForILike(searchTerm);
+    return queryBuilder.ilike(column, `%${escaped}%`);
+  }
 }
