@@ -36,7 +36,7 @@ export class CursorPagination {
   };
 
   /**
-   * Build cursor-based query for Supabase
+   * Build cursor-based query with deterministic ordering (includes unique tiebreaker)
    */
   buildQuery(
     baseQuery: any,
@@ -49,15 +49,35 @@ export class CursorPagination {
 
     let query = baseQuery;
 
-    // Apply cursor filtering
+    // Apply cursor filtering with deterministic comparison
     if (params.cursor) {
-      const cursorValue = this.decodeCursor(params.cursor);
+      const cursorData = this.decodeCursor(params.cursor);
       const operator = this.getFilterOperator(sortOrder, direction);
-      query = query.filter(sortField, operator, cursorValue);
+      
+      // Use composite filtering for deterministic pagination
+      if (sortField !== 'id') {
+        // Filter by primary sort field OR (same value AND id comparison)
+        const idOperator = sortOrder === 'desc' ? 'lt' : 'gt';
+        if (direction === 'backward') {
+          const oppositeOperator = sortOrder === 'desc' ? 'gt' : 'lt';
+          const oppositeIdOperator = sortOrder === 'desc' ? 'gt' : 'lt';
+          query = query.or(`${sortField}.${oppositeOperator}.${cursorData.value},and(${sortField}.eq.${cursorData.value},id.${oppositeIdOperator}.${cursorData.id})`);
+        } else {
+          query = query.or(`${sortField}.${operator}.${cursorData.value},and(${sortField}.eq.${cursorData.value},id.${idOperator}.${cursorData.id})`);
+        }
+      } else {
+        query = query.filter('id', operator, cursorData.id);
+      }
     }
 
-    // Apply sorting
-    query = query.order(sortField, { ascending: sortOrder === 'asc' });
+    // Apply deterministic sorting with unique tiebreaker
+    const ascending = sortOrder === 'asc';
+    query = query.order(sortField, { ascending });
+    
+    // Add unique tiebreaker if not already sorting by id
+    if (sortField !== 'id') {
+      query = query.order('id', { ascending });
+    }
 
     // Apply limit (add 1 to check if there are more results)
     query = query.limit(limit + 1);
@@ -88,11 +108,11 @@ export class CursorPagination {
       const firstItem = actualData[0];
 
       if (hasNext) {
-        nextCursor = this.encodeCursor(lastItem[sortField]);
+        nextCursor = this.encodeCursor(lastItem[sortField], lastItem);
       }
       
       if (params.cursor) {
-        prevCursor = this.encodeCursor(firstItem[sortField]);
+        prevCursor = this.encodeCursor(firstItem[sortField], firstItem);
       }
     }
 
@@ -147,24 +167,25 @@ export class CursorPagination {
   }
 
   /**
-   * Encode cursor value to base64
+   * Encode cursor with multiple fields for deterministic ordering
    */
-  private encodeCursor(value: any): string {
+  private encodeCursor(value: any, item?: Record<string, any>): string {
     const cursorData = {
       value,
+      id: item?.id,
       timestamp: Date.now()
     };
     return Buffer.from(JSON.stringify(cursorData)).toString('base64');
   }
 
   /**
-   * Decode cursor value from base64
+   * Decode cursor to extract all fields
    */
   private decodeCursor(cursor: string): any {
     try {
       const decoded = Buffer.from(cursor, 'base64').toString('utf-8');
       const cursorData = JSON.parse(decoded);
-      return cursorData.value;
+      return cursorData; // Return full cursor data including id
     } catch (error) {
       throw new Error('Invalid cursor format');
     }

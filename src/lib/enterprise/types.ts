@@ -170,13 +170,10 @@ export interface PerformanceEvent extends ServiceEvent {
 export interface BatchOperation<T = any> {
   type: 'query' | 'mutation';
   id: string;
-  operation: () => Promise<T>;
+  builder: (sb: any, data?: any) => any;
   data?: any;
-  context?: Partial<RequestContext>;
-  options?: {
-    continueOnError?: boolean;
-    idempotencyKey?: string;
-  };
+  endpoint: string;
+  options?: any; // Will be typed as ApiOptions when imported
 }
 
 export interface BatchResult<T = any> {

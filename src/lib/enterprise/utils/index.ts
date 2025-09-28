@@ -13,3 +13,5 @@ export * from './AbortableSupabase';
 export * from './EnhancedCache';
 export * from './SecureSearch';
 export * from './ValidationEngine';
+export * from './SlugGenerator';
+export * from './AuditLogger';
