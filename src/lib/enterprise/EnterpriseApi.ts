@@ -1,11 +1,17 @@
 /**
- * Refactored Enterprise API Service - Orchestrates all enterprise features
+ * Enterprise-Grade API Service with advanced features
+ * Implements idempotency, money math, rate limiting, cursor pagination, and request management
  */
 import { EnterpriseService } from './EnterpriseService';
 import { EnterpriseCache } from './EnterpriseCache';
 import { EnterpriseSecurity } from './EnterpriseSecurity';
 import { RequestContext, ServiceResponse, HealthCheck } from './types';
 import { supabase } from '@/integrations/supabase/client';
+import { MoneyMath, Money } from './utils/MoneyMath';
+import { IdempotencyManager } from './utils/IdempotencyManager';
+import { RequestManager } from './utils/RequestManager';
+import { CursorPagination, CursorPaginationParams, CursorPaginationResult } from './utils/CursorPagination';
+import { RateLimiter } from './utils/RateLimiter';
 
 export interface ApiOptions {
   cache?: {
@@ -24,23 +30,34 @@ export interface ApiOptions {
   };
   timeout?: number;
   retries?: number;
+  idempotencyKey?: string;
+  pagination?: CursorPaginationParams;
+  userTier?: string;
 }
 
 export class EnterpriseApi extends EnterpriseService {
   private cache: EnterpriseCache;
   private security: EnterpriseSecurity;
+  private idempotencyManager: IdempotencyManager;
+  private requestManager: RequestManager;
+  private cursorPagination: CursorPagination;
+  private rateLimiter: RateLimiter;
 
   constructor() {
     super();
     this.cache = new EnterpriseCache();
     this.security = new EnterpriseSecurity();
+    this.idempotencyManager = new IdempotencyManager(this.cache);
+    this.requestManager = new RequestManager();
+    this.cursorPagination = new CursorPagination();
+    this.rateLimiter = new RateLimiter(this.cache);
     
     // Set up event forwarding
     this.setupEventHandlers();
   }
 
   /**
-   * Execute database query with full enterprise features
+   * Execute database query with enterprise-grade features
    */
   async query<T>(
     queryBuilder: () => any,
@@ -49,57 +66,91 @@ export class EnterpriseApi extends EnterpriseService {
   ): Promise<ServiceResponse<T>> {
     const context = this.createContext(endpoint, 'QUERY');
     
-    return this.executeOperation(
-      context,
-      async () => {
-        // Security validation
-        if (!options.security?.skipValidation) {
-          const validationResult = await this.security.validateRequest(context);
-          if (!validationResult.valid) {
-            throw new Error(`Security validation failed: ${validationResult.violations.join(', ')}`);
+    return this.requestManager.execute(
+      async (signal) => {
+        // Rate limiting check
+        if (!options.security?.skipRateLimit) {
+          const rateLimitKey = this.rateLimiter.generateKey(context);
+          const userTier = this.rateLimiter.getUserTier({
+            userId: context.userId,
+            isAuthenticated: !!context.userId
+          });
+          
+          const rateLimit = await this.rateLimiter.checkRateLimit(rateLimitKey, userTier, endpoint);
+          if (!rateLimit.allowed) {
+            throw new Error(`Rate limit exceeded. Try again in ${rateLimit.retryAfter} seconds.`);
           }
         }
 
-        // Try cache first
-        if (!options.cache?.skip && options.cache?.key) {
-          const cached = await this.cache.get<T>(options.cache.key);
-          if (cached !== null) {
-            return cached;
-          }
-        }
-
-        // Execute query
-        const query = queryBuilder();
-        const { data, error } = await query;
-        
-        if (error) throw error;
-
-        // Cache result
-        if (!options.cache?.skip && options.cache?.key) {
-          await this.cache.set(
-            options.cache.key,
-            data,
-            {
-              ttl: options.cache.ttl,
-              tags: options.cache.tags
+        return this.executeOperation(
+          context,
+          async () => {
+            // Security validation
+            if (!options.security?.skipValidation) {
+              const validationResult = await this.security.validateRequest(context);
+              if (!validationResult.valid) {
+                throw new Error(`Security validation failed: ${validationResult.violations.join(', ')}`);
+              }
             }
-          );
-        }
 
-        return data;
+            // Try cache first
+            if (!options.cache?.skip && options.cache?.key) {
+              const cached = await this.cache.get<T>(options.cache.key);
+              if (cached !== null) {
+                return cached;
+              }
+            }
+
+            // Execute query with pagination support
+            let query = queryBuilder();
+            if (options.pagination) {
+              query = this.cursorPagination.buildQuery(query, options.pagination);
+            }
+
+            const { data, error } = await query;
+            if (error) throw error;
+
+            // Process pagination results
+            let result = data;
+            if (options.pagination && Array.isArray(data)) {
+              const paginationResult = this.cursorPagination.processResults(data, options.pagination);
+              result = paginationResult as any;
+            }
+
+            // Cache result
+            if (!options.cache?.skip && options.cache?.key) {
+              await this.cache.set(
+                options.cache.key,
+                result,
+                {
+                  ttl: options.cache.ttl,
+                  tags: options.cache.tags
+                }
+              );
+            }
+
+            return result;
+          },
+          {
+            skipCache: options.cache?.skip,
+            skipValidation: options.security?.skipValidation,
+            skipSecurity: options.security?.skipValidation,
+            cacheKey: options.cache?.key,
+            cacheTTL: options.cache?.ttl
+          }
+        );
       },
+      endpoint,
       {
-        skipCache: options.cache?.skip,
-        skipValidation: options.security?.skipValidation,
-        skipSecurity: options.security?.skipValidation,
-        cacheKey: options.cache?.key,
-        cacheTTL: options.cache?.ttl
+        timeout: options.timeout,
+        retries: options.retries,
+        deduplicationKey: options.cache?.key
       }
     );
   }
 
   /**
-   * Execute mutation with full enterprise features
+   * Execute mutation with enterprise-grade features including idempotency
    */
   async mutate<T>(
     mutationBuilder: (sanitizedData: any) => any,
@@ -109,50 +160,87 @@ export class EnterpriseApi extends EnterpriseService {
   ): Promise<ServiceResponse<T>> {
     const context = this.createContext(endpoint, 'MUTATE');
     
-    return this.executeOperation(
-      context,
-      async () => {
-        // Security validation and sanitization
-        let sanitizedData = data;
-        if (!options.security?.skipValidation) {
-          const validationResult = await this.security.validateRequest(context, data);
-          if (!validationResult.valid) {
-            throw new Error(`Security validation failed: ${validationResult.violations.join(', ')}`);
-          }
-          sanitizedData = validationResult.sanitizedData;
-        }
+    // Generate idempotency key if not provided
+    const idempotencyKey = options.idempotencyKey || 
+      this.idempotencyManager.generateKey(context.userId || 'anonymous', endpoint, data);
 
-        // Input validation with schema
-        if (!options.validation?.skip && options.validation?.schema) {
-          sanitizedData = options.validation.schema(sanitizedData);
-        }
-
-        // Execute mutation
-        const mutation = mutationBuilder(sanitizedData);
-        const { data: result, error } = await mutation;
-        
-        if (error) throw error;
-
-        // Invalidate related caches
-        if (options.cache?.tags) {
-          for (const tag of options.cache.tags) {
-            await this.cache.invalidateByTag(tag);
+    return this.requestManager.execute(
+      async (signal) => {
+        // Rate limiting check
+        if (!options.security?.skipRateLimit) {
+          const rateLimitKey = this.rateLimiter.generateKey(context);
+          const userTier = this.rateLimiter.getUserTier({
+            userId: context.userId,
+            isAuthenticated: !!context.userId
+          });
+          
+          const rateLimit = await this.rateLimiter.consumeRequest(rateLimitKey, userTier, endpoint);
+          if (!rateLimit.allowed) {
+            throw new Error(`Rate limit exceeded. Try again in ${rateLimit.retryAfter} seconds.`);
           }
         }
 
-        // Log audit event for mutations
-        await this.logAuditEvent(endpoint, 'mutation', result?.id, context, {
-          data: sanitizedData
-        });
+        // Execute with idempotency protection
+        return this.idempotencyManager.executeWithIdempotency(
+          idempotencyKey,
+          async () => {
+            return this.executeOperation(
+              context,
+              async () => {
+                // Security validation and sanitization
+                let sanitizedData = data;
+                if (!options.security?.skipValidation) {
+                  const validationResult = await this.security.validateRequest(context, data);
+                  if (!validationResult.valid) {
+                    throw new Error(`Security validation failed: ${validationResult.violations.join(', ')}`);
+                  }
+                  sanitizedData = validationResult.sanitizedData;
+                }
 
-        return result;
+                // Input validation with schema
+                if (!options.validation?.skip && options.validation?.schema) {
+                  sanitizedData = options.validation.schema(sanitizedData);
+                }
+
+                // Process financial data with precise math
+                sanitizedData = this.processFinancialData(sanitizedData);
+
+                // Execute mutation
+                const mutation = mutationBuilder(sanitizedData);
+                const { data: result, error } = await mutation;
+                
+                if (error) throw error;
+
+                // Invalidate related caches
+                if (options.cache?.tags) {
+                  for (const tag of options.cache.tags) {
+                    await this.cache.invalidateByTag(tag);
+                  }
+                }
+
+                // Log audit event for mutations
+                await this.logAuditEvent(endpoint, 'mutation', result?.id, context, {
+                  data: sanitizedData
+                });
+
+                return result;
+              },
+              {
+                skipCache: options.cache?.skip,
+                skipValidation: options.security?.skipValidation,
+                skipSecurity: options.security?.skipValidation,
+                cacheKey: options.cache?.key,
+                cacheTTL: options.cache?.ttl
+              }
+            );
+          }
+        );
       },
+      endpoint,
       {
-        skipCache: options.cache?.skip,
-        skipValidation: options.security?.skipValidation,
-        skipSecurity: options.security?.skipValidation,
-        cacheKey: options.cache?.key,
-        cacheTTL: options.cache?.ttl
+        timeout: options.timeout,
+        retries: options.retries,
+        deduplicationKey: idempotencyKey
       }
     );
   }
@@ -339,6 +427,94 @@ export class EnterpriseApi extends EnterpriseService {
         security: securityHealth.metrics
       }
     };
+  }
+
+  /**
+   * Money math utilities
+   */
+  createMoney(amount: number | string, currency: string = 'USD'): Money {
+    return MoneyMath.create(amount, currency);
+  }
+
+  formatMoney(money: Money, locale?: string): string {
+    return MoneyMath.format(money, locale);
+  }
+
+  calculateTip(amount: Money, tipPercent: number): Money {
+    return MoneyMath.percentage(amount, tipPercent);
+  }
+
+  calculateNetAmount(grossAmount: Money, fees: Money[]): Money {
+    return fees.reduce((net, fee) => MoneyMath.subtract(net, fee), grossAmount);
+  }
+
+  /**
+   * Cursor pagination utilities
+   */
+  async queryWithPagination<T>(
+    queryBuilder: () => any,
+    endpoint: string,
+    paginationParams: CursorPaginationParams,
+    options: ApiOptions = {}
+  ): Promise<ServiceResponse<CursorPaginationResult<T>>> {
+    const response = await this.query(
+      queryBuilder,
+      endpoint,
+      {
+        ...options,
+        pagination: paginationParams
+      }
+    );
+
+    return response as ServiceResponse<CursorPaginationResult<T>>;
+  }
+
+  /**
+   * Rate limiting utilities
+   */
+  async checkUserRateLimit(context: RequestContext, endpoint: string): Promise<boolean> {
+    const rateLimitKey = this.rateLimiter.generateKey(context);
+    const userTier = this.rateLimiter.getUserTier({
+      userId: context.userId,
+      isAuthenticated: !!context.userId
+    });
+    
+    const result = await this.rateLimiter.checkRateLimit(rateLimitKey, userTier, endpoint);
+    return result.allowed;
+  }
+
+  /**
+   * Process financial data with precise money math
+   */
+  private processFinancialData(data: any): any {
+    const processed = { ...data };
+
+    // Convert monetary fields to precise Money objects for calculations
+    if (processed.amount && processed.currency) {
+      const money = this.createMoney(processed.amount, processed.currency);
+      processed.amount = MoneyMath.toNumber(money); // Store as number for database
+      processed._preciseAmount = money; // Keep precise version for calculations
+    }
+
+    if (processed.goal_amount && processed.currency) {
+      const goalMoney = this.createMoney(processed.goal_amount, processed.currency);
+      processed.goal_amount = MoneyMath.toNumber(goalMoney);
+      processed._preciseGoal = goalMoney;
+    }
+
+    if (processed.tip_amount && processed.currency) {
+      const tipMoney = this.createMoney(processed.tip_amount, processed.currency);
+      processed.tip_amount = MoneyMath.toNumber(tipMoney);
+      processed._preciseTip = tipMoney;
+    }
+
+    // Calculate net amount for donations
+    if (processed._preciseAmount && processed._preciseTip) {
+      const netAmount = MoneyMath.subtract(processed._preciseAmount, processed._preciseTip);
+      processed.net_amount = MoneyMath.toNumber(netAmount);
+    }
+
+    return processed;
   }
 
   /**

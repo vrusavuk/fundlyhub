@@ -75,12 +75,19 @@ export interface ServiceConfig {
     monitoring: boolean;
     security: boolean;
     validation: boolean;
+    idempotency: boolean;
+    rateLimiting: boolean;
+    preciseMoneyMath: boolean;
+    cursorPagination: boolean;
   };
   limits: {
     requestSize: number;
     cacheSize: number;
     rateLimitWindow: number;
     rateLimitRequests: number;
+    maxRetries: number;
+    requestTimeout: number;
+    idempotencyTtl: number;
   };
 }
 

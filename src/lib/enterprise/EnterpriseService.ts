@@ -22,13 +22,20 @@ export abstract class EnterpriseService {
         caching: true,
         monitoring: true,
         security: true,
-        validation: true
+        validation: true,
+        idempotency: true,
+        rateLimiting: true,
+        preciseMoneyMath: true,
+        cursorPagination: true
       },
       limits: {
         requestSize: 10485760, // 10MB
         cacheSize: 10000,
         rateLimitWindow: 60000, // 1 minute
-        rateLimitRequests: 100
+        rateLimitRequests: 100,
+        maxRetries: 3,
+        requestTimeout: 30000, // 30 seconds
+        idempotencyTtl: 86400000 // 24 hours
       },
       ...config
     };

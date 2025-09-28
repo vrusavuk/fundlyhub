@@ -4,17 +4,19 @@
 
 /**
  * Formats currency amounts with proper localization
+ * @deprecated Use MoneyMath.format() for precise financial calculations
  */
 export function formatCurrency(
   amount: number, 
   currency: string = 'USD',
   locale: string = 'en-US'
 ): string {
+  console.warn('formatCurrency is deprecated. Use MoneyMath.format() for precise financial calculations.');
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 2, // Changed to 2 for proper money display
+    maximumFractionDigits: 2,
   }).format(amount);
 }
 
