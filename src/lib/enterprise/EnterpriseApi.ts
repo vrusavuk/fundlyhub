@@ -3,7 +3,6 @@
  * Implements idempotency, money math, rate limiting, cursor pagination, and request management
  */
 import { EnterpriseService } from './EnterpriseService';
-import { EnterpriseCache } from './EnterpriseCache';
 import { EnterpriseSecurity } from './EnterpriseSecurity';
 import { RequestContext, ServiceResponse, HealthCheck } from './types';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,20 +11,25 @@ import { IdempotencyManager } from './utils/IdempotencyManager';
 import { RequestManager } from './utils/RequestManager';
 import { CursorPagination, CursorPaginationParams, CursorPaginationResult } from './utils/CursorPagination';
 import { RateLimiter } from './utils/RateLimiter';
+import { AbortableSupabase } from './utils/AbortableSupabase';
+import { EnhancedCache, SingleFlightOptions } from './utils/EnhancedCache';
+import { SecureSearch, SearchOptions, SearchConfig } from './utils/SecureSearch';
+import { ValidationEngine, ValidationResult } from './utils/ValidationEngine';
 
 export interface ApiOptions {
-  cache?: {
+  cache?: SingleFlightOptions & {
     key?: string;
-    ttl?: number;
-    tags?: string[];
     skip?: boolean;
+    staleWhileRevalidate?: boolean;
+    staleTime?: number;
   };
   security?: {
     skipValidation?: boolean;
     skipRateLimit?: boolean;
   };
   validation?: {
-    schema?: (data: any) => any;
+    schema?: any;
+    async?: boolean;
     skip?: boolean;
   };
   timeout?: number;
@@ -33,24 +37,28 @@ export interface ApiOptions {
   idempotencyKey?: string;
   pagination?: CursorPaginationParams;
   userTier?: string;
+  userId?: string;
+  search?: SearchOptions;
 }
 
 export class EnterpriseApi extends EnterpriseService {
-  private cache: EnterpriseCache;
-  private security: EnterpriseSecurity;
-  private idempotencyManager: IdempotencyManager;
-  private requestManager: RequestManager;
-  private cursorPagination: CursorPagination;
-  private rateLimiter: RateLimiter;
+  protected cache: EnhancedCache;
+  protected security: EnterpriseSecurity;
+  protected idempotencyManager: IdempotencyManager;
+  protected requestManager: RequestManager;
+  protected cursorPagination: CursorPagination;
+  protected rateLimiter: RateLimiter;
+  protected abortableSupabase: AbortableSupabase;
 
   constructor() {
     super();
-    this.cache = new EnterpriseCache();
+    this.cache = new EnhancedCache();
     this.security = new EnterpriseSecurity();
-    this.idempotencyManager = new IdempotencyManager(this.cache);
+    this.idempotencyManager = new IdempotencyManager(this.cache as any);
     this.requestManager = new RequestManager();
     this.cursorPagination = new CursorPagination();
-    this.rateLimiter = new RateLimiter(this.cache);
+    this.rateLimiter = new RateLimiter(this.cache as any);
+    this.abortableSupabase = new AbortableSupabase();
     
     // Set up event forwarding
     this.setupEventHandlers();

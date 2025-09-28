@@ -4,6 +4,7 @@
  */
 
 import { EnterpriseCache } from '../EnterpriseCache';
+import { RateLimitMetricsCollector, RateLimiterMetrics } from './RateLimiterMetrics';
 
 export interface RateLimitConfig {
   windowMs: number;      // Time window in milliseconds
@@ -31,6 +32,7 @@ export interface UserTier {
 
 export class RateLimiter {
   private cache: EnterpriseCache;
+  private metricsCollector = new RateLimitMetricsCollector();
   private readonly defaultConfig: RateLimitConfig = {
     windowMs: 60 * 1000, // 1 minute
     maxRequests: 100,
