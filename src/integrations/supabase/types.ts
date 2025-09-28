@@ -620,6 +620,45 @@ export type Database = {
         }
         Relationships: []
       }
+      security_events: {
+        Row: {
+          created_at: string | null
+          details: Json | null
+          event_type: string
+          id: string
+          ip_address: unknown | null
+          request_method: string | null
+          request_path: string | null
+          success: boolean | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          details?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: unknown | null
+          request_method?: string | null
+          request_path?: string | null
+          success?: boolean | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          details?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown | null
+          request_method?: string | null
+          request_path?: string | null
+          success?: boolean | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       settings_audit_log: {
         Row: {
           change_reason: string | null
@@ -1078,6 +1117,19 @@ export type Database = {
           _resource_id?: string
           _resource_type: string
           _user_agent?: string
+        }
+        Returns: string
+      }
+      log_security_event: {
+        Args: {
+          _details?: Json
+          _event_type: string
+          _ip_address?: unknown
+          _request_method?: string
+          _request_path?: string
+          _success?: boolean
+          _user_agent?: string
+          _user_id?: string
         }
         Returns: string
       }
