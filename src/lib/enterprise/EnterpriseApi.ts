@@ -240,7 +240,7 @@ export class EnterpriseApi extends EnterpriseService {
           auditOutcome = 'success';
           auditMetadata = { endpoint, outcome: 'success', resourceId: result?.id };
           
-          return this.createResponse('success', result as T, {}, context);
+          return this.createResponse(context, result as T, false, auditMetadata);
         } catch (error) {
           auditMetadata = { 
             endpoint, 
@@ -253,7 +253,7 @@ export class EnterpriseApi extends EnterpriseService {
         } finally {
           // Always log audit event
           try {
-            await this.logAuditEvent('mutation', 'resource', auditMetadata.resourceId, context, auditMetadata);
+            await this.logAuditEvent('mutation', 'resource', auditMetadata.resourceId || undefined, context, auditMetadata);
           } catch (auditError) {
             console.error('Audit logging failed:', auditError);
           }
