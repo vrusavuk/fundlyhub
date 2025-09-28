@@ -9,6 +9,11 @@ export interface RequestOptions {
   retryDelay?: number;
   abortSignal?: AbortSignal;
   deduplicationKey?: string;
+  scope?: {
+    userId?: string;
+    tenantId?: string;
+    type?: 'global' | 'user' | 'tenant';
+  };
 }
 
 export interface RetryConfig {
@@ -47,9 +52,10 @@ export class RequestManager {
     // Check circuit breaker
     this.checkCircuitBreaker(endpoint);
 
-    // Handle deduplication (single-flight pattern)
+    // Handle scoped deduplication (single-flight pattern)
     if (options.deduplicationKey) {
-      const existing = this.pendingRequests.get(options.deduplicationKey);
+      const scopedKey = this.getScopedDeduplicationKey(options.deduplicationKey, options.scope);
+      const existing = this.pendingRequests.get(scopedKey);
       if (existing) {
         return existing as Promise<T>;
       }
@@ -62,9 +68,11 @@ export class RequestManager {
       options.abortSignal
     );
 
-    // Store for deduplication
+    // Store for scoped deduplication
+    let scopedKey: string | undefined;
     if (options.deduplicationKey) {
-      this.pendingRequests.set(options.deduplicationKey, promise);
+      scopedKey = this.getScopedDeduplicationKey(options.deduplicationKey, options.scope);
+      this.pendingRequests.set(scopedKey, promise);
     }
 
     try {
@@ -86,8 +94,8 @@ export class RequestManager {
     } finally {
       // Cleanup
       cleanup();
-      if (options.deduplicationKey) {
-        this.pendingRequests.delete(options.deduplicationKey);
+      if (scopedKey) {
+        this.pendingRequests.delete(scopedKey);
       }
     }
   }
@@ -250,6 +258,26 @@ export class RequestManager {
     if (state.consecutiveFailures >= state.config.failureThreshold) {
       state.state = 'open';
     }
+  }
+
+  /**
+   * Generate scoped deduplication key
+   */
+  private getScopedDeduplicationKey(
+    key: string, 
+    scope?: { userId?: string; tenantId?: string; type?: 'global' | 'user' | 'tenant' }
+  ): string {
+    if (!scope) return key;
+    
+    if (scope.type === 'tenant' && scope.tenantId) {
+      return `t:${scope.tenantId}:${key}`;
+    }
+    
+    if (scope.type === 'user' && scope.userId) {
+      return `u:${scope.userId}:${key}`;
+    }
+    
+    return key; // Global scope
   }
 
   /**

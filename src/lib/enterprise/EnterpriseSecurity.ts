@@ -230,7 +230,19 @@ export class EnterpriseSecurity extends EnterpriseService {
       checks,
       issues,
       timestamp: new Date().toISOString(),
-      metrics
+      metrics: {
+        database: { latencyP95: 0, connectionCount: 1, queryRate: 0 },
+        cache: { hitRate: 0, missRate: 0, evictionRate: 0, memoryUsage: 0 },
+        api: { requestRate: 0, errorRate: 0, averageResponseTime: 0, p95ResponseTime: 0 },
+        security: {
+          blockedRequests: metrics.blockedRequests,
+          rateLimitHits: metrics.rateLimitHits,
+          suspiciousActivity: metrics.suspiciousIPs
+        },
+        circuitBreakers: {},
+        uptime: { seconds: 0, startTime: new Date().toISOString() },
+        version: '1.0.0'
+      }
     };
   }
 

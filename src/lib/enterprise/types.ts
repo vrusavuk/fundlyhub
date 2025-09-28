@@ -6,11 +6,13 @@
 export interface RequestContext {
   requestId: string;
   userId?: string;
+  tenantId?: string;
   ipAddress?: string;
   userAgent?: string;
   endpoint?: string;
   method?: string;
   startTime: number;
+  scope?: 'global' | 'user' | 'tenant';
 }
 
 export interface ServiceResponse<T = any> {
@@ -18,6 +20,7 @@ export interface ServiceResponse<T = any> {
   success: boolean;
   status: number;
   cached?: boolean;
+  cacheStatus?: 'fresh' | 'stale' | 'miss' | 'hit';
   responseTime: number;
   correlationId: string;
   metadata?: Record<string, any>;
@@ -28,7 +31,40 @@ export interface HealthCheck {
   checks: Record<string, boolean>;
   issues: string[];
   timestamp: string;
-  metrics?: Record<string, any>;
+  metrics: {
+    database: {
+      latencyP95: number;
+      connectionCount: number;
+      queryRate: number;
+    };
+    cache: {
+      hitRate: number;
+      missRate: number;
+      evictionRate: number;
+      memoryUsage: number;
+    };
+    api: {
+      requestRate: number;
+      errorRate: number;
+      averageResponseTime: number;
+      p95ResponseTime: number;
+    };
+    security: {
+      blockedRequests: number;
+      rateLimitHits: number;
+      suspiciousActivity: number;
+    };
+    circuitBreakers: Record<string, {
+      state: 'open' | 'closed' | 'half-open';
+      failureCount: number;
+      lastFailure?: string;
+    }>;
+    uptime: {
+      seconds: number;
+      startTime: string;
+    };
+    version: string;
+  };
 }
 
 // Error types
@@ -128,4 +164,32 @@ export interface PerformanceEvent extends ServiceEvent {
     grade: 'excellent' | 'good' | 'acceptable' | 'poor';
     metadata: Record<string, any>;
   };
+}
+
+// Batch operation types
+export interface BatchOperation<T = any> {
+  type: 'query' | 'mutation';
+  id: string;
+  operation: () => Promise<T>;
+  data?: any;
+  context?: Partial<RequestContext>;
+  options?: {
+    continueOnError?: boolean;
+    idempotencyKey?: string;
+  };
+}
+
+export interface BatchResult<T = any> {
+  id: string;
+  success: boolean;
+  data?: T;
+  error?: Error;
+}
+
+export interface BatchResponse<T = any> {
+  results: BatchResult<T>[];
+  successCount: number;
+  errorCount: number;
+  totalTime: number;
+  partialSuccess: boolean;
 }

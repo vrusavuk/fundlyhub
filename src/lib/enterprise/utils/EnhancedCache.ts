@@ -122,6 +122,10 @@ export class EnhancedCache extends EnterpriseCache {
       } else if (age < (entry as any).ttl + staleTime) {
         // Stale but acceptable, refresh in background
         this.refreshInBackground(scopedKey, producer, options);
+        // Ensure proper ServiceResponse shape for SWR
+        if (typeof entry === 'object' && entry !== null && 'data' in entry) {
+          (entry as any).cacheStatus = 'stale';
+        }
         return entry as T;
       }
     }

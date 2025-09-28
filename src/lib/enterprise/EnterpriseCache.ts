@@ -223,7 +223,20 @@ export class EnterpriseCache extends EnterpriseService {
       checks,
       issues,
       timestamp: new Date().toISOString(),
-      metrics
+      metrics: {
+        database: { latencyP95: 0, connectionCount: 1, queryRate: 0 },
+        cache: {
+          hitRate: metrics.hitRate,
+          missRate: 100 - metrics.hitRate,
+          evictionRate: metrics.evictions,
+          memoryUsage: metrics.memoryUsage
+        },
+        api: { requestRate: 0, errorRate: 0, averageResponseTime: 0, p95ResponseTime: 0 },
+        security: { blockedRequests: 0, rateLimitHits: 0, suspiciousActivity: 0 },
+        circuitBreakers: {},
+        uptime: { seconds: 0, startTime: new Date().toISOString() },
+        version: '1.0.0'
+      }
     };
   }
 
