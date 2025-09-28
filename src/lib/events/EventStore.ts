@@ -1,117 +1,47 @@
 /**
- * Event Store Implementation using Supabase
+ * Event Store Implementation - In-Memory for now
  * Following Single Responsibility Principle
  */
 
-import { supabase } from '@/integrations/supabase/client';
 import { EventStore, DomainEvent } from './types';
 
-export class SupabaseEventStore implements EventStore {
-  private readonly tableName = 'event_store';
+export class InMemoryEventStore implements EventStore {
+  private events: DomainEvent[] = [];
 
   async save<T extends DomainEvent>(event: T): Promise<void> {
-    const { error } = await supabase
-      .from(this.tableName)
-      .insert({
-        event_id: event.id,
-        event_type: event.type,
-        event_version: event.version,
-        aggregate_id: this.extractAggregateId(event),
-        correlation_id: event.correlationId,
-        causation_id: event.causationId,
-        event_data: event.payload,
-        metadata: event.metadata || {},
-        occurred_at: new Date(event.timestamp).toISOString(),
-      });
-
-    if (error) {
-      throw new Error(`Failed to save event: ${error.message}`);
-    }
+    this.events.push(event);
   }
 
   async saveBatch<T extends DomainEvent>(events: T[]): Promise<void> {
-    if (events.length === 0) return;
-
-    const eventRows = events.map(event => ({
-      event_id: event.id,
-      event_type: event.type,
-      event_version: event.version,
-      aggregate_id: this.extractAggregateId(event),
-      correlation_id: event.correlationId,
-      causation_id: event.causationId,
-      event_data: event.payload,
-      metadata: event.metadata || {},
-      occurred_at: new Date(event.timestamp).toISOString(),
-    }));
-
-    const { error } = await supabase
-      .from(this.tableName)
-      .insert(eventRows);
-
-    if (error) {
-      throw new Error(`Failed to save events batch: ${error.message}`);
-    }
+    this.events.push(...events);
   }
 
   async getEvents(fromTimestamp?: number): Promise<DomainEvent[]> {
-    let query = supabase
-      .from(this.tableName)
-      .select('*')
-      .order('occurred_at', { ascending: true });
-
-    if (fromTimestamp) {
-      query = query.gte('occurred_at', new Date(fromTimestamp).toISOString());
+    if (!fromTimestamp) {
+      return [...this.events].sort((a, b) => a.timestamp - b.timestamp);
     }
-
-    const { data, error } = await query;
-
-    if (error) {
-      throw new Error(`Failed to get events: ${error.message}`);
-    }
-
-    return (data || []).map(this.mapRowToEvent);
+    
+    return this.events
+      .filter(event => event.timestamp >= fromTimestamp)
+      .sort((a, b) => a.timestamp - b.timestamp);
   }
 
   async getEventsByType(eventType: string): Promise<DomainEvent[]> {
-    const { data, error } = await supabase
-      .from(this.tableName)
-      .select('*')
-      .eq('event_type', eventType)
-      .order('occurred_at', { ascending: true });
-
-    if (error) {
-      throw new Error(`Failed to get events by type: ${error.message}`);
-    }
-
-    return (data || []).map(this.mapRowToEvent);
+    return this.events
+      .filter(event => event.type === eventType)
+      .sort((a, b) => a.timestamp - b.timestamp);
   }
 
   async getEventsByCorrelation(correlationId: string): Promise<DomainEvent[]> {
-    const { data, error } = await supabase
-      .from(this.tableName)
-      .select('*')
-      .eq('correlation_id', correlationId)
-      .order('occurred_at', { ascending: true });
-
-    if (error) {
-      throw new Error(`Failed to get events by correlation: ${error.message}`);
-    }
-
-    return (data || []).map(this.mapRowToEvent);
+    return this.events
+      .filter(event => event.correlationId === correlationId)
+      .sort((a, b) => a.timestamp - b.timestamp);
   }
 
   async getEventsByAggregate(aggregateId: string): Promise<DomainEvent[]> {
-    const { data, error } = await supabase
-      .from(this.tableName)
-      .select('*')
-      .eq('aggregate_id', aggregateId)
-      .order('occurred_at', { ascending: true });
-
-    if (error) {
-      throw new Error(`Failed to get events by aggregate: ${error.message}`);
-    }
-
-    return (data || []).map(this.mapRowToEvent);
+    return this.events
+      .filter(event => this.extractAggregateId(event) === aggregateId)
+      .sort((a, b) => a.timestamp - b.timestamp);
   }
 
   private extractAggregateId(event: DomainEvent): string | null {
@@ -126,16 +56,16 @@ export class SupabaseEventStore implements EventStore {
     return null;
   }
 
-  private mapRowToEvent(row: any): DomainEvent {
-    return {
-      id: row.event_id,
-      type: row.event_type,
-      version: row.event_version,
-      timestamp: new Date(row.occurred_at).getTime(),
-      correlationId: row.correlation_id,
-      causationId: row.causation_id,
-      metadata: row.metadata,
-      payload: row.event_data,
-    };
+  // Additional methods for debugging and testing
+  public clear(): void {
+    this.events = [];
+  }
+
+  public getAllEvents(): DomainEvent[] {
+    return [...this.events];
+  }
+
+  public getEventCount(): number {
+    return this.events.length;
   }
 }

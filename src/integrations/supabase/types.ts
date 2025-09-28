@@ -202,6 +202,48 @@ export type Database = {
           },
         ]
       }
+      event_store: {
+        Row: {
+          aggregate_id: string | null
+          causation_id: string | null
+          correlation_id: string | null
+          created_at: string
+          event_data: Json
+          event_id: string
+          event_type: string
+          event_version: string
+          id: string
+          metadata: Json | null
+          occurred_at: string
+        }
+        Insert: {
+          aggregate_id?: string | null
+          causation_id?: string | null
+          correlation_id?: string | null
+          created_at?: string
+          event_data: Json
+          event_id: string
+          event_type: string
+          event_version?: string
+          id?: string
+          metadata?: Json | null
+          occurred_at?: string
+        }
+        Update: {
+          aggregate_id?: string | null
+          causation_id?: string | null
+          correlation_id?: string | null
+          created_at?: string
+          event_data?: Json
+          event_id?: string
+          event_type?: string
+          event_version?: string
+          id?: string
+          metadata?: Json | null
+          occurred_at?: string
+        }
+        Relationships: []
+      }
       fundraisers: {
         Row: {
           beneficiary_contact: string | null
