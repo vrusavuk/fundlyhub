@@ -2,7 +2,7 @@
  * Grid statistics summary component
  */
 import { Card } from '@/components/ui/card';
-import type { Fundraiser } from '@/types/fundraiser';
+import type { Fundraiser } from '@/types';
 
 interface GridStatsProps {
   fundraisers: Fundraiser[];

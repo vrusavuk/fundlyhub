@@ -1,7 +1,7 @@
 /**
  * Filter types and constants for campaign filtering
  */
-import type { Category } from '@/types/category';
+import type { Category } from './category';
 
 export interface FilterState {
   categories: string[];

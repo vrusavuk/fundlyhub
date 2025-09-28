@@ -1,7 +1,7 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MapPin } from 'lucide-react';
-import type { FilterState } from '@/types/filters';
-import { LOCATIONS } from '@/types/filters';
+import type { FilterState } from '@/types';
+import { LOCATIONS } from '@/types';
 
 interface LocationSelectProps {
   filters: FilterState;

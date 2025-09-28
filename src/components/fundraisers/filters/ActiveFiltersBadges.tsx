@@ -1,5 +1,5 @@
 import { Badge } from '@/components/ui/badge';
-import type { FilterState } from '@/types/filters';
+import type { FilterState } from '@/types';
 
 interface ActiveFiltersBadgesProps {
   filters: FilterState;

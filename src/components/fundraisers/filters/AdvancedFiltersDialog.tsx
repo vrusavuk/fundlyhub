@@ -6,9 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SlidersHorizontal, MapPin, Clock } from 'lucide-react';
-import type { Category } from '@/types/category';
-import type { FilterState } from '@/types/filters';
-import { LOCATIONS, TIME_PERIODS } from '@/types/filters';
+import type { Category, FilterState } from '@/types';
+import { LOCATIONS, TIME_PERIODS } from '@/types';
 
 interface AdvancedFiltersDialogProps {
   isOpen: boolean;

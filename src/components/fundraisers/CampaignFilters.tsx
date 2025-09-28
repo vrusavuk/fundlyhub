@@ -5,7 +5,7 @@ import { AdvancedFiltersDialog } from './filters/AdvancedFiltersDialog';
 import { CategoryPopover } from './filters/CategoryPopover';
 import { LocationSelect } from './filters/LocationSelect';
 import { ActiveFiltersBadges } from './filters/ActiveFiltersBadges';
-import type { FilterState, CampaignFiltersProps } from '@/types/filters';
+import type { FilterState, CampaignFiltersProps } from '@/types';
 
 export function CampaignFilters({ 
   onFiltersChange, 

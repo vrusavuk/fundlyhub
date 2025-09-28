@@ -15,7 +15,7 @@ import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { hapticFeedback } from '@/lib/utils/mobile';
 import { Target } from 'lucide-react';
-import type { Fundraiser } from '@/types/fundraiser';
+import type { Fundraiser } from '@/types';
 
 interface FundraiserGridProps {
   fundraisers: Fundraiser[];

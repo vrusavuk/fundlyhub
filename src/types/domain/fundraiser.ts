@@ -1,14 +1,6 @@
 /**
- * Core domain types for the fundraising platform
+ * Fundraiser domain types - consolidated and enhanced
  */
-
-export interface Profile {
-  id?: string;
-  name: string;
-  email?: string;
-  avatar?: string;
-  role?: 'visitor' | 'user' | 'admin';
-}
 
 export interface BaseEntity {
   id: string;
@@ -21,11 +13,14 @@ export interface Fundraiser extends BaseEntity {
   slug: string;
   summary?: string;
   story_html?: string;
+  description?: string;
   goal_amount: number;
+  raised_amount?: number;
   currency: string;
   category?: string;
-  status: 'draft' | 'active' | 'paused' | 'ended' | 'closed' | 'pending';
+  status: FundraiserStatus;
   visibility: 'public' | 'unlisted';
+  urgency?: FundraiserUrgency;
   cover_image?: string;
   images?: string[];
   video_url?: string;
@@ -34,23 +29,33 @@ export interface Fundraiser extends BaseEntity {
   end_date?: string;
   beneficiary_name?: string;
   beneficiary_contact?: string;
+  
+  // Relationships
   owner_user_id: string;
   org_id?: string;
-  profiles?: Profile;
+  profiles?: import('./user').UserProfile | import('./user').Profile;
+  organizations?: import('./organization').Organization;
+  
+  // Computed fields
+  progress_percentage?: number;
+  days_remaining?: number;
+  donor_count?: number;
 }
 
-export interface Donation extends BaseEntity {
-  fundraiser_id: string;
-  donor_user_id?: string;
-  amount: number;
-  tip_amount?: number;
-  net_amount?: number;
-  fee_amount?: number;
-  currency: string;
-  payment_provider?: string;
-  payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
-  receipt_id?: string;
-}
+export type FundraiserStatus = 
+  | 'draft'
+  | 'active'
+  | 'paused'
+  | 'ended'
+  | 'closed'
+  | 'pending'
+  | 'completed'
+  | 'cancelled';
+
+export type FundraiserUrgency = 
+  | 'low'
+  | 'medium'
+  | 'high';
 
 export interface FundraiserCardData {
   id: string;
@@ -65,7 +70,7 @@ export interface FundraiserCardData {
   location?: string;
   donorCount: number;
   daysLeft?: number;
-  urgency?: 'high' | 'medium' | 'low';
+  urgency?: FundraiserUrgency;
   isVerified?: boolean;
   isOrganization?: boolean;
   avatarUrl?: string;

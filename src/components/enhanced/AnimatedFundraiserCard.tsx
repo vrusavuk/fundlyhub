@@ -6,7 +6,7 @@ import { UnifiedFundraiserCard } from '@/components/cards/UnifiedFundraiserCard'
 import { AnimatedCard } from '@/components/animations/AnimatedCard';
 import { cn } from '@/lib/utils';
 import { hapticFeedback } from '@/lib/utils/mobile';
-import type { Fundraiser } from '@/types/fundraiser';
+import type { Fundraiser } from '@/types';
 
 interface AnimatedFundraiserCardProps {
   fundraiser: Fundraiser;

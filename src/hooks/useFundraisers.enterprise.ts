@@ -3,7 +3,7 @@
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { fundraiserService, type FundraiserQueryOptions, type FundraiserStats } from '@/lib/services/fundraiser.service';
-import type { Fundraiser } from '@/types/fundraiser';
+import type { Fundraiser } from '@/types';
 
 interface UseFundraisersState {
   fundraisers: Fundraiser[];

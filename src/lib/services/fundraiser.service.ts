@@ -3,7 +3,7 @@
  */
 import { supabase } from '@/integrations/supabase/client';
 import { apiService, ApiError } from './api.service';
-import type { Fundraiser } from '@/types/fundraiser';
+import type { Fundraiser } from '@/types';
 
 export interface FundraiserQueryOptions {
   limit?: number;

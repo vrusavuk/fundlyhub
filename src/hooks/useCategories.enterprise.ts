@@ -3,7 +3,7 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import { categoryService } from '@/lib/services/category.service';
-import type { Category, CategoryStats } from '@/types/category';
+import type { Category, CategoryStats } from '@/types';
 
 interface UseCategoriesState {
   categories: Category[];

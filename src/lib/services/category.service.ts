@@ -3,7 +3,7 @@
  */
 import { supabase } from '@/integrations/supabase/client';
 import { apiService, ApiError } from './api.service';
-import type { Category, CategoryStats } from '@/types/category';
+import type { Category, CategoryStats } from '@/types';
 
 class CategoryService {
   private readonly CACHE_TTL = 10 * 60 * 1000; // 10 minutes for categories (less frequent changes)
