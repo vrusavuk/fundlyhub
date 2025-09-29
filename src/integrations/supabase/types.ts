@@ -1261,11 +1261,18 @@ export type Database = {
     }
     Functions: {
       get_campaign_aggregate_stats: {
-        Args: {
-          category_filter?: string
-          search_term?: string
-          status_filter?: string
-        }
+        Args:
+          | {
+              category_filter?: string
+              search_term?: string
+              status_filter?: string
+            }
+          | {
+              category_filter?: string
+              search_term?: string
+              status_filter?: string
+              visibility_filter?: string
+            }
         Returns: {
           active_campaigns: number
           closed_campaigns: number

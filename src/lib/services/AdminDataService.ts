@@ -19,6 +19,8 @@ export interface FilterOptions {
   status?: string;
   role?: string;
   category?: string;
+  visibility?: string;
+  dateRange?: string;
   dateFrom?: Date;
   dateTo?: Date;
 }
@@ -142,13 +144,49 @@ class AdminDataService {
 
       // Apply filters
       if (filters.search) {
-        query = query.or(`title.ilike.%${filters.search}%,summary.ilike.%${filters.search}%`);
+        query = query.or(`title.ilike.%${filters.search}%,summary.ilike.%${filters.search}%,beneficiary_name.ilike.%${filters.search}%`);
       }
       if (filters.status) {
         query = query.eq('status', filters.status as any);
       }
       if (filters.category) {
         query = query.eq('category_id', filters.category);
+      }
+      if (filters.visibility) {
+        query = query.eq('visibility', filters.visibility as any);
+      }
+
+      // Handle preset date ranges
+      if (filters.dateRange && filters.dateRange !== 'all') {
+        const now = new Date();
+        let startDate: Date | null = null;
+        
+        switch (filters.dateRange) {
+          case 'today':
+            startDate = new Date(now.setHours(0, 0, 0, 0));
+            break;
+          case 'week':
+            startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            break;
+          case 'month':
+            startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            break;
+          case 'quarter':
+            startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+            break;
+        }
+        
+        if (startDate) {
+          query = query.gte('created_at', startDate.toISOString());
+        }
+      }
+
+      // Handle custom date range
+      if (filters.dateFrom) {
+        query = query.gte('created_at', filters.dateFrom.toISOString());
+      }
+      if (filters.dateTo) {
+        query = query.lte('created_at', filters.dateTo.toISOString());
       }
 
       // Apply pagination
@@ -262,7 +300,8 @@ class AdminDataService {
       const { data, error } = await supabase.rpc('get_campaign_aggregate_stats', {
         search_term: filters.search || null,
         status_filter: filters.status || null,
-        category_filter: filters.category || null
+        category_filter: filters.category || null,
+        visibility_filter: filters.visibility || null
       });
 
       if (error) {

@@ -112,7 +112,9 @@ export function CampaignManagement() {
       const stats = await adminDataService.fetchCampaignStats({
         search: debouncedSearch,
         status: filters.status !== 'all' ? filters.status : undefined,
-        category: filters.category !== 'all' ? filters.category : undefined
+        category: filters.category !== 'all' ? filters.category : undefined,
+        visibility: filters.visibility !== 'all' ? filters.visibility : undefined,
+        dateRange: filters.dateRange !== 'all' ? filters.dateRange : undefined
       });
       
       setDbStats(stats);
@@ -138,7 +140,9 @@ export function CampaignManagement() {
           {
             search: debouncedSearch,
             status: filters.status !== 'all' ? filters.status : undefined,
-            category: filters.category !== 'all' ? filters.category : undefined
+            category: filters.category !== 'all' ? filters.category : undefined,
+            visibility: filters.visibility !== 'all' ? filters.visibility : undefined,
+            dateRange: filters.dateRange !== 'all' ? filters.dateRange : undefined
           }
         ),
         fetchCampaignStats()
