@@ -66,6 +66,18 @@ export function CampaignManagement() {
     variant?: 'default' | 'destructive';
   }>({ open: false, title: '', description: '', action: () => {}, variant: 'default' });
   
+  // Database-level statistics (not page-level)
+  const [dbStats, setDbStats] = useState({
+    total: 0,
+    active: 0,
+    closed: 0,
+    pending: 0,
+    paused: 0,
+    draft: 0,
+    ended: 0,
+    totalRaised: 0
+  });
+  
   const [filters, setFilters] = useState<CampaignFilters>({
     search: '',
     status: 'all',
@@ -77,9 +89,9 @@ export function CampaignManagement() {
   
   const debouncedSearch = useDebounce(filters.search, 500);
   
-  // Pagination
+  // Pagination with correct default page size
   const pagination = usePagination({
-    initialPageSize: 20,
+    initialPageSize: 25,
     syncWithURL: true,
     onPageChange: () => fetchCampaigns()
   });
@@ -94,24 +106,43 @@ export function CampaignManagement() {
     }
   });
 
+  // Fetch database-level statistics (separate from paginated data)
+  const fetchCampaignStats = useCallback(async () => {
+    try {
+      const stats = await adminDataService.fetchCampaignStats({
+        search: debouncedSearch,
+        status: filters.status !== 'all' ? filters.status : undefined,
+        category: filters.category !== 'all' ? filters.category : undefined
+      });
+      
+      setDbStats(stats);
+    } catch (error: any) {
+      console.error('Error fetching campaign stats:', error);
+      // Don't show error toast for stats, they're not critical
+    }
+  }, [debouncedSearch, filters]);
+
   const fetchCampaigns = useCallback(async () => {
     try {
       setLoading(true);
 
-      // Use AdminDataService for optimized fetching with pagination
-      const result = await adminDataService.fetchCampaigns(
-        {
-          page: pagination.state.page,
-          pageSize: pagination.state.pageSize,
-          sortBy: 'created_at',
-          sortOrder: 'desc'
-        },
-        {
-          search: debouncedSearch,
-          status: filters.status !== 'all' ? filters.status : undefined,
-          category: filters.category !== 'all' ? filters.category : undefined
-        }
-      );
+      // Fetch both paginated data AND database statistics
+      const [result] = await Promise.all([
+        adminDataService.fetchCampaigns(
+          {
+            page: pagination.state.page,
+            pageSize: pagination.state.pageSize,
+            sortBy: 'created_at',
+            sortOrder: 'desc'
+          },
+          {
+            search: debouncedSearch,
+            status: filters.status !== 'all' ? filters.status : undefined,
+            category: filters.category !== 'all' ? filters.category : undefined
+          }
+        ),
+        fetchCampaignStats()
+      ]);
 
       setCampaigns(result.data as CampaignData[]);
       pagination.setTotal(result.total);
@@ -125,7 +156,7 @@ export function CampaignManagement() {
     } finally {
       setLoading(false);
     }
-  }, [pagination, debouncedSearch, filters, toast]);
+  }, [pagination, debouncedSearch, filters, toast, fetchCampaignStats]);
 
   const handleCampaignStatusChange = async (campaignId: string, newStatus: string, reason?: string) => {
     const campaign = campaigns.find(c => c.id === campaignId);
@@ -317,31 +348,31 @@ export function CampaignManagement() {
     }
   ];
 
-  // Calculate stats
+  // Calculate stats from database-level data (not page-level)
   const stats = [
     {
       title: "Total Campaigns",
-      value: campaigns.length,
+      value: dbStats.total,
       icon: Flag,
       description: "All fundraising campaigns"
     },
     {
       title: "Active Campaigns",
-      value: campaigns.filter(c => c.status === 'active').length,
+      value: dbStats.active,
       icon: CheckCircle,
       iconClassName: "text-success",
       description: "Currently fundraising"
     },
     {
       title: "Pending Review",
-      value: campaigns.filter(c => c.status === 'pending').length,
+      value: dbStats.pending,
       icon: Clock,
       iconClassName: "text-warning",
       description: "Awaiting approval"
     },
     {
       title: "Total Raised",
-      value: `$${campaigns.reduce((sum, c) => sum + (c.stats?.total_raised || 0), 0).toLocaleString()}`,
+      value: `$${dbStats.totalRaised.toLocaleString()}`,
       icon: DollarSign,
       iconClassName: "text-success",
       description: "Across all campaigns"

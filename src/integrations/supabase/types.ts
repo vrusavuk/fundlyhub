@@ -1260,6 +1260,23 @@ export type Database = {
       }
     }
     Functions: {
+      get_campaign_aggregate_stats: {
+        Args: {
+          category_filter?: string
+          search_term?: string
+          status_filter?: string
+        }
+        Returns: {
+          active_campaigns: number
+          closed_campaigns: number
+          draft_campaigns: number
+          ended_campaigns: number
+          paused_campaigns: number
+          pending_campaigns: number
+          total_campaigns: number
+          total_raised: number
+        }[]
+      }
       get_campaign_stats: {
         Args: Record<PropertyKey, never>
         Returns: {

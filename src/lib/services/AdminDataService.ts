@@ -253,6 +253,48 @@ class AdminDataService {
   }
 
   /**
+   * Fetch aggregate campaign statistics (database-level, not page-level)
+   */
+  async fetchCampaignStats(filters: FilterOptions) {
+    const cacheKey = `campaign-stats:${JSON.stringify(filters)}`;
+    
+    return this.cache.getOrSet(cacheKey, async () => {
+      const { data, error } = await supabase.rpc('get_campaign_aggregate_stats', {
+        search_term: filters.search || null,
+        status_filter: filters.status || null,
+        category_filter: filters.category || null
+      });
+
+      if (error) {
+        console.error('Error fetching campaign stats:', error);
+        throw error;
+      }
+
+      const stats = data?.[0] || {
+        total_campaigns: 0,
+        active_campaigns: 0,
+        closed_campaigns: 0,
+        pending_campaigns: 0,
+        paused_campaigns: 0,
+        draft_campaigns: 0,
+        ended_campaigns: 0,
+        total_raised: 0
+      };
+
+      return {
+        total: Number(stats.total_campaigns),
+        active: Number(stats.active_campaigns),
+        closed: Number(stats.closed_campaigns),
+        pending: Number(stats.pending_campaigns),
+        paused: Number(stats.paused_campaigns),
+        draft: Number(stats.draft_campaigns),
+        ended: Number(stats.ended_campaigns),
+        totalRaised: Number(stats.total_raised)
+      };
+    }, { ttl: 30000 }); // 30 second cache
+  }
+
+  /**
    * Fetch dashboard stats (replaces mock data)
    */
   async fetchDashboardStats() {
