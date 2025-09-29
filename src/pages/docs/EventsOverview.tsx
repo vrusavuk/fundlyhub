@@ -22,6 +22,17 @@ export const EventsOverview = () => {
         </AlertDescription>
       </Alert>
 
+      <Alert className="border-primary">
+        <InfoIcon className="h-4 w-4" />
+        <AlertTitle>Events and REST API</AlertTitle>
+        <AlertDescription>
+          Events are automatically published whenever state changes occur through the REST API. 
+          For example, when you POST to /fundraisers, the API returns the created resource AND 
+          publishes a campaign.created event. You don't need to publish events manually for 
+          standard REST operations—they're handled automatically by the platform.
+        </AlertDescription>
+      </Alert>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

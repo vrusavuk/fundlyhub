@@ -41,7 +41,7 @@ export function DocsLayout({ children }: DocsLayoutProps) {
                   </svg>
                 </div>
                 <div>
-                  <div className="font-semibold text-sm">API Documentation</div>
+                  <div className="font-semibold text-sm">Developer Documentation</div>
                   <div className="text-xs text-muted-foreground">v1.0.0</div>
                 </div>
               </div>
