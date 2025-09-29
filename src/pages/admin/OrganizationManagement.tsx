@@ -13,6 +13,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useRBAC } from '@/hooks/useRBAC';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useEventSubscriber } from '@/hooks/useEventBus';
+import { AdminEventService } from '@/lib/services/AdminEventService';
 import { createOrganizationColumns, OrganizationData } from '@/lib/data-table/organization-columns';
 import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
 import { MobileStatsGrid } from '@/components/admin/mobile/MobileStatsGrid';
@@ -162,30 +164,42 @@ export function OrganizationManagement() {
           )
         );
 
-        const { error } = await supabase
-          .from('organizations')
-          .update({ 
-            verification_status: newStatus,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', orgId);
-
-        if (error) throw error;
-
         const { data: user } = await supabase.auth.getUser();
+        const currentUserId = user.user?.id;
         
-        await supabase.rpc('log_audit_event', {
-          _actor_id: user.user?.id,
-          _action: `organization_${newStatus}`,
-          _resource_type: 'organization',
-          _resource_id: orgId,
-          _metadata: { previous_status: organization.verification_status }
-        });
+        if (!currentUserId) throw new Error('User not authenticated');
+
+        // Use AdminEventService which handles DB update + event publishing + audit log
+        if (newStatus === 'approved') {
+          await AdminEventService.verifyOrganization(orgId, currentUserId);
+        } else if (newStatus === 'rejected') {
+          await AdminEventService.rejectOrganization(orgId, currentUserId, 'Administrative decision');
+        } else {
+          await AdminEventService.updateOrganization(orgId, currentUserId, { 
+            verification_status: newStatus 
+          });
+        }
 
         return { orgId, newStatus };
       }
     );
   };
+
+  // Subscribe to organization events for real-time updates
+  useEventSubscriber('organization.verified', (event) => {
+    console.log('[OrganizationManagement] Organization verified event:', event);
+    fetchOrganizations();
+  });
+
+  useEventSubscriber('organization.rejected', (event) => {
+    console.log('[OrganizationManagement] Organization rejected event:', event);
+    fetchOrganizations();
+  });
+
+  useEventSubscriber('organization.updated', (event) => {
+    console.log('[OrganizationManagement] Organization updated event:', event);
+    fetchOrganizations();
+  });
 
   const handleBulkAction = async (action: string) => {
     if (selectedOrgs.length === 0) return;

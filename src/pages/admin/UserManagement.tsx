@@ -9,8 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { useRealTimeUpdates } from '@/hooks/useRealTimeUpdates';
 import { useKeyboardShortcuts, CommonShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { useEventSubscriber } from '@/hooks/useEventBus';
+import { AdminEventService } from '@/lib/services/AdminEventService';
 import { 
   Users, 
   UserCheck, 
@@ -197,28 +198,13 @@ export function UserManagement() {
     }
 
     try {
-      const suspendUntil = new Date();
-      suspendUntil.setDate(suspendUntil.getDate() + duration);
+      const { data: user } = await supabase.auth.getUser();
+      const currentUserId = user.user?.id;
+      
+      if (!currentUserId) throw new Error('User not authenticated');
 
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          account_status: 'suspended',
-          suspended_until: suspendUntil.toISOString(),
-          suspension_reason: reason
-        })
-        .eq('id', userId);
-
-      if (error) throw error;
-
-      // Log the action
-      await supabase.rpc('log_audit_event', {
-        _actor_id: (await supabase.auth.getUser()).data.user?.id,
-        _action: 'user_suspended',
-        _resource_type: 'user',
-        _resource_id: userId,
-        _metadata: {}
-      });
+      // Use AdminEventService which handles DB update + event publishing + audit log
+      await AdminEventService.suspendUser(userId, currentUserId, reason, duration);
 
       toast({
         title: 'User Suspended',
@@ -247,24 +233,13 @@ export function UserManagement() {
     }
 
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          account_status: 'active',
-          suspended_until: null,
-          suspension_reason: null
-        })
-        .eq('id', userId);
+      const { data: user } = await supabase.auth.getUser();
+      const currentUserId = user.user?.id;
+      
+      if (!currentUserId) throw new Error('User not authenticated');
 
-      if (error) throw error;
-
-      // Log the action
-      await supabase.rpc('log_audit_event', {
-        _actor_id: (await supabase.auth.getUser()).data.user?.id,
-        _action: 'user_unsuspended',
-        _resource_type: 'user',
-        _resource_id: userId
-      });
+      // Use AdminEventService which handles DB update + event publishing + audit log
+      await AdminEventService.unsuspendUser(userId, currentUserId);
 
       toast({
         title: 'User Unsuspended',
@@ -281,6 +256,22 @@ export function UserManagement() {
       });
     }
   };
+
+  // Subscribe to user events for real-time updates
+  useEventSubscriber('admin.user.suspended', (event) => {
+    console.log('[UserManagement] User suspended event:', event);
+    fetchUsers();
+  });
+
+  useEventSubscriber('admin.user.unsuspended', (event) => {
+    console.log('[UserManagement] User unsuspended event:', event);
+    fetchUsers();
+  });
+
+  useEventSubscriber('user.profile_updated', (event) => {
+    console.log('[UserManagement] User profile updated event:', event);
+    fetchUsers();
+  });
 
   const viewUserDetails = async (user: ExtendedProfile) => {
     try {

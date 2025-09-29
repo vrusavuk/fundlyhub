@@ -13,6 +13,8 @@ export { EventBus } from './EventBus';
 export * from './domain/UserEvents';
 export * from './domain/CampaignEvents';
 export * from './domain/DonationEvents';
+export * from './domain/OrganizationEvents';
+export * from './domain/AdminEvents';
 
 // Publishers
 export * from './publishers/ServiceEventPublisher';

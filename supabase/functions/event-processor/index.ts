@@ -157,10 +157,32 @@ async function processAnalytics(supabase: any, event: DomainEvent): Promise<void
       await updateDonationAnalytics(supabase, event);
       break;
     case 'campaign.created':
-      await trackCampaignCreation(supabase, event);
+    case 'campaign.updated':
+    case 'campaign.deleted':
+    case 'campaign.goal_reached':
+    case 'campaign.status_changed':
+      await trackCampaignEvent(supabase, event);
       break;
     case 'user.registered':
-      await trackUserRegistration(supabase, event);
+    case 'user.logged_in':
+    case 'user.profile_updated':
+      await trackUserEvent(supabase, event);
+      break;
+    case 'organization.created':
+    case 'organization.verified':
+    case 'organization.rejected':
+    case 'organization.updated':
+      await trackOrganizationEvent(supabase, event);
+      break;
+    case 'admin.user.suspended':
+    case 'admin.user.unsuspended':
+    case 'admin.user.profile_updated':
+    case 'admin.user.deleted':
+    case 'admin.campaign.approved':
+    case 'admin.campaign.rejected':
+    case 'admin.campaign.paused':
+    case 'admin.campaign.closed':
+      await trackAdminAction(supabase, event);
       break;
     default:
       console.log(`[Analytics] No handler for event type: ${event.type}`);
@@ -197,14 +219,24 @@ async function updateDonationAnalytics(supabase: any, event: DomainEvent): Promi
   }
 }
 
-async function trackCampaignCreation(supabase: any, event: DomainEvent): Promise<void> {
-  console.log(`[Analytics] Campaign created: ${event.payload.campaignId}`);
-  // Additional analytics tracking can be added here
+async function trackCampaignEvent(supabase: any, event: DomainEvent): Promise<void> {
+  console.log(`[Analytics] Campaign event: ${event.type}`, event.payload);
+  // Track campaign metrics, status changes, etc.
 }
 
-async function trackUserRegistration(supabase: any, event: DomainEvent): Promise<void> {
-  console.log(`[Analytics] User registered: ${event.payload.userId}`);
-  // Additional analytics tracking can be added here
+async function trackUserEvent(supabase: any, event: DomainEvent): Promise<void> {
+  console.log(`[Analytics] User event: ${event.type}`, event.payload);
+  // Track user activity, profile changes, etc.
+}
+
+async function trackOrganizationEvent(supabase: any, event: DomainEvent): Promise<void> {
+  console.log(`[Analytics] Organization event: ${event.type}`, event.payload);
+  // Track organization verification, updates, etc.
+}
+
+async function trackAdminAction(supabase: any, event: DomainEvent): Promise<void> {
+  console.log(`[Analytics] Admin action: ${event.type}`, event.payload);
+  // Track admin operations for compliance and monitoring
 }
 
 // Notifications Processor
@@ -217,6 +249,18 @@ async function processNotifications(supabase: any, event: DomainEvent): Promise<
       break;
     case 'campaign.goal_reached':
       await sendGoalReachedNotification(supabase, event);
+      break;
+    case 'admin.user.suspended':
+    case 'admin.user.unsuspended':
+      await sendUserStatusNotification(supabase, event);
+      break;
+    case 'admin.campaign.approved':
+    case 'admin.campaign.rejected':
+      await sendCampaignStatusNotification(supabase, event);
+      break;
+    case 'organization.verified':
+    case 'organization.rejected':
+      await sendOrganizationStatusNotification(supabase, event);
       break;
     default:
       console.log(`[Notifications] No handler for event type: ${event.type}`);
@@ -244,17 +288,48 @@ async function sendGoalReachedNotification(supabase: any, event: DomainEvent): P
   // TODO: Send celebration email
 }
 
+async function sendUserStatusNotification(supabase: any, event: DomainEvent): Promise<void> {
+  console.log(`[Notifications] User status changed: ${event.type}`, event.payload);
+  // TODO: Send user status change notification
+}
+
+async function sendCampaignStatusNotification(supabase: any, event: DomainEvent): Promise<void> {
+  console.log(`[Notifications] Campaign status changed: ${event.type}`, event.payload);
+  // TODO: Send campaign status change notification
+}
+
+async function sendOrganizationStatusNotification(supabase: any, event: DomainEvent): Promise<void> {
+  console.log(`[Notifications] Organization status changed: ${event.type}`, event.payload);
+  // TODO: Send organization verification notification
+}
+
 // Cache Invalidation Processor
 async function processCacheInvalidation(supabase: any, event: DomainEvent): Promise<void> {
   console.log(`[Cache] Processing event: ${event.type}`);
 
   switch (event.type) {
-    case 'campaign.updated':
     case 'campaign.created':
+    case 'campaign.updated':
+    case 'campaign.deleted':
+    case 'admin.campaign.approved':
+    case 'admin.campaign.rejected':
+    case 'admin.campaign.paused':
+    case 'admin.campaign.closed':
       console.log(`[Cache] Invalidating campaign cache: ${event.payload.campaignId}`);
       break;
     case 'donation.completed':
       console.log(`[Cache] Invalidating campaign stats: ${event.payload.campaignId}`);
+      break;
+    case 'user.profile_updated':
+    case 'admin.user.profile_updated':
+    case 'admin.user.suspended':
+    case 'admin.user.unsuspended':
+      console.log(`[Cache] Invalidating user cache: ${event.payload.userId}`);
+      break;
+    case 'organization.updated':
+    case 'organization.verified':
+    case 'organization.rejected':
+      console.log(`[Cache] Invalidating organization cache: ${event.payload.organizationId}`);
       break;
     default:
       console.log(`[Cache] No cache invalidation for event type: ${event.type}`);

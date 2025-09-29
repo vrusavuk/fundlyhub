@@ -29,8 +29,9 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useRBAC } from '@/hooks/useRBAC';
-import { useSupabaseRealtime } from '@/hooks/useSupabaseRealtime';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useEventSubscriber } from '@/hooks/useEventBus';
+import { AdminEventService } from '@/lib/services/AdminEventService';
 import { createCampaignColumns, CampaignData } from '@/lib/data-table/campaign-columns';
 import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
 import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
@@ -237,30 +238,48 @@ export function CampaignManagement() {
             : c
         ));
 
-        const { error } = await supabase
-          .from('fundraisers')
-          .update({ 
-            status: newStatus as CampaignData['status'],
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', campaignId);
-
-        if (error) throw error;
-
         const { data: user } = await supabase.auth.getUser();
+        const userId = user.user?.id;
         
-        await supabase.rpc('log_audit_event', {
-          _actor_id: user.user?.id,
-          _action: `campaign_${newStatus}`,
-          _resource_type: 'campaign',
-          _resource_id: campaignId,
-          _metadata: { reason: reason || 'Administrative action' }
-        });
+        if (!userId) throw new Error('User not authenticated');
+
+        // Use AdminEventService which handles DB update + event publishing + audit log
+        await AdminEventService.updateCampaignStatus(
+          campaignId,
+          userId,
+          newStatus as 'active' | 'pending' | 'paused' | 'closed'
+        );
 
         return { campaignId, newStatus };
       }
     );
   };
+
+  // Subscribe to campaign events for real-time updates
+  useEventSubscriber('campaign.updated', (event) => {
+    console.log('[CampaignManagement] Campaign updated event:', event);
+    fetchCampaigns(); // Refresh campaigns when any update occurs
+  });
+
+  useEventSubscriber('admin.campaign.approved', (event) => {
+    console.log('[CampaignManagement] Campaign approved event:', event);
+    fetchCampaigns();
+  });
+
+  useEventSubscriber('admin.campaign.rejected', (event) => {
+    console.log('[CampaignManagement] Campaign rejected event:', event);
+    fetchCampaigns();
+  });
+
+  useEventSubscriber('admin.campaign.paused', (event) => {
+    console.log('[CampaignManagement] Campaign paused event:', event);
+    fetchCampaigns();
+  });
+
+  useEventSubscriber('admin.campaign.closed', (event) => {
+    console.log('[CampaignManagement] Campaign closed event:', event);
+    fetchCampaigns();
+  });
 
   useEffect(() => {
     fetchCampaigns();
