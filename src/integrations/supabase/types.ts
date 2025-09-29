@@ -50,6 +50,39 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_analytics_projection: {
+        Row: {
+          average_donation: number | null
+          campaign_id: string
+          donation_count: number | null
+          first_donation_at: string | null
+          last_donation_at: string | null
+          total_donations: number | null
+          unique_donors: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          average_donation?: number | null
+          campaign_id: string
+          donation_count?: number | null
+          first_donation_at?: string | null
+          last_donation_at?: string | null
+          total_donations?: number | null
+          unique_donors?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          average_donation?: number | null
+          campaign_id?: string
+          donation_count?: number | null
+          first_donation_at?: string | null
+          last_donation_at?: string | null
+          total_donations?: number | null
+          unique_donors?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           color_class: string
@@ -199,6 +232,119 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "public_fundraiser_stats"
             referencedColumns: ["fundraiser_id"]
+          },
+        ]
+      }
+      donor_history_projection: {
+        Row: {
+          average_donation: number | null
+          campaigns_supported: number | null
+          donation_count: number | null
+          first_donation_at: string | null
+          last_donation_at: string | null
+          total_donated: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          average_donation?: number | null
+          campaigns_supported?: number | null
+          donation_count?: number | null
+          first_donation_at?: string | null
+          last_donation_at?: string | null
+          total_donated?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          average_donation?: number | null
+          campaigns_supported?: number | null
+          donation_count?: number | null
+          first_donation_at?: string | null
+          last_donation_at?: string | null
+          total_donated?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      event_dead_letter_queue: {
+        Row: {
+          created_at: string | null
+          event_data: Json
+          failure_count: number | null
+          failure_reason: string
+          first_failed_at: string | null
+          id: string
+          last_failed_at: string | null
+          original_event_id: string
+          processor_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_data: Json
+          failure_count?: number | null
+          failure_reason: string
+          first_failed_at?: string | null
+          id?: string
+          last_failed_at?: string | null
+          original_event_id: string
+          processor_name: string
+        }
+        Update: {
+          created_at?: string | null
+          event_data?: Json
+          failure_count?: number | null
+          failure_reason?: string
+          first_failed_at?: string | null
+          id?: string
+          last_failed_at?: string | null
+          original_event_id?: string
+          processor_name?: string
+        }
+        Relationships: []
+      }
+      event_processing_status: {
+        Row: {
+          attempt_count: number | null
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          event_id: string
+          id: string
+          last_attempt_at: string | null
+          processor_name: string
+          status: string
+        }
+        Insert: {
+          attempt_count?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          event_id: string
+          id?: string
+          last_attempt_at?: string | null
+          processor_name: string
+          status: string
+        }
+        Update: {
+          attempt_count?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          event_id?: string
+          id?: string
+          last_attempt_at?: string | null
+          processor_name?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_processing_status_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_store"
+            referencedColumns: ["event_id"]
           },
         ]
       }
@@ -1087,6 +1233,16 @@ export type Database = {
       }
     }
     Views: {
+      event_statistics: {
+        Row: {
+          event_count: number | null
+          event_type: string | null
+          first_seen: string | null
+          hour_bucket: string | null
+          last_seen: string | null
+        }
+        Relationships: []
+      }
       public_fundraiser_stats: {
         Row: {
           created_at: string | null
@@ -1174,6 +1330,10 @@ export type Database = {
           _user_id?: string
         }
         Returns: string
+      }
+      refresh_event_statistics: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       update_follow_counts: {
         Args: {
