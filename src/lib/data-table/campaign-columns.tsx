@@ -60,6 +60,11 @@ const getProgressPercentage = (raised: number, goal: number) => {
   return Math.min((raised / goal) * 100, 100);
 };
 
+const truncateText = (text: string, maxLength: number = 60): string => {
+  if (!text || text.length <= maxLength) return text;
+  return text.substring(0, maxLength).trim() + '...';
+};
+
 // Create campaign columns
 export function createCampaignColumns(
   onViewDetails: (campaign: CampaignData) => void,
@@ -99,8 +104,8 @@ export function createCampaignColumns(
             <div className="min-w-0 flex-1">
               <div className="font-medium truncate">{campaign.title}</div>
               {campaign.summary && (
-                <div className="text-sm text-muted-foreground truncate">
-                  {campaign.summary}
+                <div className="text-sm text-muted-foreground truncate max-w-[180px]">
+                  {truncateText(campaign.summary, 60)}
                 </div>
               )}
               <div className="flex items-center space-x-2 mt-1">
@@ -121,7 +126,7 @@ export function createCampaignColumns(
       },
       enableSorting: true,
       enableHiding: false,
-      size: 300,
+      size: 250,
     },
 
     // Owner column
