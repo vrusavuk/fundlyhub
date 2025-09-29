@@ -70,6 +70,19 @@ export function DocsLayout({ children }: DocsLayoutProps) {
                 </div>
                 
                 <div>
+                  <h4 className="font-semibold text-sm mb-2 text-foreground">Events</h4>
+                  <ul className="space-y-1 text-sm">
+                    <li><Link to="/docs/events" className={getLinkClassName('/docs/events')}>Overview</Link></li>
+                    <li><Link to="/docs/events/user-events" className={getLinkClassName('/docs/events/user-events')}>User Events</Link></li>
+                    <li><Link to="/docs/events/campaign-events" className={getLinkClassName('/docs/events/campaign-events')}>Campaign Events</Link></li>
+                    <li><Link to="/docs/events/donation-events" className={getLinkClassName('/docs/events/donation-events')}>Donation Events</Link></li>
+                    <li><Link to="/docs/events/organization-events" className={getLinkClassName('/docs/events/organization-events')}>Organization Events</Link></li>
+                    <li><Link to="/docs/events/admin-events" className={getLinkClassName('/docs/events/admin-events')}>Admin Events</Link></li>
+                    <li><Link to="/docs/events/explorer" className={getLinkClassName('/docs/events/explorer')}>Event Explorer</Link></li>
+                  </ul>
+                </div>
+
+                <div>
                   <h4 className="font-semibold text-sm mb-2 text-foreground">Examples</h4>
                   <ul className="space-y-1 text-sm">
                     <li><Link to="/docs/javascript-examples" className={getLinkClassName('/docs/javascript-examples')}>JavaScript</Link></li>
