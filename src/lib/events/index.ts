@@ -21,27 +21,29 @@ export * from './publishers/ServiceEventPublisher';
 export * from './subscribers/AnalyticsSubscriber';
 export * from './subscribers/CacheSubscriber';
 
-// Create default event bus instance
-import { EventBus } from './EventBus';
-import { InMemoryEventStore } from './EventStore';
+// Create hybrid event bus instance
+import { HybridEventBus } from './HybridEventBus';
+import { supabase } from '@/integrations/supabase/client';
 import { LoggingMiddleware } from './middleware/LoggingMiddleware';
 import { ValidationMiddleware } from './middleware/ValidationMiddleware';
 
-// Create event store instance
-const eventStore = new InMemoryEventStore();
-
 // Create middleware instances
 const loggingMiddleware = new LoggingMiddleware('info', true, false);
-const validationMiddleware = new ValidationMiddleware(false, false); // Non-strict for now
+const validationMiddleware = new ValidationMiddleware(false, false);
 
-export const globalEventBus = new EventBus({
+// Redis is server-side only, frontend doesn't need it
+export const globalEventBus = new HybridEventBus({
+  supabase,
+  redis: undefined, // Server-side edge functions will use Redis
   enablePersistence: true,
   enableReplay: true,
+  enableRemotePublish: false, // Frontend doesn't publish to Redis directly
+  enableEdgeFunctionTrigger: true,
   batchSize: 10,
   retryAttempts: 3,
   retryDelay: 1000,
   middleware: [loggingMiddleware, validationMiddleware],
-}, eventStore);
+});
 
 // Initialize the event bus
 globalEventBus.connect().catch(console.error);

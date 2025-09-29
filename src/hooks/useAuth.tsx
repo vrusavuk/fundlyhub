@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { globalEventBus } from '@/lib/events';
+import { createUserRegisteredEvent, createUserLoggedInEvent } from '@/lib/events/domain/UserEvents';
 
 interface AuthContextType {
   user: User | null;
@@ -44,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (email: string, password: string, name?: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -54,14 +56,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     });
+
+    // Publish user registered event
+    if (!error && data.user) {
+      try {
+        const event = createUserRegisteredEvent({
+          userId: data.user.id,
+          email: data.user.email || email,
+          name: name || '',
+        });
+        await globalEventBus.publish(event);
+      } catch (eventError) {
+        console.error('Failed to publish user registered event:', eventError);
+      }
+    }
+
     return { error };
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+
+    // Publish user logged in event
+    if (!error && data.user) {
+      try {
+        const event = createUserLoggedInEvent({
+          userId: data.user.id,
+        });
+        await globalEventBus.publish(event);
+      } catch (eventError) {
+        console.error('Failed to publish user logged in event:', eventError);
+      }
+    }
+
     return { error };
   };
 

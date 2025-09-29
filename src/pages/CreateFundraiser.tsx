@@ -14,6 +14,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useCategories } from '@/hooks/useCategories';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { supabase } from '@/integrations/supabase/client';
+import { globalEventBus } from '@/lib/events';
+import { createCampaignCreatedEvent } from '@/lib/events/domain/CampaignEvents';
 
 export default function CreateFundraiser() {
   const [loading, setLoading] = useState(false);
@@ -93,6 +95,22 @@ export default function CreateFundraiser() {
           variant: "destructive",
         });
       } else {
+        // Publish campaign created event
+        try {
+          const event = createCampaignCreatedEvent({
+            campaignId: data.id,
+            userId: user.id,
+            title: formData.title,
+            description: formData.summary,
+            goalAmount: goalAmount,
+            categoryId: selectedCategory?.id || '',
+            visibility: 'public',
+          });
+          await globalEventBus.publish(event);
+        } catch (eventError) {
+          console.error('Failed to publish campaign created event:', eventError);
+        }
+
         toast({
           title: "Fundraiser created!",
           description: "Your fundraiser has been created successfully.",
