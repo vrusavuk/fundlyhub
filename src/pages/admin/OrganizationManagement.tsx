@@ -15,6 +15,8 @@ import { useRBAC } from '@/hooks/useRBAC';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useEventSubscriber } from '@/hooks/useEventBus';
 import { useDebounce } from '@/hooks/useDebounce';
+import { usePagination } from '@/hooks/usePagination';
+import { adminDataService } from '@/lib/services/AdminDataService';
 import { AdminEventService } from '@/lib/services/AdminEventService';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { OrganizationDetailsDialog } from '@/components/admin/ViewDetailsDialog';
@@ -59,6 +61,13 @@ export function OrganizationManagement() {
   const { hasPermission } = useRBAC();
   
   const debouncedSearch = useDebounce(filters.search, 500);
+  
+  // Pagination
+  const pagination = usePagination({
+    initialPageSize: 20,
+    syncWithURL: true,
+    onPageChange: () => fetchOrganizations()
+  });
 
   // Enhanced with optimistic updates
   const optimisticUpdates = useOptimisticUpdates({
@@ -74,39 +83,23 @@ export function OrganizationManagement() {
     try {
       setLoading(true);
       
-      // Fix N+1 query: Use a single query with joins
-      let query = supabase
-        .from('organizations')
-        .select(`
-          *,
-          org_members(count),
-          fundraisers!org_id(id, goal_amount)
-        `)
-        .order('created_at', { ascending: false });
+      // Use AdminDataService for optimized fetching with pagination
+      const result = await adminDataService.fetchOrganizations(
+        {
+          page: pagination.state.page,
+          pageSize: pagination.state.pageSize,
+          sortBy: 'created_at',
+          sortOrder: 'desc'
+        },
+        {
+          search: debouncedSearch,
+          status: filters.status !== 'all' ? filters.status : undefined
+        }
+      );
 
-      // Apply search filter
-      if (debouncedSearch.trim()) {
-        query = query.or(`legal_name.ilike.%${debouncedSearch}%,dba_name.ilike.%${debouncedSearch}%`);
-      }
+      setOrganizations(result.data as OrganizationData[]);
+      pagination.setTotal(result.total);
 
-      // Apply status filter
-      if (filters.status !== 'all') {
-        query = query.eq('verification_status', filters.status as 'pending' | 'approved' | 'rejected');
-      }
-
-      const { data: orgsData, error: orgsError } = await query.range(0, 99);
-
-      if (orgsError) throw orgsError;
-
-      // Transform the data to include aggregated counts
-      const enrichedOrgs = (orgsData || []).map((org: any) => ({
-        ...org,
-        member_count: org.org_members?.[0]?.count || 0,
-        campaign_count: org.fundraisers?.length || 0,
-        total_raised: org.fundraisers?.reduce((sum: number, c: any) => sum + Number(c.goal_amount || 0), 0) || 0
-      })) as OrganizationData[];
-
-      setOrganizations(enrichedOrgs);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -116,7 +109,7 @@ export function OrganizationManagement() {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, filters.status, toast]);
+  }, [debouncedSearch, filters.status, pagination.state.page, pagination.state.pageSize, toast]);
 
   useEffect(() => {
     fetchOrganizations();

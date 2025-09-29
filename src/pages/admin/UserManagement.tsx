@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRBAC } from '@/hooks/useRBAC';
 import { supabase } from '@/integrations/supabase/client';
 import { useDebounce } from '@/hooks/useDebounce';
+import { usePagination } from '@/hooks/usePagination';
+import { adminDataService } from '@/lib/services/AdminDataService';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -95,6 +97,13 @@ export function UserManagement() {
     role: 'all'
   });
   const [selectedUsers, setSelectedUsers] = useState<ExtendedProfile[]>([]);
+  
+  // Pagination
+  const pagination = usePagination({
+    initialPageSize: 20,
+    syncWithURL: true,
+    onPageChange: () => fetchUsers()
+  });
   
   // Debounce search to prevent excessive queries
   const debouncedSearch = useDebounce(filters.search, 500);
@@ -602,6 +611,14 @@ export function UserManagement() {
         enableColumnVisibility={true}
         enablePagination={true}
         density="comfortable"
+        pagination={{
+          pageIndex: pagination.state.page - 1,
+          pageSize: pagination.state.pageSize,
+          pageCount: pagination.state.totalPages,
+          total: pagination.state.total,
+          onPageChange: (page) => pagination.goToPage(page + 1),
+          onPageSizeChange: pagination.setPageSize
+        }}
       />
 
       {/* Optimistic Update Indicator */}

@@ -19,6 +19,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useRBAC } from '@/hooks/useRBAC';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useDebounce } from '@/hooks/useDebounce';
+import { usePagination } from '@/hooks/usePagination';
+import { adminDataService } from '@/lib/services/AdminDataService';
 import { useEventSubscriber } from '@/hooks/useEventBus';
 import { AdminEventService } from '@/lib/services/AdminEventService';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
@@ -74,6 +76,13 @@ export function CampaignManagement() {
   });
   
   const debouncedSearch = useDebounce(filters.search, 500);
+  
+  // Pagination
+  const pagination = usePagination({
+    initialPageSize: 20,
+    syncWithURL: true,
+    onPageChange: () => fetchCampaigns()
+  });
 
   // Enhanced with optimistic updates
   const optimisticUpdates = useOptimisticUpdates({
@@ -89,114 +98,33 @@ export function CampaignManagement() {
     try {
       setLoading(true);
 
-      // Fix N+1 query: Fetch campaigns with stats in a single optimized query
-      let query = supabase
-        .from('fundraisers')
-        .select(`
-          *,
-          owner_profile:profiles!owner_user_id(name, email, avatar)
-        `, { count: 'exact' });
-
-      // Apply filters
-      if (debouncedSearch.trim()) {
-        query = query.or(`title.ilike.%${debouncedSearch}%,summary.ilike.%${debouncedSearch}%,beneficiary_name.ilike.%${debouncedSearch}%`);
-      }
-
-      if (filters.status !== 'all') {
-        query = query.eq('status', filters.status as any);
-      }
-
-      if (filters.category !== 'all') {
-        query = query.eq('category', filters.category);
-      }
-
-      if (filters.visibility !== 'all') {
-        query = query.eq('visibility', filters.visibility as any);
-      }
-
-      // Date range filter
-      if (filters.dateRange !== 'all') {
-        const now = new Date();
-        let startDate: Date;
-        
-        switch (filters.dateRange) {
-          case 'today':
-            startDate = new Date(now.setHours(0, 0, 0, 0));
-            break;
-          case 'week':
-            startDate = new Date(now.setDate(now.getDate() - 7));
-            break;
-          case 'month':
-            startDate = new Date(now.setMonth(now.getMonth() - 1));
-            break;
-          case 'quarter':
-            startDate = new Date(now.setMonth(now.getMonth() - 3));
-            break;
-          default:
-            startDate = new Date(0);
+      // Use AdminDataService for optimized fetching with pagination
+      const result = await adminDataService.fetchCampaigns(
+        {
+          page: pagination.state.page,
+          pageSize: pagination.state.pageSize,
+          sortBy: 'created_at',
+          sortOrder: 'desc'
+        },
+        {
+          search: debouncedSearch,
+          status: filters.status !== 'all' ? filters.status : undefined,
+          category: filters.category !== 'all' ? filters.category : undefined
         }
-        
-        query = query.gte('created_at', startDate.toISOString());
-      }
+      );
 
-      // Amount range filter
-      if (filters.amountRange !== 'all') {
-        const ranges = {
-          'under-1k': [0, 1000],
-          '1k-5k': [1000, 5000],
-          '5k-10k': [5000, 10000],
-          '10k-50k': [10000, 50000],
-          'over-50k': [50000, Number.MAX_SAFE_INTEGER]
-        };
-        
-        const range = ranges[filters.amountRange as keyof typeof ranges];
-        if (range) {
-          query = query.gte('goal_amount', range[0]).lt('goal_amount', range[1]);
-        }
-      }
+      setCampaigns(result.data as CampaignData[]);
+      pagination.setTotal(result.total);
 
-      // Apply sorting and pagination
-      query = query
-        .order('created_at', { ascending: false })
-        .range(0, 99);
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-
-      // Fetch all stats in a single batch call
-      const campaignIds = data?.map(c => c.id) || [];
-      let campaignsWithStats: CampaignData[] = data || [];
-
-      if (campaignIds.length > 0) {
-        try {
-          const { data: stats } = await supabase
-            .rpc('get_fundraiser_totals', { fundraiser_ids: campaignIds });
-
-          campaignsWithStats = (data || []).map(campaign => ({
-            ...campaign,
-            stats: stats?.find(s => s.fundraiser_id === campaign.id) || {
-              total_raised: 0,
-              donor_count: 0
-            }
-          })) as CampaignData[];
-        } catch (statsError) {
-          // Continue with campaigns without stats
-          campaignsWithStats = data as CampaignData[];
-        }
-      }
-
-      setCampaigns(campaignsWithStats);
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to load campaigns',
-        variant: 'destructive'
+        title: "Error",
+        description: error.message || "Failed to load campaigns",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, filters.status, filters.category, filters.visibility, filters.dateRange, filters.amountRange, toast]);
 
   const handleCampaignStatusChange = async (campaignId: string, newStatus: string, reason?: string) => {
     const campaign = campaigns.find(c => c.id === campaignId);
