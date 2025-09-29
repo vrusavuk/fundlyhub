@@ -85,6 +85,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const event = createUserLoggedInEvent({
           userId: data.user.id,
+          sessionId: data.session?.access_token || '',
+          timestamp: Date.now(),
+          userAgent: navigator.userAgent,
         });
         await globalEventBus.publish(event);
       } catch (eventError) {

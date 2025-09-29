@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Activity, AlertCircle, CheckCircle, XCircle, RefreshCw, TrendingUp } from 'lucide-react';
 import { format } from 'date-fns';
+import { DeadLetterQueueManager } from '@/lib/events/DeadLetterQueueManager';
 
 interface EventRecord {
   event_id: string;
@@ -33,7 +34,9 @@ export default function EventMonitoring() {
   const [processingStatus, setProcessingStatus] = useState<ProcessingStatus[]>([]);
   const [deadLetterQueue, setDeadLetterQueue] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reprocessing, setReprocessing] = useState(false);
   const { toast } = useToast();
+  const dlqManager = new DeadLetterQueueManager(supabase);
 
   useEffect(() => {
     loadData();
@@ -121,29 +124,56 @@ export default function EventMonitoring() {
     }
   };
 
-  const replayEvent = async (eventId: string) => {
+  const reprocessSingleEvent = async (dlqId: string) => {
+    setReprocessing(true);
     try {
-      const { error } = await supabase.functions.invoke('event-replay', {
-        body: {
-          eventTypes: [],
-          fromTimestamp: Date.now() - 24 * 60 * 60 * 1000,
-          dryRun: false,
-        }
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: 'Event replay started',
-        description: 'Events are being replayed in the background',
-      });
+      const success = await dlqManager.reprocessEvent(dlqId);
+      
+      if (success) {
+        toast({
+          title: 'Event reprocessed',
+          description: 'The event was successfully reprocessed',
+        });
+        await loadDeadLetterQueue();
+      } else {
+        toast({
+          title: 'Reprocessing failed',
+          description: 'The event could not be reprocessed',
+          variant: 'destructive',
+        });
+      }
     } catch (error) {
-      console.error('Error replaying event:', error);
+      console.error('Error reprocessing event:', error);
       toast({
-        title: 'Replay failed',
-        description: 'Failed to start event replay',
+        title: 'Error',
+        description: 'An error occurred while reprocessing',
         variant: 'destructive',
       });
+    } finally {
+      setReprocessing(false);
+    }
+  };
+
+  const reprocessAllEvents = async () => {
+    setReprocessing(true);
+    try {
+      const result = await dlqManager.reprocessAll();
+      
+      toast({
+        title: 'Reprocessing complete',
+        description: `Successfully reprocessed ${result.success} events. ${result.failed} failed.`,
+      });
+      
+      await loadDeadLetterQueue();
+    } catch (error) {
+      console.error('Error reprocessing events:', error);
+      toast({
+        title: 'Reprocessing failed',
+        description: 'Failed to reprocess events',
+        variant: 'destructive',
+      });
+    } finally {
+      setReprocessing(false);
     }
   };
 
@@ -290,11 +320,11 @@ export default function EventMonitoring() {
                 </div>
                 <Button 
                   size="sm" 
-                  onClick={() => replayEvent('')}
-                  disabled={deadLetterQueue.length === 0}
+                  onClick={reprocessAllEvents}
+                  disabled={deadLetterQueue.length === 0 || reprocessing}
                 >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Replay All
+                  <RefreshCw className={`h-4 w-4 mr-2 ${reprocessing ? 'animate-spin' : ''}`} />
+                  Reprocess All
                 </Button>
               </div>
             </CardHeader>
@@ -316,6 +346,14 @@ export default function EventMonitoring() {
                         Last failed: {format(new Date(item.last_failed_at), 'MMM d, HH:mm')}
                       </div>
                     </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => reprocessSingleEvent(item.id)}
+                      disabled={reprocessing}
+                    >
+                      <RefreshCw className={`h-4 w-4 ${reprocessing ? 'animate-spin' : ''}`} />
+                    </Button>
                   </div>
                 ))}
                 {deadLetterQueue.length === 0 && (

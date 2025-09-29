@@ -30,7 +30,8 @@ serve(async (req) => {
   }
 
   try {
-    const { event, events } = await req.json();
+    const body = await req.json();
+    const { event, events } = body;
 
     // Initialize Supabase client with service role
     const supabase = createClient(
@@ -43,9 +44,28 @@ serve(async (req) => {
     // Process single event or batch
     const eventsToProcess: DomainEvent[] = events || (event ? [event] : []);
 
-    console.log(`Processing ${eventsToProcess.length} event(s)`);
+    // Validate events array
+    if (!Array.isArray(eventsToProcess) || eventsToProcess.length === 0) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid request: events must be a non-empty array' 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
-    for (const evt of eventsToProcess) {
+    // Validate each event has required fields
+    const validEvents = eventsToProcess.filter(evt => {
+      if (!evt?.id || !evt?.type || !evt?.payload) {
+        console.error('Skipping invalid event:', evt);
+        return false;
+      }
+      return true;
+    });
+
+    console.log(`Processing ${validEvents.length} valid event(s) out of ${eventsToProcess.length}`);
+
+    for (const evt of validEvents) {
       try {
         // Run all processors in parallel
         const processorResults = await Promise.allSettled([
@@ -150,59 +170,29 @@ async function processAnalytics(supabase: any, event: DomainEvent): Promise<void
 async function updateDonationAnalytics(supabase: any, event: DomainEvent): Promise<void> {
   const { campaignId, amount, userId } = event.payload;
 
-  // Update campaign analytics projection
-  const { data: existing } = await supabase
-    .from('campaign_analytics_projection')
-    .select('*')
-    .eq('campaign_id', campaignId)
-    .single();
+  // Use safe atomic function for campaign analytics
+  const { error: campaignError } = await supabase.rpc('update_campaign_analytics_safe', {
+    p_campaign_id: campaignId,
+    p_amount: amount,
+    p_donor_id: userId
+  });
 
-  if (existing) {
-    await supabase.from('campaign_analytics_projection').update({
-      total_donations: parseFloat(existing.total_donations) + parseFloat(amount),
-      donation_count: existing.donation_count + 1,
-      last_donation_at: new Date().toISOString(),
-      average_donation: (parseFloat(existing.total_donations) + parseFloat(amount)) / (existing.donation_count + 1),
-      updated_at: new Date().toISOString(),
-    }).eq('campaign_id', campaignId);
-  } else {
-    await supabase.from('campaign_analytics_projection').insert({
-      campaign_id: campaignId,
-      total_donations: amount,
-      donation_count: 1,
-      unique_donors: 1,
-      first_donation_at: new Date().toISOString(),
-      last_donation_at: new Date().toISOString(),
-      average_donation: amount,
-    });
+  if (campaignError) {
+    console.error('Failed to update campaign analytics:', campaignError);
+    throw campaignError;
   }
 
   // Update donor history if user is logged in
   if (userId) {
-    const { data: donorHistory } = await supabase
-      .from('donor_history_projection')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
+    const { error: donorError } = await supabase.rpc('update_donor_history_safe', {
+      p_user_id: userId,
+      p_amount: amount,
+      p_campaign_id: campaignId
+    });
 
-    if (donorHistory) {
-      await supabase.from('donor_history_projection').update({
-        total_donated: parseFloat(donorHistory.total_donated) + parseFloat(amount),
-        donation_count: donorHistory.donation_count + 1,
-        last_donation_at: new Date().toISOString(),
-        average_donation: (parseFloat(donorHistory.total_donated) + parseFloat(amount)) / (donorHistory.donation_count + 1),
-        updated_at: new Date().toISOString(),
-      }).eq('user_id', userId);
-    } else {
-      await supabase.from('donor_history_projection').insert({
-        user_id: userId,
-        total_donated: amount,
-        donation_count: 1,
-        campaigns_supported: 1,
-        first_donation_at: new Date().toISOString(),
-        last_donation_at: new Date().toISOString(),
-        average_donation: amount,
-      });
+    if (donorError) {
+      console.error('Failed to update donor history:', donorError);
+      throw donorError;
     }
   }
 }

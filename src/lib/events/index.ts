@@ -27,6 +27,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { LoggingMiddleware } from './middleware/LoggingMiddleware';
 import { ValidationMiddleware } from './middleware/ValidationMiddleware';
 
+// Export utility classes
+export { EventIdempotency, eventIdempotency } from './EventIdempotency';
+export { EventVersionManager, eventVersionManager } from './EventVersioning';
+export { DeadLetterQueueManager } from './DeadLetterQueueManager';
+export { CircuitBreaker, CircuitState } from './CircuitBreaker';
+
 // Create middleware instances
 const loggingMiddleware = new LoggingMiddleware('info', true, false);
 const validationMiddleware = new ValidationMiddleware(false, false);

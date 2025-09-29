@@ -19,14 +19,50 @@ export class RedisEventStream {
   private streamName: string;
   private maxRetries: number;
   private isConnected = false;
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 5;
+  private reconnectDelay = 1000;
 
   constructor(config: RedisStreamConfig) {
     this.redis = new Redis({
       url: config.url,
       token: config.token,
+      retry: {
+        retries: 3,
+        backoff: (retryCount: number) => {
+          return Math.min(retryCount * 100, 3000);
+        }
+      },
+      automaticDeserialization: false,
     });
     this.streamName = config.streamName || 'events';
     this.maxRetries = config.maxRetries || 3;
+    this.setupErrorHandling();
+  }
+
+  private setupErrorHandling(): void {
+    // Note: Upstash Redis client doesn't support event listeners
+    // Error handling is done in individual operations
+  }
+
+  private async handleReconnect(): Promise<void> {
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      console.error('[Redis] Max reconnect attempts reached');
+      this.isConnected = false;
+      return;
+    }
+
+    this.reconnectAttempts++;
+    const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts);
+
+    console.log(`[Redis] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
+    await new Promise(resolve => setTimeout(resolve, delay));
+    
+    try {
+      await this.connect();
+    } catch (error) {
+      console.error('[Redis] Reconnect failed:', error);
+    }
   }
 
   async connect(): Promise<void> {
@@ -34,10 +70,11 @@ export class RedisEventStream {
       // Test connection by pinging Redis
       await this.redis.ping();
       this.isConnected = true;
+      this.reconnectAttempts = 0; // Reset on successful connection
       console.log('Redis Event Stream connected');
     } catch (error) {
       console.error('Failed to connect to Redis:', error);
-      throw error;
+      await this.handleReconnect();
     }
   }
 
@@ -51,8 +88,11 @@ export class RedisEventStream {
    */
   async publishToStream(event: DomainEvent): Promise<string | null> {
     if (!this.isConnected) {
-      console.warn('Redis not connected, skipping event publish');
-      return null;
+      console.warn('Redis not connected, attempting reconnect...');
+      await this.handleReconnect();
+      if (!this.isConnected) {
+        return null;
+      }
     }
 
     try {
@@ -71,9 +111,12 @@ export class RedisEventStream {
         }
       );
 
+      this.reconnectAttempts = 0; // Reset on success
       return streamId as string;
     } catch (error) {
       console.error('Failed to publish event to Redis stream:', error);
+      this.isConnected = false;
+      await this.handleReconnect();
       throw error;
     }
   }

@@ -38,7 +38,14 @@ export class SupabaseEventStore implements EventStore {
     const batch = [...this.batchQueue];
     this.batchQueue = [];
 
-    await this.saveBatch(batch);
+    try {
+      await this.saveBatch(batch);
+    } catch (error) {
+      // Re-queue failed events at the front
+      this.batchQueue.unshift(...batch);
+      console.error('Batch flush failed, events re-queued:', error);
+      throw error;
+    }
   }
 
   async save<T extends DomainEvent>(event: T): Promise<void> {

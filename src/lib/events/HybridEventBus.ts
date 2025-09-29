@@ -27,6 +27,8 @@ export class HybridEventBus implements IEventBus {
   private enableRemotePublish: boolean;
   private enableEdgeFunctionTrigger: boolean;
   private _isConnected = false;
+  private readonly clientId = crypto.randomUUID();
+  private realtimeChannel: any = null;
 
   constructor(config: HybridEventBusConfig) {
     this.supabase = config.supabase;
@@ -88,6 +90,11 @@ export class HybridEventBus implements IEventBus {
         await this.redisStream.disconnect();
       }
 
+      if (this.realtimeChannel) {
+        await this.supabase.removeChannel(this.realtimeChannel);
+        this.realtimeChannel = null;
+      }
+
       this._isConnected = false;
       console.log('Hybrid Event Bus disconnected');
     } catch (error) {
@@ -96,23 +103,37 @@ export class HybridEventBus implements IEventBus {
   }
 
   async publish<T extends DomainEvent>(event: T): Promise<void> {
+    if (!this._isConnected) {
+      throw new Error('HybridEventBus is not connected');
+    }
+
     try {
-      // 1. Publish to local bus first (instant UI update)
-      await this.localBus.publish(event);
+      // Add client ID to metadata to prevent re-publishing own events
+      const enrichedEvent = {
+        ...event,
+        metadata: { 
+          ...event.metadata, 
+          clientId: this.clientId 
+        }
+      };
 
-      // 2. Persist to Supabase (event sourcing)
-      await this.supabaseStore.save(event);
+      // 1. Persist to Supabase first (event sourcing)
+      await this.supabaseStore.save(enrichedEvent);
 
-      // 3. Publish to Redis for distributed processing (if enabled)
+      // 2. Publish to local bus for immediate UI update (no persistence)
+      await this.localBus.publish(enrichedEvent);
+
+      // 3. Publish to Redis for distributed processing (if enabled, server-side only)
       if (this.enableRemotePublish && this.redisStream) {
-        await this.redisStream.publishToStream(event).catch(error => {
+        await this.redisStream.publishToStream(enrichedEvent).catch(error => {
           console.warn('Failed to publish to Redis, continuing:', error);
         });
       }
 
       // 4. Trigger edge function for server-side processing (if enabled)
       if (this.enableEdgeFunctionTrigger) {
-        await this.triggerServerProcessing(event).catch(error => {
+        // Fire and forget - don't block on edge function
+        this.triggerServerProcessing(enrichedEvent).catch(error => {
           console.warn('Failed to trigger edge function, continuing:', error);
         });
       }
@@ -123,23 +144,36 @@ export class HybridEventBus implements IEventBus {
   }
 
   async publishBatch<T extends DomainEvent>(events: T[]): Promise<void> {
-    try {
-      // 1. Publish to local bus
-      await this.localBus.publishBatch(events);
+    if (!this._isConnected) {
+      throw new Error('HybridEventBus is not connected');
+    }
 
-      // 2. Persist to Supabase in batch
-      await this.supabaseStore.saveBatch(events);
+    try {
+      // Add client ID to all events
+      const enrichedEvents = events.map(event => ({
+        ...event,
+        metadata: { 
+          ...event.metadata, 
+          clientId: this.clientId 
+        }
+      }));
+
+      // 1. Persist to Supabase in batch
+      await this.supabaseStore.saveBatch(enrichedEvents);
+
+      // 2. Publish to local bus
+      await this.localBus.publishBatch(enrichedEvents);
 
       // 3. Publish to Redis in batch (if enabled)
       if (this.enableRemotePublish && this.redisStream) {
-        await this.redisStream.publishBatch(events).catch(error => {
+        await this.redisStream.publishBatch(enrichedEvents).catch(error => {
           console.warn('Failed to publish batch to Redis, continuing:', error);
         });
       }
 
       // 4. Trigger edge function for batch (if enabled)
       if (this.enableEdgeFunctionTrigger) {
-        await this.triggerBatchProcessing(events).catch(error => {
+        this.triggerBatchProcessing(enrichedEvents).catch(error => {
           console.warn('Failed to trigger edge function batch, continuing:', error);
         });
       }
@@ -172,15 +206,48 @@ export class HybridEventBus implements IEventBus {
    * Subscribe to Supabase real-time events from other clients
    */
   private subscribeToRealtimeEvents(): void {
-    this.supabaseStore.streamEvents((event) => {
-      // Dispatch to local handlers without re-persisting
-      this.localBus.subscribe(event.type, {
-        eventType: event.type,
-        handle: () => {
-          // Events from other clients, just dispatch locally
+    this.realtimeChannel = this.supabase
+      .channel('hybrid-event-bus')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'event_store' },
+        (payload) => {
+          try {
+            const event = this.mapPayloadToEvent(payload.new);
+            
+            // CRITICAL: Skip events from this client to prevent loops
+            if (event.metadata?.clientId === this.clientId) {
+              return;
+            }
+            
+            // Dispatch to local handlers only, DO NOT re-publish
+            const handlers = (this.localBus as any).handlers?.get(event.type) || [];
+            for (const handler of handlers) {
+              try {
+                handler.handle(event);
+              } catch (error) {
+                console.error('Handler error:', error);
+              }
+            }
+          } catch (error) {
+            console.error('Error processing realtime event:', error);
+          }
         }
-      });
-    });
+      )
+      .subscribe();
+  }
+  
+  private mapPayloadToEvent(payload: any): DomainEvent {
+    return {
+      id: payload.event_id,
+      type: payload.event_type,
+      payload: payload.event_data,
+      timestamp: new Date(payload.occurred_at).getTime(),
+      version: payload.event_version,
+      correlationId: payload.correlation_id,
+      causationId: payload.causation_id,
+      metadata: payload.metadata || {}
+    };
   }
 
   /**
