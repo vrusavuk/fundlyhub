@@ -100,7 +100,7 @@ class AdminDataService {
         query = query.or(`legal_name.ilike.%${filters.search}%,dba_name.ilike.%${filters.search}%`);
       }
       if (filters.status) {
-        query = query.eq('verification_status', filters.status);
+        query = query.eq('verification_status', filters.status as any);
       }
 
       // Apply pagination
@@ -145,7 +145,7 @@ class AdminDataService {
         query = query.or(`title.ilike.%${filters.search}%,summary.ilike.%${filters.search}%`);
       }
       if (filters.status) {
-        query = query.eq('status', filters.status);
+        query = query.eq('status', filters.status as any);
       }
       if (filters.category) {
         query = query.eq('category_id', filters.category);
@@ -257,14 +257,14 @@ class AdminDataService {
    */
   async fetchDashboardStats() {
     return this.cache.getOrSet('dashboard:stats', async () => {
-      const [usersResult, campaignsResult, orgsResult, fundsResult, activitiesResult, healthResult] = 
+        const [usersResult, campaignsResult, orgsResult, fundsResult, activitiesResult, healthResult] = 
         await Promise.all([
           supabase.from('profiles').select('id', { count: 'exact', head: true }),
           supabase.from('fundraisers').select('status'),
           supabase.from('organizations').select('verification_status'),
           supabase.rpc('get_campaign_stats'),
-          supabase.rpc('get_recent_activities', { limit_count: 10 }),
-          supabase.rpc('get_system_health')
+          supabase.rpc('get_recent_activities' as any, { limit_count: 10 }),
+          supabase.rpc('get_system_health' as any)
         ]);
 
       const campaignData = campaignsResult.data || [];

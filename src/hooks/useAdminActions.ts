@@ -86,7 +86,7 @@ export function useAdminActions() {
       async () => {
         const { error } = await supabase
           .from('profiles')
-          .update({ account_status: status })
+          .update({ account_status: status as any })
           .eq('id', userId);
 
         if (error) throw error;
@@ -118,7 +118,7 @@ export function useAdminActions() {
       async () => {
         const { error } = await supabase
           .from('fundraisers')
-          .update({ status })
+          .update({ status: status as any })
           .eq('id', campaignId);
 
         if (error) throw error;
@@ -149,7 +149,7 @@ export function useAdminActions() {
       async () => {
         const { error } = await supabase
           .from('organizations')
-          .update({ verification_status: verificationStatus })
+          .update({ verification_status: verificationStatus as any })
           .eq('id', orgId);
 
         if (error) throw error;
@@ -180,7 +180,7 @@ export function useAdminActions() {
     return executeAction(
       async () => {
         const { error } = await supabase
-          .from(tableName)
+          .from(tableName as any)
           .delete()
           .eq('id', resourceId);
 
@@ -193,7 +193,8 @@ export function useAdminActions() {
           _resource_id: resourceId
         });
 
-        adminDataService.invalidateCache(resourceType === 'campaign' ? 'campaigns' : resourceType === 'organization' ? 'organizations' : 'users');
+        const cacheKey = resourceType === 'campaign' ? 'campaigns' : resourceType === 'organization' ? 'organizations' : 'users';
+        adminDataService.invalidateCache(cacheKey);
       },
       {
         permission: `delete_${resourceType}s`,

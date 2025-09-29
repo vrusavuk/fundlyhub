@@ -72,16 +72,9 @@ export function RoleManagement() {
     try {
       setLoading(true);
 
-      // Fetch roles with user counts
-      const { data: rolesData, error: rolesError } = await supabase
-        .from('roles')
-        .select(`
-          *,
-          user_role_assignments!inner(count)
-        `)
-        .order('hierarchy_level', { ascending: false });
-
-      if (rolesError) throw rolesError;
+      // Use AdminDataService for optimized fetch (prevents N+1)
+      const { adminDataService } = await import('@/lib/services/AdminDataService');
+      const rolesWithCounts = await adminDataService.fetchRoles();
 
       // Fetch permissions
       const { data: permissionsData, error: permissionsError } = await supabase
@@ -97,22 +90,6 @@ export function RoleManagement() {
         .select('role_id, permission_id');
 
       if (mappingsError) throw mappingsError;
-
-      // Count users for each role
-      const rolesWithCounts = await Promise.all(
-        (rolesData || []).map(async (role) => {
-          const { count, error } = await supabase
-            .from('user_role_assignments')
-            .select('*', { count: 'exact', head: true })
-            .eq('role_id', role.id)
-            .eq('is_active', true);
-
-          return {
-            ...role,
-            user_count: count || 0
-          };
-        })
-      );
 
       setRoles(rolesWithCounts);
       setPermissions(permissionsData || []);

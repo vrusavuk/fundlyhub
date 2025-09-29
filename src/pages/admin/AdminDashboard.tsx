@@ -62,71 +62,28 @@ export function AdminDashboard() {
         setLoading(true);
         setError(null);
 
-        // Fetch platform statistics
-        const [
-          usersResult,
-          campaignsResult,
-          organizationsResult,
-          fundsResult
-        ] = await Promise.all([
-          supabase.from('profiles').select('id', { count: 'exact', head: true }),
-          supabase.from('fundraisers').select('status', { count: 'exact' }),
-          supabase.from('organizations').select('verification_status'),
-          supabase.rpc('get_campaign_stats')
-        ]);
-
-        // Process campaign data
-        const campaignData = campaignsResult.data || [];
-        const activeCampaigns = campaignData.filter(c => c.status === 'active').length;
-        const pendingCampaigns = campaignData.filter(c => c.status === 'pending').length;
-
-        // Process organization data
-        const orgData = organizationsResult.data || [];
-        const verifiedOrgs = orgData.filter(o => o.verification_status === 'approved').length;
-
-        // Mock recent activities (in real implementation, this would come from audit logs)
-        const recentActivities = [
-          {
-            id: '1',
-            type: 'campaign_approved',
-            description: 'Campaign "Help Local Animal Shelter" was approved',
-            timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-            severity: 'info' as const
-          },
-          {
-            id: '2',
-            type: 'user_suspended',
-            description: 'User account suspended due to policy violation',
-            timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-            severity: 'warning' as const
-          },
-          {
-            id: '3',
-            type: 'organization_verified',
-            description: 'Non-profit organization "Green Earth Foundation" verified',
-            timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-            severity: 'info' as const
-          }
-        ];
+        // Use AdminDataService for real data
+        const { adminDataService } = await import('@/lib/services/AdminDataService');
+        const dashboardStats = await adminDataService.fetchDashboardStats();
 
         setStats({
-          totalUsers: usersResult.count || 0,
-          activeCampaigns,
-          pendingCampaigns,
-          totalOrganizations: orgData.length,
-          verifiedOrganizations: verifiedOrgs,
-          totalFundsRaised: fundsResult.data?.[0]?.total_funds_raised || 0,
-          monthlyGrowth: 12.5, // Mock data
-          recentActivities
+          totalUsers: dashboardStats.totalUsers,
+          activeCampaigns: dashboardStats.activeCampaigns,
+          pendingCampaigns: dashboardStats.pendingCampaigns,
+          totalOrganizations: dashboardStats.totalOrganizations,
+          verifiedOrganizations: dashboardStats.verifiedOrganizations,
+          totalFundsRaised: dashboardStats.totalFundsRaised,
+          monthlyGrowth: dashboardStats.monthlyGrowth,
+          recentActivities: dashboardStats.recentActivities.map(activity => ({
+            id: activity.id,
+            type: activity.type,
+            description: activity.description,
+            timestamp: activity.event_timestamp,
+            severity: activity.severity as 'info' | 'warning' | 'error'
+          }))
         });
 
-        // Mock system health data
-        setSystemHealth({
-          database: 'healthy',
-          api: 'healthy',
-          storage: 'healthy',
-          lastCheck: new Date().toISOString()
-        });
+        setSystemHealth(dashboardStats.systemHealth);
 
       } catch (err) {
         console.error('Error fetching dashboard data:', err);

@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { HeaderSearch } from '@/components/search/HeaderSearch';
+import { KeyboardShortcutHelp } from '@/components/admin/KeyboardShortcutHelp';
 
 export function AdminHeader() {
   const { user, signOut } = useAuth();
@@ -54,6 +55,9 @@ export function AdminHeader() {
         <HeaderSearch isOpen={false} onClose={() => {}} />
       </div>
       
+      {/* Keyboard Shortcuts */}
+      <KeyboardShortcutHelp />
+      
       {/* Notification badge */}
       <Button variant="ghost" size="sm" className="relative">
         <Bell className="h-4 w-4" />
@@ -71,6 +75,7 @@ export function AdminHeader() {
         size="sm" 
         onClick={handleBackToSite}
         className="hidden sm:flex"
+        aria-label="Return to main site"
       >
         <ArrowLeft className="h-4 w-4 mr-2" />
         Back to Site

@@ -1,3 +1,4 @@
+// Layout components
 export { AdminLayout } from './AdminLayout';
 export { AdminHeader } from './AdminHeader';
 export { AdminSidebar } from './AdminSidebar';
@@ -19,3 +20,11 @@ export { CreateSampleAdmin } from './CreateSampleAdmin';
 export { ContextualHelp } from './ContextualHelp';
 export { DesignSystemShowcase } from './DesignSystemShowcase';
 export { EnhancedPageHeader } from './EnhancedPageHeader';
+
+// New enterprise components
+export { ConfirmDialog } from './ConfirmDialog';
+export { SessionTimeoutWarning } from './SessionTimeoutWarning';
+export { CreateUserDialog } from './CreateUserDialog';
+export { KeyboardShortcutHelp } from './KeyboardShortcutHelp';
+export { TableSkeleton } from './TableSkeleton';
+export { StatsCardSkeleton, StatsGridSkeleton } from './StatsCardSkeleton';

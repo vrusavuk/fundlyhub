@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
+import { useDebounce } from '@/hooks/useDebounce';
 import { 
   Activity, 
   Search, 
@@ -76,6 +77,9 @@ export function AuditLogs() {
     limit: 50
   });
 
+  // Debounce search input for better performance
+  const debouncedSearch = useDebounce(filters.search, 500);
+
   const fetchAuditLogs = async () => {
     try {
       setLoading(true);
@@ -86,9 +90,9 @@ export function AuditLogs() {
           *
         `, { count: 'exact' });
 
-      // Apply filters
-      if (filters.search.trim()) {
-        query = query.or(`action.ilike.%${filters.search}%,resource_type.ilike.%${filters.search}%`);
+      // Apply filters (using debounced search)
+      if (debouncedSearch.trim()) {
+        query = query.or(`action.ilike.%${debouncedSearch}%,resource_type.ilike.%${debouncedSearch}%`);
       }
 
       if (filters.action !== 'all') {
@@ -304,7 +308,7 @@ export function AuditLogs() {
 
   useEffect(() => {
     fetchAuditLogs();
-  }, [filters, currentPage]);
+  }, [debouncedSearch, filters.action, filters.resource_type, filters.actor_id, filters.date_from, filters.date_to, currentPage]);
 
   if (!hasPermission('view_audit_logs')) {
     return (

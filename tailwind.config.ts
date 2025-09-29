@@ -13,6 +13,15 @@ export default {
       },
     },
     extend: {
+      spacing: {
+        'touch-target': '44px', // Minimum mobile touch target size
+      },
+      minHeight: {
+        'touch': '44px', // Mobile touch target height
+      },
+      minWidth: {
+        'touch': '44px', // Mobile touch target width
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

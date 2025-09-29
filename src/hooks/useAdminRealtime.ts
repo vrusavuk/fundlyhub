@@ -45,7 +45,7 @@ export function useAdminRealtime(options: UseAdminRealtimeOptions) {
     const channel = supabase
       .channel(`admin-${table}-changes`)
       .on(
-        'postgres_changes',
+        'postgres_changes' as any,
         {
           event,
           schema: 'public',
@@ -88,7 +88,7 @@ export function useAdminRealtimeMultiple(subscriptions: UseAdminRealtimeOptions[
       return supabase
         .channel(`admin-${table}-changes`)
         .on(
-          'postgres_changes',
+          'postgres_changes' as any,
           {
             event,
             schema: 'public',

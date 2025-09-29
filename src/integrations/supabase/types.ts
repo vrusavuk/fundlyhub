@@ -1289,6 +1289,25 @@ export type Database = {
           total_raised: number
         }[]
       }
+      get_recent_activities: {
+        Args: { limit_count?: number }
+        Returns: {
+          description: string
+          event_timestamp: string
+          id: string
+          severity: string
+          type: string
+        }[]
+      }
+      get_system_health: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          api: string
+          database: string
+          last_check: string
+          storage: string
+        }[]
+      }
       get_user_roles: {
         Args: { _context_id?: string; _context_type?: string; _user_id: string }
         Returns: {
@@ -1333,6 +1352,14 @@ export type Database = {
       }
       refresh_event_statistics: {
         Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      update_campaign_analytics_safe: {
+        Args: { p_amount: number; p_campaign_id: string; p_donor_id: string }
+        Returns: undefined
+      }
+      update_donor_history_safe: {
+        Args: { p_amount: number; p_campaign_id: string; p_user_id: string }
         Returns: undefined
       }
       update_follow_counts: {
