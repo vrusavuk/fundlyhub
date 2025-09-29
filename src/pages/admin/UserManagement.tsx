@@ -1,17 +1,17 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRBAC } from '@/hooks/useRBAC';
 import { supabase } from '@/integrations/supabase/client';
+import { useDebounce } from '@/hooks/useDebounce';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { useKeyboardShortcuts, CommonShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useEventSubscriber } from '@/hooks/useEventBus';
 import { AdminEventService } from '@/lib/services/AdminEventService';
+import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
+import { CreateUserDialog } from '@/components/admin/CreateUserDialog';
+import { UserDetailsDialog } from '@/components/admin/ViewDetailsDialog';
 import { 
   Users, 
   UserCheck, 
@@ -20,12 +20,7 @@ import {
   AlertTriangle,
   Download,
   RefreshCw,
-  Plus,
-  Search,
-  Calendar,
-  Mail,
-  Archive,
-  Trash2
+  Plus
 } from 'lucide-react';
 import { createUserColumns, UserData as UserColumnData } from '@/lib/data-table/user-columns';
 import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
@@ -85,12 +80,24 @@ export function UserManagement() {
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<ExtendedProfile | null>(null);
   const [showUserDialog, setShowUserDialog] = useState(false);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    action: () => void;
+    variant?: 'default' | 'destructive';
+  }>({ open: false, title: '', description: '', action: () => {}, variant: 'default' });
+  
   const [filters, setFilters] = useState<UserFilters>({
     search: '',
     status: 'all',
     role: 'all'
   });
   const [selectedUsers, setSelectedUsers] = useState<ExtendedProfile[]>([]);
+  
+  // Debounce search to prevent excessive queries
+  const debouncedSearch = useDebounce(filters.search, 500);
 
   // Enhanced with optimistic updates
   const optimisticUpdates = useOptimisticUpdates({
@@ -125,7 +132,7 @@ export function UserManagement() {
     }
   );
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -147,11 +154,11 @@ export function UserManagement() {
           campaign_count,
           total_funds_raised,
           follower_count
-        `);
+        `, { count: 'exact' });
 
       // Apply search filter
-      if (filters.search.trim()) {
-        query = query.or(`name.ilike.%${filters.search}%,email.ilike.%${filters.search}%`);
+      if (debouncedSearch.trim()) {
+        query = query.or(`name.ilike.%${debouncedSearch}%,email.ilike.%${debouncedSearch}%`);
       }
 
       // Apply status filter
@@ -164,25 +171,26 @@ export function UserManagement() {
         query = query.eq('role', filters.role as any);
       }
 
-      // Apply sorting
-      query = query.order('created_at', { ascending: false });
+      // Apply sorting and pagination
+      query = query
+        .order('created_at', { ascending: false })
+        .range(0, 99); // Limit to 100 for now, will add pagination later
 
-      const { data, error } = await query.limit(100);
+      const { data, error } = await query;
 
       if (error) throw error;
 
       setUsers(data || []);
-    } catch (error) {
-      console.error('Error fetching users:', error);
+    } catch (error: any) {
       toast({
         title: 'Error',
-        description: 'Failed to load users',
+        description: error.message || 'Failed to load users',
         variant: 'destructive'
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [debouncedSearch, filters.status, filters.role, toast]);
 
   // Create columns for the data table
   const columns = userColumns;
@@ -348,7 +356,7 @@ export function UserManagement() {
 
   useEffect(() => {
     fetchUsers();
-  }, [filters]);
+  }, [fetchUsers]);
 
   const getStatusBadge = (user: ExtendedProfile) => {
     if (user.account_status === 'suspended') {
@@ -436,12 +444,7 @@ export function UserManagement() {
       label: 'Add User',
       icon: Plus,
       variant: 'default' as const,
-      onClick: () => {
-        toast({
-          title: 'Feature Coming Soon',
-          description: 'User creation interface will be available soon'
-        });
-      }
+      onClick: () => setShowCreateDialog(true)
     }] : [])
   ];
 
@@ -499,27 +502,67 @@ export function UserManagement() {
     },
   ];
 
-  // Handle bulk operations
+  // Handle bulk operations with confirmation
   const handleBulkAction = async (actionKey: string, selectedRows: ExtendedProfile[]) => {
-    switch (actionKey) {
-      case 'suspend':
-        // Handle bulk suspension
+    if (selectedRows.length === 0) return;
+
+    const performBulkAction = async () => {
+      try {
+        const { data: user } = await supabase.auth.getUser();
+        const currentUserId = user.user?.id;
+        if (!currentUserId) throw new Error('User not authenticated');
+
+        const userIds = selectedRows.map(u => u.id);
+
+        switch (actionKey) {
+          case 'suspend':
+            await AdminEventService.bulkOperation(
+              (userId: string) => AdminEventService.suspendUser(userId, currentUserId, 'Bulk suspension', 24),
+              userIds
+            );
+            toast({
+              title: 'Users Suspended',
+              description: `Successfully suspended ${userIds.length} users`
+            });
+            break;
+          case 'activate':
+            const { error } = await supabase
+              .from('profiles')
+              .update({ account_status: 'active', suspended_until: null })
+              .in('id', userIds);
+            if (error) throw error;
+            toast({
+              title: 'Users Activated',
+              description: `Successfully activated ${userIds.length} users`
+            });
+            break;
+          case 'export_selected':
+            exportUsers();
+            return;
+        }
+
+        fetchUsers();
+        setSelectedUsers([]);
+      } catch (error: any) {
         toast({
-          title: 'Feature Coming Soon',
-          description: 'Bulk user suspension will be available soon'
+          title: 'Error',
+          description: error.message || 'Failed to perform bulk action',
+          variant: 'destructive'
         });
-        break;
-      case 'activate':
-        // Handle bulk activation
-        toast({
-          title: 'Feature Coming Soon', 
-          description: 'Bulk user activation will be available soon'
-        });
-        break;
-      case 'export_selected':
-        // Handle export of selected users
-        exportUsers();
-        break;
+      }
+    };
+
+    // Show confirmation for destructive actions
+    if (actionKey === 'suspend') {
+      setConfirmAction({
+        open: true,
+        title: 'Suspend Users',
+        description: `Are you sure you want to suspend ${selectedRows.length} users? This action can be reversed.`,
+        action: performBulkAction,
+        variant: 'destructive'
+      });
+    } else {
+      performBulkAction();
     }
   };
 
@@ -570,68 +613,31 @@ export function UserManagement() {
       />
 
       {/* User Details Dialog */}
-      <Dialog open={showUserDialog} onOpenChange={setShowUserDialog}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>User Details</DialogTitle>
-            <DialogDescription>
-              Complete information about the selected user
-            </DialogDescription>
-          </DialogHeader>
-          {selectedUser && (
-            <div className="space-y-4">
-              <div className="flex items-start space-x-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={selectedUser.avatar} alt={selectedUser.name} />
-                  <AvatarFallback>{selectedUser.name?.charAt(0) || 'U'}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold">{selectedUser.name || 'Unnamed User'}</h3>
-                  <p className="text-muted-foreground mb-2">{selectedUser.email}</p>
-                  <div className="flex items-center space-x-2">
-                    {getStatusBadge(selectedUser)}
-                    {getRoleBadge(selectedUser.role)}
-                  </div>
-                </div>
-              </div>
+      <UserDetailsDialog
+        user={selectedUser}
+        open={showUserDialog}
+        onOpenChange={setShowUserDialog}
+      />
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium">Campaigns</label>
-                  <p className="text-sm text-muted-foreground">{selectedUser.campaign_count}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Funds Raised</label>
-                  <p className="text-sm text-muted-foreground">${selectedUser.total_funds_raised?.toLocaleString() || '0'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Followers</label>
-                  <p className="text-sm text-muted-foreground">{selectedUser.follower_count}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Joined</label>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(selectedUser.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
+      {/* Create User Dialog */}
+      <CreateUserDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        onSuccess={fetchUsers}
+      />
 
-              {selectedUser.user_roles && selectedUser.user_roles.length > 0 && (
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Roles</label>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedUser.user_roles.map((role, index) => (
-                      <Badge key={index} variant="outline">
-                        {role.role_name} ({role.context_type})
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        open={confirmAction.open}
+        onOpenChange={(open) => setConfirmAction(prev => ({ ...prev, open }))}
+        title={confirmAction.title}
+        description={confirmAction.description}
+        variant={confirmAction.variant}
+        onConfirm={() => {
+          confirmAction.action();
+          setConfirmAction(prev => ({ ...prev, open: false }));
+        }}
+      />
     </AdminPageLayout>
   );
 }

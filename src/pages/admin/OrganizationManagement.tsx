@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -14,7 +14,10 @@ import { useToast } from '@/hooks/use-toast';
 import { useRBAC } from '@/hooks/useRBAC';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useEventSubscriber } from '@/hooks/useEventBus';
+import { useDebounce } from '@/hooks/useDebounce';
 import { AdminEventService } from '@/lib/services/AdminEventService';
+import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
+import { OrganizationDetailsDialog } from '@/components/admin/ViewDetailsDialog';
 import { createOrganizationColumns, OrganizationData } from '@/lib/data-table/organization-columns';
 import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
 import { MobileStatsGrid } from '@/components/admin/mobile/MobileStatsGrid';
@@ -38,12 +41,24 @@ export function OrganizationManagement() {
   const [organizations, setOrganizations] = useState<OrganizationData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrgs, setSelectedOrgs] = useState<OrganizationData[]>([]);
+  const [selectedOrg, setSelectedOrg] = useState<OrganizationData | null>(null);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    action: () => void;
+    variant?: 'default' | 'destructive';
+  }>({ open: false, title: '', description: '', action: () => {}, variant: 'default' });
+  
   const [filters, setFilters] = useState<OrganizationFilters>({
     search: '',
     status: 'all'
   });
   const { toast } = useToast();
   const { hasPermission } = useRBAC();
+  
+  const debouncedSearch = useDebounce(filters.search, 500);
 
   // Enhanced with optimistic updates
   const optimisticUpdates = useOptimisticUpdates({
@@ -55,18 +70,23 @@ export function OrganizationManagement() {
     }
   });
 
-  const fetchOrganizations = async () => {
+  const fetchOrganizations = useCallback(async () => {
     try {
       setLoading(true);
       
+      // Fix N+1 query: Use a single query with joins
       let query = supabase
         .from('organizations')
-        .select('*')
+        .select(`
+          *,
+          org_members(count),
+          fundraisers!org_id(id, goal_amount)
+        `)
         .order('created_at', { ascending: false });
 
       // Apply search filter
-      if (filters.search.trim()) {
-        query = query.or(`legal_name.ilike.%${filters.search}%,dba_name.ilike.%${filters.search}%`);
+      if (debouncedSearch.trim()) {
+        query = query.or(`legal_name.ilike.%${debouncedSearch}%,dba_name.ilike.%${debouncedSearch}%`);
       }
 
       // Apply status filter
@@ -74,59 +94,40 @@ export function OrganizationManagement() {
         query = query.eq('verification_status', filters.status as 'pending' | 'approved' | 'rejected');
       }
 
-      const { data: orgsData, error: orgsError } = await query;
+      const { data: orgsData, error: orgsError } = await query.range(0, 99);
 
       if (orgsError) throw orgsError;
 
-      // For each organization, get member count and campaign count
-      const enrichedOrgs = await Promise.all(
-        (orgsData || []).map(async (org) => {
-          // Get member count
-          const { count: memberCount } = await supabase
-            .from('org_members')
-            .select('*', { count: 'exact', head: true })
-            .eq('org_id', org.id);
-
-          // Get campaign count and total raised
-          const { data: campaigns } = await supabase
-            .from('fundraisers')
-            .select('id, goal_amount')
-            .eq('org_id', org.id);
-
-          const campaignCount = campaigns?.length || 0;
-          const totalRaised = campaigns?.reduce((sum, c) => sum + Number(c.goal_amount || 0), 0) || 0;
-
-          return {
-            ...org,
-            member_count: memberCount || 0,
-            campaign_count: campaignCount,
-            total_raised: totalRaised
-          } as OrganizationData;
-        })
-      );
+      // Transform the data to include aggregated counts
+      const enrichedOrgs = (orgsData || []).map((org: any) => ({
+        ...org,
+        member_count: org.org_members?.[0]?.count || 0,
+        campaign_count: org.fundraisers?.length || 0,
+        total_raised: org.fundraisers?.reduce((sum: number, c: any) => sum + Number(c.goal_amount || 0), 0) || 0
+      })) as OrganizationData[];
 
       setOrganizations(enrichedOrgs);
-    } catch (error) {
-      console.error('Error fetching organizations:', error);
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to load organizations",
+        description: error.message || "Failed to load organizations",
         variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [debouncedSearch, filters.status, toast]);
 
   useEffect(() => {
     fetchOrganizations();
-  }, [filters]);
+  }, [fetchOrganizations]);
 
   // Create columns for the data table
   const columns = createOrganizationColumns(
     // onViewDetails
     (org) => {
-      console.log('View details for:', org);
+      setSelectedOrg(org);
+      setShowDetailsDialog(true);
     },
     // onStatusUpdate
     (orgId, status) => {
@@ -204,52 +205,70 @@ export function OrganizationManagement() {
   const handleBulkAction = async (action: string) => {
     if (selectedOrgs.length === 0) return;
 
-    try {
-      let updateData: any = {};
-      const orgIds = selectedOrgs.map(org => org.id);
-      
-      switch (action) {
-        case 'approve':
-          updateData = { verification_status: 'approved' };
-          break;
-        case 'reject':
-          updateData = { verification_status: 'rejected' };
-          break;
-        case 'pending':
-          updateData = { verification_status: 'pending' };
-          break;
-        default:
-          return;
+    const performBulkAction = async () => {
+      try {
+        const { data: user } = await supabase.auth.getUser();
+        const currentUserId = user.user?.id;
+        if (!currentUserId) throw new Error('User not authenticated');
+
+        let updateData: any = {};
+        const orgIds = selectedOrgs.map(org => org.id);
+        
+        switch (action) {
+          case 'approve':
+            updateData = { verification_status: 'approved' };
+            break;
+          case 'reject':
+            updateData = { verification_status: 'rejected' };
+            break;
+          case 'pending':
+            updateData = { verification_status: 'pending' };
+            break;
+          default:
+            return;
+        }
+
+        const { error } = await supabase
+          .from('organizations')
+          .update({ ...updateData, updated_at: new Date().toISOString() })
+          .in('id', orgIds);
+
+        if (error) throw error;
+
+        setOrganizations(prev => 
+          prev.map(org => 
+            orgIds.includes(org.id)
+              ? { ...org, ...updateData }
+              : org
+          )
+        );
+
+        setSelectedOrgs([]);
+        
+        toast({
+          title: "Bulk Action Completed",
+          description: `Updated ${orgIds.length} organizations`,
+        });
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to perform bulk action",
+          variant: "destructive"
+        });
       }
+    };
 
-      const { error } = await supabase
-        .from('organizations')
-        .update({ ...updateData, updated_at: new Date().toISOString() })
-        .in('id', orgIds);
-
-      if (error) throw error;
-
-      setOrganizations(prev => 
-        prev.map(org => 
-          orgIds.includes(org.id)
-            ? { ...org, ...updateData }
-            : org
-        )
-      );
-
-      setSelectedOrgs([]);
-      
-      toast({
-        title: "Bulk Action Completed",
-        description: `Updated ${orgIds.length} organizations`,
+    // Show confirmation for reject action
+    if (action === 'reject') {
+      setConfirmAction({
+        open: true,
+        title: 'Reject Organizations',
+        description: `Are you sure you want to reject ${selectedOrgs.length} organizations? They will need to reapply.`,
+        action: performBulkAction,
+        variant: 'destructive'
       });
-    } catch (error) {
-      console.error('Error performing bulk action:', error);
-      toast({
-        title: "Error",
-        description: "Failed to perform bulk action",
-        variant: "destructive"
-      });
+    } else {
+      performBulkAction();
     }
   };
 
@@ -428,6 +447,24 @@ export function OrganizationManagement() {
         onRollback={optimisticUpdates.rollbackAction}
         onClearCompleted={optimisticUpdates.clearCompleted}
         onClearFailed={optimisticUpdates.clearFailed}
+      />
+
+      <OrganizationDetailsDialog
+        organization={selectedOrg}
+        open={showDetailsDialog}
+        onOpenChange={setShowDetailsDialog}
+      />
+
+      <ConfirmDialog
+        open={confirmAction.open}
+        onOpenChange={(open) => setConfirmAction(prev => ({ ...prev, open }))}
+        title={confirmAction.title}
+        description={confirmAction.description}
+        variant={confirmAction.variant}
+        onConfirm={() => {
+          confirmAction.action();
+          setConfirmAction(prev => ({ ...prev, open: false }));
+        }}
       />
     </AdminPageLayout>
   );

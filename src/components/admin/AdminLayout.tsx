@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
 import { SmartBreadcrumb } from '@/components/navigation/SmartBreadcrumb';
+import { SessionTimeoutWarning } from './SessionTimeoutWarning';
 import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
 
 export function AdminLayout() {
@@ -60,6 +61,7 @@ export function AdminLayout() {
         </SidebarInset>
       </div>
       
+      <SessionTimeoutWarning />
       <Toaster />
     </SidebarProvider>
   );

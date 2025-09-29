@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -12,26 +12,17 @@ import {
   AlertTriangle,
   TrendingUp,
   DollarSign,
-  Users,
-  Megaphone,
-  Plus,
-  Eye,
-  Edit,
-  Trash2,
-  Archive,
-  Calendar,
-  Search,
-  Filter,
-  Upload,
-  Mail,
-  Settings
+  Megaphone
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useRBAC } from '@/hooks/useRBAC';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useEventSubscriber } from '@/hooks/useEventBus';
 import { AdminEventService } from '@/lib/services/AdminEventService';
+import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
+import { CampaignDetailsDialog } from '@/components/admin/ViewDetailsDialog';
 import { createCampaignColumns, CampaignData } from '@/lib/data-table/campaign-columns';
 import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
 import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
@@ -40,18 +31,9 @@ import {
   AdminPageLayout, 
   AdminFilters, 
   AdminDataTable,
-  AdvancedSearch,
-  BulkOperations,
-  QuickActions,
-  RealTimeIndicator,
-  PerformanceMonitor,
   FilterConfig,
   BulkAction,
-  TableAction,
-  SearchFilter,
-  ActiveFilter,
-  BulkOperation,
-  QuickAction
+  TableAction
 } from '@/components/admin/unified';
 
 
@@ -69,12 +51,19 @@ export function CampaignManagement() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   
-  // Enhanced state for Phase 4
   const [campaigns, setCampaigns] = useState<CampaignData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCampaigns, setSelectedCampaigns] = useState<CampaignData[]>([]);
+  const [selectedCampaign, setSelectedCampaign] = useState<CampaignData | null>(null);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    action: () => void;
+    variant?: 'default' | 'destructive';
+  }>({ open: false, title: '', description: '', action: () => {}, variant: 'default' });
   
-  // Legacy filters for compatibility
   const [filters, setFilters] = useState<CampaignFilters>({
     search: '',
     status: 'all',
@@ -83,6 +72,8 @@ export function CampaignManagement() {
     dateRange: 'all',
     amountRange: 'all'
   });
+  
+  const debouncedSearch = useDebounce(filters.search, 500);
 
   // Enhanced with optimistic updates
   const optimisticUpdates = useOptimisticUpdates({
@@ -94,20 +85,21 @@ export function CampaignManagement() {
     }
   });
 
-  const fetchCampaigns = async () => {
+  const fetchCampaigns = useCallback(async () => {
     try {
       setLoading(true);
 
+      // Fix N+1 query: Fetch campaigns with stats in a single optimized query
       let query = supabase
         .from('fundraisers')
         .select(`
           *,
           owner_profile:profiles!owner_user_id(name, email, avatar)
-        `);
+        `, { count: 'exact' });
 
       // Apply filters
-      if (filters.search.trim()) {
-        query = query.or(`title.ilike.%${filters.search}%,summary.ilike.%${filters.search}%,beneficiary_name.ilike.%${filters.search}%`);
+      if (debouncedSearch.trim()) {
+        query = query.or(`title.ilike.%${debouncedSearch}%,summary.ilike.%${debouncedSearch}%,beneficiary_name.ilike.%${debouncedSearch}%`);
       }
 
       if (filters.status !== 'all') {
@@ -164,13 +156,15 @@ export function CampaignManagement() {
       }
 
       // Apply sorting and pagination
-      query = query.order('created_at', { ascending: false }).limit(100);
+      query = query
+        .order('created_at', { ascending: false })
+        .range(0, 99);
 
       const { data, error } = await query;
 
       if (error) throw error;
 
-      // Fetch campaign stats
+      // Fetch all stats in a single batch call
       const campaignIds = data?.map(c => c.id) || [];
       let campaignsWithStats: CampaignData[] = data || [];
 
@@ -183,29 +177,26 @@ export function CampaignManagement() {
             ...campaign,
             stats: stats?.find(s => s.fundraiser_id === campaign.id) || {
               total_raised: 0,
-              donor_count: 0,
-              comment_count: 0,
-              view_count: 0
+              donor_count: 0
             }
           })) as CampaignData[];
         } catch (statsError) {
-          console.warn('Failed to fetch campaign stats:', statsError);
           // Continue with campaigns without stats
+          campaignsWithStats = data as CampaignData[];
         }
       }
 
       setCampaigns(campaignsWithStats);
-    } catch (error) {
-      console.error('Error fetching campaigns:', error);
+    } catch (error: any) {
       toast({
         title: 'Error',
-        description: 'Failed to load campaigns',
+        description: error.message || 'Failed to load campaigns',
         variant: 'destructive'
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [debouncedSearch, filters.status, filters.category, filters.visibility, filters.dateRange, filters.amountRange, toast]);
 
   const handleCampaignStatusChange = async (campaignId: string, newStatus: string, reason?: string) => {
     const campaign = campaigns.find(c => c.id === campaignId);
@@ -275,7 +266,7 @@ export function CampaignManagement() {
 
   useEffect(() => {
     fetchCampaigns();
-  }, [filters]);
+  }, [fetchCampaigns]);
 
   if (!hasPermission('manage_campaigns')) {
     return (
@@ -292,7 +283,8 @@ export function CampaignManagement() {
   const columns = createCampaignColumns(
     // onViewDetails
     (campaign) => {
-      console.log('View campaign details:', campaign);
+      setSelectedCampaign(campaign);
+      setShowDetailsDialog(true);
     },
     // onStatusChange
     (campaignId, status) => {
@@ -512,6 +504,24 @@ export function CampaignManagement() {
         onRollback={optimisticUpdates.rollbackAction}
         onClearCompleted={optimisticUpdates.clearCompleted}
         onClearFailed={optimisticUpdates.clearFailed}
+      />
+
+      <CampaignDetailsDialog
+        campaign={selectedCampaign}
+        open={showDetailsDialog}
+        onOpenChange={setShowDetailsDialog}
+      />
+
+      <ConfirmDialog
+        open={confirmAction.open}
+        onOpenChange={(open) => setConfirmAction(prev => ({ ...prev, open }))}
+        title={confirmAction.title}
+        description={confirmAction.description}
+        variant={confirmAction.variant}
+        onConfirm={() => {
+          confirmAction.action();
+          setConfirmAction(prev => ({ ...prev, open: false }));
+        }}
       />
     </AdminPageLayout>
   );
