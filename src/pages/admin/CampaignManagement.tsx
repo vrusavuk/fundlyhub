@@ -33,6 +33,8 @@ import { useSupabaseRealtime } from '@/hooks/useSupabaseRealtime';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { createCampaignColumns, CampaignData } from '@/lib/data-table/campaign-columns';
 import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
+import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
+import { MobileStatsGrid } from '@/components/admin/mobile/MobileStatsGrid';
 import { 
   AdminPageLayout, 
   AdminFilters, 
@@ -451,31 +453,11 @@ export function CampaignManagement() {
       title="Campaign Management"
       description="Manage and moderate fundraising campaigns"
       stats={
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map((stat) => (
-            <div
-              key={stat.title}
-              className="card-enhanced p-4 border border-primary/10 shadow-soft"
-            >
-              <div className="flex items-center">
-                <div className={`p-2 rounded-md bg-primary/10 ${stat.iconClassName || ''}`}>
-                  <stat.icon className="h-4 w-4" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    {stat.title}
-                  </p>
-                  <p className="text-lg font-semibold">
-                    {stat.value}
-                  </p>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                {stat.description}
-              </p>
-            </div>
-          ))}
-        </div>
+        isMobile ? (
+          <MobileStatsGrid stats={stats} loading={loading} />
+        ) : (
+          <AdminStatsGrid stats={stats} />
+        )
       }
       filters={
         <AdminFilters
