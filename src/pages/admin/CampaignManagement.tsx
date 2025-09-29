@@ -125,6 +125,7 @@ export function CampaignManagement() {
     } finally {
       setLoading(false);
     }
+  }, [pagination, debouncedSearch, filters, toast]);
 
   const handleCampaignStatusChange = async (campaignId: string, newStatus: string, reason?: string) => {
     const campaign = campaigns.find(c => c.id === campaignId);

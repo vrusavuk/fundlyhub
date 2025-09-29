@@ -611,14 +611,6 @@ export function UserManagement() {
         enableColumnVisibility={true}
         enablePagination={true}
         density="comfortable"
-        pagination={{
-          pageIndex: pagination.state.page - 1,
-          pageSize: pagination.state.pageSize,
-          pageCount: pagination.state.totalPages,
-          total: pagination.state.total,
-          onPageChange: (page) => pagination.goToPage(page + 1),
-          onPageSizeChange: pagination.setPageSize
-        }}
       />
 
       {/* Optimistic Update Indicator */}
