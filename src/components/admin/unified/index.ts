@@ -8,14 +8,6 @@ export { BulkOperations } from './BulkOperations';
 export { QuickActions } from './QuickActions';
 export { RealTimeIndicator, MultipleRealTimeIndicator } from './RealTimeIndicator';
 export { PerformanceMonitor } from './PerformanceMonitor';
-export { 
-  MobileSearch, 
-  MobileFilters, 
-  MobileStats, 
-  MobileActionBar, 
-  MobileViewSwitcher,
-  MobileStickyHeader 
-} from './MobileOptimizations';
 export type { FilterConfig } from './AdminFilters';
 export type { BulkAction, TableAction } from './AdminTableControls';
 export type { SearchFilter, ActiveFilter } from './AdvancedSearch';

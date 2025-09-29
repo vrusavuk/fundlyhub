@@ -45,11 +45,6 @@ import {
   QuickActions,
   RealTimeIndicator,
   PerformanceMonitor,
-  MobileSearch,
-  MobileFilters,
-  MobileStats,
-  MobileActionBar,
-  MobileStickyHeader,
   FilterConfig,
   BulkAction,
   TableAction,
@@ -78,9 +73,6 @@ export function CampaignManagement() {
   const [campaigns, setCampaigns] = useState<CampaignData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCampaigns, setSelectedCampaigns] = useState<CampaignData[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([]);
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
   
   // Legacy filters for compatibility
   const [filters, setFilters] = useState<CampaignFilters>({
