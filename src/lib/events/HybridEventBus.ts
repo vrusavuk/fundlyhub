@@ -8,6 +8,7 @@ import { EventBus as IEventBus, DomainEvent, EventHandler, EventBusConfig } from
 import { EventBus } from './EventBus';
 import { SupabaseEventStore } from './SupabaseEventStore';
 import { RedisEventStream } from './RedisEventStream';
+import { CircuitBreaker } from './CircuitBreaker';
 
 export interface HybridEventBusConfig extends EventBusConfig {
   supabase: SupabaseClient;
@@ -29,6 +30,7 @@ export class HybridEventBus implements IEventBus {
   private _isConnected = false;
   private readonly clientId = crypto.randomUUID();
   private realtimeChannel: any = null;
+  private edgeFunctionCircuitBreaker: CircuitBreaker;
 
   constructor(config: HybridEventBusConfig) {
     this.supabase = config.supabase;
@@ -54,6 +56,13 @@ export class HybridEventBus implements IEventBus {
         token: config.redis.token,
       });
     }
+
+    // Initialize circuit breaker for edge function calls
+    this.edgeFunctionCircuitBreaker = new CircuitBreaker({
+      threshold: 5,        // Open after 5 consecutive failures
+      timeout: 60000,      // Try again after 60 seconds
+      halfOpenAttempts: 3  // Close after 3 successful calls
+    });
   }
 
   get isConnected(): boolean {
@@ -255,15 +264,18 @@ export class HybridEventBus implements IEventBus {
    */
   private async triggerServerProcessing(event: DomainEvent): Promise<void> {
     try {
-      const { error } = await this.supabase.functions.invoke('event-processor', {
-        body: { event }
-      });
+      await this.edgeFunctionCircuitBreaker.execute(async () => {
+        const { error } = await this.supabase.functions.invoke('event-processor', {
+          body: { event }
+        });
 
-      if (error) {
-        console.error('Edge function invocation error:', error);
-      }
+        if (error) {
+          throw new Error(`Edge function error: ${JSON.stringify(error)}`);
+        }
+      });
     } catch (error) {
-      console.error('Failed to invoke edge function:', error);
+      const circuitState = this.edgeFunctionCircuitBreaker.getState();
+      console.error(`Failed to invoke edge function (Circuit: ${circuitState}):`, error);
     }
   }
 
@@ -272,15 +284,18 @@ export class HybridEventBus implements IEventBus {
    */
   private async triggerBatchProcessing(events: DomainEvent[]): Promise<void> {
     try {
-      const { error } = await this.supabase.functions.invoke('event-processor', {
-        body: { events }
-      });
+      await this.edgeFunctionCircuitBreaker.execute(async () => {
+        const { error } = await this.supabase.functions.invoke('event-processor', {
+          body: { events }
+        });
 
-      if (error) {
-        console.error('Edge function batch invocation error:', error);
-      }
+        if (error) {
+          throw new Error(`Edge function batch error: ${JSON.stringify(error)}`);
+        }
+      });
     } catch (error) {
-      console.error('Failed to invoke edge function for batch:', error);
+      const circuitState = this.edgeFunctionCircuitBreaker.getState();
+      console.error(`Failed to invoke edge function batch (Circuit: ${circuitState}):`, error);
     }
   }
 
@@ -296,5 +311,12 @@ export class HybridEventBus implements IEventBus {
    */
   getEventStore(): SupabaseEventStore {
     return this.supabaseStore;
+  }
+
+  /**
+   * Get circuit breaker state (for monitoring)
+   */
+  getCircuitBreakerStats() {
+    return this.edgeFunctionCircuitBreaker.getStats();
   }
 }
