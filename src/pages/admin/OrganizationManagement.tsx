@@ -424,12 +424,12 @@ export function OrganizationManagement() {
         actions={tableActions}
         bulkActions={bulkActions}
         onBulkAction={handleBulkActionClick}
-        searchPlaceholder="Search organizations by name..."
+        
         emptyStateTitle="No organizations found"
         emptyStateDescription="No organizations match your current filters."
         enableSelection={true}
         enableSorting={true}
-        enableFiltering={true}
+        enableFiltering={false}
         enableColumnVisibility={true}
         enablePagination={true}
         density="comfortable"

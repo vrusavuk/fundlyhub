@@ -147,7 +147,7 @@ export function AdminDataTable<TData, TValue>({
           density={density}
           pageSizeOptions={pageSizeOptions}
           className="border-none shadow-none"
-          searchable={enableFiltering}
+          searchable={false}
           serverPagination={paginationState}
           onServerPageChange={onPageChange}
           onServerPageSizeChange={onPageSizeChange}

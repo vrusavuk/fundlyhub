@@ -485,12 +485,12 @@ export function CampaignManagement() {
         actions={tableActions}
         bulkActions={bulkActions}
         onBulkAction={handleBulkActionClick}
-        searchPlaceholder="Search campaigns by title, summary, or beneficiary..."
+        
         emptyStateTitle="No campaigns found"
         emptyStateDescription="No campaigns match your current filters."
         enableSelection={true}
         enableSorting={true}
-        enableFiltering={true}
+        enableFiltering={false}
         enableColumnVisibility={true}
         enablePagination={true}
         density="comfortable"

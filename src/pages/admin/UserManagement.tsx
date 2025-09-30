@@ -600,14 +600,14 @@ export function UserManagement() {
         actions={tableActions}
         bulkActions={bulkActions}
         onBulkAction={handleBulkAction}
-        searchPlaceholder="Search users by name or email..."
+        
         emptyStateTitle="No users found"
         emptyStateDescription="No users match your current filters. Try adjusting your search criteria."
         error={null}
         retry={fetchUsers}
         enableSelection={true}
         enableSorting={true}
-        enableFiltering={true}
+        enableFiltering={false}
         enableColumnVisibility={true}
         enablePagination={true}
         density="comfortable"
