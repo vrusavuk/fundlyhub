@@ -90,6 +90,14 @@ export interface EnhancedFilter {
 // Table density options
 export type TableDensity = 'compact' | 'comfortable' | 'spacious';
 
+// Server-side pagination state
+export interface ServerPaginationState {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}
+
 // Props interface
 interface EnhancedDataTableProps<TData, TValue> {
   columns: EnhancedColumnDef<TData, TValue>[];
@@ -119,6 +127,11 @@ interface EnhancedDataTableProps<TData, TValue> {
   enablePagination?: boolean;
   pageSizeOptions?: number[];
   defaultPageSize?: number;
+
+  // Server-side pagination (when provided, disables client-side pagination)
+  serverPagination?: ServerPaginationState;
+  onServerPageChange?: (page: number) => void;
+  onServerPageSizeChange?: (pageSize: number) => void;
 
   // Column visibility
   enableColumnVisibility?: boolean;
@@ -170,6 +183,9 @@ export function EnhancedDataTable<TData, TValue>({
   enablePagination = true,
   pageSizeOptions = [10, 25, 50, 100],
   defaultPageSize = 25,
+  serverPagination,
+  onServerPageChange,
+  onServerPageSizeChange,
   enableColumnVisibility = true,
   hiddenColumns = [],
   mobileBreakpoint = 'md',
@@ -230,12 +246,16 @@ export function EnhancedDataTable<TData, TValue>({
     });
   }, [data, searchQuery, searchableColumns]);
 
+  // Determine if we're using server-side pagination
+  const isServerSidePagination = !!serverPagination;
+
   // React Table setup
   const table = useReactTable({
     data: filteredData,
     columns: visibleColumns as ColumnDef<TData, any>[],
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: enablePagination ? getPaginationRowModel() : undefined,
+    // Only use client-side pagination if not using server-side
+    getPaginationRowModel: enablePagination && !isServerSidePagination ? getPaginationRowModel() : undefined,
     getSortedRowModel: enableSorting ? getSortedRowModel() : undefined,
     getFilteredRowModel: getFilteredRowModel(),
     onSortingChange: setSorting,
@@ -251,9 +271,14 @@ export function EnhancedDataTable<TData, TValue>({
     },
     initialState: {
       pagination: {
-        pageSize: defaultPageSize,
+        pageSize: serverPagination?.pageSize || defaultPageSize,
       },
     },
+    // For server-side pagination, override page count
+    ...(isServerSidePagination && {
+      pageCount: serverPagination.totalPages,
+      manualPagination: true,
+    }),
   });
 
   // Handle selection changes
@@ -568,13 +593,17 @@ export function EnhancedDataTable<TData, TValue>({
           <div className="flex items-center space-x-2">
             <p className="text-sm font-medium">Rows per page</p>
             <Select
-              value={`${table.getState().pagination.pageSize}`}
+              value={`${isServerSidePagination ? serverPagination.pageSize : table.getState().pagination.pageSize}`}
               onValueChange={(value) => {
-                table.setPageSize(Number(value));
+                if (isServerSidePagination && onServerPageSizeChange) {
+                  onServerPageSizeChange(Number(value));
+                } else {
+                  table.setPageSize(Number(value));
+                }
               }}
             >
               <SelectTrigger className="h-8 w-[70px]">
-                <SelectValue placeholder={table.getState().pagination.pageSize} />
+                <SelectValue placeholder={isServerSidePagination ? serverPagination.pageSize : table.getState().pagination.pageSize} />
               </SelectTrigger>
               <SelectContent side="top">
                 {pageSizeOptions.map((pageSize) => (
@@ -588,39 +617,63 @@ export function EnhancedDataTable<TData, TValue>({
 
           <div className="flex items-center space-x-6 lg:space-x-8">
             <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-              Page {table.getState().pagination.pageIndex + 1} of{" "}
-              {table.getPageCount()}
+              Page {isServerSidePagination ? serverPagination.page : table.getState().pagination.pageIndex + 1} of{" "}
+              {isServerSidePagination ? serverPagination.totalPages : table.getPageCount()}
             </div>
             <div className="flex items-center space-x-2">
               <Button
                 variant="outline"
                 className="h-8 w-8 p-0"
-                onClick={() => table.setPageIndex(0)}
-                disabled={!table.getCanPreviousPage()}
+                onClick={() => {
+                  if (isServerSidePagination && onServerPageChange) {
+                    onServerPageChange(1);
+                  } else {
+                    table.setPageIndex(0);
+                  }
+                }}
+                disabled={isServerSidePagination ? serverPagination.page === 1 : !table.getCanPreviousPage()}
               >
                 <ChevronsLeft className="h-4 w-4" />
               </Button>
               <Button
                 variant="outline"
                 className="h-8 w-8 p-0"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
+                onClick={() => {
+                  if (isServerSidePagination && onServerPageChange) {
+                    onServerPageChange(serverPagination.page - 1);
+                  } else {
+                    table.previousPage();
+                  }
+                }}
+                disabled={isServerSidePagination ? serverPagination.page === 1 : !table.getCanPreviousPage()}
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <Button
                 variant="outline"
                 className="h-8 w-8 p-0"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
+                onClick={() => {
+                  if (isServerSidePagination && onServerPageChange) {
+                    onServerPageChange(serverPagination.page + 1);
+                  } else {
+                    table.nextPage();
+                  }
+                }}
+                disabled={isServerSidePagination ? serverPagination.page >= serverPagination.totalPages : !table.getCanNextPage()}
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
               <Button
                 variant="outline"
                 className="h-8 w-8 p-0"
-                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                disabled={!table.getCanNextPage()}
+                onClick={() => {
+                  if (isServerSidePagination && onServerPageChange) {
+                    onServerPageChange(serverPagination.totalPages);
+                  } else {
+                    table.setPageIndex(table.getPageCount() - 1);
+                  }
+                }}
+                disabled={isServerSidePagination ? serverPagination.page >= serverPagination.totalPages : !table.getCanNextPage()}
               >
                 <ChevronsRight className="h-4 w-4" />
               </Button>

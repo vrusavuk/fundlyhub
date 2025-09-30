@@ -92,8 +92,7 @@ export function CampaignManagement() {
   // Pagination with correct default page size
   const pagination = usePagination({
     initialPageSize: 25,
-    syncWithURL: true,
-    onPageChange: () => fetchCampaigns()
+    syncWithURL: true
   });
 
   // Enhanced with optimistic updates
@@ -105,6 +104,9 @@ export function CampaignManagement() {
       console.error(`Action ${action.type} failed:`, error);
     }
   });
+
+  // AbortController for request cancellation
+  const [abortController, setAbortController] = useState<AbortController | null>(null);
 
   // Fetch database-level statistics (separate from paginated data)
   const fetchCampaignStats = useCallback(async () => {
@@ -125,42 +127,53 @@ export function CampaignManagement() {
   }, [debouncedSearch, filters]);
 
   const fetchCampaigns = useCallback(async () => {
+    // Cancel any in-flight requests
+    if (abortController) {
+      abortController.abort();
+    }
+
+    const newAbortController = new AbortController();
+    setAbortController(newAbortController);
+
     try {
       setLoading(true);
 
-      // Fetch both paginated data AND database statistics
-      const [result] = await Promise.all([
-        adminDataService.fetchCampaigns(
-          {
-            page: pagination.state.page,
-            pageSize: pagination.state.pageSize,
-            sortBy: 'created_at',
-            sortOrder: 'desc'
-          },
-          {
-            search: debouncedSearch,
-            status: filters.status !== 'all' ? filters.status : undefined,
-            category: filters.category !== 'all' ? filters.category : undefined,
-            visibility: filters.visibility !== 'all' ? filters.visibility : undefined,
-            dateRange: filters.dateRange !== 'all' ? filters.dateRange : undefined
-          }
-        ),
-        fetchCampaignStats()
-      ]);
+      // Fetch paginated data
+      const result = await adminDataService.fetchCampaigns(
+        {
+          page: pagination.state.page,
+          pageSize: pagination.state.pageSize,
+          sortBy: 'created_at',
+          sortOrder: 'desc'
+        },
+        {
+          search: debouncedSearch,
+          status: filters.status !== 'all' ? filters.status : undefined,
+          category: filters.category !== 'all' ? filters.category : undefined,
+          visibility: filters.visibility !== 'all' ? filters.visibility : undefined,
+          dateRange: filters.dateRange !== 'all' ? filters.dateRange : undefined
+        }
+      );
 
-      setCampaigns(result.data as CampaignData[]);
-      pagination.setTotal(result.total);
+      if (!newAbortController.signal.aborted) {
+        setCampaigns(result.data as CampaignData[]);
+        pagination.setTotal(result.total);
+      }
 
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load campaigns",
-        variant: "destructive"
-      });
+      if (error.name !== 'AbortError') {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to load campaigns",
+          variant: "destructive"
+        });
+      }
     } finally {
-      setLoading(false);
+      if (!newAbortController.signal.aborted) {
+        setLoading(false);
+      }
     }
-  }, [pagination, debouncedSearch, filters, toast, fetchCampaignStats]);
+  }, [pagination.state.page, pagination.state.pageSize, debouncedSearch, filters, toast]);
 
   const handleCampaignStatusChange = async (campaignId: string, newStatus: string, reason?: string) => {
     const campaign = campaigns.find(c => c.id === campaignId);
@@ -228,9 +241,29 @@ export function CampaignManagement() {
     fetchCampaigns();
   });
 
+  // Fetch campaigns when dependencies change
   useEffect(() => {
     fetchCampaigns();
   }, [fetchCampaigns]);
+
+  // Fetch stats separately (not in fetchCampaigns to avoid circular dependency)
+  useEffect(() => {
+    fetchCampaignStats();
+  }, [fetchCampaignStats]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    pagination.goToPage(1);
+  }, [debouncedSearch, filters.status, filters.category, filters.visibility, filters.dateRange]);
+
+  // Cleanup abort controller on unmount
+  useEffect(() => {
+    return () => {
+      if (abortController) {
+        abortController.abort();
+      }
+    };
+  }, [abortController]);
 
   if (!hasPermission('manage_campaigns')) {
     return (
@@ -461,6 +494,9 @@ export function CampaignManagement() {
         enableColumnVisibility={true}
         enablePagination={true}
         density="comfortable"
+        paginationState={pagination.state}
+        onPageChange={pagination.goToPage}
+        onPageSizeChange={pagination.setPageSize}
       />
 
       <OptimisticUpdateIndicator

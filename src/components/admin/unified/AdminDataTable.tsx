@@ -6,7 +6,7 @@ import {
   SortingState, 
   VisibilityState 
 } from '@tanstack/react-table';
-import { EnhancedDataTable } from '@/components/ui/enhanced-data-table';
+import { EnhancedDataTable, ServerPaginationState } from '@/components/ui/enhanced-data-table';
 import { AdminTableControls, BulkAction, TableAction } from './AdminTableControls';
 import { AdminContentContainer } from './AdminContentContainer';
 import { UserMobileCard, CampaignMobileCard, OrganizationMobileCard } from '@/components/ui/mobile-card';
@@ -50,6 +50,10 @@ interface AdminDataTableProps<TData, TValue> {
   
   // Pagination
   pageSizeOptions?: number[];
+  // Server-side pagination
+  paginationState?: ServerPaginationState;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
 }
 
 export function AdminDataTable<TData, TValue>({
@@ -76,7 +80,10 @@ export function AdminDataTable<TData, TValue>({
   mobileCardType,
   className,
   density = 'comfortable',
-  pageSizeOptions = [10, 25, 50, 100]
+  pageSizeOptions = [10, 25, 50, 100],
+  paginationState,
+  onPageChange,
+  onPageSizeChange
 }: AdminDataTableProps<TData, TValue>) {
   const isMobile = useIsMobile();
   const [internalSelection, setInternalSelection] = useState<TData[]>([]);
@@ -141,6 +148,9 @@ export function AdminDataTable<TData, TValue>({
           pageSizeOptions={pageSizeOptions}
           className="border-none shadow-none"
           searchable={enableFiltering}
+          serverPagination={paginationState}
+          onServerPageChange={onPageChange}
+          onServerPageSizeChange={onPageSizeChange}
         />
       </div>
     </AdminContentContainer>
