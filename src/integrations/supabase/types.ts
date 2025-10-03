@@ -172,27 +172,6 @@ export type Database = {
             referencedRelation: "public_fundraiser_stats"
             referencedColumns: ["fundraiser_id"]
           },
-          {
-            foreignKeyName: "fk_comments_author"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_comments_fundraiser"
-            columns: ["fundraiser_id"]
-            isOneToOne: false
-            referencedRelation: "fundraisers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_comments_fundraiser"
-            columns: ["fundraiser_id"]
-            isOneToOne: false
-            referencedRelation: "public_fundraiser_stats"
-            referencedColumns: ["fundraiser_id"]
-          },
         ]
       }
       donations: {
@@ -255,27 +234,6 @@ export type Database = {
           },
           {
             foreignKeyName: "donations_fundraiser_id_fkey"
-            columns: ["fundraiser_id"]
-            isOneToOne: false
-            referencedRelation: "public_fundraiser_stats"
-            referencedColumns: ["fundraiser_id"]
-          },
-          {
-            foreignKeyName: "fk_donations_donor"
-            columns: ["donor_user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_donations_fundraiser"
-            columns: ["fundraiser_id"]
-            isOneToOne: false
-            referencedRelation: "fundraisers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_donations_fundraiser"
             columns: ["fundraiser_id"]
             isOneToOne: false
             referencedRelation: "public_fundraiser_stats"
@@ -518,27 +476,6 @@ export type Database = {
           visibility?: Database["public"]["Enums"]["visibility_type"] | null
         }
         Relationships: [
-          {
-            foreignKeyName: "fk_fundraisers_category"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_fundraisers_org"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_fundraisers_owner"
-            columns: ["owner_user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "fundraisers_category_id_fkey"
             columns: ["category_id"]

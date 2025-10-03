@@ -138,7 +138,7 @@ class AdminDataService {
         .from('fundraisers')
         .select(`
           *,
-          profiles!owner_user_id(id, name, email, avatar),
+          profiles!fundraisers_owner_user_id_fkey(id, name, email, avatar),
           categories(name, emoji, color_class)
         `, { count: 'exact' });
 
