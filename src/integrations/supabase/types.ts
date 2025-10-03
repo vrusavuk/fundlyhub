@@ -394,11 +394,12 @@ export type Database = {
         Row: {
           beneficiary_contact: string | null
           beneficiary_name: string | null
-          category: string | null
           category_id: string | null
           cover_image: string | null
           created_at: string | null
           currency: string | null
+          deleted_at: string | null
+          deleted_by: string | null
           end_date: string | null
           goal_amount: number
           id: string
@@ -419,11 +420,12 @@ export type Database = {
         Insert: {
           beneficiary_contact?: string | null
           beneficiary_name?: string | null
-          category?: string | null
           category_id?: string | null
           cover_image?: string | null
           created_at?: string | null
           currency?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           end_date?: string | null
           goal_amount: number
           id?: string
@@ -444,11 +446,12 @@ export type Database = {
         Update: {
           beneficiary_contact?: string | null
           beneficiary_name?: string | null
-          category?: string | null
           category_id?: string | null
           cover_image?: string | null
           created_at?: string | null
           currency?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           end_date?: string | null
           goal_amount?: number
           id?: string
@@ -569,6 +572,8 @@ export type Database = {
           country: string | null
           created_at: string | null
           dba_name: string | null
+          deleted_at: string | null
+          deleted_by: string | null
           ein: string | null
           id: string
           legal_name: string
@@ -586,6 +591,8 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           dba_name?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           ein?: string | null
           id?: string
           legal_name: string
@@ -603,6 +610,8 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           dba_name?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           ein?: string | null
           id?: string
           legal_name?: string
