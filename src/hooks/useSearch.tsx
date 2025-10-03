@@ -199,7 +199,6 @@ export function useSearch(options: UseSearchOptions) {
           slug,
           cover_image,
           location,
-          category,
           story_html,
           profiles!fundraisers_owner_user_id_fkey(name)
         `)
@@ -244,7 +243,6 @@ export function useSearch(options: UseSearchOptions) {
             title: campaign.title,
             summary: campaign.summary,
             story: storyText,
-            category: campaign.category,
             location: campaign.location,
             creator: campaign.profiles?.name
           };
@@ -260,7 +258,7 @@ export function useSearch(options: UseSearchOptions) {
             if (scores.story > (scores.summary || 0)) matchedIn = 'full description';
             
             const highlightedTitle = highlightText(campaign.title, searchTerms);
-            const subtitle = `${campaign.category} • by ${campaign.profiles?.name || 'Anonymous'}`;
+            const subtitle = `by ${campaign.profiles?.name || 'Anonymous'}`;
             const highlightedSubtitle = highlightText(subtitle, searchTerms);
             
             let matchedSnippet = '';

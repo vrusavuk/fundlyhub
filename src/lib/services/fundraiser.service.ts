@@ -60,7 +60,7 @@ class FundraiserService {
           .order('created_at', { ascending: false });
 
         if (category && category !== 'All') {
-          query = query.eq('category', category);
+          query = query.eq('category_id', category);
         }
 
         if (searchTerm) {

@@ -17,7 +17,7 @@ export interface Fundraiser extends BaseEntity {
   goal_amount: number;
   raised_amount?: number;
   currency: string;
-  category?: string;
+  category_id?: string;
   status: FundraiserStatus;
   visibility: 'public' | 'unlisted';
   urgency?: FundraiserUrgency;
@@ -35,6 +35,10 @@ export interface Fundraiser extends BaseEntity {
   org_id?: string;
   profiles?: import('./user').UserProfile | import('./user').Profile;
   organizations?: import('./organization').Organization;
+  
+  // Soft delete fields
+  deleted_at?: string;
+  deleted_by?: string;
   
   // Computed fields
   progress_percentage?: number;

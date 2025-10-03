@@ -182,7 +182,7 @@ export function FundraiserGrid({
                 raisedAmount={fundraiserStats.totalRaised || 0}
                 currency={fundraiser.currency}
                 coverImage={fundraiser.cover_image || "/placeholder.svg"}
-                category={fundraiser.category || "General"}
+                category=""
                 organizationName={fundraiser.profiles?.name || "Anonymous"}
                 location={fundraiser.location || undefined}
                 donorCount={fundraiserStats.donorCount || 0}

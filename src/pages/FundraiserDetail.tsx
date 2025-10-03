@@ -115,7 +115,7 @@ export default function FundraiserDetail() {
         return;
       }
 
-      setFundraiser(fundraiserData);
+      setFundraiser(fundraiserData as any);
 
       // Fetch donations and comments in parallel
       const [donationsResponse, commentsResponse] = await Promise.all([
