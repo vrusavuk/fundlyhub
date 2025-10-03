@@ -104,7 +104,7 @@ export default function FundraiserDetail() {
         .select(`
           *,
           profiles!fundraisers_owner_user_id_fkey(id, name),
-          organizations(id, legal_name, dba_name)
+          organizations!fundraisers_org_id_fkey(id, legal_name, dba_name)
         `)
         .eq('slug', slug)
         .single();
