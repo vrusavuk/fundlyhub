@@ -146,6 +146,8 @@ export function useSearch(options: UseSearchOptions) {
   }, [enabled, query]);
 
   const performSearch = useCallback(async (searchQuery: string, currentOffset: number, isNewSearch: boolean = false) => {
+    console.log('[useSearch] performSearch called:', { searchQuery, currentOffset, isNewSearch });
+    
     if (isNewSearch) {
       setLoading(true);
     }
@@ -156,6 +158,7 @@ export function useSearch(options: UseSearchOptions) {
     const cached = await cacheService.get<SearchResult[]>(cacheKey);
     
     if (cached && cached.length > 0) {
+      console.log('[useSearch] Returning cached results:', cached.length);
       if (isNewSearch) {
         setResults(cached);
       } else {
@@ -168,6 +171,7 @@ export function useSearch(options: UseSearchOptions) {
 
     try {
       const tsQuery = searchQuery.trim();
+      console.log('[useSearch] Starting fresh search for:', tsQuery);
       
       // Phase 3: Use projection tables for campaigns (massive performance boost)
       // No client-side scoring needed - PostgreSQL already ranks by relevance!
@@ -196,11 +200,13 @@ export function useSearch(options: UseSearchOptions) {
       });
 
       // Multi-strategy user search: FTS + Fuzzy + Phonetic fallback
+      console.log('[useSearch] Starting user search...');
       let users: any[] = [];
       let usersError = null;
 
       try {
         // Strategy 1: Try FTS first (fastest, most accurate)
+        console.log('[useSearch] Attempting FTS user search...');
         const { data: ftsUsers, error: ftsErr } = await supabase
           .from('public_profiles')
           .select('id, name, avatar, bio, role, campaign_count, follower_count')
@@ -216,9 +222,11 @@ export function useSearch(options: UseSearchOptions) {
         }
 
         users = ftsUsers || [];
+        console.log('[useSearch] FTS returned', users.length, 'users');
 
         // Strategy 2: If FTS returns few results, try fuzzy search function
         if (users.length < 3) {
+          console.log('[useSearch] FTS returned few results, trying fuzzy search...');
           const { data: fuzzyUsers, error: fuzzyError } = await supabase
             .rpc('fuzzy_search_users', { 
               search_query: tsQuery,
