@@ -41,8 +41,9 @@ export function useEnhancedSearch(options: UseEnhancedSearchOptions): UseEnhance
   const [executionTimeMs, setExecutionTimeMs] = useState(0);
   const [cached, setCached] = useState(false);
   
-  const debouncedQuery = useDebounce(options.query, 50);
+  const debouncedQuery = useDebounce(options.query, 300);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const lastSearchRef = useRef<string>('');
   
   // Show loading immediately when query changes (not debounced)
   useEffect(() => {
@@ -51,28 +52,34 @@ export function useEnhancedSearch(options: UseEnhancedSearchOptions): UseEnhance
     }
   }, [options.query, debouncedQuery, options.enabled]);
   
-  const executeSearch = useCallback(async (query: string) => {
-    if (!query.trim() || !options.enabled) {
-      setResults([]);
-      setSuggestions([]);
-      setLoading(false);
+  useEffect(() => {
+    const query = debouncedQuery.trim();
+    
+    // Skip if query hasn't changed or is empty or disabled
+    if (!query || !options.enabled || query === lastSearchRef.current) {
+      if (!query) {
+        setResults([]);
+        setSuggestions([]);
+        setLoading(false);
+      }
       return;
     }
     
+    lastSearchRef.current = query;
+    
+    // Abort previous request
     abortControllerRef.current?.abort();
     abortControllerRef.current = new AbortController();
     
     setLoading(true);
     setError(null);
     
-    try {
-      // ✅ Use Search API (gateway) instead of direct DB access
-      const response = await searchApi.search(query, {
-        scope: 'all',
-        filters: options.filters,
-        limit: 50,
-      });
-      
+    // Execute search
+    searchApi.search(query, {
+      scope: 'all',
+      filters: options.filters,
+      limit: 50,
+    }).then(response => {
       if (response.error) {
         throw new Error(response.error);
       }
@@ -81,19 +88,15 @@ export function useEnhancedSearch(options: UseEnhancedSearchOptions): UseEnhance
       setSuggestions((response.suggestions || []) as any);
       setExecutionTimeMs(response.executionTimeMs);
       setCached(response.cached);
-    } catch (err: any) {
+      setLoading(false);
+    }).catch((err: any) => {
       if (err.name !== 'AbortError') {
         console.error('Search error:', err);
         setError(err.message || 'Search failed');
       }
-    } finally {
       setLoading(false);
-    }
-  }, [options.enabled, options.filters]);
-  
-  useEffect(() => {
-    executeSearch(debouncedQuery);
-  }, [debouncedQuery, executeSearch]);
+    });
+  }, [debouncedQuery, options.enabled]);
   
   const trackClick = useCallback((resultId: string, resultType: string) => {
     // TODO: Implement via Search API analytics endpoint
@@ -105,6 +108,35 @@ export function useEnhancedSearch(options: UseEnhancedSearchOptions): UseEnhance
     console.log('Suggestion clicked:', { suggestionQuery, originalQuery: options.query });
   }, [options.query]);
   
+  const retry = useCallback(() => {
+    lastSearchRef.current = ''; // Reset to force re-search
+    const query = options.query.trim();
+    if (!query) return;
+    
+    lastSearchRef.current = query;
+    setLoading(true);
+    setError(null);
+    
+    searchApi.search(query, {
+      scope: 'all',
+      filters: options.filters,
+      limit: 50,
+    }).then(response => {
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      setResults(response.results as any);
+      setSuggestions((response.suggestions || []) as any);
+      setExecutionTimeMs(response.executionTimeMs);
+      setCached(response.cached);
+      setLoading(false);
+    }).catch((err: any) => {
+      console.error('Search error:', err);
+      setError(err.message || 'Search failed');
+      setLoading(false);
+    });
+  }, [options.query, options.filters]);
+  
   return {
     results,
     suggestions,
@@ -114,8 +146,12 @@ export function useEnhancedSearch(options: UseEnhancedSearchOptions): UseEnhance
     executionTimeMs,
     cached,
     loadMore: () => {},
-    retry: () => executeSearch(options.query),
-    clear: () => { setResults([]); setSuggestions([]); },
+    retry,
+    clear: () => { 
+      setResults([]);
+      setSuggestions([]);
+      lastSearchRef.current = '';
+    },
     trackClick,
     trackSuggestionClick,
   };
