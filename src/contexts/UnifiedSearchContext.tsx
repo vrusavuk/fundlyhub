@@ -11,12 +11,13 @@ interface SearchState {
   isLoading: boolean;
   error: string | null;
   lastSearchTimestamp: number | null;
+  lastUpdateSource: 'user' | 'url' | 'system' | null;
 }
 
 type SearchAction =
   | { type: 'OPEN_HEADER_SEARCH' }
   | { type: 'CLOSE_HEADER_SEARCH' }
-  | { type: 'SET_QUERY'; payload: string }
+  | { type: 'SET_QUERY'; payload: string; source?: 'user' | 'url' | 'system' }
   | { type: 'CLEAR_SEARCH' }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
@@ -47,6 +48,7 @@ const initialState: SearchState = {
   isLoading: false,
   error: null,
   lastSearchTimestamp: null,
+  lastUpdateSource: null,
 };
 
 function searchReducer(state: SearchState, action: SearchAction): SearchState {
@@ -68,6 +70,7 @@ function searchReducer(state: SearchState, action: SearchAction): SearchState {
         searchQuery: action.payload,
         error: null,
         lastSearchTimestamp: Date.now(),
+        lastUpdateSource: action.source || 'user',
       };
     case 'CLEAR_SEARCH':
       return {
@@ -75,6 +78,7 @@ function searchReducer(state: SearchState, action: SearchAction): SearchState {
         searchQuery: '',
         error: null,
         isLoading: false,
+        lastUpdateSource: 'system',
       };
     case 'SET_LOADING':
       return {

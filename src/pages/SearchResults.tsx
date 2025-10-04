@@ -37,19 +37,19 @@ export default function SearchResults() {
     includeSuggestions: true,
   });
 
-  // Sync global search context with URL on initial load only
+  // One-way sync: URL → global context (only on mount)
   useEffect(() => {
-    if (urlQuery && !searchQuery) {
+    if (urlQuery) {
       setSearchQuery(urlQuery);
     }
-  }, [urlQuery, searchQuery, setSearchQuery]);
-
-  // Update URL when global search query changes (but not on every render)
+  }, []); // Empty deps - only run once on mount
+  
+  // Update URL when search query changes
   useEffect(() => {
     if (searchQuery && searchQuery !== urlQuery) {
       setSearchParams({ q: searchQuery }, { replace: true });
     }
-  }, [searchQuery, urlQuery, setSearchParams]);
+  }, [searchQuery]);
 
   const filteredResults = selectedType === 'all' 
     ? results 

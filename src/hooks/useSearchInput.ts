@@ -34,6 +34,7 @@ export function useSearchInput({
   const [query, setQuery] = useState(initialQuery);
   const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
   const inputRef = useRef<HTMLInputElement>(null);
+  const isTypingRef = useRef(false);
   const location = useLocation();
   const { setSearchQuery, clearSearch, searchQuery: globalSearchQuery } = useGlobalSearch();
 
@@ -50,12 +51,12 @@ export function useSearchInput({
     return () => clearTimeout(timer);
   }, [query, debounceMs]);
 
-  // Sync with global search query on integrated pages
+  // Sync with global search query on integrated pages (only when NOT actively typing)
   useEffect(() => {
-    if (isOnIntegratedSearchPage && globalSearchQuery !== query) {
+    if (isOnIntegratedSearchPage && globalSearchQuery !== query && !isTypingRef.current) {
       setQuery(globalSearchQuery);
     }
-  }, [globalSearchQuery, isOnIntegratedSearchPage]);
+  }, [globalSearchQuery, isOnIntegratedSearchPage, query]);
 
   // Auto focus when component mounts
   useEffect(() => {
@@ -67,26 +68,25 @@ export function useSearchInput({
   }, [autoFocus]);
 
   const handleInputChange = useCallback((value: string) => {
+    // Mark that user is actively typing
+    isTypingRef.current = true;
     setQuery(value);
     
     // Update global search context for integrated search pages
     if (isOnIntegratedSearchPage) {
       setSearchQuery(value);
-      
-      // Update URL for search page
-      if (isOnSearchPage && value.trim()) {
-        const newUrl = `/search?q=${encodeURIComponent(value.trim())}`;
-        if (window.location.pathname + window.location.search !== newUrl) {
-          window.history.replaceState({}, '', newUrl);
-        }
-      }
     }
     
     // Haptic feedback for mobile
     if (value.length > 0) {
       hapticFeedback.light();
     }
-  }, [isOnIntegratedSearchPage, isOnSearchPage, setSearchQuery]);
+    
+    // Clear typing flag after debounce period
+    setTimeout(() => {
+      isTypingRef.current = false;
+    }, debounceMs + 300);
+  }, [isOnIntegratedSearchPage, setSearchQuery, debounceMs]);
 
   const handleClear = useCallback(() => {
     setQuery('');

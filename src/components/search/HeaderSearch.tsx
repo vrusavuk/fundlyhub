@@ -70,14 +70,6 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
     // Update global search context for integrated search pages
     if (isOnIntegratedSearchPage) {
       setSearchQuery(value);
-      
-      // Update URL for search page
-      if (isOnSearchPage && value.trim()) {
-        const newUrl = `/search?q=${encodeURIComponent(value.trim())}`;
-        if (window.location.pathname + window.location.search !== newUrl) {
-          window.history.replaceState({}, '', newUrl);
-        }
-      }
     }
     
     // Show dropdown when user types
