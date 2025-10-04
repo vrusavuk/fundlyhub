@@ -3,6 +3,9 @@ project_id = "sgcaqrtnxqhrrqzxmupa"
 [functions.event-processor]
 verify_jwt = false
 
+[functions.campaign-processor]
+verify_jwt = false
+
 [functions.event-query]
 verify_jwt = true
 

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
+import { Redis } from "https://esm.sh/@upstash/redis@1.35.4";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -39,6 +40,19 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    // Initialize Redis client for distributed event streaming
+    let redis: Redis | null = null;
+    try {
+      redis = new Redis({
+        url: Deno.env.get('UPSTASH_REDIS_REST_URL') ?? '',
+        token: Deno.env.get('UPSTASH_REDIS_REST_TOKEN') ?? '',
+      });
+      console.log('[Redis] Client initialized');
+    } catch (redisError) {
+      console.error('[Redis] Failed to initialize:', redisError);
+      // Continue without Redis if it fails
+    }
+
     const results: ProcessorResult[] = [];
 
     // Process single event or batch
@@ -52,6 +66,26 @@ serve(async (req) => {
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Publish events to Redis stream for distributed processing
+    if (redis) {
+      for (const evt of eventsToProcess) {
+        try {
+          await redis.xadd('events:stream', '*', {
+            id: evt.id,
+            type: evt.type,
+            payload: JSON.stringify(evt.payload),
+            timestamp: evt.timestamp.toString(),
+            version: evt.version,
+            correlationId: evt.correlationId || '',
+          });
+          console.log(`[Redis] Published event ${evt.id} to stream`);
+        } catch (redisError) {
+          console.error(`[Redis] Failed to publish event ${evt.id}:`, redisError);
+          // Continue processing even if Redis fails
+        }
+      }
     }
 
     // Validate each event has required fields

@@ -83,6 +83,249 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_search_projection: {
+        Row: {
+          beneficiary_name: string | null
+          campaign_id: string
+          category_name: string | null
+          created_at: string
+          location: string | null
+          org_name: string | null
+          owner_name: string | null
+          search_vector: unknown | null
+          status: Database["public"]["Enums"]["fundraiser_status"]
+          story_text: string | null
+          summary: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          visibility: Database["public"]["Enums"]["visibility_type"]
+        }
+        Insert: {
+          beneficiary_name?: string | null
+          campaign_id: string
+          category_name?: string | null
+          created_at: string
+          location?: string | null
+          org_name?: string | null
+          owner_name?: string | null
+          search_vector?: unknown | null
+          status: Database["public"]["Enums"]["fundraiser_status"]
+          story_text?: string | null
+          summary?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          visibility: Database["public"]["Enums"]["visibility_type"]
+        }
+        Update: {
+          beneficiary_name?: string | null
+          campaign_id?: string
+          category_name?: string | null
+          created_at?: string
+          location?: string | null
+          org_name?: string | null
+          owner_name?: string | null
+          search_vector?: unknown | null
+          status?: Database["public"]["Enums"]["fundraiser_status"]
+          story_text?: string | null
+          summary?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          visibility?: Database["public"]["Enums"]["visibility_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_search_projection_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: true
+            referencedRelation: "fundraisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_search_projection_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: true
+            referencedRelation: "public_fundraiser_stats"
+            referencedColumns: ["fundraiser_id"]
+          },
+        ]
+      }
+      campaign_stats_projection: {
+        Row: {
+          average_donation: number | null
+          campaign_id: string
+          comment_count: number | null
+          donation_count: number | null
+          first_donation_at: string | null
+          last_donation_at: string | null
+          peak_donation_amount: number | null
+          share_count: number | null
+          total_donations: number | null
+          unique_donors: number | null
+          update_count: number | null
+          updated_at: string | null
+          view_count: number | null
+        }
+        Insert: {
+          average_donation?: number | null
+          campaign_id: string
+          comment_count?: number | null
+          donation_count?: number | null
+          first_donation_at?: string | null
+          last_donation_at?: string | null
+          peak_donation_amount?: number | null
+          share_count?: number | null
+          total_donations?: number | null
+          unique_donors?: number | null
+          update_count?: number | null
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          average_donation?: number | null
+          campaign_id?: string
+          comment_count?: number | null
+          donation_count?: number | null
+          first_donation_at?: string | null
+          last_donation_at?: string | null
+          peak_donation_amount?: number | null
+          share_count?: number | null
+          total_donations?: number | null
+          unique_donors?: number | null
+          update_count?: number | null
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_stats_projection_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: true
+            referencedRelation: "fundraisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_stats_projection_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: true
+            referencedRelation: "public_fundraiser_stats"
+            referencedColumns: ["fundraiser_id"]
+          },
+        ]
+      }
+      campaign_summary_projection: {
+        Row: {
+          campaign_id: string
+          category_id: string | null
+          cover_image: string | null
+          created_at: string
+          days_remaining: number | null
+          donor_count: number | null
+          end_date: string | null
+          goal_amount: number
+          last_donation_at: string | null
+          org_id: string | null
+          org_name: string | null
+          owner_avatar: string | null
+          owner_name: string | null
+          owner_user_id: string
+          progress_percentage: number | null
+          slug: string
+          status: Database["public"]["Enums"]["fundraiser_status"]
+          summary: string | null
+          title: string
+          total_raised: number | null
+          updated_at: string | null
+          visibility: Database["public"]["Enums"]["visibility_type"]
+        }
+        Insert: {
+          campaign_id: string
+          category_id?: string | null
+          cover_image?: string | null
+          created_at: string
+          days_remaining?: number | null
+          donor_count?: number | null
+          end_date?: string | null
+          goal_amount: number
+          last_donation_at?: string | null
+          org_id?: string | null
+          org_name?: string | null
+          owner_avatar?: string | null
+          owner_name?: string | null
+          owner_user_id: string
+          progress_percentage?: number | null
+          slug: string
+          status: Database["public"]["Enums"]["fundraiser_status"]
+          summary?: string | null
+          title: string
+          total_raised?: number | null
+          updated_at?: string | null
+          visibility: Database["public"]["Enums"]["visibility_type"]
+        }
+        Update: {
+          campaign_id?: string
+          category_id?: string | null
+          cover_image?: string | null
+          created_at?: string
+          days_remaining?: number | null
+          donor_count?: number | null
+          end_date?: string | null
+          goal_amount?: number
+          last_donation_at?: string | null
+          org_id?: string | null
+          org_name?: string | null
+          owner_avatar?: string | null
+          owner_name?: string | null
+          owner_user_id?: string
+          progress_percentage?: number | null
+          slug?: string
+          status?: Database["public"]["Enums"]["fundraiser_status"]
+          summary?: string | null
+          title?: string
+          total_raised?: number | null
+          updated_at?: string | null
+          visibility?: Database["public"]["Enums"]["visibility_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_summary_projection_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: true
+            referencedRelation: "fundraisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_summary_projection_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: true
+            referencedRelation: "public_fundraiser_stats"
+            referencedColumns: ["fundraiser_id"]
+          },
+          {
+            foreignKeyName: "campaign_summary_projection_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_summary_projection_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_summary_projection_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "public_organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           color_class: string
@@ -867,6 +1110,92 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      saga_instances: {
+        Row: {
+          aggregate_id: string
+          completed_at: string | null
+          created_at: string
+          current_step: number
+          data: Json
+          error_message: string | null
+          id: string
+          saga_type: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          aggregate_id: string
+          completed_at?: string | null
+          created_at?: string
+          current_step?: number
+          data?: Json
+          error_message?: string | null
+          id?: string
+          saga_type: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          aggregate_id?: string
+          completed_at?: string | null
+          created_at?: string
+          current_step?: number
+          data?: Json
+          error_message?: string | null
+          id?: string
+          saga_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      saga_steps: {
+        Row: {
+          attempt_count: number
+          compensated_at: string | null
+          created_at: string
+          error_message: string | null
+          executed_at: string | null
+          id: string
+          saga_id: string
+          status: string
+          step_name: string
+          step_number: number
+        }
+        Insert: {
+          attempt_count?: number
+          compensated_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          executed_at?: string | null
+          id?: string
+          saga_id: string
+          status?: string
+          step_name: string
+          step_number: number
+        }
+        Update: {
+          attempt_count?: number
+          compensated_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          executed_at?: string | null
+          id?: string
+          saga_id?: string
+          status?: string
+          step_name?: string
+          step_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saga_steps_saga_id_fkey"
+            columns: ["saga_id"]
+            isOneToOne: false
+            referencedRelation: "saga_instances"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       security_events: {
         Row: {

@@ -24,11 +24,27 @@ export * from './subscribers/AnalyticsSubscriber';
 export * from './subscribers/CacheSubscriber';
 export * from './subscribers/SubscriptionEventSubscriber';
 
+// Event Processors (Phase 1)
+export * from './processors/CampaignWriteProcessor';
+export * from './processors/CampaignProjectionProcessor';
+export * from './processors/CampaignRoleProcessor';
+
+// Saga Managers (Phase 4)
+export * from './sagas/CampaignCreationSaga';
+
+// Monitoring (Phase 5)
+export * from './monitoring/EventMetrics';
+
 // Create hybrid event bus instance
 import { HybridEventBus } from './HybridEventBus';
 import { supabase } from '@/integrations/supabase/client';
 import { LoggingMiddleware } from './middleware/LoggingMiddleware';
 import { ValidationMiddleware } from './middleware/ValidationMiddleware';
+
+// Import processors
+import { CampaignWriteProcessor } from './processors/CampaignWriteProcessor';
+import { CampaignProjectionProcessor } from './processors/CampaignProjectionProcessor';
+import { CampaignRoleProcessor } from './processors/CampaignRoleProcessor';
 
 // Export utility classes
 export { EventIdempotency, eventIdempotency } from './EventIdempotency';
@@ -56,6 +72,20 @@ export const globalEventBus = new HybridEventBus({
 
 // Initialize the event bus
 globalEventBus.connect().catch(console.error);
+
+// Register campaign event processors
+const campaignWriteProcessor = new CampaignWriteProcessor();
+const campaignProjectionProcessor = new CampaignProjectionProcessor();
+const campaignRoleProcessor = new CampaignRoleProcessor();
+
+globalEventBus.subscribe('campaign.created', campaignWriteProcessor);
+globalEventBus.subscribe('campaign.updated', campaignWriteProcessor);
+globalEventBus.subscribe('campaign.created', campaignProjectionProcessor);
+globalEventBus.subscribe('campaign.updated', campaignProjectionProcessor);
+globalEventBus.subscribe('campaign.deleted', campaignProjectionProcessor);
+globalEventBus.subscribe('campaign.created', campaignRoleProcessor);
+
+console.log('[EventBus] Campaign processors registered');
 
 // Initialize subscription event subscribers
 import { initializeSubscriptionSubscribers } from './subscribers/SubscriptionEventSubscriber';

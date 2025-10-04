@@ -114,3 +114,12 @@ export class FundraiserCreationRules {
     };
   }
 }
+
+/**
+ * Helper function to generate fundraiser slug
+ * Exported for use in event processors
+ */
+export async function generateFundraiserSlug(title: string): Promise<string> {
+  const baseSlug = FundraiserCreationRules.generateSlug(title);
+  return FundraiserCreationRules.ensureUniqueSlug(baseSlug);
+}
