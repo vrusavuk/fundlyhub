@@ -14,6 +14,7 @@ interface PageHeaderProps {
   actions?: ReactNode;
   className?: string;
   showBreadcrumbs?: boolean;
+  showBackButton?: boolean;
 }
 
 export function PageHeader({
@@ -21,14 +22,15 @@ export function PageHeader({
   description,
   actions,
   className,
-  showBreadcrumbs = true
+  showBreadcrumbs = true,
+  showBackButton = true
 }: PageHeaderProps) {
   const { navigationContext, isMobile, shouldShowBackButton } = useSmartNavigation();
   
   return (
     <div className={`mb-4 sm:mb-6 ${className || ''}`}>
       {/* Smart Navigation */}
-      <SmartBackButton />
+      {showBackButton && <SmartBackButton />}
       {showBreadcrumbs && <SmartBreadcrumb className="mb-3 sm:mb-4" />}
       
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">

@@ -16,6 +16,7 @@ export default function CreateFundraiser() {
           title="Create New Fundraiser"
           description="Follow the steps below to launch your campaign with AI-powered assistance"
           className="mb-6 sm:mb-8"
+          showBackButton={false}
         />
         <CreateFundraiserWizard />
       </PageContainer>
