@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { useAuth } from '@/hooks/useAuth';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
@@ -192,68 +192,54 @@ export default function Auth() {
     <div className="min-h-screen grid lg:grid-cols-2 bg-background">
       {/* Left Side - Branding & Visual Story */}
       <div className="hidden lg:flex flex-col justify-between bg-gradient-primary p-12 text-primary-foreground relative overflow-hidden">
-        {/* Animated background elements */}
+        {/* Animated background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-primary-foreground/10 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-1/3 left-1/3 w-80 h-80 bg-primary-foreground/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
         </div>
 
-        <div className="relative z-10">
+        <div className="relative z-10 space-y-8">
           {/* Logo */}
-          <div className="flex items-center gap-3 mb-12">
-            <div className="p-2.5 bg-primary-foreground/20 backdrop-blur-sm rounded-xl shadow-elegant">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-primary-foreground/20 backdrop-blur-sm rounded-xl">
               <Shield className="h-7 w-7" />
             </div>
             <h1 className="text-2xl font-bold tracking-tight">FundlyHub</h1>
           </div>
 
           {/* Main Message */}
-          <div className="space-y-6 max-w-md">
-            <h2 className="text-4xl sm:text-5xl font-bold leading-tight">
-              {isLogin ? 'Welcome back!' : 'Start making a difference'}
+          <div className="space-y-6 max-w-lg">
+            <h2 className="text-5xl font-bold leading-tight">
+              {isLogin ? 'Welcome back' : 'Start your journey'}
             </h2>
-            <p className="text-lg text-primary-foreground/80 leading-relaxed">
+            <p className="text-xl text-primary-foreground/80 leading-relaxed">
               {isLogin 
-                ? 'Sign in to access your campaigns, track donations, and continue making an impact.'
-                : 'Join thousands of creators raising funds for causes that matter. Your story starts here.'
+                ? 'Continue making an impact with your campaigns and donations.'
+                : 'Join creators raising funds for causes that matter. Your story starts here.'
               }
             </p>
           </div>
         </div>
 
         {/* Features */}
-        <div className="relative z-10 space-y-4">
-          <div className="flex items-start gap-4 p-4 bg-primary-foreground/10 backdrop-blur-sm rounded-xl border border-primary-foreground/20">
-            <div className="flex-shrink-0 mt-1">
-              <div className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
-                <Shield className="h-5 w-5" />
-              </div>
+        <div className="relative z-10 grid gap-3">
+          <div className="flex items-center gap-3 p-3 bg-primary-foreground/10 backdrop-blur-sm rounded-xl border border-primary-foreground/20">
+            <div className="w-8 h-8 rounded-lg bg-primary-foreground/20 flex items-center justify-center flex-shrink-0">
+              <Shield className="h-4 w-4" />
             </div>
-            <div>
-              <h3 className="font-semibold mb-1">Bank-level Security</h3>
-              <p className="text-sm text-primary-foreground/70">
-                Your data is encrypted and protected with industry-leading security standards
-              </p>
-            </div>
+            <span className="text-sm font-medium">Bank-level security & encryption</span>
           </div>
           
-          <div className="flex items-start gap-4 p-4 bg-primary-foreground/10 backdrop-blur-sm rounded-xl border border-primary-foreground/20">
-            <div className="flex-shrink-0 mt-1">
-              <div className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
-                <Check className="h-5 w-5" />
-              </div>
+          <div className="flex items-center gap-3 p-3 bg-primary-foreground/10 backdrop-blur-sm rounded-xl border border-primary-foreground/20">
+            <div className="w-8 h-8 rounded-lg bg-primary-foreground/20 flex items-center justify-center flex-shrink-0">
+              <Check className="h-4 w-4" />
             </div>
-            <div>
-              <h3 className="font-semibold mb-1">Quick Setup</h3>
-              <p className="text-sm text-primary-foreground/70">
-                Create your campaign in minutes and start receiving donations right away
-              </p>
-            </div>
+            <span className="text-sm font-medium">Launch campaigns in minutes</span>
           </div>
         </div>
       </div>
 
-      {/* Right Side - Progressive Auth Form */}
+      {/* Right Side - Auth Form */}
       <div className="flex items-center justify-center p-6 sm:p-12 bg-gradient-subtle">
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
@@ -265,18 +251,15 @@ export default function Auth() {
           </div>
 
           {/* Auth Card */}
-          <div className="card-enhanced shadow-glow rounded-2xl p-8 space-y-6 backdrop-blur-sm border-2">
-            {/* Header */}
-            <div className="text-center space-y-2">
-              <h2 className="heading-medium">
-                {isLogin ? 'Welcome back' : 'Create your account'}
-              </h2>
-              <p className="body-small text-muted-foreground">
+          <div className="card-enhanced shadow-glow rounded-2xl p-8 space-y-6">
+            {/* Dynamic Instructions */}
+            <div className="text-center">
+              <p className="body-medium text-muted-foreground">
                 {step === 'email' 
-                  ? 'Enter your email to continue' 
+                  ? `Enter your email to ${isLogin ? 'sign in' : 'get started'}` 
                   : isLogin 
-                    ? 'Enter your password to sign in'
-                    : 'Complete your profile setup'
+                    ? 'Enter your password'
+                    : 'Complete your profile'
                 }
               </p>
             </div>
@@ -285,7 +268,7 @@ export default function Auth() {
             <Button
               type="button"
               variant="outline"
-              className="w-full h-12 text-base font-medium border-2 hover-scale touch-button"
+              className="w-full h-12 font-medium border-2 hover-scale touch-button"
               onClick={handleGoogleSignIn}
               disabled={loading}
             >
@@ -301,10 +284,10 @@ export default function Auth() {
             {/* Divider */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
+                <span className="w-full border-t" />
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-3 text-muted-foreground font-medium">Or continue with email</span>
+              <div className="relative flex justify-center caption-small uppercase">
+                <span className="bg-card px-3 text-muted-foreground font-medium">Or</span>
               </div>
             </div>
 
@@ -324,22 +307,21 @@ export default function Auth() {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="label-small font-semibold">Email address</FormLabel>
                         <FormControl>
                           <div className="relative group">
-                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors duration-200" />
+                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                             <Input
                               {...field}
                               type="email"
                               placeholder="you@example.com"
-                              className="pl-12 h-12 text-base border-2 focus-visible:ring-2 focus-visible:ring-primary/20 transition-all mobile-input-padding"
+                              className="pl-12 h-12 border-2 mobile-input-padding"
                               disabled={loading || step === 'credentials'}
                               autoComplete="email"
                               autoFocus
                             />
                             {emailValidated && step === 'email' && (
                               <div className="absolute right-4 top-1/2 -translate-y-1/2 animate-scale-in">
-                                <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shadow-medium">
+                                <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
                                   <Check className="h-4 w-4 text-white" />
                                 </div>
                               </div>
@@ -356,7 +338,7 @@ export default function Auth() {
                       type="button"
                       onClick={handleContinueWithEmail}
                       disabled={!emailValidated || loading}
-                      className="w-full h-12 text-base font-semibold cta-primary touch-button shadow-medium hover:shadow-glow transition-all duration-300"
+                      className="w-full h-12 font-semibold cta-primary touch-button shadow-medium hover:shadow-glow transition-all"
                     >
                       Continue
                       <ArrowRight className="ml-2 h-5 w-5" />
@@ -371,7 +353,7 @@ export default function Auth() {
                     <button
                       type="button"
                       onClick={handleBackToEmail}
-                      className="caption-small text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 -mt-2 story-link"
+                      className="caption-small text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 story-link"
                     >
                       <ArrowRight className="h-4 w-4 rotate-180" />
                       Change email
@@ -384,14 +366,13 @@ export default function Auth() {
                         name="name"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="label-small font-semibold">Full name</FormLabel>
                             <FormControl>
                               <div className="relative group">
-                                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors duration-200" />
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                 <Input
                                   {...field}
-                                  placeholder="John Doe"
-                                  className="pl-12 h-12 text-base border-2 focus-visible:ring-2 focus-visible:ring-primary/20 mobile-input-padding"
+                                  placeholder="Full name"
+                                  className="pl-12 h-12 border-2 mobile-input-padding"
                                   disabled={loading}
                                   autoComplete="name"
                                 />
@@ -409,16 +390,15 @@ export default function Auth() {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="label-small font-semibold">Password</FormLabel>
                           <FormControl>
                             <div className="relative group">
-                              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors duration-200" />
+                              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                               <Input
                                 {...field}
                                 ref={passwordInputRef}
                                 type={showPassword ? 'text' : 'password'}
-                                placeholder="Enter your password"
-                                className="pl-12 pr-12 h-12 text-base border-2 focus-visible:ring-2 focus-visible:ring-primary/20 mobile-input-padding"
+                                placeholder={isLogin ? 'Password' : 'Create password'}
+                                className="pl-12 pr-12 h-12 border-2 mobile-input-padding"
                                 disabled={loading}
                                 autoComplete={isLogin ? 'current-password' : 'new-password'}
                               />
@@ -428,11 +408,7 @@ export default function Auth() {
                                 className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                                 tabIndex={-1}
                               >
-                                {showPassword ? (
-                                  <EyeOff className="h-5 w-5" />
-                                ) : (
-                                  <Eye className="h-5 w-5" />
-                                )}
+                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                               </button>
                             </div>
                           </FormControl>
@@ -450,7 +426,7 @@ export default function Auth() {
                     {/* Submit Button */}
                     <Button
                       type="submit"
-                      className="w-full h-12 text-base font-semibold cta-primary touch-button shadow-medium hover:shadow-glow transition-all duration-300"
+                      className="w-full h-12 font-semibold cta-primary touch-button shadow-medium hover:shadow-glow transition-all"
                       disabled={loading}
                     >
                       {loading ? (
@@ -472,7 +448,7 @@ export default function Auth() {
           </div>
 
           {/* Footer */}
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-4">
             <p className="body-small text-muted-foreground">
               {isLogin ? "Don't have an account?" : 'Already have an account?'}
               {' '}
@@ -480,28 +456,23 @@ export default function Auth() {
                 type="button"
                 onClick={toggleMode}
                 disabled={loading}
-                className="font-semibold text-primary hover:underline focus:outline-none focus:underline disabled:opacity-50 disabled:cursor-not-allowed transition-colors story-link"
+                className="font-semibold text-primary story-link"
               >
-                {isLogin ? 'Sign up free' : 'Sign in'}
+                {isLogin ? 'Sign up' : 'Sign in'}
               </button>
             </p>
-          </div>
 
-          {/* Trust Badges */}
-          <div className="mt-8 flex items-center justify-center gap-6 caption-small text-muted-foreground">
-            <div className="flex items-center gap-1.5">
-              <Shield className="h-3.5 w-3.5" />
-              <span>Secure</span>
-            </div>
-            <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-            <div className="flex items-center gap-1.5">
-              <Lock className="h-3.5 w-3.5" />
-              <span>Encrypted</span>
-            </div>
-            <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-            <div className="flex items-center gap-1.5">
-              <Check className="h-3.5 w-3.5" />
-              <span>GDPR</span>
+            {/* Trust Badges */}
+            <div className="flex items-center justify-center gap-4 caption-small text-muted-foreground">
+              <div className="flex items-center gap-1.5">
+                <Shield className="h-3.5 w-3.5" />
+                <span>Secure</span>
+              </div>
+              <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+              <div className="flex items-center gap-1.5">
+                <Lock className="h-3.5 w-3.5" />
+                <span>Encrypted</span>
+              </div>
             </div>
           </div>
         </div>
