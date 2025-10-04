@@ -276,7 +276,7 @@ class SearchService implements ISearchService {
     const { data, error } = await supabase
       .from('campaign_search_projection')
       .select('*')
-      .or(`search_vector.fts.${query},title.ilike.%${query}%,summary.ilike.%${query}%`)
+      .or(`title.ilike.%${query}%,summary.ilike.%${query}%,beneficiary_name.ilike.%${query}%,location.ilike.%${query}%`)
       .eq('visibility', 'public')
       .in('status', ['active', 'ended', 'closed'])
       .limit(options.maxResults || 50);
@@ -314,7 +314,7 @@ class SearchService implements ISearchService {
     const { data, error } = await supabase
       .from('organization_search_projection')
       .select('*')
-      .or(`search_vector.fts.${query},name_lowercase.ilike.%${normalizedQuery}%,legal_name.ilike.%${query}%,dba_name.ilike.%${query}%`)
+      .or(`name_lowercase.ilike.%${normalizedQuery}%,legal_name.ilike.%${query}%,dba_name.ilike.%${query}%`)
       .order('relevance_boost', { ascending: false })
       .limit(options.maxResults || 50);
 
