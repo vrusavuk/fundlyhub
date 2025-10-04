@@ -3,6 +3,7 @@ import { twMerge } from "tailwind-merge";
 import { ColumnDef } from "@tanstack/react-table";
 import { EnhancedColumnDef } from "@/components/ui/enhanced-data-table";
 import { cn } from "@/lib/utils";
+import { MoneyMath } from "@/lib/enterprise/utils/MoneyMath";
 
 // Standard table utility functions
 
@@ -128,23 +129,16 @@ export function createCurrencyColumn<TData>(
     priority?: 'high' | 'medium' | 'low' | 'hidden';
   } = {}
 ): EnhancedColumnDef<TData, unknown> {
-  const formatCurrency = (amount: number | null | undefined) => {
-    if (amount === null || amount === undefined) return '-';
-    
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
   return createResponsiveColumn(
     {
       id: accessorKey,
       accessorKey,
       header: label,
-      cell: ({ getValue }) => formatCurrency(getValue() as number),
+      cell: ({ getValue }) => {
+        const value = getValue() as number | null | undefined;
+        if (value === null || value === undefined) return '-';
+        return MoneyMath.format(MoneyMath.create(value, currency));
+      },
     },
     {
       priority: options.priority || 'medium',

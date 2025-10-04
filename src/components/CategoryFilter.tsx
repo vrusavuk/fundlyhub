@@ -3,15 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Users, TrendingUp, ArrowRight } from 'lucide-react';
-import { useDynamicCategoryStats } from '@/hooks/useDynamicCategoryStats';
-import { formatCurrency } from '@/lib/utils/formatters';
+import { useCategories } from '@/hooks/useCategories';
+import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
 import { LoadingState } from '@/components/common/LoadingState';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 
 export function CategoryFilter() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [navigating, setNavigating] = useState<string | null>(null);
-  const { stats: categoryStats, loading, error, refetch } = useDynamicCategoryStats();
+  const { stats: categoryStats, loading, error, refresh } = useCategories();
   const navigate = useNavigate();
 
   const handleCategoryClick = async (categoryName: string) => {
@@ -39,7 +39,7 @@ export function CategoryFilter() {
         <div className="container mx-auto px-4">
           <ErrorMessage 
             message={error} 
-            onRetry={refetch}
+            onRetry={refresh}
           />
         </div>
       </section>
@@ -113,7 +113,7 @@ export function CategoryFilter() {
                           Total Raised
                         </span>
                         <span className="font-medium text-foreground">
-                          {formatCurrency(category.total_raised || 0)}
+                          {MoneyMath.format(MoneyMath.create(category.total_raised || 0, 'USD'))}
                         </span>
                       </div>
                     </div>

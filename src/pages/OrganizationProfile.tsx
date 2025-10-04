@@ -14,7 +14,7 @@ import { FundraiserGrid } from '@/components/fundraisers/FundraiserGrid';
 import { MapPin, Globe, Calendar, Users, Trophy } from 'lucide-react';
 import { useFundraisers } from '@/hooks/useFundraisers';
 import { useOrganizationProfile } from '@/hooks/useOrganizationProfile';
-import { formatCurrency } from '@/lib/utils/formatters';
+import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
 import { format } from 'date-fns';
 import { SmartBreadcrumb } from '@/components/navigation/SmartBreadcrumb';
 
@@ -153,7 +153,7 @@ export function OrganizationProfile() {
                        </div>
                        <div className="text-center">
                          <div className="font-bold text-lg text-foreground">
-                           {formatCurrency(organization.totalFundsRaised)}
+                           {MoneyMath.format(MoneyMath.create(organization.totalFundsRaised, 'USD'))}
                          </div>
                          <div className="text-muted-foreground">Raised</div>
                        </div>

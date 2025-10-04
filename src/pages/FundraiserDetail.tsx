@@ -19,7 +19,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Share2, Calendar, MapPin, Verified, Facebook, Twitter, Copy } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils/formatters';
+import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
 import { sanitizeHTML } from '@/lib/utils/sanitize';
 import { FollowButton } from '@/components/profile/FollowButton';
 import { SmartBreadcrumb } from '@/components/navigation/SmartBreadcrumb';
@@ -594,7 +594,9 @@ export default function FundraiserDetail() {
                 <div className="flex-1">
                   <div className="flex items-center justify-between text-sm mb-1">
                     <span className="text-muted-foreground">Raised</span>
-                    <span className="font-medium">{formatCurrency(totalRaised)} of {formatCurrency(fundraiser.goal_amount)}</span>
+                    <span className="font-medium">
+                      {MoneyMath.format(MoneyMath.create(totalRaised, fundraiser.currency))} of {MoneyMath.format(MoneyMath.create(fundraiser.goal_amount, fundraiser.currency))}
+                    </span>
                   </div>
                   <Progress value={progressPercentage} className="h-2" />
                 </div>

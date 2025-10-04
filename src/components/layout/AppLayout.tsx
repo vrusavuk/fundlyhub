@@ -3,7 +3,7 @@
  * Provides consistent page structure with navigation
  */
 import { ReactNode } from 'react';
-import { Navigation } from '../navigation/Navigation';
+import { Navigation } from '@/components/navigation/Navigation';
 
 interface AppLayoutProps {
   children: ReactNode;

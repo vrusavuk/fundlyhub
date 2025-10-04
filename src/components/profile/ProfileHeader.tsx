@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { MapPin, Globe, Calendar, Users, Heart } from 'lucide-react';
 import { FollowButton } from './FollowButton';
 import { UserRoleBadge } from '@/components/user/UserRoleBadge';
-import { formatCurrency } from '@/lib/utils/formatters';
+import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
 import { format } from 'date-fns';
 
 interface UserProfile {
@@ -102,7 +102,7 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
                 </div>
                 <div className="text-center">
                   <div className="font-bold text-lg text-foreground">
-                    {formatCurrency(profile.total_funds_raised)}
+                    {MoneyMath.format(MoneyMath.create(profile.total_funds_raised, 'USD'))}
                   </div>
                   <div className="text-muted-foreground">Raised</div>
                 </div>

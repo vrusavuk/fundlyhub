@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
+import { MoneyMath } from "@/lib/enterprise/utils/MoneyMath";
 import {
   createSelectionColumn,
   createDateColumn,
@@ -42,18 +43,6 @@ const statusConfig = {
   paused: { label: "Paused", variant: "secondary" as const },
   ended: { label: "Ended", variant: "outline" as const },
   closed: { label: "Closed", variant: "destructive" as const },
-};
-
-// Utility functions
-const formatCurrency = (amount: number, currency: string = "USD") => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-    notation: "compact",
-    compactDisplay: "short",
-  }).format(amount);
 };
 
 const getProgressPercentage = (raised: number, goal: number) => {
@@ -204,10 +193,10 @@ export function createCampaignColumns(
           <div className="space-y-1 min-w-0">
             <div className="flex items-center justify-between text-sm">
               <span className="font-medium">
-                {formatCurrency(raised, campaign.currency)}
+                {MoneyMath.format(MoneyMath.create(raised, campaign.currency))}
               </span>
               <span className="text-muted-foreground">
-                {formatCurrency(goal, campaign.currency)}
+                {MoneyMath.format(MoneyMath.create(goal, campaign.currency))}
               </span>
             </div>
             <Progress value={percentage} className="h-2" />

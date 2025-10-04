@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
 import { 
   MoreHorizontal, 
   Calendar, 
@@ -216,14 +217,6 @@ export function CampaignMobileCard({
     }
   };
 
-  const formatCurrency = (amount: number = 0, currency: string = 'USD') => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
   const progressPercentage = campaign.goal_amount 
     ? Math.min((campaign.stats?.total_raised || 0) / campaign.goal_amount * 100, 100)
     : 0;
@@ -300,10 +293,10 @@ export function CampaignMobileCard({
           
           <div className="flex justify-between text-xs">
             <span className="font-medium">
-              {formatCurrency(campaign.stats?.total_raised || 0, campaign.currency)}
+              {MoneyMath.format(MoneyMath.create(campaign.stats?.total_raised || 0, campaign.currency))}
             </span>
             <span className="text-muted-foreground">
-              of {formatCurrency(campaign.goal_amount || 0, campaign.currency)}
+              of {MoneyMath.format(MoneyMath.create(campaign.goal_amount || 0, campaign.currency))}
             </span>
           </div>
           

@@ -98,8 +98,21 @@ const navigationItems: AdminNavItem[] = [
     title: 'Settings',
     url: '/admin/settings',
     icon: Settings,
-    permission: 'manage_system_settings'
-  }
+    permission: 'manage_system_settings' as const,
+  },
+  {
+    title: 'Event Monitoring',
+    url: '/admin/events',
+    icon: Activity,
+    permission: 'manage_system_settings' as const,
+    badge: 'New',
+  },
+  {
+    title: 'Design System',
+    url: '/admin/design-system',
+    icon: Settings,
+    permission: 'manage_system_settings' as const,
+  },
 ];
 
 export function AdminSidebar() {

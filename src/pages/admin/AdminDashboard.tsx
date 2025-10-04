@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRBAC } from '@/hooks/useRBAC';
 import { supabase } from '@/integrations/supabase/client';
+import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -113,15 +114,6 @@ export function AdminDashboard() {
     );
   }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
   const getHealthIcon = (status: string) => {
     switch (status) {
       case 'healthy':
@@ -187,7 +179,7 @@ export function AdminDashboard() {
             },
             {
               title: 'Total Raised',
-              value: formatCurrency(stats?.totalFundsRaised || 0),
+              value: MoneyMath.format(MoneyMath.create(stats?.totalFundsRaised || 0, 'USD')),
               icon: DollarSign,
               description: 'Lifetime',
               change: {
@@ -226,7 +218,7 @@ export function AdminDashboard() {
             },
             {
               title: 'Total Raised',
-              value: formatCurrency(stats?.totalFundsRaised || 0),
+              value: MoneyMath.format(MoneyMath.create(stats?.totalFundsRaised || 0, 'USD')),
               icon: DollarSign,
               description: 'Platform lifetime',
               trend: {

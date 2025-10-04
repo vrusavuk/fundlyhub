@@ -23,6 +23,7 @@ export {
   ProfileFollowerItemSkeleton
 } from './ProfilePageSkeleton';
 export { CampaignPageSkeleton } from './CampaignPageSkeleton';
+export { AdminPageSkeleton } from './AdminPageSkeleton';
 
 // Loading state variants
 export type SkeletonVariant = 

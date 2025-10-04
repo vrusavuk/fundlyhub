@@ -5,7 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { formatCurrency, formatRelativeTime } from '@/lib/utils/formatters';
+import { formatRelativeTime } from '@/lib/utils/formatters';
+import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
 
 interface Donation {
   id: string;
@@ -62,7 +63,7 @@ export function AllDonorsDialog({ isOpen, onClose, donations }: AllDonorsDialogP
                         {donorName}
                       </p>
                       <Badge variant="outline" className="text-primary font-semibold">
-                        {formatCurrency(donation.amount, donation.currency)}
+                        {MoneyMath.format(MoneyMath.create(donation.amount, donation.currency))}
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">

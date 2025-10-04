@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Users, Heart } from 'lucide-react';
 import { AllDonorsDialog } from './AllDonorsDialog';
-import { formatCurrency, formatRelativeTime } from '@/lib/utils/formatters';
 
 interface Donation {
   id: string;

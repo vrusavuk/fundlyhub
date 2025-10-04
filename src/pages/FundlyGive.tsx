@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Navigation } from "@/components/Navigation";
+import { Navigation } from "@/components/navigation/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Zap, Shield, Receipt, CheckCircle, CreditCard, Building2, Users, Eye, Heart } from "lucide-react";
