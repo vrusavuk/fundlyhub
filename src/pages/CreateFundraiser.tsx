@@ -111,10 +111,25 @@ export default function CreateFundraiser() {
           console.error('Failed to publish campaign created event:', eventError);
         }
 
-        toast({
-          title: "Fundraiser created!",
-          description: "Your fundraiser has been created successfully.",
-        });
+        // Check if user was promoted to creator
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        if (profile?.role === 'creator') {
+          toast({
+            title: "🎉 Congratulations! You're now a Creator",
+            description: "You can now manage and track your fundraising campaigns.",
+          });
+        } else {
+          toast({
+            title: "Fundraiser created!",
+            description: "Your fundraiser has been created successfully.",
+          });
+        }
+        
         navigate(`/fundraiser/${data.slug}`);
       }
     } catch (error: any) {

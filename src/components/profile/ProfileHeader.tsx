@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { MapPin, Globe, Calendar, Users, Heart } from 'lucide-react';
 import { FollowButton } from './FollowButton';
+import { UserRoleBadge } from '@/components/user/UserRoleBadge';
 import { formatCurrency } from '@/lib/utils/formatters';
 import { format } from 'date-fns';
 
@@ -46,9 +47,10 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
                 {profile.name || 'Anonymous User'}
               </h1>
-              <Badge variant="secondary" className="mt-2">
-                {profile.role}
-              </Badge>
+              <UserRoleBadge 
+                role={profile.role as 'visitor' | 'creator' | 'org_admin' | 'admin'} 
+                className="mt-2"
+              />
             </div>
           </div>
 
