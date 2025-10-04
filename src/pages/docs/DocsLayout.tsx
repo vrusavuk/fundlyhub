@@ -1,11 +1,15 @@
 /**
  * Documentation layout using standard app layout patterns
+ * Responsive for mobile, tablet, and desktop
  */
 import { ReactNode } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { PageContainer } from '@/components/ui/PageContainer';
 import { Link, useLocation } from 'react-router-dom';
 import { TableOfContents } from '@/components/docs/TableOfContents';
+import { MobileToC } from '@/components/docs/MobileToC';
+import { DocsFloatingMenu } from '@/components/docs/DocsFloatingMenu';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface DocsLayoutProps {
   children: ReactNode;
@@ -13,6 +17,7 @@ interface DocsLayoutProps {
 
 export function DocsLayout({ children }: DocsLayoutProps) {
   const location = useLocation();
+  const isMobile = useIsMobile();
   
   const isActiveLink = (path: string) => {
     if (path === '/docs') {
@@ -30,11 +35,11 @@ export function DocsLayout({ children }: DocsLayoutProps) {
   return (
     <AppLayout>
       <PageContainer>
-        <div className="flex gap-8">
-          {/* Sidebar */}
-          <aside className="w-64 shrink-0 sticky top-20 h-fit">
-            <div className="bg-background border border-border rounded-lg p-6">
-              <div className="flex items-center gap-2 mb-6">
+        <div className="flex gap-4 lg:gap-8">
+          {/* Desktop Sidebar - Hidden on mobile/tablet */}
+          <aside className="hidden lg:block w-64 shrink-0 sticky top-20 h-fit">
+            <div className="bg-background border border-border rounded-lg p-4 xl:p-6">
+              <div className="flex items-center gap-2 mb-4 xl:mb-6">
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                   <svg className="h-4 w-4 text-primary-foreground" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z"/>
@@ -42,7 +47,7 @@ export function DocsLayout({ children }: DocsLayoutProps) {
                 </div>
                 <div>
                   <div className="font-semibold text-sm">Developer Documentation</div>
-                  <div className="text-xs text-muted-foreground">v1.0.0</div>
+                  <div className="text-xs text-muted-foreground">v2.1.0</div>
                 </div>
               </div>
               
@@ -101,16 +106,22 @@ export function DocsLayout({ children }: DocsLayoutProps) {
           {/* Main Content */}
           <main className="flex-1 min-w-0">
             <div className="max-w-4xl">
+              {/* Mobile Table of Contents */}
+              {isMobile && <MobileToC />}
+              
               {children}
             </div>
           </main>
 
-          {/* Table of Contents */}
-          <aside className="w-56 shrink-0 sticky top-20 h-fit">
+          {/* Desktop Table of Contents - Hidden on mobile/tablet */}
+          <aside className="hidden xl:block w-56 shrink-0 sticky top-20 h-fit">
             <TableOfContents />
           </aside>
         </div>
       </PageContainer>
+      
+      {/* Mobile Floating Menu */}
+      <DocsFloatingMenu />
     </AppLayout>
   );
 }
