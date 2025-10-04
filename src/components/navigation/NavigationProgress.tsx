@@ -1,18 +1,21 @@
 /**
  * Navigation Progress Indicator
  * Slim progress bar for route transitions (YouTube-style)
+ * Works with BrowserRouter by tracking location changes
  */
 
-import { useEffect, useState } from 'react';
-import { useNavigation } from 'react-router-dom';
+import { useEffect, useState, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 
 export function NavigationProgress() {
-  const navigation = useNavigation();
+  const location = useLocation();
   const [progress, setProgress] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+  const prevLocationRef = useRef(location.pathname);
 
   useEffect(() => {
-    if (navigation.state === 'loading') {
+    // Detect route change
+    if (prevLocationRef.current !== location.pathname) {
       // Show progress bar
       setIsVisible(true);
       setProgress(0);
@@ -21,24 +24,28 @@ export function NavigationProgress() {
       const quick = setTimeout(() => setProgress(70), 100);
       
       // Slowly progress to 90%
-      const slow = setTimeout(() => setProgress(90), 500);
+      const slow = setTimeout(() => setProgress(90), 300);
+      
+      // Complete when route is fully loaded
+      const complete = setTimeout(() => {
+        setProgress(100);
+        
+        // Fade out
+        setTimeout(() => {
+          setIsVisible(false);
+          setProgress(0);
+        }, 200);
+      }, 500);
+
+      prevLocationRef.current = location.pathname;
 
       return () => {
         clearTimeout(quick);
         clearTimeout(slow);
+        clearTimeout(complete);
       };
-    } else if (navigation.state === 'idle' && isVisible) {
-      // Complete to 100% and fade out
-      setProgress(100);
-      
-      const fadeOut = setTimeout(() => {
-        setIsVisible(false);
-        setProgress(0);
-      }, 200);
-
-      return () => clearTimeout(fadeOut);
     }
-  }, [navigation.state, isVisible]);
+  }, [location.pathname]);
 
   if (!isVisible) return null;
 
