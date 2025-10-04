@@ -2040,10 +2040,6 @@ export type Database = {
         Args: { text1: string; text2: string }
         Returns: number
       }
-      char_sequence_match: {
-        Args: { name_text: string; query_text: string }
-        Returns: boolean
-      }
       enhanced_fuzzy_search_users: {
         Args: {
           include_suggestions?: boolean
@@ -2319,10 +2315,6 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
-      levenshtein_distance: {
-        Args: { s1: string; s2: string }
-        Returns: number
-      }
       log_audit_event: {
         Args: {
           _action: string
@@ -2348,10 +2340,6 @@ export type Database = {
         }
         Returns: string
       }
-      ngram_similarity_enhanced: {
-        Args: { n?: number; text1: string; text2: string }
-        Returns: number
-      }
       phonetic_match: {
         Args: { text1: string; text2: string }
         Returns: boolean
@@ -2369,10 +2357,6 @@ export type Database = {
         Returns: {
           synced_count: number
         }[]
-      }
-      token_match_score: {
-        Args: { name_text: string; query_text: string }
-        Returns: number
       }
       update_campaign_analytics_safe: {
         Args: { p_amount: number; p_campaign_id: string; p_donor_id: string }
