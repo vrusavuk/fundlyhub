@@ -1314,6 +1314,41 @@ export type Database = {
       }
     }
     Views: {
+      donations_with_privacy: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          currency: string | null
+          donor_avatar: string | null
+          donor_name: string | null
+          donor_user_id: string | null
+          fee_amount: number | null
+          fundraiser_id: string | null
+          id: string | null
+          is_anonymous: boolean | null
+          net_amount: number | null
+          payment_provider: string | null
+          payment_status: Database["public"]["Enums"]["payment_status"] | null
+          receipt_id: string | null
+          tip_amount: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "donations_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "fundraisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "donations_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "public_fundraiser_stats"
+            referencedColumns: ["fundraiser_id"]
+          },
+        ]
+      }
       event_statistics: {
         Row: {
           event_count: number | null
@@ -1459,6 +1494,40 @@ export type Database = {
           donor_count: number
           fundraiser_id: string
           total_raised: number
+        }[]
+      }
+      get_my_complete_profile: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          account_locked_until: string | null
+          account_status: string | null
+          avatar: string | null
+          ban_reason: string | null
+          banned_at: string | null
+          bio: string | null
+          campaign_count: number | null
+          created_at: string | null
+          deleted_at: string | null
+          deletion_reason: string | null
+          email: string | null
+          failed_login_attempts: number | null
+          follower_count: number | null
+          following_count: number | null
+          id: string
+          is_verified: boolean | null
+          last_login_at: string | null
+          location: string | null
+          name: string | null
+          profile_visibility: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
+          social_links: Json | null
+          suspended_until: string | null
+          suspension_reason: string | null
+          total_funds_raised: number | null
+          twofa_enabled: boolean | null
+          updated_at: string | null
+          verified_at: string | null
+          website: string | null
         }[]
       }
       get_public_organization_info: {
