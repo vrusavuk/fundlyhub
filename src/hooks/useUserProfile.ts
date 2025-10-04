@@ -41,18 +41,30 @@ export function useUserProfile(userId: string): UseUserProfileReturn {
       setLoading(true);
       setError(null);
 
-      // Check if viewing own profile to determine if email should be included
+      // Check if viewing own profile
       const { data: { user } } = await supabase.auth.getUser();
       const isOwnProfile = user?.id === userId;
 
-      // Fetch basic profile data
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, name, email, avatar, bio, location, website, social_links, profile_visibility, role, created_at')
-        .eq('id', userId)
-        .single();
+      let profileData: any;
 
-      if (profileError) throw profileError;
+      if (isOwnProfile) {
+        // Use secure function to get own complete profile including sensitive fields
+        const { data, error: profileError } = await supabase
+          .rpc('get_my_complete_profile');
+
+        if (profileError) throw profileError;
+        profileData = data && data.length > 0 ? data[0] : null;
+      } else {
+        // Use public_profiles view for other users (no sensitive data)
+        const { data, error: profileError } = await supabase
+          .from('public_profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
+
+        if (profileError) throw profileError;
+        profileData = data;
+      }
 
       if (!profileData) {
         setProfile(null);

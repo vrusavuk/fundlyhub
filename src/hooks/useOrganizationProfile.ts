@@ -37,16 +37,16 @@ export function useOrganizationProfile(organizationId: string): UseOrganizationP
       setLoading(true);
       setError(null);
 
-      // Fetch basic organization data
+      // Use secure function to get only public organization information
       const { data: orgData, error: orgError } = await supabase
-        .from('organizations')
-        .select('*')
-        .eq('id', organizationId)
-        .single();
+        .rpc('get_public_organization_info', { org_id: organizationId });
 
       if (orgError) throw orgError;
 
-      if (!orgData) {
+      // The function returns a table, so we need to get the first row
+      const organizationData = orgData && orgData.length > 0 ? orgData[0] : null;
+
+      if (!organizationData) {
         setProfile(null);
         return;
       }
@@ -94,14 +94,14 @@ export function useOrganizationProfile(organizationId: string): UseOrganizationP
       }
 
       setProfile({
-        id: orgData.id,
-        legal_name: orgData.legal_name,
-        dba_name: orgData.dba_name,
-        website: orgData.website,
-        country: orgData.country,
-        categories: orgData.categories || [],
-        verification_status: orgData.verification_status,
-        created_at: orgData.created_at,
+        id: organizationData.id,
+        legal_name: organizationData.legal_name,
+        dba_name: organizationData.dba_name,
+        website: organizationData.website,
+        country: organizationData.country,
+        categories: organizationData.categories || [],
+        verification_status: organizationData.verification_status,
+        created_at: organizationData.created_at,
         campaignCount: campaignCount || 0,
         totalFundsRaised,
         followerCount: followerCount || 0

@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Heart, Share2, Facebook, Twitter, Copy, Check, Gift, CreditCard, Wallet, ChevronLeft } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Heart, Share2, Facebook, Twitter, Copy, Check, Gift, CreditCard, Wallet, ChevronLeft, EyeOff } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
 
@@ -18,7 +19,7 @@ interface DonationWidgetProps {
   donorCount: number;
   progressPercentage: number;
   currency?: string;
-  onDonate: (amount: number, tipAmount?: number) => void;
+  onDonate: (amount: number, tipAmount?: number, isAnonymous?: boolean) => void;
   loading?: boolean;
   isFloating?: boolean;
 }
@@ -45,6 +46,7 @@ export function DonationWidget({
   const [showTip, setShowTip] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showDonationForm, setShowDonationForm] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const { toast } = useToast();
 
   const formatAmount = (amount: number) => new Intl.NumberFormat('en-US', {
@@ -76,7 +78,7 @@ export function DonationWidget({
 
   const handleDonate = () => {
     if (currentAmount > 0) {
-      onDonate(currentAmount, tipAmount);
+      onDonate(currentAmount, tipAmount, isAnonymous);
     }
   };
 
@@ -297,6 +299,22 @@ export function DonationWidget({
               {/* Total and donate button */}
               {currentAmount > 0 && (
                 <div className="space-y-4 animate-fade-in">
+                  {/* Anonymous donation checkbox */}
+                  <div className="flex items-center space-x-2 p-3 border rounded-lg bg-muted/30">
+                    <Checkbox
+                      id="anonymous"
+                      checked={isAnonymous}
+                      onCheckedChange={(checked) => setIsAnonymous(checked as boolean)}
+                    />
+                    <label
+                      htmlFor="anonymous"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex items-center gap-2"
+                    >
+                      <EyeOff className="h-4 w-4" />
+                      Make my donation anonymous
+                    </label>
+                  </div>
+
                   {tipAmount > 0 && (
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div className="flex justify-between">

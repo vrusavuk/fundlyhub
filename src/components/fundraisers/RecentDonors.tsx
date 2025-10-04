@@ -14,7 +14,11 @@ interface Donation {
   amount: number;
   currency: string;
   created_at: string;
-  profiles: {
+  is_anonymous?: boolean;
+  donor_name?: string | null;
+  donor_avatar?: string | null;
+  // Legacy support for old structure
+  profiles?: {
     name: string;
     avatar?: string;
   } | null;
@@ -64,18 +68,24 @@ export function RecentDonors({ donations, className }: RecentDonorsProps) {
           {/* Recent Donor Avatars */}
           <div className="flex items-center gap-3">
             <div className="flex -space-x-2">
-              {recentDonors.map((donation, index) => (
-                <Avatar 
-                  key={donation.id} 
-                  className="h-10 w-10 border-2 border-background relative hover:z-10 transition-colors"
-                  style={{ zIndex: recentDonors.length - index }}
-                >
-                  <AvatarImage src={donation.profiles?.avatar} />
-                  <AvatarFallback className="text-sm font-medium">
-                    {donation.profiles?.name?.charAt(0) || 'A'}
-                  </AvatarFallback>
-                </Avatar>
-              ))}
+              {recentDonors.map((donation, index) => {
+                // Support both new privacy view and legacy structure
+                const donorName = donation.donor_name || donation.profiles?.name || 'Anonymous';
+                const donorAvatar = donation.donor_avatar || donation.profiles?.avatar;
+                
+                return (
+                  <Avatar 
+                    key={donation.id} 
+                    className="h-10 w-10 border-2 border-background relative hover:z-10 transition-colors"
+                    style={{ zIndex: recentDonors.length - index }}
+                  >
+                    <AvatarImage src={donorAvatar} />
+                    <AvatarFallback className="text-sm font-medium">
+                      {donorName.charAt(0) || 'A'}
+                    </AvatarFallback>
+                  </Avatar>
+                );
+              })}
             </div>
             
             {donorCount > 5 && (

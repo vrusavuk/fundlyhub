@@ -87,7 +87,7 @@ export function FollowersList({ userId, type, maxItems }: FollowersListProps) {
           name: profile.name,
           email: null, // Email not exposed for privacy
           avatar: profile.avatar,
-          role: profile.role,
+          role: profile.role, // SECURITY: Display only - DO NOT use for authorization
           follower_count: Number(profile.follower_count || 0),
           campaign_count: Number(profile.campaign_count || 0),
           type: 'user' as const

@@ -57,7 +57,11 @@ interface Donation {
   amount: number;
   currency: string;
   created_at: string;
-  profiles: {
+  is_anonymous?: boolean;
+  donor_name?: string | null;
+  donor_avatar?: string | null;
+  // Legacy support for old structure
+  profiles?: {
     name: string;
   } | null;
 }
@@ -117,14 +121,11 @@ export default function FundraiserDetail() {
 
       setFundraiser(fundraiserData as any);
 
-      // Fetch donations and comments in parallel
+      // Fetch donations using privacy-respecting view
       const [donationsResponse, commentsResponse] = await Promise.all([
         supabase
-          .from('donations')
-          .select(`
-            *,
-            profiles!donations_donor_user_id_fkey(name)
-          `)
+          .from('donations_with_privacy')
+          .select('*')
           .eq('fundraiser_id', fundraiserData.id)
           .eq('payment_status', 'paid')
           .order('created_at', { ascending: false }),
@@ -164,7 +165,7 @@ export default function FundraiserDetail() {
     fetchFundraiserData();
   }, [fetchFundraiserData]);
 
-  const handleDonate = async (amount: number, tipAmount: number = 0) => {
+  const handleDonate = async (amount: number, tipAmount: number = 0, isAnonymous: boolean = false) => {
     if (!fundraiser || !user) return;
     
     if (isNaN(amount) || amount <= 0) {
@@ -187,6 +188,7 @@ export default function FundraiserDetail() {
           amount: amount,
           currency: 'USD',
           tip_amount: tipAmount,
+          is_anonymous: isAnonymous,
           payment_status: 'paid',
           payment_provider: 'stripe',
         });

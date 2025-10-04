@@ -12,7 +12,11 @@ interface Donation {
   amount: number;
   currency: string;
   created_at: string;
-  profiles: {
+  is_anonymous?: boolean;
+  donor_name?: string | null;
+  donor_avatar?: string | null;
+  // Legacy support for old structure
+  profiles?: {
     name: string;
     avatar?: string;
   } | null;
@@ -38,30 +42,36 @@ export function AllDonorsDialog({ isOpen, onClose, donations }: AllDonorsDialogP
         
         <ScrollArea className="h-[400px] pr-4">
           <div className="space-y-3">
-            {donations.map((donation) => (
-              <div key={donation.id} className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={donation.profiles?.avatar} />
-                  <AvatarFallback className="text-sm font-medium">
-                    {donation.profiles?.name?.charAt(0) || 'A'}
-                  </AvatarFallback>
-                </Avatar>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <p className="font-medium truncate">
-                      {donation.profiles?.name || 'Anonymous'}
+            {donations.map((donation) => {
+              // Support both new privacy view and legacy structure
+              const donorName = donation.donor_name || donation.profiles?.name || 'Anonymous';
+              const donorAvatar = donation.donor_avatar || donation.profiles?.avatar;
+              
+              return (
+                <div key={donation.id} className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={donorAvatar} />
+                    <AvatarFallback className="text-sm font-medium">
+                      {donorName.charAt(0) || 'A'}
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <p className="font-medium truncate">
+                        {donorName}
+                      </p>
+                      <Badge variant="outline" className="text-primary font-semibold">
+                        {formatCurrency(donation.amount, donation.currency)}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {formatRelativeTime(donation.created_at)}
                     </p>
-                    <Badge variant="outline" className="text-primary font-semibold">
-                      {formatCurrency(donation.amount, donation.currency)}
-                    </Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    {formatRelativeTime(donation.created_at)}
-                  </p>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </ScrollArea>
       </DialogContent>
