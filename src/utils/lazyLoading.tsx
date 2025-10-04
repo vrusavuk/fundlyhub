@@ -10,10 +10,14 @@ interface LazyComponentProps {
   children: React.ReactNode;
 }
 
-export function LazyWrapper({ fallback, children }: LazyComponentProps) {
+/**
+ * LazyWrapper - Error boundary only, no loading spinner
+ * Pages handle their own skeleton states
+ */
+export function LazyWrapper({ fallback = null, children }: LazyComponentProps) {
   return (
     <ErrorBoundary>
-      <Suspense fallback={fallback || <LoadingSpinner size="lg" />}>
+      <Suspense fallback={fallback}>
         {children}
       </Suspense>
     </ErrorBoundary>

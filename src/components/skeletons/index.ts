@@ -25,6 +25,15 @@ export {
 export { CampaignPageSkeleton } from './CampaignPageSkeleton';
 export { AdminPageSkeleton } from './AdminPageSkeleton';
 
+// Route-level skeletons
+export {
+  CampaignsPageSkeleton,
+  OrganizationPageSkeleton,
+  FundlyGivePageSkeleton,
+  ApiDocsPageSkeleton,
+  CreateFundraiserPageSkeleton,
+} from './RouteSkeletons';
+
 // Loading state variants
 export type SkeletonVariant = 
   | 'default' 

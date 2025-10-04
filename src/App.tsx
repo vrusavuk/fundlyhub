@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Routes, Route, Navigate } from "react-router-dom";
@@ -8,14 +9,29 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminProtectedRoute } from "@/components/admin/AdminProtectedRoute";
 import { ResponsiveAdminLayout } from "@/components/admin/mobile";
 import { CreateSampleAdmin } from '@/components/admin/CreateSampleAdmin';
+import { NavigationProgress } from '@/components/navigation/NavigationProgress';
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 
-// Lazy-loaded pages for optimal performance
+// High-traffic routes - imported directly for instant loading
+import AllCampaigns from "./pages/AllCampaigns";
+import SearchResults from "./pages/SearchResults";
+import FundraiserDetail from "./pages/FundraiserDetail";
+
+// Route-specific skeleton loaders
+import {
+  CampaignsPageSkeleton,
+  ProfilePageSkeleton,
+  OrganizationPageSkeleton,
+  FundlyGivePageSkeleton,
+  ApiDocsPageSkeleton,
+  CreateFundraiserPageSkeleton,
+} from '@/components/skeletons/RouteSkeletons';
+import { CampaignPageSkeleton } from '@/components/skeletons/CampaignPageSkeleton';
+import { AdminPageSkeleton } from '@/components/skeletons/AdminPageSkeleton';
+
+// Lazy-loaded pages for code splitting
 import { 
-  LazyAllCampaigns,
-  LazySearchResults,
-  LazyFundraiserDetail,
   LazyCreateFundraiser,
   LazyUserProfile,
   LazyOrganizationProfile,
@@ -35,12 +51,12 @@ import {
   LazyAdminNotificationCenter,
   LazyEventMonitoring,
   LazyDesignSystemDocs,
-  LazyWrapper
 } from '@/utils/lazyLoading';
 
 const App = () => (
   <AppErrorBoundary>
     <AppProviders>
+      <NavigationProgress />
       <PerformanceMonitor />
       <Routes>
         {/* Critical routes - no lazy loading for instant UX */}
@@ -48,50 +64,131 @@ const App = () => (
         <Route path="/admin-setup" element={<CreateSampleAdmin />} />
         <Route path="/auth" element={<Auth />} />
         
-        {/* Lazy-loaded main routes */}
-        <Route path="/campaigns" element={<LazyWrapper><LazyAllCampaigns /></LazyWrapper>} />
-        <Route path="/search" element={<LazyWrapper><LazySearchResults /></LazyWrapper>} />
-        <Route path="/fundly-give" element={<LazyWrapper><LazyFundlyGive /></LazyWrapper>} />
-        <Route path="/profile/:userId" element={<LazyWrapper><LazyUserProfile /></LazyWrapper>} />
+        {/* High-traffic routes - direct imports for instant rendering */}
+        <Route path="/campaigns" element={<AllCampaigns />} />
+        <Route path="/search" element={<SearchResults />} />
+        <Route path="/fundraiser/:slug" element={<FundraiserDetail />} />
+        
+        {/* Medium-traffic routes with appropriate skeletons */}
+        <Route path="/fundly-give" element={
+          <Suspense fallback={<FundlyGivePageSkeleton />}>
+            <LazyFundlyGive />
+          </Suspense>
+        } />
+        <Route path="/profile/:userId" element={
+          <Suspense fallback={<ProfilePageSkeleton />}>
+            <LazyUserProfile />
+          </Suspense>
+        } />
         <Route path="/profile" element={
           <ProtectedRoute>
-            <LazyWrapper><LazyUserProfile /></LazyWrapper>
+            <Suspense fallback={<ProfilePageSkeleton />}>
+              <LazyUserProfile />
+            </Suspense>
           </ProtectedRoute>
         } />
-        <Route path="/organization/:orgId" element={<LazyWrapper><LazyOrganizationProfile /></LazyWrapper>} />
-        {/* Legacy route redirect for backward compatibility */}
-        <Route path="/fundlypay" element={<Navigate to="/fundly-give" replace />} />
+        <Route path="/organization/:orgId" element={
+          <Suspense fallback={<OrganizationPageSkeleton />}>
+            <LazyOrganizationProfile />
+          </Suspense>
+        } />
         <Route path="/create" element={
           <ProtectedRoute>
-            <LazyWrapper><LazyCreateFundraiser /></LazyWrapper>
+            <Suspense fallback={<CreateFundraiserPageSkeleton />}>
+              <LazyCreateFundraiser />
+            </Suspense>
           </ProtectedRoute>
         } />
-        <Route path="/fundraiser/:slug" element={<LazyWrapper><LazyFundraiserDetail /></LazyWrapper>} />
-        <Route path="/docs/*" element={<LazyWrapper><LazyApiDocs /></LazyWrapper>} />
-        <Route path="/error-recovery" element={<LazyWrapper><LazyErrorRecovery /></LazyWrapper>} />
+        <Route path="/docs/*" element={
+          <Suspense fallback={<ApiDocsPageSkeleton />}>
+            <LazyApiDocs />
+          </Suspense>
+        } />
         
-        {/* Admin Routes - all lazy loaded */}
+        {/* Legacy route redirect */}
+        <Route path="/fundlypay" element={<Navigate to="/fundly-give" replace />} />
+        
+        {/* Error recovery - minimal skeleton */}
+        <Route path="/error-recovery" element={
+          <Suspense fallback={<div className="min-h-screen" />}>
+            <LazyErrorRecovery />
+          </Suspense>
+        } />
+        
+        {/* Admin Routes - lazy loaded with admin skeleton */}
         <Route path="/admin/*" element={
           <AdminProtectedRoute>
             <ResponsiveAdminLayout />
           </AdminProtectedRoute>
         }>
-          <Route index element={<LazyWrapper><LazyAdminDashboard /></LazyWrapper>} />
-          <Route path="analytics" element={<LazyWrapper><LazyAnalytics /></LazyWrapper>} />
-          <Route path="users" element={<LazyWrapper><LazyUserManagement /></LazyWrapper>} />
-          <Route path="roles" element={<LazyWrapper><LazyRoleManagement /></LazyWrapper>} />
-          <Route path="audit-logs" element={<LazyWrapper><LazyAuditLogs /></LazyWrapper>} />
-          <Route path="campaigns" element={<LazyWrapper><LazyCampaignManagement /></LazyWrapper>} />
-          <Route path="organizations" element={<LazyWrapper><LazyOrganizationManagement /></LazyWrapper>} />
-          <Route path="notifications" element={<LazyWrapper><LazyAdminNotificationCenter /></LazyWrapper>} />
-          <Route path="system" element={<LazyWrapper><LazySystemHealth /></LazyWrapper>} />
-          <Route path="settings" element={<LazyWrapper><LazySystemSettings /></LazyWrapper>} />
-          <Route path="events" element={<LazyWrapper><LazyEventMonitoring /></LazyWrapper>} />
-          <Route path="design-system" element={<LazyWrapper><LazyDesignSystemDocs /></LazyWrapper>} />
+          <Route index element={
+            <Suspense fallback={<AdminPageSkeleton />}>
+              <LazyAdminDashboard />
+            </Suspense>
+          } />
+          <Route path="analytics" element={
+            <Suspense fallback={<AdminPageSkeleton />}>
+              <LazyAnalytics />
+            </Suspense>
+          } />
+          <Route path="users" element={
+            <Suspense fallback={<AdminPageSkeleton />}>
+              <LazyUserManagement />
+            </Suspense>
+          } />
+          <Route path="roles" element={
+            <Suspense fallback={<AdminPageSkeleton />}>
+              <LazyRoleManagement />
+            </Suspense>
+          } />
+          <Route path="audit-logs" element={
+            <Suspense fallback={<AdminPageSkeleton />}>
+              <LazyAuditLogs />
+            </Suspense>
+          } />
+          <Route path="campaigns" element={
+            <Suspense fallback={<AdminPageSkeleton />}>
+              <LazyCampaignManagement />
+            </Suspense>
+          } />
+          <Route path="organizations" element={
+            <Suspense fallback={<AdminPageSkeleton />}>
+              <LazyOrganizationManagement />
+            </Suspense>
+          } />
+          <Route path="notifications" element={
+            <Suspense fallback={<AdminPageSkeleton />}>
+              <LazyAdminNotificationCenter />
+            </Suspense>
+          } />
+          <Route path="system" element={
+            <Suspense fallback={<AdminPageSkeleton />}>
+              <LazySystemHealth />
+            </Suspense>
+          } />
+          <Route path="settings" element={
+            <Suspense fallback={<AdminPageSkeleton />}>
+              <LazySystemSettings />
+            </Suspense>
+          } />
+          <Route path="events" element={
+            <Suspense fallback={<AdminPageSkeleton />}>
+              <LazyEventMonitoring />
+            </Suspense>
+          } />
+          <Route path="design-system" element={
+            <Suspense fallback={<AdminPageSkeleton />}>
+              <LazyDesignSystemDocs />
+            </Suspense>
+          } />
         </Route>
         
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<LazyWrapper><LazyNotFound /></LazyWrapper>} />
+        {/* 404 - minimal skeleton */}
+        <Route path="*" element={
+          <Suspense fallback={<div className="min-h-screen" />}>
+            <LazyNotFound />
+          </Suspense>
+        } />
       </Routes>
       <Toaster />
       <Sonner />
