@@ -47,9 +47,9 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
                 {profile.name || 'Anonymous User'}
               </h1>
-              // SECURITY WARNING: profile.role is for display only
-              // For authorization checks, always use useRBAC hook and RBAC functions
-              <UserRoleBadge 
+              {/* SECURITY WARNING: profile.role is for display only */}
+              {/* For authorization checks, always use useRBAC hook and RBAC functions */}
+              <UserRoleBadge
                 role={profile.role as 'visitor' | 'creator' | 'org_admin' | 'admin'} 
                 className="mt-2"
               />
