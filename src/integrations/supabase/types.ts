@@ -1589,6 +1589,14 @@ export type Database = {
           permission_name: string
         }[]
       }
+      get_organization_profile_stats: {
+        Args: { target_org_id: string }
+        Returns: {
+          campaign_count: number
+          follower_count: number
+          total_funds_raised: number
+        }[]
+      }
       get_public_followers: {
         Args: { limit_count?: number; target_user_id: string }
         Returns: {
@@ -1692,6 +1700,15 @@ export type Database = {
           database: string
           last_check: string
           storage: string
+        }[]
+      }
+      get_user_profile_stats: {
+        Args: { target_user_id: string }
+        Returns: {
+          campaign_count: number
+          follower_count: number
+          following_count: number
+          total_funds_raised: number
         }[]
       }
       get_user_roles: {

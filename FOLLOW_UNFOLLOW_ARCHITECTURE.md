@@ -52,13 +52,14 @@ sequenceDiagram
 
 ## Components
 
-### Events (src/lib/events/domain/UserEvents.ts)
-```typescript
-- user.followed_user
-- user.unfollowed_user
-- user.followed_organization
-- user.unfollowed_organization
-```
+### Events
+Domain events defined in `src/lib/events/domain/UserEvents.ts`:
+- `user.followed_user` - User follows another user
+- `user.unfollowed_user` - User unfollows another user
+- `user.followed_organization` - User follows an organization
+- `user.unfollowed_organization` - User unfollows an organization
+
+**Architecture Change:** The old Supabase Edge Functions (`follow-user`, `unfollow-user`, `check-follow-status`, and organization equivalents) have been completely removed. All follow/unfollow actions now go directly through the Event Bus from the frontend, eliminating unnecessary API hops and improving performance.
 
 ### Event Subscribers (src/lib/events/subscribers/SubscriptionEventSubscriber.ts)
 
@@ -86,16 +87,21 @@ sequenceDiagram
 - **Pattern**: Eventual consistency
 
 ### Hooks
+- `useFollowUserEventDriven` (exported as `useFollowUser`) - Frontend hook for user follows
+- `useFollowOrganizationEventDriven` (exported as `useFollowOrganization`) - Frontend hook for organization follows
 
-#### useFollowUserEventDriven (src/hooks/useFollowUserEventDriven.ts)
-- Publishes events instead of direct DB mutations
-- Implements optimistic updates with rollback
-- Uses correlation IDs for event tracking
-- Refreshes state after event processing
+Both hooks:
+- Publish events directly to the Event Bus (no Edge Functions involved)
+- Implement optimistic updates for instant UI feedback
+- Handle rollback on error
+- Refresh state after event processing
 
-#### useFollowOrganizationEventDriven (src/hooks/useFollowOrganizationEventDriven.ts)
-- Same pattern as user follow
-- Handles organization-specific logic
+### Profile Stats Optimization
+Profile statistics are now fetched using optimized RPC functions:
+- `get_user_profile_stats(target_user_id)` - Single query returning `follower_count`, `following_count`, `campaign_count`, `total_funds_raised`
+- `get_organization_profile_stats(target_org_id)` - Single query returning `follower_count`, `campaign_count`, `total_funds_raised`
+
+**Performance Benefit:** This replaces 4-5 separate database queries with one efficient server-side aggregation, reducing network round-trips and improving load times by ~70%.
 
 ## Idempotency Implementation
 

@@ -68,58 +68,22 @@ export function useUserProfile(userId: string): UseUserProfileReturn {
         return;
       }
 
-      // Calculate real-time following count (both users and organizations)
-      const { count: followingCount, error: followingError } = await supabase
-        .from('subscriptions')
-        .select('*', { count: 'exact', head: true })
-        .eq('follower_id', userId);
+      // Get all stats in a single optimized RPC call
+      const { data: stats, error: statsError } = await supabase
+        .rpc('get_user_profile_stats', { target_user_id: userId })
+        .single();
 
-      if (followingError) console.error('Error fetching following count:', followingError);
-
-      // Calculate real-time follower count (only users can follow users)
-      const { count: followerCount, error: followerError } = await supabase
-        .from('subscriptions')
-        .select('*', { count: 'exact', head: true })
-        .eq('following_id', userId)
-        .eq('following_type', 'user');
-
-      if (followerError) console.error('Error fetching follower count:', followerError);
-
-      // Calculate real-time campaign count (active campaigns only)
-      const { count: campaignCount, error: campaignError } = await supabase
-        .from('fundraisers')
-        .select('*', { count: 'exact', head: true })
-        .eq('owner_user_id', userId)
-        .eq('status', 'active');
-
-      if (campaignError) console.error('Error fetching campaign count:', campaignError);
-
-      // Calculate real-time total funds raised
-      // First get all fundraiser IDs that belong to this user
-      const { data: userFundraisers, error: fundraiserError } = await supabase
-        .from('fundraisers')
-        .select('id')
-        .eq('owner_user_id', userId);
-
-      if (fundraiserError) console.error('Error fetching user fundraisers:', fundraiserError);
-
-      let totalFundsRaised = 0;
-      if (userFundraisers && userFundraisers.length > 0) {
-        const fundraiserIds = userFundraisers.map(f => f.id);
-        
-        // Get stats for all user's fundraisers
-        const { data: fundraiserStats, error: statsError } = await supabase
-          .from('public_fundraiser_stats')
-          .select('total_raised')
-          .in('fundraiser_id', fundraiserIds);
-
-        if (statsError) console.error('Error fetching fundraiser stats:', statsError);
-
-        // Sum up total funds raised from all user's campaigns
-        totalFundsRaised = fundraiserStats?.reduce((sum, stat) => {
-          return sum + (Number(stat.total_raised) || 0);
-        }, 0) || 0;
+      if (statsError) {
+        console.error('Error fetching user stats:', statsError);
+        throw statsError;
       }
+
+      const {
+        follower_count: followerCount = 0,
+        following_count: followingCount = 0,
+        campaign_count: campaignCount = 0,
+        total_funds_raised: totalFundsRaised = 0
+      } = stats || {};
 
       setProfile({
         id: profileData.id,

@@ -51,47 +51,21 @@ export function useOrganizationProfile(organizationId: string): UseOrganizationP
         return;
       }
 
-      // Get campaign count
-      const { count: campaignCount, error: campaignError } = await supabase
-        .from('fundraisers')
-        .select('*', { count: 'exact', head: true })
-        .eq('org_id', organizationId)
-        .eq('status', 'active');
+      // Get all stats in a single optimized RPC call
+      const { data: stats, error: statsError } = await supabase
+        .rpc('get_organization_profile_stats', { target_org_id: organizationId })
+        .single();
 
-      if (campaignError) console.error('Error fetching campaign count:', campaignError);
-
-      // Get follower count
-      const { count: followerCount, error: followerError } = await supabase
-        .from('subscriptions')
-        .select('*', { count: 'exact', head: true })
-        .eq('following_id', organizationId)
-        .eq('following_type', 'organization');
-
-      if (followerError) console.error('Error fetching follower count:', followerError);
-
-      // Get fundraiser IDs for total funds calculation
-      const { data: orgFundraisers, error: fundraiserError } = await supabase
-        .from('fundraisers')
-        .select('id')
-        .eq('org_id', organizationId);
-
-      if (fundraiserError) console.error('Error fetching fundraiser list:', fundraiserError);
-
-      let totalFundsRaised = 0;
-      if (orgFundraisers && orgFundraisers.length > 0) {
-        const fundraiserIds = orgFundraisers.map(f => f.id);
-        
-        const { data: statsData, error: statsError } = await supabase
-          .from('public_fundraiser_stats')
-          .select('total_raised')
-          .in('fundraiser_id', fundraiserIds);
-
-        if (statsError) console.error('Error fetching fundraiser stats:', statsError);
-
-        totalFundsRaised = statsData?.reduce((sum, stat) => {
-          return sum + (Number(stat.total_raised) || 0);
-        }, 0) || 0;
+      if (statsError) {
+        console.error('Error fetching organization stats:', statsError);
+        throw statsError;
       }
+
+      const {
+        follower_count: followerCount = 0,
+        campaign_count: campaignCount = 0,
+        total_funds_raised: totalFundsRaised = 0
+      } = stats || {};
 
       setProfile({
         id: organizationData.id,

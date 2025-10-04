@@ -19,6 +19,10 @@ export { useRBAC } from './useRBAC';
 export { useSearch } from './useSearch';
 export { useEnhancedSearch } from './useEnhancedSearch';
 
+// Follow/Unfollow (Event-driven)
+export { useFollowUserEventDriven as useFollowUser } from './useFollowUserEventDriven';
+export { useFollowOrganizationEventDriven as useFollowOrganization } from './useFollowOrganizationEventDriven';
+
 // Other
 export { useToast } from './use-toast';
 export { useIsMobile } from './use-mobile';
