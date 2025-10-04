@@ -52,9 +52,7 @@ export function Step2Story({ formData, errors, onChange, categoryName }: Step2St
               onChange({ summary: text });
               setSummarySuggestion(null);
             }}
-            onSuggestionStateChange={(hasSuggestion) => {
-              if (!hasSuggestion) setSummarySuggestion(null);
-            }}
+            onSuggestionChange={setSummarySuggestion}
             context={{
               title: formData.title,
               category: categoryName,
@@ -77,7 +75,7 @@ export function Step2Story({ formData, errors, onChange, categoryName }: Step2St
           readOnly={!!summarySuggestion}
         />
         <CharacterCounter
-          current={formData.summary?.length || 0}
+          current={(summarySuggestion || formData.summary || '').length}
           min={10}
           max={150}
           showMinimum
@@ -100,9 +98,7 @@ export function Step2Story({ formData, errors, onChange, categoryName }: Step2St
               onChange({ story: text });
               setStorySuggestion(null);
             }}
-            onSuggestionStateChange={(hasSuggestion) => {
-              if (!hasSuggestion) setStorySuggestion(null);
-            }}
+            onSuggestionChange={setStorySuggestion}
             context={{
               title: formData.title,
               category: categoryName,
@@ -126,7 +122,7 @@ export function Step2Story({ formData, errors, onChange, categoryName }: Step2St
           readOnly={!!storySuggestion}
         />
         <CharacterCounter
-          current={formData.story?.length || 0}
+          current={(storySuggestion || formData.story || '').length}
           min={150}
           max={1000}
           showMinimum

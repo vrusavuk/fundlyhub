@@ -13,7 +13,7 @@ interface AITextEnhancerProps {
   field: 'summary' | 'story';
   currentText: string;
   onTextGenerated: (text: string) => void;
-  onSuggestionStateChange?: (hasSuggestion: boolean) => void;
+  onSuggestionChange?: (suggestion: string | null) => void;
   context: {
     title?: string;
     category?: string;
@@ -27,7 +27,7 @@ export function AITextEnhancer({
   field,
   currentText,
   onTextGenerated,
-  onSuggestionStateChange,
+  onSuggestionChange,
   context,
 }: AITextEnhancerProps) {
   const { enhanceText, isLoading } = useAITextEnhancement();
@@ -42,7 +42,7 @@ export function AITextEnhancer({
 
     if (result) {
       setSuggestedText(result);
-      onSuggestionStateChange?.(true);
+      onSuggestionChange?.(result);
     }
   };
 
@@ -50,13 +50,13 @@ export function AITextEnhancer({
     if (suggestedText) {
       onTextGenerated(suggestedText);
       setSuggestedText(null);
-      onSuggestionStateChange?.(false);
+      onSuggestionChange?.(null);
     }
   };
 
   const handleReject = () => {
     setSuggestedText(null);
-    onSuggestionStateChange?.(false);
+    onSuggestionChange?.(null);
   };
 
   // Return the suggestion text for display
