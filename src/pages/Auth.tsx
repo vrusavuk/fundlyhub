@@ -240,7 +240,7 @@ export default function Auth() {
       </div>
 
       {/* Right Side - Auth Form */}
-      <div className="flex items-center justify-center p-6 sm:p-12 bg-gradient-subtle">
+      <div className="flex items-center justify-center p-6 sm:p-12 bg-secondary">
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center gap-2 mb-8 justify-center">
@@ -251,7 +251,7 @@ export default function Auth() {
           </div>
 
           {/* Auth Card */}
-          <div className="card-enhanced shadow-glow rounded-2xl p-8 space-y-6">
+          <div className="card-enhanced shadow-elevated rounded-2xl p-8 space-y-6">
             {/* Dynamic Instructions */}
             <div className="text-center">
               <p className="body-medium text-muted-foreground">
@@ -321,7 +321,7 @@ export default function Auth() {
                             />
                             {emailValidated && step === 'email' && (
                               <div className="absolute right-4 top-1/2 -translate-y-1/2 animate-scale-in">
-                                <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                                <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center">
                                   <Check className="h-4 w-4 text-white" />
                                 </div>
                               </div>
@@ -338,7 +338,7 @@ export default function Auth() {
                       type="button"
                       onClick={handleContinueWithEmail}
                       disabled={!emailValidated || loading}
-                      className="w-full h-12 font-semibold cta-primary touch-button shadow-medium hover:shadow-glow transition-all"
+                      className="w-full h-12 font-semibold cta-primary touch-button shadow-medium hover:shadow-elevated transition-all"
                     >
                       Continue
                       <ArrowRight className="ml-2 h-5 w-5" />
@@ -426,7 +426,7 @@ export default function Auth() {
                     {/* Submit Button */}
                     <Button
                       type="submit"
-                      className="w-full h-12 font-semibold cta-primary touch-button shadow-medium hover:shadow-glow transition-all"
+                      className="w-full h-12 font-semibold cta-primary touch-button shadow-medium hover:shadow-elevated transition-all"
                       disabled={loading}
                     >
                       {loading ? (
