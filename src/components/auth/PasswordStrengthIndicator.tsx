@@ -22,13 +22,13 @@ export const PasswordStrengthIndicator = ({
     },
     { 
       key: 'hasLetters', 
-      label: 'Contains letters', 
+      label: 'At least 1 letter', 
       met: criteria.hasLetters,
       show: config.passwordRequireLetters 
     },
     { 
       key: 'hasNumber', 
-      label: 'Contains at least 1 number', 
+      label: 'At least 1 digit', 
       met: criteria.hasNumber,
       show: config.passwordRequireNumbers 
     },
