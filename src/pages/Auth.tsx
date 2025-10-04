@@ -56,12 +56,14 @@ export default function Auth() {
   const [emailInput, setEmailInput] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
+  const [confirmPasswordInput, setConfirmPasswordInput] = useState('');
   
   // Password validation criteria
   const passwordCriteria = {
     minLength: passwordInput.length >= 8,
     hasLetters: /[a-zA-Z]/.test(passwordInput),
     hasDigit: /\d/.test(passwordInput),
+    passwordsMatch: passwordInput === confirmPasswordInput && confirmPasswordInput !== '',
   };
   
   const { user, signUp, signIn, signInWithGoogle } = useAuth();
@@ -176,6 +178,7 @@ export default function Auth() {
     setStep('email');
     setEmailError('');
     setPasswordInput('');
+    setConfirmPasswordInput('');
     loginForm.reset({ email: '', password: '' });
     signupForm.reset({ name: '', email: '', password: '', confirmPassword: '' });
   };
@@ -511,8 +514,43 @@ export default function Auth() {
                               </div>
                             </FormControl>
                             <FormMessage className="caption-small" />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={signupForm.control}
+                        name="confirmPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <div className="relative group">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                <Input
+                                  {...field}
+                                  type={showPassword ? 'text' : 'password'}
+                                  placeholder="Confirm password"
+                                  className="pl-12 pr-12 h-12 border-2"
+                                  disabled={loading}
+                                  autoComplete="new-password"
+                                  onChange={(e) => {
+                                    field.onChange(e);
+                                    setConfirmPasswordInput(e.target.value);
+                                  }}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                  tabIndex={-1}
+                                >
+                                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                </button>
+                              </div>
+                            </FormControl>
+                            <FormMessage className="caption-small" />
                             
-                            {/* Password Requirements */}
+                            {/* Password Requirements - shown under both inputs */}
                             <div className="space-y-2 mt-3">
                               <div className="flex items-center gap-2 caption-small">
                                 <div className={`w-4 h-4 rounded-full flex items-center justify-center transition-colors ${
@@ -544,38 +582,17 @@ export default function Auth() {
                                   Contains at least 1 digit
                                 </span>
                               </div>
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={signupForm.control}
-                        name="confirmPassword"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <div className="relative group">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                                <Input
-                                  {...field}
-                                  type={showPassword ? 'text' : 'password'}
-                                  placeholder="Confirm password"
-                                  className="pl-12 pr-12 h-12 border-2"
-                                  disabled={loading}
-                                  autoComplete="new-password"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => setShowPassword(!showPassword)}
-                                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                                  tabIndex={-1}
-                                >
-                                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                </button>
+                              <div className="flex items-center gap-2 caption-small">
+                                <div className={`w-4 h-4 rounded-full flex items-center justify-center transition-colors ${
+                                  passwordCriteria.passwordsMatch ? 'bg-green-500' : 'bg-muted'
+                                }`}>
+                                  {passwordCriteria.passwordsMatch && <Check className="h-3 w-3 text-white" />}
+                                </div>
+                                <span className={passwordCriteria.passwordsMatch ? 'text-green-600' : 'text-muted-foreground'}>
+                                  Passwords match
+                                </span>
                               </div>
-                            </FormControl>
-                            <FormMessage className="caption-small" />
+                            </div>
                           </FormItem>
                         )}
                       />
