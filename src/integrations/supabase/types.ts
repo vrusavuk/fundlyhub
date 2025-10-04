@@ -667,6 +667,7 @@ export type Database = {
           deleted_at: string | null
           deleted_by: string | null
           end_date: string | null
+          fts: unknown | null
           goal_amount: number
           id: string
           images: string[] | null
@@ -693,6 +694,7 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           end_date?: string | null
+          fts?: unknown | null
           goal_amount: number
           id?: string
           images?: string[] | null
@@ -719,6 +721,7 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           end_date?: string | null
+          fts?: unknown | null
           goal_amount?: number
           id?: string
           images?: string[] | null
@@ -869,6 +872,7 @@ export type Database = {
           deleted_at: string | null
           deleted_by: string | null
           ein: string | null
+          fts: unknown | null
           id: string
           legal_name: string
           paypal_merchant_id: string | null
@@ -888,6 +892,7 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           ein?: string | null
+          fts?: unknown | null
           id?: string
           legal_name: string
           paypal_merchant_id?: string | null
@@ -907,6 +912,7 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           ein?: string | null
+          fts?: unknown | null
           id?: string
           legal_name?: string
           paypal_merchant_id?: string | null
@@ -962,6 +968,7 @@ export type Database = {
           failed_login_attempts: number | null
           follower_count: number | null
           following_count: number | null
+          fts: unknown | null
           id: string
           is_verified: boolean | null
           last_login_at: string | null
@@ -993,6 +1000,7 @@ export type Database = {
           failed_login_attempts?: number | null
           follower_count?: number | null
           following_count?: number | null
+          fts?: unknown | null
           id: string
           is_verified?: boolean | null
           last_login_at?: string | null
@@ -1024,6 +1032,7 @@ export type Database = {
           failed_login_attempts?: number | null
           follower_count?: number | null
           following_count?: number | null
+          fts?: unknown | null
           id?: string
           is_verified?: boolean | null
           last_login_at?: string | null
@@ -1732,6 +1741,7 @@ export type Database = {
           created_at: string | null
           follower_count: number | null
           following_count: number | null
+          fts: unknown | null
           id: string | null
           is_verified: boolean | null
           location: string | null
@@ -1750,6 +1760,7 @@ export type Database = {
           created_at?: string | null
           follower_count?: number | null
           following_count?: number | null
+          fts?: unknown | null
           id?: string | null
           is_verified?: boolean | null
           location?: string | null
@@ -1768,6 +1779,7 @@ export type Database = {
           created_at?: string | null
           follower_count?: number | null
           following_count?: number | null
+          fts?: unknown | null
           id?: string | null
           is_verified?: boolean | null
           location?: string | null
@@ -1893,6 +1905,7 @@ export type Database = {
           failed_login_attempts: number | null
           follower_count: number | null
           following_count: number | null
+          fts: unknown | null
           id: string
           is_verified: boolean | null
           last_login_at: string | null
