@@ -209,6 +209,7 @@ const { hasPermission } = useRBAC();
 These functions are available for secure operations:
 
 - `get_my_complete_profile()` - Get own profile with sensitive data
+- `get_my_permissions()` - Get own permissions without exposing security architecture
 - `get_public_organization_info(org_id)` - Get public org info only
 - `get_public_fundraiser(slug)` - Get fundraiser WITHOUT beneficiary_contact
 - `user_has_permission(user_id, permission)` - Check permissions
@@ -225,6 +226,23 @@ Always use these views instead of querying tables directly:
 - `public_organizations` - Organizations WITHOUT EIN, payment IDs, addresses
 - `donations_with_privacy` - Donations respecting is_anonymous flag
 - `public_fundraiser_stats` - Aggregated stats safe for public access
+
+## Restricted Access Tables
+
+**NEVER query these tables directly in client code:**
+
+❌ **DO NOT** query `role_permissions`, `permissions`, `roles` tables directly
+- These expose your security architecture to attackers
+- Use `get_my_permissions()` function instead for user permissions
+- Admin interfaces only: require `manage_user_roles` permission
+
+❌ **DO NOT** allow unauthenticated writes to `categories`
+- Public read access for active categories only
+- Write operations require `manage_system_settings` permission
+
+❌ **DO NOT** expose organization membership publicly
+- Only organization members can view membership
+- Only owners/admins can add/modify members
 
 ## Reporting Security Issues
 

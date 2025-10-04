@@ -1554,6 +1554,14 @@ export type Database = {
           website: string | null
         }[]
       }
+      get_my_permissions: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          permission_category: string
+          permission_display_name: string
+          permission_name: string
+        }[]
+      }
       get_public_fundraiser: {
         Args: { fundraiser_slug: string }
         Returns: {
