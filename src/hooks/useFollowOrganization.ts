@@ -72,10 +72,11 @@ export function useFollowOrganization(organizationId: string): UseFollowOrganiza
         return;
       }
 
-      setIsFollowing(true);
+      // Success - update state and refresh status
+      await checkFollowStatus();
       toast({
         title: "Success",
-        description: "Organization followed successfully"
+        description: data?.message || "Organization followed successfully"
       });
     } catch (error) {
       console.error('Error following organization:', error);
@@ -119,10 +120,11 @@ export function useFollowOrganization(organizationId: string): UseFollowOrganiza
         return;
       }
 
-      setIsFollowing(false);
+      // Success - update state and refresh status
+      await checkFollowStatus();
       toast({
         title: "Success",
-        description: "Organization unfollowed successfully"
+        description: data?.message || "Organization unfollowed successfully"
       });
     } catch (error) {
       console.error('Error unfollowing organization:', error);

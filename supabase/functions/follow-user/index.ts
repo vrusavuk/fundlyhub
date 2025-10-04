@@ -62,18 +62,23 @@ serve(async (req) => {
     }
 
     // Check if already following
-    const { data: existing } = await supabase
+    const { data: existing, error: checkError } = await supabase
       .from('subscriptions')
       .select('id')
       .eq('follower_id', user.id)
       .eq('following_id', targetUserId)
       .eq('following_type', 'user')
-      .single();
+      .maybeSingle();
+
+    if (checkError) {
+      console.error('Error checking existing subscription:', checkError);
+    }
 
     if (existing) {
+      console.log(`User ${user.id} already following user ${targetUserId}`);
       return new Response(
-        JSON.stringify({ error: 'Already following this user' }),
-        { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ success: true, message: 'Already following this user' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 

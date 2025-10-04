@@ -72,10 +72,11 @@ export function useFollowUser(targetUserId: string): UseFollowUserReturn {
         return;
       }
 
-      setIsFollowing(true);
+      // Success - update state and refresh status
+      await checkFollowStatus();
       toast({
         title: "Success",
-        description: "User followed successfully"
+        description: data?.message || "User followed successfully"
       });
     } catch (error) {
       console.error('Error following user:', error);
@@ -119,10 +120,11 @@ export function useFollowUser(targetUserId: string): UseFollowUserReturn {
         return;
       }
 
-      setIsFollowing(false);
+      // Success - update state and refresh status
+      await checkFollowStatus();
       toast({
         title: "Success",
-        description: "User unfollowed successfully"
+        description: data?.message || "User unfollowed successfully"
       });
     } catch (error) {
       console.error('Error unfollowing user:', error);
