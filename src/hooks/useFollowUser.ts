@@ -53,9 +53,20 @@ export function useFollowUser(targetUserId: string): UseFollowUserReturn {
       });
 
       if (error) {
+        console.error('Edge function error:', error);
         toast({
           title: "Error",
-          description: error.message || "Failed to follow user",
+          description: error.message || data?.error || "Failed to follow user",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (data?.error) {
+        console.error('Response error:', data.error);
+        toast({
+          title: "Error",
+          description: data.error,
           variant: "destructive"
         });
         return;
@@ -70,7 +81,7 @@ export function useFollowUser(targetUserId: string): UseFollowUserReturn {
       console.error('Error following user:', error);
       toast({
         title: "Error",
-        description: "Failed to follow user",
+        description: error instanceof Error ? error.message : "Failed to follow user",
         variant: "destructive"
       });
     } finally {
@@ -84,14 +95,25 @@ export function useFollowUser(targetUserId: string): UseFollowUserReturn {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { error } = await supabase.functions.invoke('unfollow-user', {
+      const { data, error } = await supabase.functions.invoke('unfollow-user', {
         body: { targetUserId }
       });
 
       if (error) {
+        console.error('Edge function error:', error);
         toast({
           title: "Error",
-          description: error.message || "Failed to unfollow user",
+          description: error.message || data?.error || "Failed to unfollow user",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (data?.error) {
+        console.error('Response error:', data.error);
+        toast({
+          title: "Error",
+          description: data.error,
           variant: "destructive"
         });
         return;
@@ -106,7 +128,7 @@ export function useFollowUser(targetUserId: string): UseFollowUserReturn {
       console.error('Error unfollowing user:', error);
       toast({
         title: "Error",
-        description: "Failed to unfollow user",
+        description: error instanceof Error ? error.message : "Failed to unfollow user",
         variant: "destructive"
       });
     } finally {

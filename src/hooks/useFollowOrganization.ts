@@ -53,9 +53,20 @@ export function useFollowOrganization(organizationId: string): UseFollowOrganiza
       });
 
       if (error) {
+        console.error('Edge function error:', error);
         toast({
           title: "Error",
-          description: error.message || "Failed to follow organization",
+          description: error.message || data?.error || "Failed to follow organization",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (data?.error) {
+        console.error('Response error:', data.error);
+        toast({
+          title: "Error",
+          description: data.error,
           variant: "destructive"
         });
         return;
@@ -70,7 +81,7 @@ export function useFollowOrganization(organizationId: string): UseFollowOrganiza
       console.error('Error following organization:', error);
       toast({
         title: "Error",
-        description: "Failed to follow organization",
+        description: error instanceof Error ? error.message : "Failed to follow organization",
         variant: "destructive"
       });
     } finally {
@@ -84,14 +95,25 @@ export function useFollowOrganization(organizationId: string): UseFollowOrganiza
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { error } = await supabase.functions.invoke('unfollow-organization', {
+      const { data, error } = await supabase.functions.invoke('unfollow-organization', {
         body: { organizationId }
       });
 
       if (error) {
+        console.error('Edge function error:', error);
         toast({
           title: "Error",
-          description: error.message || "Failed to unfollow organization",
+          description: error.message || data?.error || "Failed to unfollow organization",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (data?.error) {
+        console.error('Response error:', data.error);
+        toast({
+          title: "Error",
+          description: data.error,
           variant: "destructive"
         });
         return;
@@ -106,7 +128,7 @@ export function useFollowOrganization(organizationId: string): UseFollowOrganiza
       console.error('Error unfollowing organization:', error);
       toast({
         title: "Error",
-        description: "Failed to unfollow organization",
+        description: error instanceof Error ? error.message : "Failed to unfollow organization",
         variant: "destructive"
       });
     } finally {
