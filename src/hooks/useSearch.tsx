@@ -190,11 +190,10 @@ export function useSearch(options: UseSearchOptions) {
         .select('campaign_id, slug, cover_image, owner_avatar')
         .in('campaign_id', campaignIds) : { data: [] };
 
-      const summaryMap = 
-        campaignSummaries?.reduce((acc: Record<string, any>, summary: any) => {
-          acc[summary.campaign_id] = summary;
-          return acc;
-        }, {} as Record<string, any>) || {};
+      const summaryMap: Record<string, any> = {};
+      campaignSummaries?.forEach((summary: any) => {
+        summaryMap[summary.campaign_id] = summary;
+      });
 
       // Use existing FTS on profiles (already optimized)
       const { data: users, error: usersError } = await supabase
