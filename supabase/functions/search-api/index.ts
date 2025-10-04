@@ -242,10 +242,10 @@ async function executeSearch(
   if (scope === 'all' || scope === 'campaigns') {
     const { data: campaigns } = await supabase
       .from('campaign_search_projection')
-      .select('campaign_id, title, summary, cover_image, category_name, location, status, visibility')
+      .select('campaign_id, title, summary, story_text, cover_image, category_name, location, status, visibility')
       .eq('visibility', 'public')
       .in('status', ['active', 'ended', 'closed'])
-      .or(`title.ilike.%${q}%,summary.ilike.%${q}%,beneficiary_name.ilike.%${q}%,location.ilike.%${q}%`)
+      .or(`title.ilike.%${q}%,summary.ilike.%${q}%,story_text.ilike.%${q}%,beneficiary_name.ilike.%${q}%,location.ilike.%${q}%`)
       .limit(scope === 'campaigns' ? limit : Math.ceil(limit / 3));
 
     if (campaigns) {
@@ -256,8 +256,11 @@ async function executeSearch(
           title: campaign.title,
           subtitle: campaign.category_name || campaign.location,
           snippet: campaign.summary?.substring(0, 150),
-          link: `/fundraiser/${campaign.campaign_id}`,
-          score: calculateRelevance(campaign.title, normalizedQuery),
+          link: `/fundraiser/${campaign.campaign_id}`, // Note: Will need slug mapping
+          score: calculateRelevance(
+            `${campaign.title} ${campaign.summary || ''} ${campaign.story_text || ''}`, 
+            normalizedQuery
+          ),
           image: campaign.cover_image,
         }))
       );
