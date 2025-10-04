@@ -200,25 +200,11 @@ export function useSearch(options: UseSearchOptions) {
       let usersError = null;
 
       try {
-        // Strategy 1: Try FTS first (fastest, most accurate)
-        const { data: ftsUsers, error: ftsErr } = await supabase
-          .from('public_profiles')
-          .select('id, name, avatar, bio, role, campaign_count, follower_count')
-          .textSearch('fts', tsQuery, {
-            type: 'websearch',
-            config: 'english'
-          })
-          .limit(BATCH_SIZE);
-
-        if (ftsErr) {
-          console.error('[useSearch] FTS error:', ftsErr);
-          usersError = ftsErr;
-        }
-
-        users = ftsUsers || [];
-
-        // Strategy 2: If FTS returns few results, try fuzzy search function
-        if (users.length < 3) {
+        // For short queries (≤5 chars), skip FTS and go straight to fuzzy
+        const isShortQuery = tsQuery.length <= 5;
+        
+        if (isShortQuery) {
+          // Short queries: Use fuzzy search directly (better for partial names)
           const { data: fuzzyUsers, error: fuzzyError } = await supabase
             .rpc('fuzzy_search_users', { 
               search_query: tsQuery,
@@ -227,42 +213,95 @@ export function useSearch(options: UseSearchOptions) {
 
           if (fuzzyError) {
             console.error('[useSearch] Fuzzy search error:', fuzzyError);
-          } else if (fuzzyUsers && fuzzyUsers.length > 0) {
-            // Merge fuzzy results with FTS results, deduplicate by user_id
-            const existingIds = new Set(users.map((u: any) => u.id));
-            const newFuzzyUsers = fuzzyUsers
-              .filter((fu: any) => !existingIds.has(fu.user_id))
-              .map((fu: any) => ({
-                id: fu.user_id,
-                name: fu.match_name,
-                matchType: fu.match_type,
-                relevanceScore: fu.relevance_score,
-              }));
+            usersError = fuzzyError;
+          } else {
+            users = fuzzyUsers || [];
             
-            users = [...users, ...newFuzzyUsers].slice(0, BATCH_SIZE);
-            console.log(`[useSearch] Fuzzy search added ${newFuzzyUsers.length} results (types: ${newFuzzyUsers.map(u => u.matchType).join(', ')})`);
+            // Fetch full profile data
+            if (users.length > 0) {
+              const userIds = users.map((u: any) => u.user_id);
+              const { data: fullProfiles } = await supabase
+                .from('public_profiles')
+                .select('id, avatar, bio, role, campaign_count, follower_count')
+                .in('id', userIds);
+
+              if (fullProfiles) {
+                const profileMap = new Map(fullProfiles.map(p => [p.id, p]));
+                users = users.map((u: any) => ({
+                  id: u.user_id,
+                  name: u.match_name,
+                  matchType: u.match_type,
+                  relevanceScore: u.relevance_score,
+                  ...profileMap.get(u.user_id),
+                }));
+              }
+            }
           }
-        }
-
-        // Fetch full profile data for fuzzy matches that only have partial data
-        const userIdsNeedingData = users
-          .filter((u: any) => !u.avatar && !u.role)
-          .map((u: any) => u.id);
-
-        if (userIdsNeedingData.length > 0) {
-          const { data: fullProfiles } = await supabase
+        } else {
+          // Longer queries: Try FTS first (fastest, most accurate)
+          const { data: ftsUsers, error: ftsErr } = await supabase
             .from('public_profiles')
-            .select('id, avatar, bio, role, campaign_count, follower_count')
-            .in('id', userIdsNeedingData);
+            .select('id, name, avatar, bio, role, campaign_count, follower_count')
+            .textSearch('fts', tsQuery, {
+              type: 'websearch',
+              config: 'english'
+            })
+            .limit(BATCH_SIZE);
 
-          if (fullProfiles) {
-            const profileMap = new Map(fullProfiles.map(p => [p.id, p]));
-            users = users.map((u: any) => ({
-              ...u,
-              ...profileMap.get(u.id),
-              matchType: u.matchType,
-              relevanceScore: u.relevanceScore,
-            }));
+          if (ftsErr) {
+            console.error('[useSearch] FTS error:', ftsErr);
+            usersError = ftsErr;
+          }
+
+          users = ftsUsers || [];
+
+          // Strategy 2: If FTS returns few results, try fuzzy search function
+          if (users.length < 3) {
+            const { data: fuzzyUsers, error: fuzzyError } = await supabase
+              .rpc('fuzzy_search_users', { 
+                search_query: tsQuery,
+                similarity_threshold: 0.3
+              });
+
+            if (fuzzyError) {
+              console.error('[useSearch] Fuzzy search error:', fuzzyError);
+            } else if (fuzzyUsers && fuzzyUsers.length > 0) {
+              // Merge fuzzy results with FTS results, deduplicate by user_id
+              const existingIds = new Set(users.map((u: any) => u.id));
+              const newFuzzyUsers = fuzzyUsers
+                .filter((fu: any) => !existingIds.has(fu.user_id))
+                .map((fu: any) => ({
+                  id: fu.user_id,
+                  name: fu.match_name,
+                  matchType: fu.match_type,
+                  relevanceScore: fu.relevance_score,
+                }));
+              
+              users = [...users, ...newFuzzyUsers].slice(0, BATCH_SIZE);
+              console.log(`[useSearch] Fuzzy search added ${newFuzzyUsers.length} results (types: ${newFuzzyUsers.map(u => u.matchType).join(', ')})`);
+            }
+          }
+
+          // Fetch full profile data for fuzzy matches that only have partial data
+          const userIdsNeedingData = users
+            .filter((u: any) => !u.avatar && !u.role)
+            .map((u: any) => u.id);
+
+          if (userIdsNeedingData.length > 0) {
+            const { data: fullProfiles } = await supabase
+              .from('public_profiles')
+              .select('id, avatar, bio, role, campaign_count, follower_count')
+              .in('id', userIdsNeedingData);
+
+            if (fullProfiles) {
+              const profileMap = new Map(fullProfiles.map(p => [p.id, p]));
+              users = users.map((u: any) => ({
+                ...u,
+                ...profileMap.get(u.id),
+                matchType: u.matchType,
+                relevanceScore: u.relevanceScore,
+              }));
+            }
           }
         }
 
