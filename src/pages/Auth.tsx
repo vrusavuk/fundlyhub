@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,10 +9,8 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { useAuth } from '@/hooks/useAuth';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Lock, Mail, User, Shield, ArrowRight, Check, Sparkles } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Eye, EyeOff, Lock, Mail, User, Shield, ArrowRight, Check } from 'lucide-react';
 
-// Validation schemas with progressive validation
 const emailSchema = z.object({
   email: z.string()
     .trim()
@@ -41,9 +39,7 @@ export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [emailValidated, setEmailValidated] = useState(false);
   const [step, setStep] = useState<'email' | 'credentials'>('email');
-  const passwordInputRef = useRef<HTMLInputElement>(null);
   
   const { user, signUp, signIn, signInWithGoogle } = useAuth();
   const { toast } = useToast();
@@ -60,54 +56,22 @@ export default function Auth() {
     mode: 'onChange',
   });
 
-  const currentForm = isLogin ? loginForm : signupForm;
+  const activeForm = isLogin ? loginForm : signupForm;
+  const emailValue = isLogin ? loginForm.watch('email') : signupForm.watch('email');
 
-  // Watch email field for validation
-  const emailValue = currentForm.watch('email' as any);
-  
+  const [emailValidated, setEmailValidated] = useState(false);
+
   useEffect(() => {
-    const validateEmail = async () => {
-      try {
-        emailSchema.parse({ email: emailValue });
-        setEmailValidated(true);
-      } catch {
-        setEmailValidated(false);
-        if (step === 'credentials') {
-          setStep('email');
-        }
-      }
-    };
-    
-    if (emailValue) {
-      validateEmail();
-    } else {
-      setEmailValidated(false);
+    const result = emailSchema.safeParse({ email: emailValue });
+    setEmailValidated(result.success);
+    if (!result.success && step === 'credentials') {
       setStep('email');
     }
   }, [emailValue, step]);
 
-  // Auto-focus password when step changes
-  useEffect(() => {
-    if (step === 'credentials' && passwordInputRef.current) {
-      setTimeout(() => passwordInputRef.current?.focus(), 100);
-    }
-  }, [step]);
-
-  // Redirect if already authenticated
   if (user) {
     return <Navigate to="/" replace />;
   }
-
-  const handleContinueWithEmail = () => {
-    if (emailValidated) {
-      setStep('credentials');
-    }
-  };
-
-  const handleBackToEmail = () => {
-    setStep('email');
-    setShowPassword(false);
-  };
 
   const handleLogin = async (data: LoginFormData) => {
     setLoading(true);
@@ -163,7 +127,8 @@ export default function Auth() {
     setShowPassword(false);
     setStep('email');
     setEmailValidated(false);
-    currentForm.reset();
+    loginForm.reset();
+    signupForm.reset();
   };
 
   const handleGoogleSignIn = async () => {
@@ -190,16 +155,14 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-background">
-      {/* Left Side - Branding & Visual Story */}
+      {/* Left Side - Branding */}
       <div className="hidden lg:flex flex-col justify-between bg-gradient-primary p-12 text-primary-foreground relative overflow-hidden">
-        {/* Animated background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-primary-foreground/10 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-1/3 left-1/3 w-80 h-80 bg-primary-foreground/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
         </div>
 
         <div className="relative z-10 space-y-8">
-          {/* Logo */}
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-primary-foreground/20 backdrop-blur-sm rounded-xl">
               <Shield className="h-7 w-7" />
@@ -207,7 +170,6 @@ export default function Auth() {
             <h1 className="text-2xl font-bold tracking-tight">FundlyHub</h1>
           </div>
 
-          {/* Main Message */}
           <div className="space-y-6 max-w-lg">
             <h2 className="text-5xl font-bold leading-tight">
               {isLogin ? 'Welcome back' : 'Start your journey'}
@@ -221,7 +183,6 @@ export default function Auth() {
           </div>
         </div>
 
-        {/* Features */}
         <div className="relative z-10 grid gap-3">
           <div className="flex items-center gap-3 p-3 bg-primary-foreground/10 backdrop-blur-sm rounded-xl border border-primary-foreground/20">
             <div className="w-8 h-8 rounded-lg bg-primary-foreground/20 flex items-center justify-center flex-shrink-0">
@@ -242,17 +203,14 @@ export default function Auth() {
       {/* Right Side - Auth Form */}
       <div className="flex items-center justify-center p-6 sm:p-12 bg-secondary">
         <div className="w-full max-w-md">
-          {/* Mobile Logo */}
           <div className="lg:hidden flex items-center gap-2 mb-8 justify-center">
-            <div className="p-2 bg-gradient-primary rounded-xl shadow-medium">
+            <div className="p-2 bg-gradient-primary rounded-xl">
               <Shield className="h-6 w-6 text-primary-foreground" />
             </div>
             <h1 className="text-xl font-bold">FundlyHub</h1>
           </div>
 
-          {/* Auth Card */}
           <div className="card-enhanced shadow-elevated rounded-2xl p-8 space-y-6">
-            {/* Dynamic Instructions */}
             <div className="text-center">
               <p className="body-medium text-muted-foreground">
                 {step === 'email' 
@@ -264,11 +222,10 @@ export default function Auth() {
               </p>
             </div>
 
-            {/* Social Login */}
             <Button
               type="button"
               variant="outline"
-              className="w-full h-12 font-medium border-2 hover-scale touch-button"
+              className="w-full h-12 font-medium border-2 touch-button"
               onClick={handleGoogleSignIn}
               disabled={loading}
             >
@@ -281,7 +238,6 @@ export default function Auth() {
               Continue with Google
             </Button>
 
-            {/* Divider */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
@@ -291,17 +247,15 @@ export default function Auth() {
               </div>
             </div>
 
-            {/* Progressive Form */}
-            <Form {...currentForm}>
+            <Form {...activeForm}>
               <form 
-                onSubmit={currentForm.handleSubmit(isLogin ? handleLogin : handleSignup)} 
+                onSubmit={activeForm.handleSubmit(isLogin ? handleLogin : handleSignup)} 
                 className="space-y-5"
               >
-                {/* Email Step */}
-                {step === 'email' ? (
+                {step === 'email' && (
                   <div className="space-y-5">
                     <FormField
-                      control={currentForm.control}
+                      control={activeForm.control}
                       name="email"
                       render={({ field }) => (
                         <FormItem>
@@ -312,7 +266,7 @@ export default function Auth() {
                                 {...field}
                                 type="email"
                                 placeholder="you@example.com"
-                                className="pl-12 h-12 border-2 mobile-input-padding"
+                                className="pl-12 h-12 border-2"
                                 disabled={loading}
                                 autoComplete="email"
                                 autoFocus
@@ -333,31 +287,28 @@ export default function Auth() {
 
                     <Button
                       type="button"
-                      onClick={handleContinueWithEmail}
+                      onClick={() => emailValidated && setStep('credentials')}
                       disabled={!emailValidated || loading}
-                      className="w-full h-12 font-semibold touch-button"
                       size="lg"
+                      className="w-full"
                     >
                       Continue
                       <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
                   </div>
-                ) : null}
+                )}
 
-                {/* Credentials Step */}
                 {step === 'credentials' && (
                   <div className="space-y-5 animate-fade-in">
-                    {/* Back Button */}
                     <button
                       type="button"
-                      onClick={handleBackToEmail}
-                      className="caption-small text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 story-link"
+                      onClick={() => setStep('email')}
+                      className="caption-small text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
                     >
                       <ArrowRight className="h-4 w-4 rotate-180" />
                       Change email
                     </button>
 
-                    {/* Name Field (Signup Only) */}
                     {!isLogin && (
                       <FormField
                         control={signupForm.control}
@@ -370,9 +321,10 @@ export default function Auth() {
                                 <Input
                                   {...field}
                                   placeholder="Full name"
-                                  className="pl-12 h-12 border-2 mobile-input-padding"
+                                  className="pl-12 h-12 border-2"
                                   disabled={loading}
                                   autoComplete="name"
+                                  autoFocus
                                 />
                               </div>
                             </FormControl>
@@ -382,9 +334,8 @@ export default function Auth() {
                       />
                     )}
 
-                    {/* Password Field */}
                     <FormField
-                      control={currentForm.control}
+                      control={activeForm.control}
                       name="password"
                       render={({ field }) => (
                         <FormItem>
@@ -393,12 +344,12 @@ export default function Auth() {
                               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                               <Input
                                 {...field}
-                                ref={passwordInputRef}
                                 type={showPassword ? 'text' : 'password'}
                                 placeholder={isLogin ? 'Password' : 'Create password'}
-                                className="pl-12 pr-12 h-12 border-2 mobile-input-padding"
+                                className="pl-12 pr-12 h-12 border-2"
                                 disabled={loading}
                                 autoComplete={isLogin ? 'current-password' : 'new-password'}
+                                autoFocus={isLogin}
                               />
                               <button
                                 type="button"
@@ -421,11 +372,10 @@ export default function Auth() {
                       )}
                     />
 
-                    {/* Submit Button */}
                     <Button
                       type="submit"
-                      className="w-full h-12 font-semibold touch-button"
                       size="lg"
+                      className="w-full"
                       disabled={loading}
                     >
                       {loading ? (
@@ -434,43 +384,34 @@ export default function Auth() {
                           {isLogin ? 'Signing in...' : 'Creating account...'}
                         </>
                       ) : (
-                        <>
-                          {isLogin ? 'Sign in' : 'Create account'}
-                          <Sparkles className="ml-2 h-5 w-5" />
-                        </>
+                        isLogin ? 'Sign in' : 'Create account'
                       )}
                     </Button>
                   </div>
                 )}
               </form>
             </Form>
-          </div>
 
-          {/* Footer */}
-          <div className="mt-6 text-center space-y-4">
-            <p className="body-small text-muted-foreground">
-              {isLogin ? "Don't have an account?" : 'Already have an account?'}
-              {' '}
+            <div className="text-center">
               <button
-                type="button"
                 onClick={toggleMode}
-                disabled={loading}
-                className="font-semibold text-primary story-link"
+                className="caption-medium text-muted-foreground hover:text-primary transition-colors"
               >
-                {isLogin ? 'Sign up' : 'Sign in'}
+                {isLogin ? "Don't have an account? " : "Already have an account? "}
+                <span className="font-semibold text-primary">
+                  {isLogin ? 'Sign up' : 'Sign in'}
+                </span>
               </button>
-            </p>
+            </div>
 
-            {/* Trust Badges */}
-            <div className="flex items-center justify-center gap-4 caption-small text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <Shield className="h-3.5 w-3.5" />
-                <span>Secure</span>
+            <div className="flex items-center justify-center gap-6 pt-2">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Shield className="h-4 w-4" />
+                <span className="caption-small font-medium">Secure</span>
               </div>
-              <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-              <div className="flex items-center gap-1.5">
-                <Lock className="h-3.5 w-3.5" />
-                <span>Encrypted</span>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Lock className="h-4 w-4" />
+                <span className="caption-small font-medium">Encrypted</span>
               </div>
             </div>
           </div>
