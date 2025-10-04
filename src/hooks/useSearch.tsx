@@ -188,8 +188,9 @@ export function useSearch(options: UseSearchOptions) {
 
     try {
       const searchTerms = normalizeQuery(searchQuery);
+      const tsQuery = searchTerms.join(' & ');
       
-      // Fetch campaigns with pagination
+      // Fetch campaigns with full-text search
       const { data: campaigns, error: campaignsError } = await supabase
         .from('fundraisers')
         .select(`
@@ -200,20 +201,28 @@ export function useSearch(options: UseSearchOptions) {
           cover_image,
           location,
           story_html,
+          beneficiary_name,
           profiles!fundraisers_owner_user_id_fkey(name)
         `)
         .eq('status', 'active')
         .eq('visibility', 'public')
-        .range(currentOffset, currentOffset + BATCH_SIZE - 1);
+        .textSearch('fts', tsQuery, {
+          type: 'websearch',
+          config: 'english'
+        })
+        .limit(BATCH_SIZE);
 
-      // Fetch users with pagination
-      // Use public_profiles view to avoid exposing email addresses in search
+      // Fetch users with full-text search on profiles
+      // Use ilike as fallback for name search since public_profiles might not have ts_vector
+      const namePattern = `%${searchQuery}%`;
       const { data: users, error: usersError } = await supabase
         .from('public_profiles')
-        .select('id, name, avatar')
-        .range(currentOffset, currentOffset + BATCH_SIZE - 1);
+        .select('id, name, avatar, bio, profile_visibility')
+        .or(`name.ilike.${namePattern},bio.ilike.${namePattern}`)
+        .eq('profile_visibility', 'public')
+        .limit(BATCH_SIZE);
 
-      // Fetch organizations with pagination
+      // Fetch organizations with search
       const { data: organizations, error: organizationsError } = await supabase
         .from('organizations')
         .select(`
@@ -225,7 +234,8 @@ export function useSearch(options: UseSearchOptions) {
           country,
           verification_status
         `)
-        .range(currentOffset, currentOffset + BATCH_SIZE - 1);
+        .or(`legal_name.ilike.${namePattern},dba_name.ilike.${namePattern}`)
+        .limit(BATCH_SIZE);
 
       if (campaignsError) throw campaignsError;
       if (usersError) throw usersError;
