@@ -277,18 +277,16 @@ export function EnhancedSearchDropdown({
                         ))}
                       </div>
 
-                      {searchResults.length > 3 && (
-                        <Button
-                          variant="ghost"
-                          className="w-full mt-3 justify-center gap-2 text-primary hover:text-primary hover:bg-primary/10"
-                          onClick={() => {
-                            onViewAllResults();
-                          }}
-                        >
-                          View all {searchResults.length} results
-                          <ArrowRight className="h-4 w-4" />
-                        </Button>
-                      )}
+                      <Button
+                        variant="ghost"
+                        className="w-full mt-3 justify-center gap-2 text-primary hover:text-primary hover:bg-primary/10"
+                        onClick={() => {
+                          onViewAllResults();
+                        }}
+                      >
+                        {searchResults.length > 3 ? `View all ${searchResults.length} results` : 'Show all results'}
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
                     </div>
                   )}
 
@@ -319,6 +317,17 @@ export function EnhancedSearchDropdown({
                           </div>
                         </div>
                       )}
+
+                      <Button
+                        variant="ghost"
+                        className="w-full mt-4 justify-center gap-2 text-primary hover:text-primary hover:bg-primary/10"
+                        onClick={() => {
+                          onViewAllResults();
+                        }}
+                      >
+                        Show all results
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
                     </div>
                   )}
                 </>
