@@ -3,12 +3,14 @@
  * Summary and Story with AI Enhancement
  */
 
+import { useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { AITextEnhancer } from './AITextEnhancer';
 import { CharacterCounter } from './CharacterCounter';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Lightbulb } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface Step2StoryProps {
   formData: {
@@ -25,34 +27,34 @@ interface Step2StoryProps {
 }
 
 export function Step2Story({ formData, errors, onChange, categoryName }: Step2StoryProps) {
+  const [summarySuggestion, setSummarySuggestion] = useState<string | null>(null);
+  const [storySuggestion, setStorySuggestion] = useState<string | null>(null);
+
   return (
     <div className="space-y-6">
       <Alert>
         <Lightbulb className="h-4 w-4" />
         <AlertDescription>
-          Use AI to help craft compelling text that resonates with donors. The AI considers
-          your campaign details to generate contextual, emotional content.
+          Click the AI button to generate or improve your text. Review the suggestion and accept it if you like it.
         </AlertDescription>
       </Alert>
 
+      {/* Summary Section */}
       <div className="space-y-3">
-        <Label htmlFor="summary" className="label-small">
-          Short Summary <span className="text-destructive">*</span>
-        </Label>
-        <div className="relative">
-          <Textarea
-            id="summary"
-            placeholder="Write a brief, compelling summary that captures the essence of your campaign"
-            value={formData.summary || ''}
-            onChange={(e) => onChange({ summary: e.target.value })}
-            className={errors.summary ? 'border-destructive pr-12' : 'pr-12'}
-            rows={3}
-            maxLength={150}
-          />
+        <div className="flex items-center justify-between">
+          <Label htmlFor="summary" className="label-small">
+            Short Summary <span className="text-destructive">*</span>
+          </Label>
           <AITextEnhancer
             field="summary"
             currentText={formData.summary || ''}
-            onTextGenerated={(text) => onChange({ summary: text })}
+            onTextGenerated={(text) => {
+              onChange({ summary: text });
+              setSummarySuggestion(null);
+            }}
+            onSuggestionStateChange={(hasSuggestion) => {
+              if (!hasSuggestion) setSummarySuggestion(null);
+            }}
             context={{
               title: formData.title,
               category: categoryName,
@@ -61,6 +63,19 @@ export function Step2Story({ formData, errors, onChange, categoryName }: Step2St
             }}
           />
         </div>
+        <Textarea
+          id="summary"
+          placeholder="Write a brief, compelling summary that captures the essence of your campaign"
+          value={summarySuggestion || formData.summary || ''}
+          onChange={(e) => onChange({ summary: e.target.value })}
+          className={cn(
+            errors.summary && 'border-destructive',
+            summarySuggestion && 'border-primary border-2 bg-primary/5'
+          )}
+          rows={3}
+          maxLength={150}
+          readOnly={!!summarySuggestion}
+        />
         <CharacterCounter
           current={formData.summary?.length || 0}
           min={10}
@@ -72,24 +87,22 @@ export function Step2Story({ formData, errors, onChange, categoryName }: Step2St
         )}
       </div>
 
+      {/* Story Section */}
       <div className="space-y-3">
-        <Label htmlFor="story" className="label-small">
-          Full Story <span className="text-destructive">*</span>
-        </Label>
-        <div className="relative">
-          <Textarea
-            id="story"
-            placeholder="Tell your story in detail. Explain why you're raising funds, how the money will be used, and what impact it will have. Be authentic and specific."
-            value={formData.story || ''}
-            onChange={(e) => onChange({ story: e.target.value })}
-            className={errors.story ? 'border-destructive pr-12' : 'pr-12'}
-            rows={10}
-            maxLength={1000}
-          />
+        <div className="flex items-center justify-between">
+          <Label htmlFor="story" className="label-small">
+            Full Story <span className="text-destructive">*</span>
+          </Label>
           <AITextEnhancer
             field="story"
             currentText={formData.story || ''}
-            onTextGenerated={(text) => onChange({ story: text })}
+            onTextGenerated={(text) => {
+              onChange({ story: text });
+              setStorySuggestion(null);
+            }}
+            onSuggestionStateChange={(hasSuggestion) => {
+              if (!hasSuggestion) setStorySuggestion(null);
+            }}
             context={{
               title: formData.title,
               category: categoryName,
@@ -99,6 +112,19 @@ export function Step2Story({ formData, errors, onChange, categoryName }: Step2St
             }}
           />
         </div>
+        <Textarea
+          id="story"
+          placeholder="Tell your story in detail. Explain why you're raising funds, how the money will be used, and what impact it will have. Be authentic and specific."
+          value={storySuggestion || formData.story || ''}
+          onChange={(e) => onChange({ story: e.target.value })}
+          className={cn(
+            errors.story && 'border-destructive',
+            storySuggestion && 'border-primary border-2 bg-primary/5'
+          )}
+          rows={10}
+          maxLength={1000}
+          readOnly={!!storySuggestion}
+        />
         <CharacterCounter
           current={formData.story?.length || 0}
           min={150}
