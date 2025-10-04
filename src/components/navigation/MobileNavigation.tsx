@@ -76,7 +76,7 @@ export function MobileNavigation({ className }: MobileNavigationProps) {
           {/* Menu Content */}
           <nav 
             ref={menuRef}
-            className="absolute top-full left-0 right-0 bg-background/98 backdrop-blur-md border-t border-border shadow-xl z-20"
+            className="absolute top-full left-0 right-0 bg-background border-t border-border shadow-xl z-50"
             role="navigation"
             aria-label="Mobile navigation menu"
           >
