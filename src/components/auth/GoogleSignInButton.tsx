@@ -7,17 +7,19 @@ interface GoogleSignInButtonProps {
 
 export const GoogleSignInButton = ({ onSignIn, disabled = false }: GoogleSignInButtonProps) => {
   return (
-    <div className="relative">
-      <div className="absolute inset-0 flex items-center">
-        <span className="w-full border-t border-border" />
-      </div>
-      <div className="relative flex justify-center text-xs uppercase">
-        <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+    <>
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+        </div>
       </div>
       <Button
         type="button"
         variant="outline"
-        className="w-full mt-4"
+        className="w-full"
         onClick={onSignIn}
         disabled={disabled}
       >
@@ -41,6 +43,6 @@ export const GoogleSignInButton = ({ onSignIn, disabled = false }: GoogleSignInB
         </svg>
         Continue with Google
       </Button>
-    </div>
+    </>
   );
 };

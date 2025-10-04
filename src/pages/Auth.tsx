@@ -77,7 +77,7 @@ export default function Auth() {
       </div>
 
       {/* Right Side - Auth Form */}
-      <div className="flex items-center justify-center p-6 sm:p-12 bg-secondary">
+      <div className="flex items-center justify-center p-6 sm:p-12">
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center gap-2 mb-8 justify-center">
             <div className="p-2 bg-gradient-primary rounded-xl">
@@ -86,7 +86,7 @@ export default function Auth() {
             <h1 className="text-xl font-bold">FundlyHub</h1>
           </div>
 
-          <Card className="shadow-elevated rounded-2xl p-8">
+          <Card className="shadow-lg rounded-2xl p-8 bg-card">
             {isLogin ? (
               <LoginForm onToggleMode={toggleMode} config={config} />
             ) : (
