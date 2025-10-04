@@ -242,21 +242,38 @@ async function executeSearch(
   if (scope === 'all' || scope === 'campaigns') {
     console.log('Searching campaigns with query:', q);
     
-    const { data: campaigns, error: campaignsError } = await supabase
+    const searchPattern = `%${q}%`;
+    
+    // Build query with multiple filters
+    let campaignQuery = supabase
       .from('campaign_search_projection')
-      .select('campaign_id, slug, title, summary, story_text, cover_image, category_name, location, status, visibility')
+      .select('campaign_id, slug, title, summary, story_text, cover_image, category_name, location, status, visibility, beneficiary_name')
       .eq('visibility', 'public')
-      .in('status', ['active', 'ended', 'closed'])
-      .or(`title.ilike.*${q}*,summary.ilike.*${q}*,story_text.ilike.*${q}*,beneficiary_name.ilike.*${q}*,location.ilike.*${q}*`)
-      .limit(scope === 'campaigns' ? limit : Math.ceil(limit / 3));
+      .in('status', ['active', 'ended', 'closed']);
+    
+    // Apply search filters
+    campaignQuery = campaignQuery.or(
+      `title.ilike.${searchPattern},` +
+      `summary.ilike.${searchPattern},` +
+      `story_text.ilike.${searchPattern},` +
+      `beneficiary_name.ilike.${searchPattern},` +
+      `location.ilike.${searchPattern}`
+    );
+    
+    campaignQuery = campaignQuery.limit(scope === 'campaigns' ? limit : Math.ceil(limit / 3));
+    
+    const { data: campaigns, error: campaignsError } = await campaignQuery;
 
     if (campaignsError) {
       console.error('Campaign search error:', campaignsError);
     } else {
       console.log('Found campaigns:', campaigns?.length || 0);
+      if (campaigns && campaigns.length > 0) {
+        console.log('Sample campaign:', campaigns[0].title);
+      }
     }
 
-    if (campaigns) {
+    if (campaigns && campaigns.length > 0) {
       results.push(
         ...campaigns.map((campaign: any) => ({
           id: campaign.campaign_id,
