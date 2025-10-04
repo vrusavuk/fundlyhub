@@ -74,9 +74,10 @@ export function FollowersList({ userId, type, maxItems }: FollowersListProps) {
 
       // Fetch user profiles
       if (profileIds.length > 0) {
+        // Use public_profiles view to avoid exposing email addresses
         const { data: profiles, error: profileError } = await supabase
-          .from('profiles')
-          .select('id, name, email, avatar, role, follower_count, campaign_count')
+          .from('public_profiles')
+          .select('id, name, avatar, role, follower_count, campaign_count')
           .in('id', profileIds);
 
         if (profileError) throw profileError;
@@ -84,7 +85,7 @@ export function FollowersList({ userId, type, maxItems }: FollowersListProps) {
         const userFollowers = (profiles || []).map(profile => ({
           id: profile.id,
           name: profile.name,
-          email: profile.email,
+          email: null, // Email not exposed for privacy
           avatar: profile.avatar,
           role: profile.role,
           follower_count: Number(profile.follower_count || 0),

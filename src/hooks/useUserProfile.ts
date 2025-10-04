@@ -41,6 +41,10 @@ export function useUserProfile(userId: string): UseUserProfileReturn {
       setLoading(true);
       setError(null);
 
+      // Check if viewing own profile to determine if email should be included
+      const { data: { user } } = await supabase.auth.getUser();
+      const isOwnProfile = user?.id === userId;
+
       // Fetch basic profile data
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
@@ -111,7 +115,7 @@ export function useUserProfile(userId: string): UseUserProfileReturn {
       setProfile({
         id: profileData.id,
         name: profileData.name,
-        email: profileData.email,
+        email: isOwnProfile ? profileData.email : null, // Only include email for own profile
         avatar: profileData.avatar,
         bio: profileData.bio || null,
         location: profileData.location || null,

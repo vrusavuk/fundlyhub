@@ -207,9 +207,10 @@ export function useSearch(options: UseSearchOptions) {
         .range(currentOffset, currentOffset + BATCH_SIZE - 1);
 
       // Fetch users with pagination
+      // Use public_profiles view to avoid exposing email addresses in search
       const { data: users, error: usersError } = await supabase
-        .from('profiles')
-        .select('id, name, email, avatar')
+        .from('public_profiles')
+        .select('id, name, avatar')
         .range(currentOffset, currentOffset + BATCH_SIZE - 1);
 
       // Fetch organizations with pagination
@@ -293,21 +294,20 @@ export function useSearch(options: UseSearchOptions) {
       if (users) {
         users.forEach(user => {
           const nameScore = calculateRelevanceScore(searchTerms, user.name || '', true);
-          const emailScore = calculateRelevanceScore(searchTerms, user.email || '');
           
-          const totalScore = nameScore + emailScore;
+          const totalScore = nameScore;
           
           if (totalScore > 0.5) {
             newResults.push({
               id: user.id,
               type: 'user',
               title: user.name || 'Anonymous User',
-              subtitle: user.email,
+              subtitle: 'User Profile', // Don't expose email in search results
               image: user.avatar,
               link: `/profile/${user.id}`,
               relevanceScore: totalScore,
               highlightedTitle: highlightText(user.name || 'Anonymous User', searchTerms),
-              highlightedSubtitle: highlightText(user.email || '', searchTerms),
+              highlightedSubtitle: 'User Profile',
               matchedIn: 'name'
             });
           }

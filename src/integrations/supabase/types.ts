@@ -159,6 +159,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "comments_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "comments_fundraiser_id_fkey"
             columns: ["fundraiser_id"]
             isOneToOne: false
@@ -223,6 +230,13 @@ export type Database = {
             columns: ["donor_user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "donations_donor_user_id_fkey"
+            columns: ["donor_user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -497,6 +511,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fundraisers_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       notification_preferences: {
@@ -567,6 +588,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1001,6 +1029,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "fk_updates_author"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "fk_updates_fundraiser"
             columns: ["fundraiser_id"]
             isOneToOne: false
@@ -1019,6 +1054,13 @@ export type Database = {
             columns: ["author_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "updates_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -1291,6 +1333,60 @@ export type Database = {
           title: string | null
           total_raised: number | null
           visibility: Database["public"]["Enums"]["visibility_type"] | null
+        }
+        Relationships: []
+      }
+      public_profiles: {
+        Row: {
+          avatar: string | null
+          bio: string | null
+          campaign_count: number | null
+          created_at: string | null
+          follower_count: number | null
+          following_count: number | null
+          id: string | null
+          is_verified: boolean | null
+          location: string | null
+          name: string | null
+          profile_visibility: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
+          social_links: Json | null
+          total_funds_raised: number | null
+          website: string | null
+        }
+        Insert: {
+          avatar?: string | null
+          bio?: string | null
+          campaign_count?: number | null
+          created_at?: string | null
+          follower_count?: number | null
+          following_count?: number | null
+          id?: string | null
+          is_verified?: boolean | null
+          location?: string | null
+          name?: string | null
+          profile_visibility?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+          social_links?: Json | null
+          total_funds_raised?: number | null
+          website?: string | null
+        }
+        Update: {
+          avatar?: string | null
+          bio?: string | null
+          campaign_count?: number | null
+          created_at?: string | null
+          follower_count?: number | null
+          following_count?: number | null
+          id?: string | null
+          is_verified?: boolean | null
+          location?: string | null
+          name?: string | null
+          profile_visibility?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+          social_links?: Json | null
+          total_funds_raised?: number | null
+          website?: string | null
         }
         Relationships: []
       }
