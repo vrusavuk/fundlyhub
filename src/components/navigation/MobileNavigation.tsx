@@ -68,7 +68,7 @@ export function MobileNavigation({ className }: MobileNavigationProps) {
         <>
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-10"
+            className="fixed inset-0 bg-black/20 z-10"
             onClick={closeMenu}
             aria-hidden="true"
           />
