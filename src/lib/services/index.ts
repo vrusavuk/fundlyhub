@@ -9,6 +9,9 @@ export { cacheService } from './cache.service';
 export { queryService } from './query.service';
 export { mutationService } from './mutation.service';
 
+// Search service (API Gateway - use this for all search operations)
+export { searchApi } from './searchApi.service';
+
 // Admin services
 export { 
   adminDataService, 

@@ -1,10 +1,13 @@
 /**
  * Enhanced Search Hook
- * Uses SearchService instead of direct database queries
+ * Uses Search API (API Gateway) instead of direct database queries
+ * 
+ * @see src/lib/services/searchApi.service.ts
+ * @see supabase/functions/search-api/index.ts
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { searchService } from '@/lib/services/search.service';
+import { searchApi } from '@/lib/services/searchApi.service';
 import type { SearchResult } from '@/types/ui/search';
 import { useDebounce } from './useDebounce';
 
@@ -63,34 +66,43 @@ export function useEnhancedSearch(options: UseEnhancedSearchOptions): UseEnhance
     setError(null);
     
     try {
-      const response = await searchService.search(query, {
+      // ✅ Use Search API (gateway) instead of direct DB access
+      const response = await searchApi.search(query, {
+        scope: 'all',
         filters: options.filters,
-        includeSuggestions: options.includeSuggestions,
+        limit: 50,
       });
       
-      setResults(response.results);
-      setSuggestions(response.suggestions);
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      
+      setResults(response.results as any);
+      setSuggestions((response.suggestions || []) as any);
       setExecutionTimeMs(response.executionTimeMs);
       setCached(response.cached);
     } catch (err: any) {
       if (err.name !== 'AbortError') {
+        console.error('Search error:', err);
         setError(err.message || 'Search failed');
       }
     } finally {
       setLoading(false);
     }
-  }, [options.enabled, options.filters, options.includeSuggestions]);
+  }, [options.enabled, options.filters]);
   
   useEffect(() => {
     executeSearch(debouncedQuery);
   }, [debouncedQuery, executeSearch]);
   
   const trackClick = useCallback((resultId: string, resultType: string) => {
-    searchService.trackSearchClick(options.query, resultId, resultType);
+    // TODO: Implement via Search API analytics endpoint
+    console.log('Result clicked:', { resultId, resultType, query: options.query });
   }, [options.query]);
   
   const trackSuggestionClick = useCallback((suggestionQuery: string) => {
-    searchService.trackSuggestionClick(options.query, suggestionQuery);
+    // TODO: Implement via Search API analytics endpoint
+    console.log('Suggestion clicked:', { suggestionQuery, originalQuery: options.query });
   }, [options.query]);
   
   return {

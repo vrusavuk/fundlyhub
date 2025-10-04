@@ -1,7 +1,16 @@
 /**
- * Search Service
+ * Search Service (DEPRECATED - Being phased out)
+ * 
+ * ⚠️ WARNING: This service is being deprecated in favor of Search API (Edge Function)
+ * 
+ * Migration path:
+ * - Use @/lib/services/searchApi.service.ts for new code
+ * - This file kept for backward compatibility only
+ * - All write operations to projections have been REMOVED (see lines 377-417)
+ * 
  * Handles all search operations through event-driven architecture
  * NEVER queries database directly - only reads from projections and publishes events
+ * ❌ NEVER writes to projections - that's the Projection Builder's job
  * 
  * Following SOLID principles:
  * - Single Responsibility: Only handles search coordination
@@ -9,6 +18,11 @@
  * - Liskov Substitution: Implements clear interfaces
  * - Interface Segregation: Focused search interface
  * - Dependency Inversion: Depends on abstractions (EventBus, Projections)
+ * 
+ * @deprecated Use searchApi from @/lib/services/searchApi.service.ts instead
+ * @see src/lib/services/searchApi.service.ts
+ * @see supabase/functions/search-api/index.ts
+ * @see docs/search/architecture.md
  */
 
 import { supabase } from '@/integrations/supabase/client';
@@ -378,12 +392,8 @@ class SearchService implements ISearchService {
       return null;
     }
 
-    // Increment hit count asynchronously
-    supabase
-      .from('search_results_cache')
-      .update({ hit_count: data.hit_count + 1 })
-      .eq('cache_key', cacheKey)
-      .then();
+    // ✅ READ-ONLY: Don't update hit_count (violates projection write rule)
+    // Hit count updates should be handled by Projection Builder service
 
     return {
       results: (data.results as unknown as SearchResult[]) || [],
@@ -395,25 +405,19 @@ class SearchService implements ISearchService {
   }
 
   /**
-   * Cache search results
+   * ❌ DEPRECATED: Cache writes moved to Projection Builder service
+   * This method is kept for backward compatibility but does nothing
+   * 
+   * @deprecated Use event-driven cache updates via projection-builder edge function
    */
   private async cacheResults(
     cacheKey: string,
     query: string,
     response: SearchResponse
   ): Promise<void> {
-    try {
-      await supabase.from('search_results_cache').upsert({
-        cache_key: cacheKey,
-        query,
-        results: response.results as any,
-        suggestions: response.suggestions as any,
-        result_count: response.totalCount,
-        expires_at: new Date(Date.now() + 3600000).toISOString(), // 1 hour
-      });
-    } catch (error) {
-      console.error('[SearchService] Cache write failed:', error);
-    }
+    // ❌ REMOVED: Search service must NOT write to projections
+    // Cache updates are now handled by the Projection Builder service
+    console.warn('[SearchService] cacheResults called but disabled (use projection-builder)');
   }
 
   /**
