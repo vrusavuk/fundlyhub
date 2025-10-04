@@ -195,15 +195,81 @@ export function useSearch(options: UseSearchOptions) {
         summaryMap[summary.campaign_id] = summary;
       });
 
-      // Use existing FTS on profiles (already optimized)
-      const { data: users, error: usersError } = await supabase
-        .from('public_profiles')
-        .select('id, name, avatar, bio, role, campaign_count, follower_count')
-        .textSearch('fts', tsQuery, {
-          type: 'websearch',
-          config: 'english'
-        })
-        .limit(BATCH_SIZE);
+      // Multi-strategy user search: FTS + Fuzzy + Phonetic fallback
+      let users: any[] = [];
+      let usersError = null;
+
+      try {
+        // Strategy 1: Try FTS first (fastest, most accurate)
+        const { data: ftsUsers, error: ftsErr } = await supabase
+          .from('public_profiles')
+          .select('id, name, avatar, bio, role, campaign_count, follower_count')
+          .textSearch('fts', tsQuery, {
+            type: 'websearch',
+            config: 'english'
+          })
+          .limit(BATCH_SIZE);
+
+        if (ftsErr) {
+          console.error('[useSearch] FTS error:', ftsErr);
+          usersError = ftsErr;
+        }
+
+        users = ftsUsers || [];
+
+        // Strategy 2: If FTS returns few results, try fuzzy search function
+        if (users.length < 3) {
+          const { data: fuzzyUsers, error: fuzzyError } = await supabase
+            .rpc('fuzzy_search_users', { 
+              search_query: tsQuery,
+              similarity_threshold: 0.3
+            });
+
+          if (fuzzyError) {
+            console.error('[useSearch] Fuzzy search error:', fuzzyError);
+          } else if (fuzzyUsers && fuzzyUsers.length > 0) {
+            // Merge fuzzy results with FTS results, deduplicate by user_id
+            const existingIds = new Set(users.map((u: any) => u.id));
+            const newFuzzyUsers = fuzzyUsers
+              .filter((fu: any) => !existingIds.has(fu.user_id))
+              .map((fu: any) => ({
+                id: fu.user_id,
+                name: fu.match_name,
+                matchType: fu.match_type,
+                relevanceScore: fu.relevance_score,
+              }));
+            
+            users = [...users, ...newFuzzyUsers].slice(0, BATCH_SIZE);
+            console.log(`[useSearch] Fuzzy search added ${newFuzzyUsers.length} results (types: ${newFuzzyUsers.map(u => u.matchType).join(', ')})`);
+          }
+        }
+
+        // Fetch full profile data for fuzzy matches that only have partial data
+        const userIdsNeedingData = users
+          .filter((u: any) => !u.avatar && !u.role)
+          .map((u: any) => u.id);
+
+        if (userIdsNeedingData.length > 0) {
+          const { data: fullProfiles } = await supabase
+            .from('public_profiles')
+            .select('id, avatar, bio, role, campaign_count, follower_count')
+            .in('id', userIdsNeedingData);
+
+          if (fullProfiles) {
+            const profileMap = new Map(fullProfiles.map(p => [p.id, p]));
+            users = users.map((u: any) => ({
+              ...u,
+              ...profileMap.get(u.id),
+              matchType: u.matchType,
+              relevanceScore: u.relevanceScore,
+            }));
+          }
+        }
+
+      } catch (error) {
+        console.error('[useSearch] User search error:', error);
+        usersError = error;
+      }
 
       // Use existing FTS on organizations (already optimized)
       const { data: organizations, error: organizationsError } = await supabase
@@ -247,26 +313,27 @@ export function useSearch(options: UseSearchOptions) {
         });
       });
 
-      // Process users (database already ranked by FTS relevance)
+      // Process users (FTS + fuzzy + phonetic results combined)
       users?.forEach((user: any) => {
         const subtitle = `${user.role || 'visitor'} • ${user.campaign_count || 0} campaigns`;
+        const matchTypeLabel = user.matchType ? ` (${user.matchType} match)` : '';
         
         newResults.push({
           id: user.id,
           type: 'user',
           title: user.name || 'Anonymous User',
-          subtitle,
+          subtitle: subtitle + matchTypeLabel,
           image: user.avatar,
           link: `/profile/${user.id}`,
           snippet: highlightText(
             extractSnippet(user.bio || `${user.name}'s profile`, searchQuery),
             searchQuery
           ),
-          relevanceScore: 1,
+          relevanceScore: user.relevanceScore || 1,
           highlightedTitle: highlightText(user.name || 'Anonymous User', searchQuery),
           highlightedSubtitle: highlightText(subtitle, searchQuery),
           matchedFields: ['name', 'bio'],
-          matchedIn: 'user profile'
+          matchedIn: user.matchType ? `user profile (${user.matchType})` : 'user profile'
         });
       });
 
