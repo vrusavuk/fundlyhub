@@ -17,7 +17,7 @@ export function Navigation() {
     <>
       <HeaderSearch isOpen={isHeaderSearchOpen} onClose={closeHeaderSearch} />
       
-      <nav className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border relative">
+      <nav className="sticky top-0 z-40 bg-background/95 border-b border-border relative">
         <div className="w-full px-3 sm:px-4 md:px-6">
           <div className="flex items-center h-14 sm:h-16">
             
