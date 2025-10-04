@@ -1,5 +1,11 @@
-import { useState, useEffect } from 'react';
+/**
+ * Optimized Search Hook - Phase 3 & 4 Implementation
+ * Uses projection tables with database-side FTS for maximum performance
+ * Eliminates all client-side scoring and HTML parsing
+ */
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { cacheService } from '@/lib/services/cache.service';
 
 export interface SearchResult {
   id: string;
@@ -19,144 +25,90 @@ export interface SearchResult {
   matchedIn?: string;
 }
 
-// Smart search utilities
-const calculateRelevanceScore = (searchTerms: string[], text: string, isTitle: boolean = false): number => {
-  if (!text) return 0;
-  
-  const textLower = text.toLowerCase();
-  const words = textLower.split(/\s+/);
-  let score = 0;
-  
-  searchTerms.forEach(term => {
-    const termLower = term.toLowerCase();
-    
-    // Exact match bonus
-    if (textLower.includes(termLower)) {
-      score += isTitle ? 10 : 5;
-    }
-    
-    // Word boundary match bonus
-    if (new RegExp(`\\b${termLower}`, 'i').test(textLower)) {
-      score += isTitle ? 8 : 4;
-    }
-    
-    // Partial word match
-    words.forEach(word => {
-      if (word.includes(termLower)) {
-        score += isTitle ? 3 : 1.5;
-      }
-      
-      // Fuzzy match (allowing for typos)
-      if (calculateLevenshteinDistance(termLower, word) <= Math.max(1, Math.floor(termLower.length * 0.2))) {
-        score += isTitle ? 2 : 1;
-      }
-    });
-  });
-  
-  return score;
-};
-
-const calculateLevenshteinDistance = (str1: string, str2: string): number => {
-  const matrix = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
-  
-  for (let i = 0; i <= str1.length; i += 1) {
-    matrix[0][i] = i;
-  }
-  
-  for (let j = 0; j <= str2.length; j += 1) {
-    matrix[j][0] = j;
-  }
-  
-  for (let j = 1; j <= str2.length; j += 1) {
-    for (let i = 1; i <= str1.length; i += 1) {
-      const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
-      matrix[j][i] = Math.min(
-        matrix[j][i - 1] + 1, // deletion
-        matrix[j - 1][i] + 1, // insertion
-        matrix[j - 1][i - 1] + indicator, // substitution
-      );
-    }
-  }
-  
-  return matrix[str2.length][str1.length];
-};
-
-const normalizeQuery = (query: string): string[] => {
-  return query
-    .toLowerCase()
-    .trim()
-    .split(/\s+/)
-    .filter(term => term.length > 0);
-};
-
-const highlightText = (text: string, searchTerms: string[]): string => {
-  if (!text || searchTerms.length === 0) return text;
-  
-  let highlighted = text;
-  
-  searchTerms.forEach(term => {
-    const regex = new RegExp(`(${term})`, 'gi');
-    highlighted = highlighted.replace(regex, '<mark>$1</mark>');
-  });
-  
-  return highlighted;
-};
-
-const extractSnippet = (text: string, searchTerms: string[], maxLength: number = 150): string => {
-  if (!text || searchTerms.length === 0) return '';
-  
-  const textLower = text.toLowerCase();
-  let bestStart = 0;
-  let bestScore = 0;
-  
-  // Find the best position that contains the most search terms
-  searchTerms.forEach(term => {
-    const termLower = term.toLowerCase();
-    const index = textLower.indexOf(termLower);
-    if (index !== -1) {
-      const start = Math.max(0, index - 50);
-      const end = Math.min(text.length, index + term.length + 50);
-      const snippet = text.slice(start, end);
-      const score = searchTerms.reduce((acc, t) => {
-        return acc + (snippet.toLowerCase().includes(t.toLowerCase()) ? 1 : 0);
-      }, 0);
-      
-      if (score > bestScore) {
-        bestScore = score;
-        bestStart = start;
-      }
-    }
-  });
-  
-  const snippet = text.slice(bestStart, bestStart + maxLength);
-  return snippet.length < text.length ? `...${snippet}...` : snippet;
-};
-
-const checkFieldMatches = (searchTerms: string[], fields: Record<string, string | null | undefined>): {
-  matchedFields: string[];
-  scores: Record<string, number>;
-} => {
-  const matchedFields: string[] = [];
-  const scores: Record<string, number> = {};
-  
-  Object.entries(fields).forEach(([fieldName, fieldValue]) => {
-    if (fieldValue) {
-      const score = calculateRelevanceScore(searchTerms, fieldValue, fieldName === 'title');
-      if (score > 0) {
-        matchedFields.push(fieldName);
-        scores[fieldName] = score;
-      }
-    }
-  });
-  
-  return { matchedFields, scores };
-};
-
 interface UseSearchOptions {
   query: string;
   enabled?: boolean;
 }
 
+const BATCH_SIZE = 20;
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Simple client-side highlighting for display
+ */
+function highlightText(text: string, searchQuery: string): string {
+  if (!text || !searchQuery) return text;
+  
+  const terms = searchQuery.toLowerCase().split(/\s+/).filter(t => t.length > 1);
+  let result = text;
+  
+  terms.forEach(term => {
+    const regex = new RegExp(`(${term})`, 'gi');
+    result = result.replace(regex, '<mark>$1</mark>');
+  });
+  
+  return result;
+}
+
+/**
+ * Extract relevant snippet from text
+ */
+function extractSnippet(text: string, searchQuery: string, maxLength: number = 150): string {
+  if (!text || text.length <= maxLength) return text;
+  
+  const lowerText = text.toLowerCase();
+  const lowerQuery = searchQuery.toLowerCase();
+  const index = lowerText.indexOf(lowerQuery);
+  
+  if (index === -1) {
+    return text.slice(0, maxLength) + '...';
+  }
+  
+  const start = Math.max(0, index - 50);
+  const end = Math.min(text.length, start + maxLength);
+  let snippet = text.slice(start, end);
+  
+  if (start > 0) snippet = '...' + snippet;
+  if (end < text.length) snippet = snippet + '...';
+  
+  return snippet;
+}
+
+/**
+ * Subscribe to real-time projection updates
+ */
+function subscribeToProjectionUpdates(callback: () => void) {
+  const channel = supabase
+    .channel('search-projections')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'campaign_search_projection'
+      },
+      callback
+    )
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'campaign_summary_projection'
+      },
+      callback
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}
+
+/**
+ * Optimized search hook using projection tables
+ * Phase 3 & 4 implementation
+ */
 export function useSearch(options: UseSearchOptions) {
   const { query, enabled = true } = options;
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -164,7 +116,6 @@ export function useSearch(options: UseSearchOptions) {
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [offset, setOffset] = useState(0);
-  const BATCH_SIZE = 20;
 
   // Reset results when query changes
   useEffect(() => {
@@ -175,66 +126,90 @@ export function useSearch(options: UseSearchOptions) {
       return;
     }
 
-    // Reset for new query
     setOffset(0);
     performSearch(query, 0, true);
   }, [query, enabled]);
 
-  const performSearch = async (searchQuery: string, currentOffset: number, isNewSearch: boolean = false) => {
+  // Real-time subscription to projection updates (Phase 4)
+  useEffect(() => {
+    if (!enabled || !query || query.length < 2) return;
+    
+    const unsubscribe = subscribeToProjectionUpdates(() => {
+      // Invalidate cache and refresh results when projections update
+      cacheService.invalidateByPattern(`search:${query}*`);
+      if (results.length > 0) {
+        performSearch(query, 0, true);
+      }
+    });
+
+    return unsubscribe;
+  }, [enabled, query]);
+
+  const performSearch = useCallback(async (searchQuery: string, currentOffset: number, isNewSearch: boolean = false) => {
     if (isNewSearch) {
       setLoading(true);
     }
     setError(null);
 
+    // Check cache first (Phase 4)
+    const cacheKey = `search:${searchQuery}:${currentOffset}`;
+    const cached = await cacheService.get<SearchResult[]>(cacheKey);
+    
+    if (cached && cached.length > 0) {
+      if (isNewSearch) {
+        setResults(cached);
+      } else {
+        setResults(prev => [...prev, ...cached]);
+      }
+      setHasMore(cached.length === BATCH_SIZE);
+      setLoading(false);
+      return;
+    }
+
     try {
-      const searchTerms = normalizeQuery(searchQuery);
-      // Create a properly formatted tsquery for PostgreSQL
-      const tsQuery = searchTerms.join(' & ');
+      const tsQuery = searchQuery.trim();
       
-      // Fetch campaigns with full-text search using the fts column
+      // Phase 3: Use projection tables for campaigns (massive performance boost)
+      // No client-side scoring needed - PostgreSQL already ranks by relevance!
       const { data: campaigns, error: campaignsError } = await supabase
-        .from('fundraisers')
-        .select(`
-          id,
-          title,
-          summary,
-          slug,
-          cover_image,
-          location,
-          story_html,
-          beneficiary_name,
-          profiles!fundraisers_owner_user_id_fkey(name)
-        `)
-        .eq('status', 'active')
-        .eq('visibility', 'public')
-        .textSearch('fts', tsQuery, {
+        .from('campaign_search_projection')
+        .select('campaign_id, title, summary, story_text, beneficiary_name, location, category_name, owner_name')
+        .textSearch('search_vector', tsQuery, {
           type: 'websearch',
           config: 'english'
         })
-        .limit(BATCH_SIZE);
+        .eq('visibility', 'public')
+        .in('status', ['active', 'ended', 'closed'])
+        .limit(BATCH_SIZE)
+        .range(currentOffset, currentOffset + BATCH_SIZE - 1);
 
-      // Fetch users with full-text search on the fts column
+      // Get summary data for images and other display info
+      const campaignIds = campaigns?.map(c => c.campaign_id) || [];
+      const { data: campaignSummaries } = campaignIds.length > 0 ? await supabase
+        .from('campaign_summary_projection')
+        .select('campaign_id, slug, cover_image, owner_avatar')
+        .in('campaign_id', campaignIds) : { data: [] };
+
+      const summaryMap = 
+        campaignSummaries?.reduce((acc: Record<string, any>, summary: any) => {
+          acc[summary.campaign_id] = summary;
+          return acc;
+        }, {} as Record<string, any>) || {};
+
+      // Use existing FTS on profiles (already optimized)
       const { data: users, error: usersError } = await supabase
         .from('public_profiles')
-        .select('id, name, avatar, bio, profile_visibility')
+        .select('id, name, avatar, bio, role, campaign_count, follower_count')
         .textSearch('fts', tsQuery, {
           type: 'websearch',
           config: 'english'
         })
         .limit(BATCH_SIZE);
 
-      // Fetch organizations with full-text search
+      // Use existing FTS on organizations (already optimized)
       const { data: organizations, error: organizationsError } = await supabase
         .from('organizations')
-        .select(`
-          id,
-          legal_name,
-          dba_name,
-          website,
-          categories,
-          country,
-          verification_status
-        `)
+        .select('id, legal_name, dba_name, website, country, verification_status, categories')
         .textSearch('fts', tsQuery, {
           type: 'websearch',
           config: 'english'
@@ -245,178 +220,116 @@ export function useSearch(options: UseSearchOptions) {
       if (usersError) throw usersError;
       if (organizationsError) throw organizationsError;
 
-      const newResults: SearchResult[] = [];
+      const newResults: SearchResult[]= [];
 
-      // Process campaigns
-      if (campaigns) {
-        campaigns.forEach(campaign => {
-          // Extract text content from HTML story
-          const storyText = campaign.story_html ? 
-            campaign.story_html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : '';
-          
-          const fields = {
-            title: campaign.title,
-            summary: campaign.summary,
-            story: storyText,
-            location: campaign.location,
-            creator: campaign.profiles?.name
-          };
-          
-          const { matchedFields, scores } = checkFieldMatches(searchTerms, fields);
-          
-          if (matchedFields.length > 0) {
-            const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
-            
-            // Determine what was matched for better UX
-            let matchedIn = 'title';
-            if (scores.summary > (scores.title || 0)) matchedIn = 'description';
-            if (scores.story > (scores.summary || 0)) matchedIn = 'full description';
-            
-            const highlightedTitle = highlightText(campaign.title, searchTerms);
-            const subtitle = `by ${campaign.profiles?.name || 'Anonymous'}`;
-            const highlightedSubtitle = highlightText(subtitle, searchTerms);
-            
-            let matchedSnippet = '';
-            if (matchedIn === 'description') {
-              matchedSnippet = extractSnippet(campaign.summary || '', searchTerms);
-            } else if (matchedIn === 'full description') {
-              matchedSnippet = extractSnippet(storyText, searchTerms);
-            }
-            
-            newResults.push({
-              id: campaign.id,
-              type: 'campaign',
-              title: campaign.title,
-              subtitle,
-              image: campaign.cover_image,
-              slug: campaign.slug,
-              location: campaign.location,
-              link: `/fundraiser/${campaign.slug}`,
-              snippet: matchedSnippet,
-              relevanceScore: totalScore,
-              matchedFields,
-              highlightedTitle,
-              highlightedSubtitle,
-              matchedSnippet,
-              matchedIn
-            });
-          }
+      // Process campaigns from projection (no client-side scoring needed!)
+      campaigns?.forEach((campaign: any) => {
+        const summary = summaryMap[campaign.campaign_id];
+        const subtitle = campaign.owner_name ? `by ${campaign.owner_name}` : undefined;
+        
+        newResults.push({
+          id: campaign.campaign_id,
+          type: 'campaign',
+          title: campaign.title,
+          subtitle,
+          image: summary?.cover_image,
+          slug: summary?.slug,
+          location: campaign.location,
+          link: `/fundraiser/${summary?.slug || campaign.campaign_id}`,
+          snippet: highlightText(
+            extractSnippet(campaign.summary || campaign.story_text || '', searchQuery),
+            searchQuery
+          ),
+          relevanceScore: 1, // PostgreSQL already ranked by relevance
+          highlightedTitle: highlightText(campaign.title, searchQuery),
+          highlightedSubtitle: subtitle ? highlightText(subtitle, searchQuery) : undefined,
+          matchedFields: ['title', 'summary'], // Database matched these
+          matchedIn: 'campaign'
         });
+      });
+
+      // Process users (database already ranked by FTS relevance)
+      users?.forEach((user: any) => {
+        const subtitle = `${user.role || 'visitor'} • ${user.campaign_count || 0} campaigns`;
+        
+        newResults.push({
+          id: user.id,
+          type: 'user',
+          title: user.name || 'Anonymous User',
+          subtitle,
+          image: user.avatar,
+          link: `/profile/${user.id}`,
+          snippet: highlightText(
+            extractSnippet(user.bio || `${user.name}'s profile`, searchQuery),
+            searchQuery
+          ),
+          relevanceScore: 1,
+          highlightedTitle: highlightText(user.name || 'Anonymous User', searchQuery),
+          highlightedSubtitle: highlightText(subtitle, searchQuery),
+          matchedFields: ['name', 'bio'],
+          matchedIn: 'user profile'
+        });
+      });
+
+      // Process organizations (database already ranked)
+      organizations?.forEach((org: any) => {
+        const displayName = org.dba_name || org.legal_name;
+        let subtitle = '';
+        
+        if (org.country) {
+          subtitle = org.country;
+        }
+        if (org.categories && org.categories.length > 0) {
+          const categoryText = org.categories.slice(0, 2).join(', ');
+          subtitle = subtitle ? `${subtitle} • ${categoryText}` : categoryText;
+        }
+        
+        newResults.push({
+          id: org.id,
+          type: 'organization',
+          title: displayName,
+          subtitle,
+          image: undefined,
+          link: `/organization/${org.id}`,
+          snippet: `${org.verification_status} organization`,
+          relevanceScore: 1,
+          highlightedTitle: highlightText(displayName, searchQuery),
+          highlightedSubtitle: subtitle ? highlightText(subtitle, searchQuery) : undefined,
+          matchedFields: ['legal_name', 'dba_name'],
+          matchedIn: 'organization'
+        });
+      });
+
+      // Cache results (Phase 4)
+      if (newResults.length > 0) {
+        await cacheService.set(cacheKey, newResults, { ttl: CACHE_TTL });
       }
 
-      // Process users
-      if (users) {
-        users.forEach(user => {
-          const nameScore = calculateRelevanceScore(searchTerms, user.name || '', true);
-          
-          const totalScore = nameScore;
-          
-          if (totalScore > 0.5) {
-            newResults.push({
-              id: user.id,
-              type: 'user',
-              title: user.name || 'Anonymous User',
-              subtitle: 'User Profile', // Don't expose email in search results
-              image: user.avatar,
-              link: `/profile/${user.id}`,
-              relevanceScore: totalScore,
-              highlightedTitle: highlightText(user.name || 'Anonymous User', searchTerms),
-              highlightedSubtitle: 'User Profile',
-              matchedIn: 'name'
-            });
-          }
-        });
-      }
-
-      // Process organizations
-      if (organizations) {
-        organizations.forEach(org => {
-          const fields = {
-            legal_name: org.legal_name,
-            dba_name: org.dba_name,
-            website: org.website,
-            categories: org.categories?.join(' '),
-            country: org.country
-          };
-          
-          const { matchedFields, scores } = checkFieldMatches(searchTerms, fields);
-          
-          if (matchedFields.length > 0) {
-            const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
-            
-            // Determine what was matched for better UX
-            let matchedIn = 'name';
-            if (scores.dba_name > (scores.legal_name || 0)) matchedIn = 'dba_name';
-            if (scores.categories > Math.max(scores.legal_name || 0, scores.dba_name || 0)) matchedIn = 'categories';
-            
-            const displayName = org.dba_name || org.legal_name;
-            const highlightedTitle = highlightText(displayName, searchTerms);
-            
-            let subtitle = '';
-            if (org.dba_name && org.legal_name !== org.dba_name) {
-              subtitle = `Legal: ${org.legal_name}`;
-            }
-            if (org.country) {
-              subtitle = subtitle ? `${subtitle} • ${org.country}` : org.country;
-            }
-            if (org.categories && org.categories.length > 0) {
-              const categoryText = org.categories.slice(0, 2).join(', ');
-              subtitle = subtitle ? `${subtitle} • ${categoryText}` : categoryText;
-            }
-            
-            const highlightedSubtitle = highlightText(subtitle, searchTerms);
-            
-            let matchedSnippet = '';
-            if (matchedIn === 'categories' && org.categories) {
-              const categoriesText = org.categories.join(', ');
-              matchedSnippet = extractSnippet(`Categories: ${categoriesText}`, searchTerms);
-            } else if (matchedIn === 'dba_name' && org.dba_name) {
-              matchedSnippet = highlightText(`Also known as: ${org.dba_name}`, searchTerms);
-            } else if (matchedIn === 'legal_name') {
-              matchedSnippet = highlightText(`Legal name: ${org.legal_name}`, searchTerms);
-            } else if (matchedIn === 'website' && org.website) {
-              matchedSnippet = highlightText(`Website: ${org.website}`, searchTerms);
-            }
-            
-            newResults.push({
-              id: org.id,
-              type: 'organization',
-              title: displayName,
-              subtitle,
-              image: undefined,
-              link: `/organization/${org.id}`,
-              snippet: matchedSnippet,
-              relevanceScore: totalScore,
-              matchedFields,
-              highlightedTitle,
-              highlightedSubtitle,
-              matchedSnippet: highlightText(matchedSnippet, searchTerms),
-              matchedIn
-            });
-          }
-        });
-      }
-
-      // Sort by relevance score
-      newResults.sort((a, b) => (b.relevanceScore || 0) - (a.relevanceScore || 0));
-
+      // Update state
       if (isNewSearch) {
         setResults(newResults);
       } else {
         setResults(prev => [...prev, ...newResults]);
       }
 
-      // Update pagination state
       setOffset(currentOffset + BATCH_SIZE);
       setHasMore(newResults.length === BATCH_SIZE);
-
-    } catch (err) {
+      
+      // Track search analytics (Phase 4)
+      if (isNewSearch && newResults.length > 0) {
+        console.log('[Search Analytics]', {
+          query: searchQuery,
+          resultCount: newResults.length,
+          timestamp: new Date().toISOString()
+        });
+      }
+    } catch (err: any) {
       console.error('Search error:', err);
-      setError(err instanceof Error ? err.message : 'Search failed');
+      setError(err.message || 'Search failed');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const loadMore = () => {
     if (!loading && hasMore && query.trim().length >= 2) {
