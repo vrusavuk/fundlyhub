@@ -47,13 +47,13 @@ export default function Auth() {
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
-    mode: 'onChange',
+    mode: 'onSubmit',
   });
 
   const signupForm = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: { name: '', email: '', password: '' },
-    mode: 'onChange',
+    mode: 'onSubmit',
   });
 
   const emailValue = isLogin ? loginForm.watch('email') : signupForm.watch('email');
