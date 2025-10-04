@@ -2,11 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, UserPlus, Heart } from 'lucide-react';
+import { Users, Heart } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { LoadingState } from '@/components/common/LoadingState';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { ProfileFollowerItemSkeleton } from '@/components/skeletons/ProfilePageSkeleton';
 import { FollowButton } from './FollowButton';
@@ -42,62 +40,72 @@ export function FollowersList({ userId, type, maxItems }: FollowersListProps) {
       setLoading(true);
       setError(null);
 
+      let transformedData: Follower[] = [];
+
       if (type === 'followers') {
         // Use security definer function to get public followers
-        const { data, error: rpcError } = await supabase
+        const { data, error: fetchError } = await supabase
           .rpc('get_public_followers', {
             target_user_id: userId,
             limit_count: maxItems || 50
           });
 
-        if (rpcError) {
-          console.error('Error fetching followers:', rpcError);
-          throw new Error('Unable to load followers. This profile may be private.');
+        if (fetchError) {
+          console.error('Error fetching followers:', fetchError);
+          throw fetchError;
         }
 
-        const transformedData: Follower[] = (data || []).map(item => ({
+        transformedData = (data || []).map(item => ({
           id: item.id,
           name: item.name,
           email: null,
           avatar: item.avatar,
           role: item.role,
-          follower_count: item.follower_count || 0,
-          campaign_count: item.campaign_count || 0,
-          type: 'user' as const
+          follower_count: Number(item.follower_count || 0),
+          campaign_count: Number(item.campaign_count || 0),
+          type: item.type as 'user' | 'organization',
+          legal_name: undefined,
+          dba_name: undefined
         }));
-
-        setFollowers(transformedData);
       } else {
         // Use security definer function to get public following
-        const { data, error: rpcError } = await supabase
+        const { data, error: fetchError } = await supabase
           .rpc('get_public_following', {
             target_user_id: userId,
             limit_count: maxItems || 50
           });
 
-        if (rpcError) {
-          console.error('Error fetching following:', rpcError);
-          throw new Error('Unable to load following list. This profile may be private.');
+        if (fetchError) {
+          console.error('Error fetching following:', fetchError);
+          throw fetchError;
         }
 
-        const transformedData: Follower[] = (data || []).map(item => ({
+        transformedData = (data || []).map(item => ({
           id: item.id,
           name: item.name,
           email: null,
           avatar: item.avatar,
           role: item.role,
-          follower_count: item.follower_count || 0,
-          campaign_count: item.campaign_count || 0,
+          follower_count: Number(item.follower_count || 0),
+          campaign_count: Number(item.campaign_count || 0),
           type: item.type as 'user' | 'organization',
           legal_name: item.legal_name,
           dba_name: item.dba_name
         }));
-
-        setFollowers(transformedData);
       }
+
+      setFollowers(transformedData);
     } catch (error) {
       console.error('Error fetching followers:', error);
-      setError(error instanceof Error ? error.message : 'Failed to load data');
+      
+      // Provide more helpful error messages
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load data';
+      
+      if (errorMessage.includes('permission') || errorMessage.includes('policy')) {
+        setError('Unable to view this information due to privacy settings');
+      } else {
+        setError('Failed to load followers. Please try again later.');
+      }
     } finally {
       setLoading(false);
     }
