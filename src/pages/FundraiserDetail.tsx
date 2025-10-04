@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Share2, Calendar, MapPin, Verified, Facebook, Twitter, Copy } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatters';
+import { sanitizeHTML } from '@/lib/utils/sanitize';
 import { FollowButton } from '@/components/profile/FollowButton';
 import { SmartBreadcrumb } from '@/components/navigation/SmartBreadcrumb';
 import { SmartBackButton } from '@/components/navigation/SmartBackButton';
@@ -122,13 +123,14 @@ export default function FundraiserDetail() {
       setFundraiser(fundraiserData as any);
 
       // Fetch donations using privacy-respecting view
+      // Cast to any because donations_with_privacy is a view not in generated types yet
       const [donationsResponse, commentsResponse] = await Promise.all([
         supabase
-          .from('donations_with_privacy')
+          .from('donations_with_privacy' as any)
           .select('*')
           .eq('fundraiser_id', fundraiserData.id)
           .eq('payment_status', 'paid')
-          .order('created_at', { ascending: false }),
+          .order('created_at', { ascending: false }) as any,
         
         supabase
           .from('comments')
@@ -452,7 +454,7 @@ export default function FundraiserDetail() {
                   <CardContent className="p-4 sm:p-6">
                     <div 
                       className="prose max-w-none"
-                      dangerouslySetInnerHTML={{ __html: fundraiser.story_html }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHTML(fundraiser.story_html) }}
                     />
                   </CardContent>
                 </Card>

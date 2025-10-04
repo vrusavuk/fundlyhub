@@ -508,6 +508,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "fundraisers_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "public_organizations"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "fundraisers_owner_user_id_fkey"
             columns: ["owner_user_id"]
             isOneToOne: false
@@ -584,6 +591,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_members_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "public_organizations"
             referencedColumns: ["id"]
           },
           {
@@ -1314,41 +1328,6 @@ export type Database = {
       }
     }
     Views: {
-      donations_with_privacy: {
-        Row: {
-          amount: number | null
-          created_at: string | null
-          currency: string | null
-          donor_avatar: string | null
-          donor_name: string | null
-          donor_user_id: string | null
-          fee_amount: number | null
-          fundraiser_id: string | null
-          id: string | null
-          is_anonymous: boolean | null
-          net_amount: number | null
-          payment_provider: string | null
-          payment_status: Database["public"]["Enums"]["payment_status"] | null
-          receipt_id: string | null
-          tip_amount: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "donations_fundraiser_id_fkey"
-            columns: ["fundraiser_id"]
-            isOneToOne: false
-            referencedRelation: "fundraisers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "donations_fundraiser_id_fkey"
-            columns: ["fundraiser_id"]
-            isOneToOne: false
-            referencedRelation: "public_fundraiser_stats"
-            referencedColumns: ["fundraiser_id"]
-          },
-        ]
-      }
       event_statistics: {
         Row: {
           event_count: number | null
@@ -1374,6 +1353,48 @@ export type Database = {
         }
         Relationships: []
       }
+      public_organizations: {
+        Row: {
+          categories: string[] | null
+          country: string | null
+          created_at: string | null
+          dba_name: string | null
+          id: string | null
+          legal_name: string | null
+          updated_at: string | null
+          verification_status:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          website: string | null
+        }
+        Insert: {
+          categories?: string[] | null
+          country?: string | null
+          created_at?: string | null
+          dba_name?: string | null
+          id?: string | null
+          legal_name?: string | null
+          updated_at?: string | null
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          website?: string | null
+        }
+        Update: {
+          categories?: string[] | null
+          country?: string | null
+          created_at?: string | null
+          dba_name?: string | null
+          id?: string | null
+          legal_name?: string | null
+          updated_at?: string | null
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       public_profiles: {
         Row: {
           avatar: string | null
@@ -1390,6 +1411,7 @@ export type Database = {
           role: Database["public"]["Enums"]["user_role"] | null
           social_links: Json | null
           total_funds_raised: number | null
+          verified_at: string | null
           website: string | null
         }
         Insert: {
@@ -1407,6 +1429,7 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"] | null
           social_links?: Json | null
           total_funds_raised?: number | null
+          verified_at?: string | null
           website?: string | null
         }
         Update: {
@@ -1424,6 +1447,7 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"] | null
           social_links?: Json | null
           total_funds_raised?: number | null
+          verified_at?: string | null
           website?: string | null
         }
         Relationships: []
@@ -1528,6 +1552,32 @@ export type Database = {
           updated_at: string | null
           verified_at: string | null
           website: string | null
+        }[]
+      }
+      get_public_fundraiser: {
+        Args: { fundraiser_slug: string }
+        Returns: {
+          beneficiary_name: string
+          category_id: string
+          cover_image: string
+          created_at: string
+          currency: string
+          end_date: string
+          goal_amount: number
+          id: string
+          images: string[]
+          location: string
+          org_id: string
+          owner_user_id: string
+          slug: string
+          status: Database["public"]["Enums"]["fundraiser_status"]
+          story_html: string
+          summary: string
+          tags: string[]
+          title: string
+          updated_at: string
+          video_url: string
+          visibility: Database["public"]["Enums"]["visibility_type"]
         }[]
       }
       get_public_organization_info: {

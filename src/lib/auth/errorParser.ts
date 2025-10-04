@@ -15,11 +15,16 @@ export const parseSupabaseAuthError = (error: AuthError | null): string => {
   }
 
   if (errorMessage.includes('user already registered')) {
-    return 'An account with this email already exists. Try signing in instead.';
+    return 'This email is already registered. Please sign in or use password reset if you forgot your password.';
   }
 
   if (errorMessage.includes('invalid email')) {
     return 'Please enter a valid email address.';
+  }
+  
+  // User not found - don't reveal whether email exists
+  if (errorMessage.includes('user not found')) {
+    return 'Invalid email or password. Please try again.';
   }
 
   // Password-related errors
@@ -48,6 +53,6 @@ export const parseSupabaseAuthError = (error: AuthError | null): string => {
     return 'Social login failed. Please try again or use email/password.';
   }
 
-  // Default fallback
-  return error.message || 'An error occurred during authentication. Please try again.';
+  // Default fallback - never expose raw error message
+  return 'An error occurred during authentication. Please try again or contact support if the problem persists.';
 };

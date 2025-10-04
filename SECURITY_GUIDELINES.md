@@ -141,7 +141,7 @@ FOR SELECT USING (
 - Test policies with different user contexts
 - Never use `OR true` in policies (creates public access)
 
-### 6. Input Validation
+### 6. Input Validation & XSS Prevention
 
 **Never trust client input:**
 
@@ -157,6 +157,23 @@ const schema = z.object({
 
 const validated = schema.parse(userInput);
 await supabase.from('donations').insert(validated);
+```
+
+**Always sanitize HTML content:**
+
+```typescript
+// ❌ WRONG - XSS vulnerability!
+<div dangerouslySetInnerHTML={{ __html: userContent }} />
+
+// ✅ CORRECT - Use DOMPurify
+import { sanitizeHTML } from '@/lib/utils/sanitize';
+
+<div dangerouslySetInnerHTML={{ __html: sanitizeHTML(userContent) }} />
+
+// ✅ EVEN BETTER - Use the component
+import { SecureHtmlRenderer } from '@/lib/security/SecureHtmlRenderer';
+
+<SecureHtmlRenderer html={userContent} className="prose" />
 ```
 
 ### 7. Authentication State
@@ -176,13 +193,16 @@ const { hasPermission } = useRBAC();
 
 - [ ] All database tables have RLS enabled
 - [ ] RLS policies are restrictive (default deny)
-- [ ] No sensitive data exposed in public views
+- [ ] No sensitive data (email, phone, PII) exposed in public views
 - [ ] Authorization uses RBAC, not profile.role
 - [ ] Input validation with Zod schemas
+- [ ] HTML content sanitized with DOMPurify
 - [ ] Anonymous donations respected
 - [ ] No hardcoded credentials or API keys
 - [ ] Error messages don't leak sensitive info
 - [ ] Audit logging for sensitive operations
+- [ ] Donations require authentication
+- [ ] beneficiary_contact never exposed in public queries
 
 ## Database Security Functions
 
@@ -190,10 +210,21 @@ These functions are available for secure operations:
 
 - `get_my_complete_profile()` - Get own profile with sensitive data
 - `get_public_organization_info(org_id)` - Get public org info only
+- `get_public_fundraiser(slug)` - Get fundraiser WITHOUT beneficiary_contact
 - `user_has_permission(user_id, permission)` - Check permissions
 - `has_role(user_id, role)` - Check role assignment
 - `is_super_admin(user_id)` - Check super admin status
 - `log_audit_event(...)` - Log security events
+- `log_failed_donation_attempt(fundraiser_id, reason)` - Log failed donations
+
+## Secure Views
+
+Always use these views instead of querying tables directly:
+
+- `public_profiles` - User profiles WITHOUT email or security fields
+- `public_organizations` - Organizations WITHOUT EIN, payment IDs, addresses
+- `donations_with_privacy` - Donations respecting is_anonymous flag
+- `public_fundraiser_stats` - Aggregated stats safe for public access
 
 ## Reporting Security Issues
 
