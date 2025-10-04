@@ -1835,6 +1835,31 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_similarity: {
+        Args: { text1: string; text2: string }
+        Returns: number
+      }
+      daitch_mokotoff: {
+        Args: { "": string }
+        Returns: string[]
+      }
+      dmetaphone: {
+        Args: { "": string }
+        Returns: string
+      }
+      dmetaphone_alt: {
+        Args: { "": string }
+        Returns: string
+      }
+      fuzzy_search_users: {
+        Args: { search_query: string; similarity_threshold?: number }
+        Returns: {
+          match_name: string
+          match_type: string
+          relevance_score: number
+          user_id: string
+        }[]
+      }
       get_campaign_aggregate_stats: {
         Args:
           | {
@@ -2062,6 +2087,26 @@ export type Database = {
           role_name: string
         }[]
       }
+      gtrgm_compress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_decompress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_in: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_options: {
+        Args: { "": unknown }
+        Returns: undefined
+      }
+      gtrgm_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
       has_existing_super_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -2107,6 +2152,10 @@ export type Database = {
         }
         Returns: string
       }
+      phonetic_match: {
+        Args: { text1: string; text2: string }
+        Returns: boolean
+      }
       refresh_event_statistics: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -2114,6 +2163,26 @@ export type Database = {
       refresh_searchable_content: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      set_limit: {
+        Args: { "": number }
+        Returns: number
+      }
+      show_limit: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      show_trgm: {
+        Args: { "": string }
+        Returns: string[]
+      }
+      soundex: {
+        Args: { "": string }
+        Returns: string
+      }
+      text_soundex: {
+        Args: { "": string }
+        Returns: string
       }
       update_campaign_analytics_safe: {
         Args: { p_amount: number; p_campaign_id: string; p_donor_id: string }
