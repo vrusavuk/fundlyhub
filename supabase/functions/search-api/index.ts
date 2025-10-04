@@ -247,7 +247,7 @@ async function executeSearch(
     // Build query with multiple filters
     let campaignQuery = supabase
       .from('campaign_search_projection')
-      .select('campaign_id, slug, title, summary, story_text, cover_image, category_name, location, status, visibility, beneficiary_name')
+      .select('campaign_id, slug, title, summary, story_text, category_name, location, status, visibility, beneficiary_name')
       .eq('visibility', 'public')
       .in('status', ['active', 'ended', 'closed']);
     
@@ -283,10 +283,9 @@ async function executeSearch(
           snippet: campaign.summary?.substring(0, 150),
           link: `/fundraiser/${campaign.slug}`,
           score: calculateRelevance(
-            `${campaign.title} ${campaign.summary || ''} ${campaign.story_text || ''}`, 
+            `${campaign.title} ${campaign.summary || ''}`, 
             normalizedQuery
           ),
-          image: campaign.cover_image,
         }))
       );
     }
