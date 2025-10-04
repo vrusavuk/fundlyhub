@@ -40,6 +40,8 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [step, setStep] = useState<'email' | 'credentials'>('email');
+  const [emailInput, setEmailInput] = useState('');
+  const [emailError, setEmailError] = useState('');
   
   const { user, signUp, signIn, signInWithGoogle } = useAuth();
   const { toast } = useToast();
@@ -53,18 +55,6 @@ export default function Auth() {
     defaultValues: { name: '', email: '', password: '' },
     mode: 'onSubmit',
   });
-
-  const emailValue = isLogin ? loginForm.watch('email') : signupForm.watch('email');
-
-  const [emailValidated, setEmailValidated] = useState(false);
-
-  useEffect(() => {
-    const result = emailSchema.safeParse({ email: emailValue });
-    setEmailValidated(result.success);
-    if (!result.success && step === 'credentials') {
-      setStep('email');
-    }
-  }, [emailValue, step]);
 
   if (user) {
     return <Navigate to="/" replace />;
@@ -143,14 +133,29 @@ export default function Auth() {
     }
   };
 
+  const handleEmailContinue = () => {
+    const result = emailSchema.safeParse({ email: emailInput });
+    if (!result.success) {
+      setEmailError(result.error.errors[0]?.message || 'Invalid email');
+      return;
+    }
+    
+    setEmailError('');
+    if (isLogin) {
+      loginForm.setValue('email', emailInput);
+    } else {
+      signupForm.setValue('email', emailInput);
+    }
+    setStep('credentials');
+  };
+
   const toggleMode = () => {
-    const currentEmail = emailValue;
     setIsLogin(!isLogin);
     setShowPassword(false);
     setStep('email');
-    setEmailValidated(false);
-    loginForm.reset({ email: currentEmail, password: '' });
-    signupForm.reset({ name: '', email: currentEmail, password: '' });
+    setEmailError('');
+    loginForm.reset({ email: '', password: '' });
+    signupForm.reset({ name: '', email: '', password: '' });
   };
 
   const handleGoogleSignIn = async () => {
@@ -270,59 +275,51 @@ export default function Auth() {
             </div>
 
             {isLogin ? (
-              <Form {...loginForm}>
-                <form 
-                  onSubmit={loginForm.handleSubmit(handleLogin)} 
-                  className="space-y-5"
-                >
-                  {step === 'email' && (
-                    <div className="space-y-5">
-                      <FormField
-                        control={loginForm.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <div className="relative group">
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                                <Input
-                                  {...field}
-                                  type="email"
-                                  placeholder="you@example.com"
-                                  className="pl-12 h-12 border-2"
-                                  disabled={loading}
-                                  autoComplete="email"
-                                  autoFocus
-                                />
-                                {emailValidated && (
-                                  <div className="absolute right-4 top-1/2 -translate-y-1/2 animate-scale-in">
-                                    <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center">
-                                      <Check className="h-4 w-4 text-white" />
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </FormControl>
-                            <FormMessage className="caption-small" />
-                          </FormItem>
-                        )}
-                      />
-
-                      <Button
-                        type="button"
-                        onClick={() => emailValidated && setStep('credentials')}
-                        disabled={!emailValidated || loading}
-                        size="lg"
-                        className="w-full"
-                      >
-                        Continue
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                      </Button>
+              <>
+                {step === 'email' && (
+                  <div className="space-y-5">
+                    <div className="space-y-2">
+                      <div className="relative group">
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                        <Input
+                          type="email"
+                          value={emailInput}
+                          onChange={(e) => {
+                            setEmailInput(e.target.value);
+                            setEmailError('');
+                          }}
+                          placeholder="you@example.com"
+                          className="pl-12 h-12 border-2"
+                          disabled={loading}
+                          autoComplete="email"
+                          autoFocus
+                        />
+                      </div>
+                      {emailError && (
+                        <p className="caption-small text-destructive">{emailError}</p>
+                      )}
                     </div>
-                  )}
 
-                  {step === 'credentials' && (
-                    <div className="space-y-5 animate-fade-in">
+                    <Button
+                      type="button"
+                      onClick={handleEmailContinue}
+                      disabled={!emailInput || loading}
+                      size="lg"
+                      className="w-full"
+                    >
+                      Continue
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </div>
+                )}
+
+                {step === 'credentials' && (
+                  <Form {...loginForm}>
+                    <form 
+                      onSubmit={loginForm.handleSubmit(handleLogin)} 
+                      className="space-y-5 animate-fade-in"
+                    >
+
                       <button
                         type="button"
                         onClick={() => setStep('email')}
@@ -379,64 +376,56 @@ export default function Auth() {
                           'Sign in'
                         )}
                       </Button>
-                    </div>
-                  )}
-                </form>
-              </Form>
+                    </form>
+                  </Form>
+                )}
+              </>
             ) : (
-              <Form {...signupForm}>
-                <form 
-                  onSubmit={signupForm.handleSubmit(handleSignup)} 
-                  className="space-y-5"
-                >
-                  {step === 'email' && (
-                    <div className="space-y-5">
-                      <FormField
-                        control={signupForm.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <div className="relative group">
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                                <Input
-                                  {...field}
-                                  type="email"
-                                  placeholder="you@example.com"
-                                  className="pl-12 h-12 border-2"
-                                  disabled={loading}
-                                  autoComplete="email"
-                                  autoFocus
-                                />
-                                {emailValidated && (
-                                  <div className="absolute right-4 top-1/2 -translate-y-1/2 animate-scale-in">
-                                    <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center">
-                                      <Check className="h-4 w-4 text-white" />
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </FormControl>
-                            <FormMessage className="caption-small" />
-                          </FormItem>
-                        )}
-                      />
-
-                      <Button
-                        type="button"
-                        onClick={() => emailValidated && setStep('credentials')}
-                        disabled={!emailValidated || loading}
-                        size="lg"
-                        className="w-full"
-                      >
-                        Continue
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                      </Button>
+              <>
+                {step === 'email' && (
+                  <div className="space-y-5">
+                    <div className="space-y-2">
+                      <div className="relative group">
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                        <Input
+                          type="email"
+                          value={emailInput}
+                          onChange={(e) => {
+                            setEmailInput(e.target.value);
+                            setEmailError('');
+                          }}
+                          placeholder="you@example.com"
+                          className="pl-12 h-12 border-2"
+                          disabled={loading}
+                          autoComplete="email"
+                          autoFocus
+                        />
+                      </div>
+                      {emailError && (
+                        <p className="caption-small text-destructive">{emailError}</p>
+                      )}
                     </div>
-                  )}
 
-                  {step === 'credentials' && (
-                    <div className="space-y-5 animate-fade-in">
+                    <Button
+                      type="button"
+                      onClick={handleEmailContinue}
+                      disabled={!emailInput || loading}
+                      size="lg"
+                      className="w-full"
+                    >
+                      Continue
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </div>
+                )}
+
+                {step === 'credentials' && (
+                  <Form {...signupForm}>
+                    <form 
+                      onSubmit={signupForm.handleSubmit(handleSignup)} 
+                      className="space-y-5 animate-fade-in"
+                    >
+
                       <button
                         type="button"
                         onClick={() => setStep('email')}
@@ -519,10 +508,10 @@ export default function Auth() {
                           'Create account'
                         )}
                       </Button>
-                    </div>
-                  )}
-                </form>
-              </Form>
+                    </form>
+                  </Form>
+                )}
+              </>
             )}
 
             <div className="text-center">
