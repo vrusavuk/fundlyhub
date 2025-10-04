@@ -20,20 +20,16 @@ export function useFollowUser(targetUserId: string): UseFollowUserReturn {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || user.id === targetUserId) return;
 
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('id')
-        .eq('follower_id', user.id)
-        .eq('following_id', targetUserId)
-        .eq('following_type', 'user')
-        .single();
+      const { data, error } = await supabase.functions.invoke('check-follow-status', {
+        body: { targetUserId }
+      });
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error checking follow status:', error);
         return;
       }
 
-      setIsFollowing(!!data);
+      setIsFollowing(data?.isFollowing || false);
     } catch (error) {
       console.error('Error checking follow status:', error);
     }
@@ -52,24 +48,18 @@ export function useFollowUser(targetUserId: string): UseFollowUserReturn {
         return;
       }
 
-      if (user.id === targetUserId) {
+      const { data, error } = await supabase.functions.invoke('follow-user', {
+        body: { targetUserId }
+      });
+
+      if (error) {
         toast({
-          title: "Invalid Action",
-          description: "You cannot follow yourself",
+          title: "Error",
+          description: error.message || "Failed to follow user",
           variant: "destructive"
         });
         return;
       }
-
-      const { error } = await supabase
-        .from('subscriptions')
-        .insert({
-          follower_id: user.id,
-          following_id: targetUserId,
-          following_type: 'user'
-        });
-
-      if (error) throw error;
 
       setIsFollowing(true);
       toast({
@@ -94,14 +84,18 @@ export function useFollowUser(targetUserId: string): UseFollowUserReturn {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { error } = await supabase
-        .from('subscriptions')
-        .delete()
-        .eq('follower_id', user.id)
-        .eq('following_id', targetUserId)
-        .eq('following_type', 'user');
+      const { error } = await supabase.functions.invoke('unfollow-user', {
+        body: { targetUserId }
+      });
 
-      if (error) throw error;
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to unfollow user",
+          variant: "destructive"
+        });
+        return;
+      }
 
       setIsFollowing(false);
       toast({

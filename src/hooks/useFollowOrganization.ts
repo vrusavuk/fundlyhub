@@ -20,20 +20,16 @@ export function useFollowOrganization(organizationId: string): UseFollowOrganiza
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || !organizationId) return;
 
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('id')
-        .eq('follower_id', user.id)
-        .eq('following_id', organizationId)
-        .eq('following_type', 'organization')
-        .single();
+      const { data, error } = await supabase.functions.invoke('check-organization-follow-status', {
+        body: { organizationId }
+      });
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error checking organization follow status:', error);
         return;
       }
 
-      setIsFollowing(!!data);
+      setIsFollowing(data?.isFollowing || false);
     } catch (error) {
       console.error('Error checking organization follow status:', error);
     }
@@ -52,24 +48,18 @@ export function useFollowOrganization(organizationId: string): UseFollowOrganiza
         return;
       }
 
-      if (!organizationId) {
+      const { data, error } = await supabase.functions.invoke('follow-organization', {
+        body: { organizationId }
+      });
+
+      if (error) {
         toast({
-          title: "Invalid Action",
-          description: "Organization not found",
+          title: "Error",
+          description: error.message || "Failed to follow organization",
           variant: "destructive"
         });
         return;
       }
-
-      const { error } = await supabase
-        .from('subscriptions')
-        .insert({
-          follower_id: user.id,
-          following_id: organizationId,
-          following_type: 'organization'
-        });
-
-      if (error) throw error;
 
       setIsFollowing(true);
       toast({
@@ -94,14 +84,18 @@ export function useFollowOrganization(organizationId: string): UseFollowOrganiza
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { error } = await supabase
-        .from('subscriptions')
-        .delete()
-        .eq('follower_id', user.id)
-        .eq('following_id', organizationId)
-        .eq('following_type', 'organization');
+      const { error } = await supabase.functions.invoke('unfollow-organization', {
+        body: { organizationId }
+      });
 
-      if (error) throw error;
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to unfollow organization",
+          variant: "destructive"
+        });
+        return;
+      }
 
       setIsFollowing(false);
       toast({
