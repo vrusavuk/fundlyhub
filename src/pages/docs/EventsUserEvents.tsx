@@ -46,6 +46,38 @@ export const EventsUserEvents = () => {
         description="Published when a user unfollows a campaign"
         payload={eventSpecification.components.messages.UserCampaignUnfollowedEvent.payload}
       />
+
+      <EventSchemaViewer
+        eventName="User Followed User"
+        eventType="user.followed_user"
+        description="Published when a user follows another user on the platform"
+        payload={eventSpecification.components.messages.UserFollowedUserEvent.payload}
+        example={eventSpecification.components.messages.UserFollowedUserEvent.examples?.[0]?.payload}
+      />
+
+      <EventSchemaViewer
+        eventName="User Unfollowed User"
+        eventType="user.unfollowed_user"
+        description="Published when a user unfollows another user on the platform"
+        payload={eventSpecification.components.messages.UserUnfollowedUserEvent.payload}
+        example={eventSpecification.components.messages.UserUnfollowedUserEvent.examples?.[0]?.payload}
+      />
+
+      <EventSchemaViewer
+        eventName="User Followed Organization"
+        eventType="user.followed_organization"
+        description="Published when a user follows an organization on the platform"
+        payload={eventSpecification.components.messages.UserFollowedOrganizationEvent.payload}
+        example={eventSpecification.components.messages.UserFollowedOrganizationEvent.examples?.[0]?.payload}
+      />
+
+      <EventSchemaViewer
+        eventName="User Unfollowed Organization"
+        eventType="user.unfollowed_organization"
+        description="Published when a user unfollows an organization on the platform"
+        payload={eventSpecification.components.messages.UserUnfollowedOrganizationEvent.payload}
+        example={eventSpecification.components.messages.UserUnfollowedOrganizationEvent.examples?.[0]?.payload}
+      />
     </div>
   );
 };

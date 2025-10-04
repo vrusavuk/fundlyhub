@@ -7,7 +7,7 @@ export const eventSpecification = {
   asyncapi: '2.6.0',
   info: {
     title: 'Fundly Event System',
-    version: '2.0.0',
+    version: '2.1.0',
     description: 'Event-driven architecture with CQRS, Saga orchestration, and distributed event streaming. All events are published through a hybrid event bus with Supabase persistence, Redis Upstash streaming, and edge function processing.',
   },
   servers: {
@@ -66,6 +66,30 @@ export const eventSpecification = {
         message: {
           $ref: '#/components/messages/UserCampaignUnfollowedEvent',
         },
+      },
+    },
+    'user.followed_user': {
+      description: 'User follows another user',
+      subscribe: {
+        message: { $ref: '#/components/messages/UserFollowedUserEvent' },
+      },
+    },
+    'user.unfollowed_user': {
+      description: 'User unfollows another user',
+      subscribe: {
+        message: { $ref: '#/components/messages/UserUnfollowedUserEvent' },
+      },
+    },
+    'user.followed_organization': {
+      description: 'User follows an organization',
+      subscribe: {
+        message: { $ref: '#/components/messages/UserFollowedOrganizationEvent' },
+      },
+    },
+    'user.unfollowed_organization': {
+      description: 'User unfollows an organization',
+      subscribe: {
+        message: { $ref: '#/components/messages/UserUnfollowedOrganizationEvent' },
       },
     },
     'campaign.created': {
@@ -352,7 +376,65 @@ export const eventSpecification = {
           },
         },
       },
-      CampaignCreatedEvent: {
+      UserFollowedUserEvent: {
+        name: 'UserFollowedUserEvent',
+        title: 'User Followed User',
+        summary: 'Published when a user follows another user',
+        payload: {
+          type: 'object',
+          properties: {
+            followerId: { type: 'string', format: 'uuid' },
+            followedUserId: { type: 'string', format: 'uuid' },
+            followerEmail: { type: 'string', format: 'email' },
+            followedUserEmail: { type: 'string', format: 'email' },
+          },
+          required: ['followerId', 'followedUserId'],
+        },
+        examples: [{ payload: { followerId: '550e8400-e29b-41d4-a716-446655440000', followedUserId: '660e8400-e29b-41d4-a716-446655440001' } }],
+      },
+      UserUnfollowedUserEvent: {
+        name: 'UserUnfollowedUserEvent',
+        title: 'User Unfollowed User',
+        summary: 'Published when a user unfollows another user',
+        payload: {
+          type: 'object',
+          properties: {
+            followerId: { type: 'string', format: 'uuid' },
+            unfollowedUserId: { type: 'string', format: 'uuid' },
+          },
+          required: ['followerId', 'unfollowedUserId'],
+        },
+        examples: [{ payload: { followerId: '550e8400-e29b-41d4-a716-446655440000', unfollowedUserId: '660e8400-e29b-41d4-a716-446655440001' } }],
+      },
+      UserFollowedOrganizationEvent: {
+        name: 'UserFollowedOrganizationEvent',
+        title: 'User Followed Organization',
+        summary: 'Published when a user follows an organization',
+        payload: {
+          type: 'object',
+          properties: {
+            followerId: { type: 'string', format: 'uuid' },
+            organizationId: { type: 'string', format: 'uuid' },
+            organizationName: { type: 'string' },
+          },
+          required: ['followerId', 'organizationId'],
+        },
+        examples: [{ payload: { followerId: '550e8400-e29b-41d4-a716-446655440000', organizationId: '770e8400-e29b-41d4-a716-446655440002' } }],
+      },
+      UserUnfollowedOrganizationEvent: {
+        name: 'UserUnfollowedOrganizationEvent',
+        title: 'User Unfollowed Organization',
+        summary: 'Published when a user unfollows an organization',
+        payload: {
+          type: 'object',
+          properties: {
+            followerId: { type: 'string', format: 'uuid' },
+            organizationId: { type: 'string', format: 'uuid' },
+          },
+          required: ['followerId', 'organizationId'],
+        },
+        examples: [{ payload: { followerId: '550e8400-e29b-41d4-a716-446655440000', organizationId: '770e8400-e29b-41d4-a716-446655440002' } }],
+      },
         name: 'CampaignCreatedEvent',
         title: 'Campaign Created',
         summary: 'Published when a new campaign is created. Triggers CampaignCreationSaga for orchestrated processing.',
