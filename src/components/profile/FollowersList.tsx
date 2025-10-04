@@ -42,89 +42,62 @@ export function FollowersList({ userId, type, maxItems }: FollowersListProps) {
       setLoading(true);
       setError(null);
 
-      let profileIds: string[] = [];
-      let organizationIds: string[] = [];
-
       if (type === 'followers') {
-        // Get follower IDs for this user (only users can follow, not organizations)
-        const { data: subscriptions, error: subError } = await supabase
-          .from('subscriptions')
-          .select('follower_id')
-          .eq('following_id', userId)
-          .eq('following_type', 'user')
-          .limit(maxItems || 50);
+        // Use security definer function to get public followers
+        const { data, error: rpcError } = await supabase
+          .rpc('get_public_followers', {
+            target_user_id: userId,
+            limit_count: maxItems || 50
+          });
 
-        if (subError) throw subError;
-        profileIds = (subscriptions || []).map(sub => sub.follower_id);
-      } else {
-        // Get following IDs for this user (can follow both users and organizations)
-        const { data: subscriptions, error: subError } = await supabase
-          .from('subscriptions')
-          .select('following_id, following_type')
-          .eq('follower_id', userId)
-          .limit(maxItems || 50);
+        if (rpcError) {
+          console.error('Error fetching followers:', rpcError);
+          throw new Error('Unable to load followers. This profile may be private.');
+        }
 
-        if (subError) throw subError;
-        
-        profileIds = (subscriptions || []).filter(sub => sub.following_type === 'user').map(sub => sub.following_id);
-        organizationIds = (subscriptions || []).filter(sub => sub.following_type === 'organization').map(sub => sub.following_id);
-      }
-
-      let transformedData: Follower[] = [];
-
-      // Fetch user profiles
-      if (profileIds.length > 0) {
-        // Use public_profiles view to avoid exposing email addresses
-        const { data: profiles, error: profileError } = await supabase
-          .from('public_profiles')
-          .select('id, name, avatar, role, follower_count, campaign_count')
-          .in('id', profileIds);
-
-        if (profileError) throw profileError;
-
-        const userFollowers = (profiles || []).map(profile => ({
-          id: profile.id,
-          name: profile.name,
-          email: null, // Email not exposed for privacy
-          avatar: profile.avatar,
-          role: profile.role, // SECURITY: Display only - DO NOT use for authorization
-          follower_count: Number(profile.follower_count || 0),
-          campaign_count: Number(profile.campaign_count || 0),
+        const transformedData: Follower[] = (data || []).map(item => ({
+          id: item.id,
+          name: item.name,
+          email: null,
+          avatar: item.avatar,
+          role: item.role,
+          follower_count: item.follower_count || 0,
+          campaign_count: item.campaign_count || 0,
           type: 'user' as const
         }));
 
-        transformedData = [...transformedData, ...userFollowers];
-      }
+        setFollowers(transformedData);
+      } else {
+        // Use security definer function to get public following
+        const { data, error: rpcError } = await supabase
+          .rpc('get_public_following', {
+            target_user_id: userId,
+            limit_count: maxItems || 50
+          });
 
-      // Fetch organization profiles
-      if (organizationIds.length > 0) {
-        const { data: organizations, error: orgError } = await supabase
-          .from('organizations')
-          .select('id, legal_name, dba_name, verification_status')
-          .in('id', organizationIds);
+        if (rpcError) {
+          console.error('Error fetching following:', rpcError);
+          throw new Error('Unable to load following list. This profile may be private.');
+        }
 
-        if (orgError) throw orgError;
-
-        const orgFollowers = (organizations || []).map(org => ({
-          id: org.id,
-          name: org.dba_name || org.legal_name,
+        const transformedData: Follower[] = (data || []).map(item => ({
+          id: item.id,
+          name: item.name,
           email: null,
-          avatar: null,
-          role: org.verification_status || 'pending',
-          follower_count: 0, // Will be calculated dynamically if needed
-          campaign_count: 0, // Will be calculated dynamically if needed
-          type: 'organization' as const,
-          legal_name: org.legal_name,
-          dba_name: org.dba_name
+          avatar: item.avatar,
+          role: item.role,
+          follower_count: item.follower_count || 0,
+          campaign_count: item.campaign_count || 0,
+          type: item.type as 'user' | 'organization',
+          legal_name: item.legal_name,
+          dba_name: item.dba_name
         }));
 
-        transformedData = [...transformedData, ...orgFollowers];
+        setFollowers(transformedData);
       }
-
-      setFollowers(transformedData);
     } catch (error) {
       console.error('Error fetching followers:', error);
-      setError(error instanceof Error ? error.message : 'Failed to load followers');
+      setError(error instanceof Error ? error.message : 'Failed to load data');
     } finally {
       setLoading(false);
     }

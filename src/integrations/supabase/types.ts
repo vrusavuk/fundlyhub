@@ -1452,6 +1452,33 @@ export type Database = {
         }
         Relationships: []
       }
+      public_subscriptions: {
+        Row: {
+          created_at: string | null
+          follower_avatar: string | null
+          follower_campaign_count: number | null
+          follower_follower_count: number | null
+          follower_id: string | null
+          follower_name: string | null
+          follower_role: Database["public"]["Enums"]["user_role"] | null
+          follower_visibility: string | null
+          following_id: string | null
+          following_org_dba_name: string | null
+          following_org_legal_name: string | null
+          following_org_verification_status:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          following_type: string | null
+          following_user_avatar: string | null
+          following_user_campaign_count: number | null
+          following_user_follower_count: number | null
+          following_user_name: string | null
+          following_user_role: Database["public"]["Enums"]["user_role"] | null
+          following_user_visibility: string | null
+          id: string | null
+        }
+        Relationships: []
+      }
       searchable_content: {
         Row: {
           content_type: string | null
@@ -1560,6 +1587,32 @@ export type Database = {
           permission_category: string
           permission_display_name: string
           permission_name: string
+        }[]
+      }
+      get_public_followers: {
+        Args: { limit_count?: number; target_user_id: string }
+        Returns: {
+          avatar: string
+          campaign_count: number
+          follower_count: number
+          id: string
+          name: string
+          role: string
+          type: string
+        }[]
+      }
+      get_public_following: {
+        Args: { limit_count?: number; target_user_id: string }
+        Returns: {
+          avatar: string
+          campaign_count: number
+          dba_name: string
+          follower_count: number
+          id: string
+          legal_name: string
+          name: string
+          role: string
+          type: string
         }[]
       }
       get_public_fundraiser: {
