@@ -190,6 +190,7 @@ export type Database = {
           fee_amount: number | null
           fundraiser_id: string
           id: string
+          is_anonymous: boolean
           net_amount: number | null
           payment_provider: string | null
           payment_status: Database["public"]["Enums"]["payment_status"] | null
@@ -204,6 +205,7 @@ export type Database = {
           fee_amount?: number | null
           fundraiser_id: string
           id?: string
+          is_anonymous?: boolean
           net_amount?: number | null
           payment_provider?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"] | null
@@ -218,6 +220,7 @@ export type Database = {
           fee_amount?: number | null
           fundraiser_id?: string
           id?: string
+          is_anonymous?: boolean
           net_amount?: number | null
           payment_provider?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"] | null
@@ -1456,6 +1459,19 @@ export type Database = {
           donor_count: number
           fundraiser_id: string
           total_raised: number
+        }[]
+      }
+      get_public_organization_info: {
+        Args: { org_id: string }
+        Returns: {
+          categories: string[]
+          country: string
+          created_at: string
+          dba_name: string
+          id: string
+          legal_name: string
+          verification_status: Database["public"]["Enums"]["verification_status"]
+          website: string
         }[]
       }
       get_recent_activities: {

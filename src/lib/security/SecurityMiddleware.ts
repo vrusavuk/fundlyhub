@@ -125,16 +125,14 @@ class SecurityMiddleware {
   }
 
   /**
-   * Input sanitization for SQL injection prevention
+   * Input validation (basic checks only)
+   * Note: SQL injection protection is handled by Supabase's parameterized queries.
+   * Do not strip SQL keywords as this can corrupt legitimate data.
    */
   sanitizeInput(input: any): any {
     if (typeof input === 'string') {
-      // Remove potential SQL injection patterns
-      return input
-        .replace(/['";\\]/g, '') // Remove quotes and escape characters
-        .replace(/(--)|(\/\*)|(\*\/)/g, '') // Remove SQL comments
-        .replace(/\b(union|select|insert|update|delete|drop|create|alter|exec|execute)\b/gi, '') // Remove SQL keywords
-        .trim();
+      // Only trim whitespace - do not remove characters that might be legitimate
+      return input.trim();
     }
     
     if (Array.isArray(input)) {
@@ -144,7 +142,7 @@ class SecurityMiddleware {
     if (typeof input === 'object' && input !== null) {
       const sanitized: any = {};
       for (const [key, value] of Object.entries(input)) {
-        sanitized[this.sanitizeInput(key)] = this.sanitizeInput(value);
+        sanitized[key.trim()] = this.sanitizeInput(value);
       }
       return sanitized;
     }

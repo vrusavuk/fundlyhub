@@ -154,11 +154,12 @@ export class EnterpriseSecurity extends EnterpriseService {
   }
 
   /**
-   * Input sanitization
+   * Input validation (basic checks only - SQL injection protection is handled by Supabase)
    */
   sanitizeInput(input: any): any {
     if (typeof input === 'string') {
-      return this.sanitizeString(input);
+      // Only trim whitespace - Supabase handles SQL injection via parameterized queries
+      return input.trim();
     }
     
     if (Array.isArray(input)) {
@@ -168,7 +169,7 @@ export class EnterpriseSecurity extends EnterpriseService {
     if (typeof input === 'object' && input !== null) {
       const sanitized: any = {};
       for (const [key, value] of Object.entries(input)) {
-        sanitized[this.sanitizeString(key)] = this.sanitizeInput(value);
+        sanitized[key.trim()] = this.sanitizeInput(value);
       }
       return sanitized;
     }
@@ -249,13 +250,8 @@ export class EnterpriseSecurity extends EnterpriseService {
   /**
    * Private helper methods
    */
-  private sanitizeString(str: string): string {
-    return str
-      .replace(/['";\\]/g, '') // Remove quotes and escape characters
-      .replace(/(--)|(\/\*)|(\*\/)/g, '') // Remove SQL comments
-      .replace(/\b(union|select|insert|update|delete|drop|create|alter|exec|execute)\b/gi, '') // Remove SQL keywords
-      .trim();
-  }
+  // Removed dangerous sanitizeString method - Supabase uses parameterized queries
+  // which provides proper SQL injection protection. String manipulation can corrupt data.
 
   private validateRequestSize(data: any): boolean {
     try {

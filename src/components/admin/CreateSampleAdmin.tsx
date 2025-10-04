@@ -9,6 +9,11 @@ import { Crown, Shield, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export function CreateSampleAdmin() {
+  // SECURITY: This component should only be available in development
+  if (import.meta.env.PROD) {
+    return null;
+  }
+
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
