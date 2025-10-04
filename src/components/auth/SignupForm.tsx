@@ -5,10 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { usePasswordValidation } from '@/hooks/usePasswordValidation';
-import { parseSupabaseAuthError } from '@/lib/auth/errorParser';
+import { authService } from '@/lib/services/auth.service';
 import { createSignupSchema, emailSchema } from '@/lib/validation/dynamicAuthSchemas';
 import { EmailInput } from './EmailInput';
 import { PasswordInput } from './PasswordInput';
@@ -29,7 +28,6 @@ export const SignupForm = ({ onToggleMode, config }: SignupFormProps) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { signUp, signInWithGoogle } = useAuth();
   const { toast } = useToast();
 
   const signupSchema = createSignupSchema(config);
@@ -61,18 +59,22 @@ export const SignupForm = ({ onToggleMode, config }: SignupFormProps) => {
   const handleSignup = async (data: { name: string; email: string; password: string; confirmPassword: string }) => {
     setLoading(true);
     try {
-      const { error } = await signUp(data.email, data.password, data.name);
-      if (error) {
-        const friendlyError = parseSupabaseAuthError(error);
+      const result = await authService.signUp({
+        email: data.email,
+        password: data.password,
+        name: data.name,
+      });
+      
+      if (result.success) {
         toast({
-          variant: "destructive",
-          title: "Signup failed",
-          description: friendlyError,
+          title: "Account created!",
+          description: result.message,
         });
       } else {
         toast({
-          title: "Account created!",
-          description: "Please check your email to verify your account.",
+          variant: "destructive",
+          title: "Signup failed",
+          description: result.message,
         });
       }
     } finally {
@@ -83,13 +85,12 @@ export const SignupForm = ({ onToggleMode, config }: SignupFormProps) => {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-      const { error } = await signInWithGoogle();
-      if (error) {
-        const friendlyError = parseSupabaseAuthError(error);
+      const result = await authService.signInWithGoogle();
+      if (!result.success) {
         toast({
           variant: "destructive",
           title: "Google sign-in failed",
-          description: friendlyError,
+          description: result.message,
         });
       }
     } finally {

@@ -3,9 +3,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form';
-import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { parseSupabaseAuthError } from '@/lib/auth/errorParser';
+import { authService } from '@/lib/services/auth.service';
 import { createLoginSchema, emailSchema } from '@/lib/validation/dynamicAuthSchemas';
 import { EmailInput } from './EmailInput';
 import { PasswordInput } from './PasswordInput';
@@ -24,7 +23,6 @@ export const LoginForm = ({ onToggleMode, config }: LoginFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { signIn, signInWithGoogle } = useAuth();
   const { toast } = useToast();
 
   const loginSchema = createLoginSchema(config);
@@ -50,13 +48,12 @@ export const LoginForm = ({ onToggleMode, config }: LoginFormProps) => {
   const handleLogin = async (data: { email: string; password: string }) => {
     setLoading(true);
     try {
-      const { error } = await signIn(data.email, data.password);
-      if (error) {
-        const friendlyError = parseSupabaseAuthError(error);
+      const result = await authService.signIn(data);
+      if (!result.success) {
         toast({
           variant: "destructive",
           title: "Login failed",
-          description: friendlyError,
+          description: result.message,
         });
       }
     } finally {
@@ -67,13 +64,12 @@ export const LoginForm = ({ onToggleMode, config }: LoginFormProps) => {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-      const { error } = await signInWithGoogle();
-      if (error) {
-        const friendlyError = parseSupabaseAuthError(error);
+      const result = await authService.signInWithGoogle();
+      if (!result.success) {
         toast({
           variant: "destructive",
           title: "Google sign-in failed",
-          description: friendlyError,
+          description: result.message,
         });
       }
     } finally {

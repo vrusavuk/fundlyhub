@@ -1,6 +1,6 @@
 /**
  * Unified fundraiser grid component with enhanced features and accessibility
- * Combines the best of both previous grid implementations
+ * Pure presentation component - business logic extracted to FundraiserRules
  */
 import { useState } from 'react';
 import { UnifiedFundraiserCard } from '@/components/cards/UnifiedFundraiserCard';
@@ -15,6 +15,7 @@ import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { hapticFeedback } from '@/lib/utils/mobile';
 import { Target } from 'lucide-react';
+import { FundraiserRules } from '@/lib/business-rules/fundraiser.rules';
 import type { Fundraiser } from '@/types';
 
 interface FundraiserGridProps {
@@ -55,23 +56,9 @@ export function FundraiserGrid({
   const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode);
   const [sortBy, setSortBy] = useState<SortBy>(initialSortBy);
 
-  // Helper functions for featured/trending logic
-  const getFeaturedFundraisers = () => {
-    return fundraisers.filter((fundraiser, index) => {
-      const fundraiserStats = stats[fundraiser.id];
-      return index < 3 || // First 3 are featured
-             (fundraiserStats?.totalRaised > 10000) || // High funding
-             (fundraiserStats?.daysLeft && fundraiserStats.daysLeft <= 7); // Urgent
-    });
-  };
-
-  const getTrendingFundraisers = () => {
-    return fundraisers.filter(fundraiser => {
-      const fundraiserStats = stats[fundraiser.id];
-      return fundraiserStats?.donorCount > 50 || // Many donors
-             ((fundraiserStats?.totalRaised / fundraiser.goal_amount) * 100) > 75; // High percentage
-    });
-  };
+  // Use business rules for featured/trending classification
+  const featuredFundraisers = FundraiserRules.filterFeatured(fundraisers, stats);
+  const trendingFundraisers = FundraiserRules.filterTrending(fundraisers, stats);
 
   const handleLoadMore = () => {
     onLoadMore?.();
@@ -139,9 +126,6 @@ export function FundraiserGrid({
     );
   }
 
-  const featuredFundraisers = getFeaturedFundraisers();
-  const trendingFundraisers = getTrendingFundraisers();
-
   return (
     <div className="space-y-6" data-section="campaigns">
       {/* Controls */}
@@ -167,10 +151,12 @@ export function FundraiserGrid({
         aria-label={`${fundraisers.length} fundraiser${fundraisers.length === 1 ? '' : 's'} found`}
         data-campaign-grid
       >
-        {fundraisers.map((fundraiser) => {
-          const fundraiserStats = stats[fundraiser.id] || {};
+        {fundraisers.map((fundraiser, index) => {
+          const fundraiserStats = stats[fundraiser.id] || { totalRaised: 0, donorCount: 0 };
           const isFeatured = featuredFundraisers.includes(fundraiser);
           const isTrending = trendingFundraisers.includes(fundraiser);
+          const urgency = FundraiserRules.calculateUrgency(fundraiserStats.daysLeft);
+          const trustScore = FundraiserRules.calculateTrustScore(fundraiser, fundraiserStats);
           
           return (
             <div key={fundraiser.id} role="gridcell">
@@ -187,18 +173,12 @@ export function FundraiserGrid({
                 location={fundraiser.location || undefined}
                 donorCount={fundraiserStats.donorCount || 0}
                 daysLeft={fundraiserStats.daysLeft}
-                urgency={
-                  fundraiserStats.daysLeft && fundraiserStats.daysLeft <= 7 
-                    ? 'high' 
-                    : fundraiserStats.daysLeft && fundraiserStats.daysLeft <= 14 
-                      ? 'medium' 
-                      : 'low'
-                }
+                urgency={urgency}
                 isVerified={fundraiser.profiles?.name ? true : false}
                 isOrganization={fundraiser.org_id ? true : false}
                 isFeatured={variant === 'polished' ? isFeatured : undefined}
                 isTrending={variant === 'polished' ? isTrending : undefined}
-                trustScore={variant === 'polished' ? 85 + Math.floor(Math.random() * 15) : undefined}
+                trustScore={variant === 'polished' ? trustScore : undefined}
                 searchQuery={searchQuery}
                 onClick={() => onCardClick(fundraiser.slug)}
                 onDonate={variant === 'polished' ? () => {
