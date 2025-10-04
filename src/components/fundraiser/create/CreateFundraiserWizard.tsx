@@ -62,12 +62,18 @@ export function CreateFundraiserWizard() {
   }, []);
 
   const selectedCategory = categories.find((cat) => cat.id === formData.categoryId);
-  const completedSteps = [1, 2, 3].filter((step) => {
-    if (step === 1) return formData.title && formData.categoryId && formData.goalAmount;
-    if (step === 2) return formData.summary && formData.story;
-    if (step === 3) return true; // Step 3 is optional
-    return false;
-  });
+  
+  // Only mark steps as completed if we've moved past them
+  const completedSteps = [];
+  if (currentStep > 1 && formData.title && formData.categoryId && formData.goalAmount) {
+    completedSteps.push(1);
+  }
+  if (currentStep > 2 && formData.summary && formData.story) {
+    completedSteps.push(2);
+  }
+  if (currentStep > 3) {
+    completedSteps.push(3);
+  }
 
   const handleNext = () => {
     if (goToNextStep()) {
@@ -80,7 +86,7 @@ export function CreateFundraiserWizard() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="w-full space-y-6 sm:space-y-8">
       <ProgressIndicator
         currentStep={currentStep}
         steps={STEPS}
@@ -89,7 +95,7 @@ export function CreateFundraiserWizard() {
       />
 
       <Card className="card-enhanced shadow-glow">
-        <CardContent className="mobile-card-spacing">
+        <CardContent className="p-4 sm:p-6 md:p-8">
           {currentStep === 1 && (
             <Step1Basics
               formData={formData}
@@ -125,22 +131,22 @@ export function CreateFundraiserWizard() {
         </CardContent>
       </Card>
 
-      <div className="flex justify-between items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 sticky bottom-0 bg-background/95 backdrop-blur-sm p-4 sm:p-0 -mx-4 sm:mx-0 border-t sm:border-t-0">
         <Button
           type="button"
           variant="outline"
           onClick={goToPreviousStep}
           disabled={currentStep === 1 || isSubmitting}
           size="lg"
-          className="touch-button"
+          className="w-full sm:w-auto min-h-[44px]"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Previous
         </Button>
 
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
           <Save className="h-4 w-4" />
-          <span>Auto-saving draft...</span>
+          <span>Auto-saving...</span>
         </div>
 
         {currentStep < 4 ? (
@@ -149,7 +155,7 @@ export function CreateFundraiserWizard() {
             onClick={handleNext}
             disabled={isSubmitting}
             size="lg"
-            className="touch-button"
+            className="w-full sm:w-auto min-h-[44px]"
           >
             Next
             <ArrowRight className="h-4 w-4 ml-2" />
@@ -160,7 +166,7 @@ export function CreateFundraiserWizard() {
             onClick={handlePublish}
             disabled={isSubmitting}
             size="lg"
-            className="touch-button"
+            className="w-full sm:w-auto min-h-[44px]"
           >
             {isSubmitting ? (
               <>

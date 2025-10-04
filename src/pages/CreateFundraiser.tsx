@@ -11,11 +11,11 @@ import { CreateFundraiserWizard } from '@/components/fundraiser/create/CreateFun
 export default function CreateFundraiser() {
   return (
     <AppLayout>
-      <PageContainer maxWidth="2xl" className="section-hierarchy py-8">
+      <PageContainer maxWidth="2xl" className="py-4 sm:py-6 md:py-8">
         <PageHeader
           title="Create New Fundraiser"
           description="Follow the steps below to launch your campaign with AI-powered assistance"
-          className="text-center mb-8"
+          className="text-center mb-6 sm:mb-8"
         />
         <CreateFundraiserWizard />
       </PageContainer>

@@ -33,7 +33,7 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
         Category <span className="text-destructive">*</span>
       </Label>
       
-      <RadioGroup value={value} onValueChange={onChange} className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <RadioGroup value={value || ''} onValueChange={onChange} className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {categories.map((category) => (
           <Card
             key={category.id}
