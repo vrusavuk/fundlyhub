@@ -55,13 +55,30 @@ export function useEnhancedSearch(options: UseEnhancedSearchOptions): UseEnhance
   useEffect(() => {
     const query = debouncedQuery.trim();
     
-    // Skip if query hasn't changed or is empty or disabled
-    if (!query || !options.enabled || query === lastSearchRef.current) {
-      if (!query) {
-        setResults([]);
-        setSuggestions([]);
-        setLoading(false);
-      }
+    // Clear results if query is empty or disabled
+    if (!query || !options.enabled) {
+      setResults([]);
+      setSuggestions([]);
+      setLoading(false);
+      setError(null);
+      setExecutionTimeMs(0);
+      setCached(false);
+      lastSearchRef.current = '';
+      return;
+    }
+    
+    // Skip if query hasn't changed
+    if (query === lastSearchRef.current) {
+      return;
+    }
+    
+    // Don't search if query is too short (< 2 chars), just clear results
+    if (query.length < 2) {
+      setResults([]);
+      setSuggestions([]);
+      setLoading(false);
+      setError(null);
+      lastSearchRef.current = query;
       return;
     }
     
@@ -80,19 +97,24 @@ export function useEnhancedSearch(options: UseEnhancedSearchOptions): UseEnhance
       filters: options.filters,
       limit: 50,
     }).then(response => {
+      // Don't throw on error, just set error state
       if (response.error) {
-        throw new Error(response.error);
+        setError(response.error);
+        setResults([]);
+        setSuggestions([]);
+      } else {
+        setResults(response.results as any);
+        setSuggestions((response.suggestions || []) as any);
+        setExecutionTimeMs(response.executionTimeMs);
+        setCached(response.cached);
       }
-      
-      setResults(response.results as any);
-      setSuggestions((response.suggestions || []) as any);
-      setExecutionTimeMs(response.executionTimeMs);
-      setCached(response.cached);
       setLoading(false);
     }).catch((err: any) => {
       if (err.name !== 'AbortError') {
         console.error('Search error:', err);
         setError(err.message || 'Search failed');
+        setResults([]);
+        setSuggestions([]);
       }
       setLoading(false);
     });

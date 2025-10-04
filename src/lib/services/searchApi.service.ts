@@ -70,7 +70,6 @@ class SearchApiService {
         total: 0,
         executionTimeMs: 0,
         cached: false,
-        error: 'Query must be at least 2 characters',
       };
     }
 
