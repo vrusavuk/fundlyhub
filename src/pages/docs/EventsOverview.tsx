@@ -76,7 +76,7 @@ export const EventsOverview = () => {
               <p className="text-sm text-muted-foreground">
                 Creation, updates, deletions, goal reached, status changes
               </p>
-              <p className="text-xs text-muted-foreground mt-2">5 event types</p>
+              <p className="text-xs text-muted-foreground mt-2">9 event types for user actions including follow/unfollow</p>
             </div>
             <div className="p-4 border rounded-lg">
               <h4 className="font-semibold mb-2">Donation Events</h4>
@@ -97,7 +97,7 @@ export const EventsOverview = () => {
               <p className="text-sm text-muted-foreground">
                 User management, campaign approval/rejection, featuring
               </p>
-              <p className="text-xs text-muted-foreground mt-2">7 event types</p>
+              <p className="text-xs text-muted-foreground mt-2">7 admin action events</p>
             </div>
           </div>
         </CardContent>

@@ -70,16 +70,19 @@ export function DocsLayout({ children }: DocsLayoutProps) {
                 </div>
                 
                 <div>
-                  <h4 className="font-semibold text-sm mb-2 text-foreground">Events</h4>
+                  <h4 className="font-semibold text-sm mb-2 text-foreground">Events v2.1.0</h4>
                   <ul className="space-y-1 text-sm">
                     <li><Link to="/docs/events" className={getLinkClassName('/docs/events')}>Overview</Link></li>
+                    <li><Link to="/docs/events/processors" className={getLinkClassName('/docs/events/processors')}>Event Processors</Link></li>
+                    <li><Link to="/docs/events/cqrs" className={getLinkClassName('/docs/events/cqrs')}>CQRS Projections</Link></li>
+                    <li><Link to="/docs/events/sagas" className={getLinkClassName('/docs/events/sagas')}>Sagas</Link></li>
                     <li><Link to="/docs/events/user-events" className={getLinkClassName('/docs/events/user-events')}>User Events</Link></li>
                     <li><Link to="/docs/events/campaign-events" className={getLinkClassName('/docs/events/campaign-events')}>Campaign Events</Link></li>
                     <li><Link to="/docs/events/donation-events" className={getLinkClassName('/docs/events/donation-events')}>Donation Events</Link></li>
                     <li><Link to="/docs/events/organization-events" className={getLinkClassName('/docs/events/organization-events')}>Organization Events</Link></li>
                     <li><Link to="/docs/events/admin-events" className={getLinkClassName('/docs/events/admin-events')}>Admin Events</Link></li>
-                    <li><Link to="/docs/events/sagas" className={getLinkClassName('/docs/events/sagas')}>Saga Pattern</Link></li>
                     <li><Link to="/docs/events/explorer" className={getLinkClassName('/docs/events/explorer')}>Event Explorer</Link></li>
+                    <li><Link to="/docs/events/examples" className={getLinkClassName('/docs/events/examples')}>Code Examples</Link></li>
                   </ul>
                 </div>
 

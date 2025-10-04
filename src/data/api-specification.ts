@@ -514,6 +514,89 @@ export const apiSpecification = {
           updated_at: { type: "string", format: "date-time" }
         }
       },
+      '/rpc/get_user_profile_stats': {
+        post: {
+          tags: ['Profiles'],
+          summary: 'Get user profile statistics',
+          operationId: 'getUserProfileStats',
+          description: 'Returns aggregated statistics for a user profile',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    user_id: { type: 'string', format: 'uuid' },
+                  },
+                  required: ['user_id'],
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'Profile statistics',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      campaign_count: { type: 'integer' },
+                      total_funds_raised: { type: 'number' },
+                      follower_count: { type: 'integer' },
+                      following_count: { type: 'integer' },
+                    },
+                  },
+                },
+              },
+            },
+            401: { $ref: '#/components/responses/Unauthorized' },
+          },
+        },
+      },
+      '/rpc/get_organization_profile_stats': {
+        post: {
+          tags: ['Organizations'],
+          summary: 'Get organization profile statistics',
+          operationId: 'getOrganizationProfileStats',
+          description: 'Returns aggregated statistics for an organization',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    org_id: { type: 'string', format: 'uuid' },
+                  },
+                  required: ['org_id'],
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'Organization statistics',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      campaign_count: { type: 'integer' },
+                      total_funds_raised: { type: 'number' },
+                      follower_count: { type: 'integer' },
+                    },
+                  },
+                },
+              },
+            },
+            401: { $ref: '#/components/responses/Unauthorized' },
+          },
+        },
+      },
       UpdateProfileRequest: {
         type: "object",
         properties: {

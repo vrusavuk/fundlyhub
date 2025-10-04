@@ -29,25 +29,9 @@ export const EventsCQRS = () => {
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold">CQRS Architecture</h2>
         <p className="text-muted-foreground mb-4">
-          Architecture diagrams available in full documentation
+          The CQRS pattern separates commands (writes) from queries (reads). This allows each side to be optimized independently.
+          Commands update the main tables and publish events, while queries read from pre-computed projection tables.
         </p>
-{`graph LR
-    A[User Request] --> B{Type?}
-    B -->|Write| C[Command Handler]
-    B -->|Read| D[Query Handler]
-    C --> E[Write to Main Table]
-    E --> F[Publish Domain Event]
-    F --> G[Event Processor]
-    G --> H[Update Projections]
-    H --> I[Projection Tables]
-    D --> I
-    I --> J[Return Data]
-    
-    style C fill:#e1f5ff
-    style D fill:#ffe1e1
-    style E fill:#e1f5ff
-    style I fill:#ffe1e1`}
-        </lov-mermaid>
       </section>
 
       <section className="space-y-4">
@@ -145,33 +129,9 @@ export const EventsCQRS = () => {
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold">Projection Update Flow</h2>
         <p className="text-muted-foreground mb-4">
-          This diagram shows how projections are updated when events occur:
+          When a domain event occurs, projection processors update read-optimized tables asynchronously. 
+          This ensures eventual consistency while maintaining high performance for queries.
         </p>
-        
-        <lov-mermaid>
-{`sequenceDiagram
-    participant U as User
-    participant C as Command Handler
-    participant DB as Main Database
-    participant E as Event Bus
-    participant P as Projection Processor
-    participant PDB as Projection Tables
-
-    U->>C: Create Campaign
-    C->>DB: Insert into fundraisers
-    DB-->>C: Success
-    C->>E: Publish campaign.created event
-    E->>P: Dispatch to Processor
-    
-    par Parallel Projection Updates
-        P->>PDB: Update campaign_summary_projection
-        P->>PDB: Update campaign_stats_projection
-        P->>PDB: Update campaign_search_projection
-    end
-    
-    P-->>E: Processing Complete
-    Note over PDB: Projections are<br/>eventually consistent`}
-        </lov-mermaid>
       </section>
 
       <section className="space-y-4">

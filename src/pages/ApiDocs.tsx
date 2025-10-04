@@ -24,6 +24,9 @@ import { EventsOrganizationEvents } from "./docs/EventsOrganizationEvents";
 import { EventsAdminEvents } from "./docs/EventsAdminEvents";
 import { EventsExplorer } from "./docs/EventsExplorer";
 import { EventsSagas } from "./docs/EventsSagas";
+import EventsProcessors from "./docs/EventsProcessors";
+import EventsCQRS from "./docs/EventsCQRS";
+import EventsExamples from "./docs/EventsExamples";
 
 const ApiDocs = () => {
   return (
@@ -40,13 +43,17 @@ const ApiDocs = () => {
         <Route path="/donations" element={<DocsDonations />} />
         <Route path="/search" element={<DocsSearch />} />
         <Route path="/events" element={<EventsOverview />} />
+        <Route path="/events/overview" element={<EventsOverview />} />
+        <Route path="/events/processors" element={<EventsProcessors />} />
+        <Route path="/events/cqrs" element={<EventsCQRS />} />
+        <Route path="/events/sagas" element={<EventsSagas />} />
         <Route path="/events/user-events" element={<EventsUserEvents />} />
         <Route path="/events/campaign-events" element={<EventsCampaignEvents />} />
         <Route path="/events/donation-events" element={<EventsDonationEvents />} />
         <Route path="/events/organization-events" element={<EventsOrganizationEvents />} />
         <Route path="/events/admin-events" element={<EventsAdminEvents />} />
-        <Route path="/events/sagas" element={<EventsSagas />} />
         <Route path="/events/explorer" element={<EventsExplorer />} />
+        <Route path="/events/examples" element={<EventsExamples />} />
         <Route path="/javascript-examples" element={<DocsJavaScriptExamples />} />
         <Route path="/curl-examples" element={<DocsCurlExamples />} />
         <Route path="/explorer" element={<DocsApiExplorer />} />

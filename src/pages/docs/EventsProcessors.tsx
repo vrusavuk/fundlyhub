@@ -68,35 +68,10 @@ export const EventsProcessors = () => {
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold">Event Processing Flow</h2>
         <p className="text-muted-foreground mb-4">
-          Mermaid diagram showing event flow (see full documentation)
+          Events flow through the system from creation to processing: User actions create domain events, 
+          which are validated, stored, and then routed to specialized processors via Redis Upstash (production) 
+          or in-memory bus (development). Each processor handles its responsibility independently with idempotency checks.
         </p>
-{`graph TB
-    A[User Action] --> B[Event Created]
-    B --> C{Redis Upstash?}
-    C -->|Enabled| D[Redis Stream]
-    C -->|Disabled| E[In-Memory Event Bus]
-    D --> F[Event Processor Edge Function]
-    E --> G[Local Processors]
-    F --> G
-    G --> H{Idempotency Check}
-    H -->|Already Processed| I[Skip]
-    H -->|New Event| J[Process Event]
-    J --> K[Write Processor]
-    J --> L[Projection Processor]
-    J --> M[Activity Feed Processor]
-    J --> N[Count Processor]
-    K --> O[Update Main Tables]
-    L --> P[Update Read Projections]
-    M --> Q[Create Activity Entry]
-    N --> R[Update Counts]
-    O --> S[Mark Complete]
-    P --> S
-    Q --> S
-    R --> S
-    S --> T{Error?}
-    T -->|Yes| U[Dead Letter Queue]
-    T -->|No| V[Success]`}
-        </lov-mermaid>
       </section>
 
       <section className="space-y-4">

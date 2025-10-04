@@ -435,6 +435,7 @@ export const eventSpecification = {
         },
         examples: [{ payload: { followerId: '550e8400-e29b-41d4-a716-446655440000', organizationId: '770e8400-e29b-41d4-a716-446655440002' } }],
       },
+      CampaignCreatedEvent: {
         name: 'CampaignCreatedEvent',
         title: 'Campaign Created',
         summary: 'Published when a new campaign is created. Triggers CampaignCreationSaga for orchestrated processing.',
