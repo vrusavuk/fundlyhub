@@ -8,3 +8,6 @@ verify_jwt = true
 
 [functions.event-replay]
 verify_jwt = true
+
+[functions.get-auth-config]
+verify_jwt = false
