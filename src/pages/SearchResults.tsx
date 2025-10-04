@@ -42,18 +42,14 @@ export default function SearchResults() {
     if (urlQuery && !searchQuery) {
       setSearchQuery(urlQuery);
     }
-  }, [urlQuery, setSearchQuery]); // Only depend on urlQuery and setSearchQuery
+  }, [urlQuery, searchQuery, setSearchQuery]);
 
   // Update URL when global search query changes (but not on every render)
   useEffect(() => {
     if (searchQuery && searchQuery !== urlQuery) {
-      const timeoutId = setTimeout(() => {
-        setSearchParams({ q: searchQuery }, { replace: true });
-      }, 100); // Debounce to prevent rapid updates
-      
-      return () => clearTimeout(timeoutId);
+      setSearchParams({ q: searchQuery }, { replace: true });
     }
-  }, [searchQuery]); // Only depend on searchQuery
+  }, [searchQuery, urlQuery, setSearchParams]);
 
   const filteredResults = selectedType === 'all' 
     ? results 
@@ -144,17 +140,11 @@ export default function SearchResults() {
       <Skeleton className="h-4 w-32" />
     </div>
   ) : (
-    <div className="flex items-center gap-4 text-sm">
-      <span className="text-muted-foreground">
-        {filteredResults.length} results for "{activeQuery}"
+    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+      <span>
+        Found {results.length} {results.length === 1 ? 'result' : 'results'} in {executionTimeMs.toFixed(0)}ms
+        {cached && ' (cached)'}
       </span>
-      <div className="flex items-center gap-4">
-        <div className="text-right">
-          <span className="font-medium text-primary">
-            {results.length} Total
-          </span>
-        </div>
-      </div>
     </div>
   );
 
@@ -186,14 +176,6 @@ export default function SearchResults() {
           emptyMessage={`No results found for "${activeQuery}"`}
           variant="card"
         />
-        
-        {/* Performance indicator */}
-        {executionTimeMs > 0 && results.length > 0 && (
-          <div className="mt-6 text-sm text-muted-foreground text-center">
-            Found {results.length} results in {executionTimeMs.toFixed(0)}ms
-            {cached && ' (cached)'}
-          </div>
-        )}
       </PageContainer>
     </AppLayout>
   );
