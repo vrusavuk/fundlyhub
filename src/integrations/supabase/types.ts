@@ -93,6 +93,7 @@ export type Database = {
           org_name: string | null
           owner_name: string | null
           search_vector: unknown | null
+          slug: string | null
           status: Database["public"]["Enums"]["fundraiser_status"]
           story_text: string | null
           summary: string | null
@@ -110,6 +111,7 @@ export type Database = {
           org_name?: string | null
           owner_name?: string | null
           search_vector?: unknown | null
+          slug?: string | null
           status: Database["public"]["Enums"]["fundraiser_status"]
           story_text?: string | null
           summary?: string | null
@@ -127,6 +129,7 @@ export type Database = {
           org_name?: string | null
           owner_name?: string | null
           search_vector?: unknown | null
+          slug?: string | null
           status?: Database["public"]["Enums"]["fundraiser_status"]
           story_text?: string | null
           summary?: string | null

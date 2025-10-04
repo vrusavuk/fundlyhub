@@ -240,13 +240,21 @@ async function executeSearch(
 
   // Search campaigns if scope includes them
   if (scope === 'all' || scope === 'campaigns') {
-    const { data: campaigns } = await supabase
+    console.log('Searching campaigns with query:', q);
+    
+    const { data: campaigns, error: campaignsError } = await supabase
       .from('campaign_search_projection')
-      .select('campaign_id, title, summary, story_text, cover_image, category_name, location, status, visibility')
+      .select('campaign_id, slug, title, summary, story_text, cover_image, category_name, location, status, visibility')
       .eq('visibility', 'public')
       .in('status', ['active', 'ended', 'closed'])
-      .or(`title.ilike.%${q}%,summary.ilike.%${q}%,story_text.ilike.%${q}%,beneficiary_name.ilike.%${q}%,location.ilike.%${q}%`)
+      .or(`title.ilike.*${q}*,summary.ilike.*${q}*,story_text.ilike.*${q}*,beneficiary_name.ilike.*${q}*,location.ilike.*${q}*`)
       .limit(scope === 'campaigns' ? limit : Math.ceil(limit / 3));
+
+    if (campaignsError) {
+      console.error('Campaign search error:', campaignsError);
+    } else {
+      console.log('Found campaigns:', campaigns?.length || 0);
+    }
 
     if (campaigns) {
       results.push(
@@ -256,7 +264,7 @@ async function executeSearch(
           title: campaign.title,
           subtitle: campaign.category_name || campaign.location,
           snippet: campaign.summary?.substring(0, 150),
-          link: `/fundraiser/${campaign.campaign_id}`, // Note: Will need slug mapping
+          link: `/fundraiser/${campaign.slug}`,
           score: calculateRelevance(
             `${campaign.title} ${campaign.summary || ''} ${campaign.story_text || ''}`, 
             normalizedQuery
