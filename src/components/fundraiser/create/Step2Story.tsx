@@ -39,15 +39,28 @@ export function Step2Story({ formData, errors, onChange, categoryName }: Step2St
         <Label htmlFor="summary" className="label-small">
           Short Summary <span className="text-destructive">*</span>
         </Label>
-        <Textarea
-          id="summary"
-          placeholder="Write a brief, compelling summary that captures the essence of your campaign"
-          value={formData.summary || ''}
-          onChange={(e) => onChange({ summary: e.target.value })}
-          className={errors.summary ? 'border-destructive' : ''}
-          rows={3}
-          maxLength={150}
-        />
+        <div className="relative">
+          <Textarea
+            id="summary"
+            placeholder="Write a brief, compelling summary that captures the essence of your campaign"
+            value={formData.summary || ''}
+            onChange={(e) => onChange({ summary: e.target.value })}
+            className={errors.summary ? 'border-destructive pr-12' : 'pr-12'}
+            rows={3}
+            maxLength={150}
+          />
+          <AITextEnhancer
+            field="summary"
+            currentText={formData.summary || ''}
+            onTextGenerated={(text) => onChange({ summary: text })}
+            context={{
+              title: formData.title,
+              category: categoryName,
+              goalAmount: formData.goalAmount,
+              beneficiaryName: formData.beneficiaryName,
+            }}
+          />
+        </div>
         <CharacterCounter
           current={formData.summary?.length || 0}
           min={10}
@@ -57,33 +70,35 @@ export function Step2Story({ formData, errors, onChange, categoryName }: Step2St
         {errors.summary && (
           <p className="text-sm text-destructive">{errors.summary}</p>
         )}
-        
-        <AITextEnhancer
-          field="summary"
-          currentText={formData.summary || ''}
-          onTextGenerated={(text) => onChange({ summary: text })}
-          context={{
-            title: formData.title,
-            category: categoryName,
-            goalAmount: formData.goalAmount,
-            beneficiaryName: formData.beneficiaryName,
-          }}
-        />
       </div>
 
       <div className="space-y-3">
         <Label htmlFor="story" className="label-small">
           Full Story <span className="text-destructive">*</span>
         </Label>
-        <Textarea
-          id="story"
-          placeholder="Tell your story in detail. Explain why you're raising funds, how the money will be used, and what impact it will have. Be authentic and specific."
-          value={formData.story || ''}
-          onChange={(e) => onChange({ story: e.target.value })}
-          className={errors.story ? 'border-destructive' : ''}
-          rows={10}
-          maxLength={1000}
-        />
+        <div className="relative">
+          <Textarea
+            id="story"
+            placeholder="Tell your story in detail. Explain why you're raising funds, how the money will be used, and what impact it will have. Be authentic and specific."
+            value={formData.story || ''}
+            onChange={(e) => onChange({ story: e.target.value })}
+            className={errors.story ? 'border-destructive pr-12' : 'pr-12'}
+            rows={10}
+            maxLength={1000}
+          />
+          <AITextEnhancer
+            field="story"
+            currentText={formData.story || ''}
+            onTextGenerated={(text) => onChange({ story: text })}
+            context={{
+              title: formData.title,
+              category: categoryName,
+              goalAmount: formData.goalAmount,
+              beneficiaryName: formData.beneficiaryName,
+              summary: formData.summary,
+            }}
+          />
+        </div>
         <CharacterCounter
           current={formData.story?.length || 0}
           min={150}
@@ -93,19 +108,6 @@ export function Step2Story({ formData, errors, onChange, categoryName }: Step2St
         {errors.story && (
           <p className="text-sm text-destructive">{errors.story}</p>
         )}
-        
-        <AITextEnhancer
-          field="story"
-          currentText={formData.story || ''}
-          onTextGenerated={(text) => onChange({ story: text })}
-          context={{
-            title: formData.title,
-            category: categoryName,
-            goalAmount: formData.goalAmount,
-            beneficiaryName: formData.beneficiaryName,
-            summary: formData.summary,
-          }}
-        />
       </div>
 
       <div className="bg-accent/50 border border-border rounded-lg p-4">
