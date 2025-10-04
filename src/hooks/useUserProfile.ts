@@ -55,15 +55,12 @@ export function useUserProfile(userId: string): UseUserProfileReturn {
         if (profileError) throw profileError;
         profileData = data && data.length > 0 ? data[0] : null;
       } else {
-        // Use public_profiles view for other users (no sensitive data)
+        // Use secure function to get public profile (no sensitive data)
         const { data, error: profileError } = await supabase
-          .from('public_profiles')
-          .select('*')
-          .eq('id', userId)
-          .single();
+          .rpc('get_public_user_profile', { profile_id: userId });
 
         if (profileError) throw profileError;
-        profileData = data;
+        profileData = data && data.length > 0 ? data[0] : null;
       }
 
       if (!profileData) {

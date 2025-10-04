@@ -1601,6 +1601,27 @@ export type Database = {
           website: string
         }[]
       }
+      get_public_user_profile: {
+        Args: { profile_id: string }
+        Returns: {
+          avatar: string
+          bio: string
+          campaign_count: number
+          created_at: string
+          follower_count: number
+          following_count: number
+          id: string
+          is_verified: boolean
+          location: string
+          name: string
+          profile_visibility: string
+          role: Database["public"]["Enums"]["user_role"]
+          social_links: Json
+          total_funds_raised: number
+          verified_at: string
+          website: string
+        }[]
+      }
       get_recent_activities: {
         Args: { limit_count?: number }
         Returns: {
