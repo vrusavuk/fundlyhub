@@ -309,10 +309,13 @@ class SearchService implements ISearchService {
       return [];
     }
 
+    const normalizedQuery = query.toLowerCase();
+
     const { data, error } = await supabase
-      .from('public_organizations')
+      .from('organization_search_projection')
       .select('*')
-      .or(`legal_name.ilike.%${query}%,dba_name.ilike.%${query}%`)
+      .or(`search_vector.fts.${query},name_lowercase.ilike.%${normalizedQuery}%,legal_name.ilike.%${query}%,dba_name.ilike.%${query}%`)
+      .order('relevance_boost', { ascending: false })
       .limit(options.maxResults || 50);
 
     if (error) {
@@ -321,13 +324,14 @@ class SearchService implements ISearchService {
     }
 
     return (data || []).map((item: any) => ({
-      id: item.id,
+      id: item.org_id,
       type: 'organization' as const,
       title: item.dba_name || item.legal_name,
       subtitle: item.legal_name !== item.dba_name ? item.legal_name : undefined,
-      link: `/organization/${item.id}`,
-      relevanceScore: 0.7,
-      matchedFields: ['name'],
+      snippet: item.categories?.join(', '),
+      link: `/organization/${item.org_id}`,
+      relevanceScore: item.relevance_boost || 0.7,
+      matchedFields: ['name', 'categories'],
     }));
   }
 

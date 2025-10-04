@@ -862,6 +862,60 @@ export type Database = {
           },
         ]
       }
+      organization_search_projection: {
+        Row: {
+          categories: string[] | null
+          country: string | null
+          created_at: string
+          dba_name: string | null
+          legal_name: string
+          name_lowercase: string
+          name_tokens: string[] | null
+          org_id: string
+          relevance_boost: number | null
+          search_vector: unknown | null
+          updated_at: string | null
+          verification_status:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          website: string | null
+        }
+        Insert: {
+          categories?: string[] | null
+          country?: string | null
+          created_at: string
+          dba_name?: string | null
+          legal_name: string
+          name_lowercase: string
+          name_tokens?: string[] | null
+          org_id: string
+          relevance_boost?: number | null
+          search_vector?: unknown | null
+          updated_at?: string | null
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          website?: string | null
+        }
+        Update: {
+          categories?: string[] | null
+          country?: string | null
+          created_at?: string
+          dba_name?: string | null
+          legal_name?: string
+          name_lowercase?: string
+          name_tokens?: string[] | null
+          org_id?: string
+          relevance_boost?: number | null
+          search_vector?: unknown | null
+          updated_at?: string | null
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       organizations: {
         Row: {
           address: Json | null
@@ -2309,6 +2363,12 @@ export type Database = {
       refresh_searchable_content: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      resync_organization_search_projections: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          synced_count: number
+        }[]
       }
       token_match_score: {
         Args: { name_text: string; query_text: string }
