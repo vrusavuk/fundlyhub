@@ -188,9 +188,10 @@ export function useSearch(options: UseSearchOptions) {
 
     try {
       const searchTerms = normalizeQuery(searchQuery);
+      // Create a properly formatted tsquery for PostgreSQL
       const tsQuery = searchTerms.join(' & ');
       
-      // Fetch campaigns with full-text search
+      // Fetch campaigns with full-text search using the fts column
       const { data: campaigns, error: campaignsError } = await supabase
         .from('fundraisers')
         .select(`
@@ -212,17 +213,17 @@ export function useSearch(options: UseSearchOptions) {
         })
         .limit(BATCH_SIZE);
 
-      // Fetch users with full-text search on profiles
-      // Use ilike as fallback for name search since public_profiles might not have ts_vector
-      const namePattern = `%${searchQuery}%`;
+      // Fetch users with full-text search on the fts column
       const { data: users, error: usersError } = await supabase
         .from('public_profiles')
         .select('id, name, avatar, bio, profile_visibility')
-        .or(`name.ilike.${namePattern},bio.ilike.${namePattern}`)
-        .eq('profile_visibility', 'public')
+        .textSearch('fts', tsQuery, {
+          type: 'websearch',
+          config: 'english'
+        })
         .limit(BATCH_SIZE);
 
-      // Fetch organizations with search
+      // Fetch organizations with full-text search
       const { data: organizations, error: organizationsError } = await supabase
         .from('organizations')
         .select(`
@@ -234,7 +235,10 @@ export function useSearch(options: UseSearchOptions) {
           country,
           verification_status
         `)
-        .or(`legal_name.ilike.${namePattern},dba_name.ilike.${namePattern}`)
+        .textSearch('fts', tsQuery, {
+          type: 'websearch',
+          config: 'english'
+        })
         .limit(BATCH_SIZE);
 
       if (campaignsError) throw campaignsError;
