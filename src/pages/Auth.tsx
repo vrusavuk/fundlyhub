@@ -123,12 +123,13 @@ export default function Auth() {
   };
 
   const toggleMode = () => {
+    const currentEmail = emailValue;
     setIsLogin(!isLogin);
     setShowPassword(false);
     setStep('email');
     setEmailValidated(false);
-    loginForm.reset();
-    signupForm.reset();
+    loginForm.reset({ email: currentEmail, password: '' });
+    signupForm.reset({ name: '', email: currentEmail, password: '' });
   };
 
   const handleGoogleSignIn = async () => {
@@ -255,7 +256,7 @@ export default function Auth() {
                 {step === 'email' && (
                   <div className="space-y-5">
                     <FormField
-                      control={activeForm.control}
+                      control={isLogin ? loginForm.control : signupForm.control}
                       name="email"
                       render={({ field }) => (
                         <FormItem>
@@ -335,7 +336,7 @@ export default function Auth() {
                     )}
 
                     <FormField
-                      control={activeForm.control}
+                      control={isLogin ? loginForm.control : signupForm.control}
                       name="password"
                       render={({ field }) => (
                         <FormItem>
