@@ -45,7 +45,8 @@ export const SignupForm = ({ onToggleMode, config }: SignupFormProps) => {
   const confirmPasswordValue = form.watch('confirmPassword');
   const { criteria } = usePasswordValidation(passwordValue, confirmPasswordValue, config);
 
-  const handleEmailContinue = () => {
+  const handleEmailContinue = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     const validation = emailSchema.safeParse({ email: emailInput });
     if (!validation.success) {
       setEmailError(validation.error.errors[0].message);
@@ -54,6 +55,13 @@ export const SignupForm = ({ onToggleMode, config }: SignupFormProps) => {
     setEmailError('');
     form.setValue('email', emailInput);
     setStep('credentials');
+  };
+
+  const handleEmailKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !loading) {
+      e.preventDefault();
+      handleEmailContinue();
+    }
   };
 
   const handleSignup = async (data: { name: string; email: string; password: string; confirmPassword: string }) => {
@@ -106,17 +114,18 @@ export const SignupForm = ({ onToggleMode, config }: SignupFormProps) => {
           <p className="text-muted-foreground">Enter your email to get started</p>
         </div>
 
-        <div className="space-y-4">
+        <form onSubmit={handleEmailContinue} className="space-y-4">
           <EmailInput
             value={emailInput}
             onChange={setEmailInput}
+            onKeyDown={handleEmailKeyDown}
             error={emailError}
             disabled={loading}
             autoFocus
           />
 
           <Button 
-            onClick={handleEmailContinue} 
+            type="submit"
             className="w-full" 
             disabled={loading}
           >
@@ -136,7 +145,7 @@ export const SignupForm = ({ onToggleMode, config }: SignupFormProps) => {
               Sign in
             </button>
           </p>
-        </div>
+        </form>
       </div>
     );
   }

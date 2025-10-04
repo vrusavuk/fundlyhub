@@ -9,6 +9,7 @@ interface EmailInputProps {
   disabled?: boolean;
   autoFocus?: boolean;
   label?: string;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 export const EmailInput = ({ 
@@ -17,7 +18,8 @@ export const EmailInput = ({
   error, 
   disabled = false,
   autoFocus = false,
-  label = "Email address"
+  label = "Email address",
+  onKeyDown
 }: EmailInputProps) => {
   return (
     <div className="space-y-2">
@@ -30,6 +32,7 @@ export const EmailInput = ({
           placeholder="you@example.com"
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onKeyDown={onKeyDown}
           disabled={disabled}
           autoFocus={autoFocus}
           className="pl-10"
