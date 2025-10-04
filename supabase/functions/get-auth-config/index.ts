@@ -25,13 +25,17 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Get GoTrue configuration from environment variables
-    // These are the actual Supabase Auth settings
+    // Apply secure defaults if not configured
+    const minLength = parseInt(Deno.env.get('GOTRUE_PASSWORD_MIN_LENGTH') || '8', 10);
+    const requiredChars = Deno.env.get('GOTRUE_PASSWORD_REQUIRED_CHARACTERS') || 'letters,digits';
+    
     const config: AuthConfig = {
-      passwordMinLength: parseInt(Deno.env.get('GOTRUE_PASSWORD_MIN_LENGTH') || '6', 10),
-      passwordRequireLetters: Deno.env.get('GOTRUE_PASSWORD_REQUIRED_CHARACTERS')?.includes('letters') ?? false,
-      passwordRequireNumbers: Deno.env.get('GOTRUE_PASSWORD_REQUIRED_CHARACTERS')?.includes('digits') ?? false,
-      passwordRequireSymbols: Deno.env.get('GOTRUE_PASSWORD_REQUIRED_CHARACTERS')?.includes('symbols') ?? false,
-      passwordRequireUppercase: Deno.env.get('GOTRUE_PASSWORD_REQUIRED_CHARACTERS')?.includes('uppercase') ?? false,
+      // Enforce minimum of 8 characters for security
+      passwordMinLength: Math.max(minLength, 8),
+      passwordRequireLetters: requiredChars.includes('letters') || requiredChars.includes('abcdefghijklmnopqrstuvwxyz'),
+      passwordRequireNumbers: requiredChars.includes('digits') || requiredChars.includes('0123456789'),
+      passwordRequireSymbols: requiredChars.includes('symbols'),
+      passwordRequireUppercase: requiredChars.includes('uppercase'),
     };
 
     console.log('Auth config retrieved:', config);
