@@ -56,7 +56,6 @@ export default function Auth() {
     mode: 'onChange',
   });
 
-  const activeForm = isLogin ? loginForm : signupForm;
   const emailValue = isLogin ? loginForm.watch('email') : signupForm.watch('email');
 
   const [emailValidated, setEmailValidated] = useState(false);
@@ -248,69 +247,183 @@ export default function Auth() {
               </div>
             </div>
 
-            <Form {...activeForm}>
-              <form 
-                onSubmit={activeForm.handleSubmit(isLogin ? handleLogin : handleSignup)} 
-                className="space-y-5"
-              >
-                {step === 'email' && (
-                  <div className="space-y-5">
-                    <FormField
-                      control={isLogin ? loginForm.control : signupForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <div className="relative group">
-                              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                              <Input
-                                {...field}
-                                type="email"
-                                placeholder="you@example.com"
-                                className="pl-12 h-12 border-2"
-                                disabled={loading}
-                                autoComplete="email"
-                                autoFocus
-                              />
-                              {emailValidated && (
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 animate-scale-in">
-                                  <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center">
-                                    <Check className="h-4 w-4 text-white" />
+            {isLogin ? (
+              <Form {...loginForm}>
+                <form 
+                  onSubmit={loginForm.handleSubmit(handleLogin)} 
+                  className="space-y-5"
+                >
+                  {step === 'email' && (
+                    <div className="space-y-5">
+                      <FormField
+                        control={loginForm.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <div className="relative group">
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                <Input
+                                  {...field}
+                                  type="email"
+                                  placeholder="you@example.com"
+                                  className="pl-12 h-12 border-2"
+                                  disabled={loading}
+                                  autoComplete="email"
+                                  autoFocus
+                                />
+                                {emailValidated && (
+                                  <div className="absolute right-4 top-1/2 -translate-y-1/2 animate-scale-in">
+                                    <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center">
+                                      <Check className="h-4 w-4 text-white" />
+                                    </div>
                                   </div>
-                                </div>
-                              )}
-                            </div>
-                          </FormControl>
-                          <FormMessage className="caption-small" />
-                        </FormItem>
-                      )}
-                    />
+                                )}
+                              </div>
+                            </FormControl>
+                            <FormMessage className="caption-small" />
+                          </FormItem>
+                        )}
+                      />
 
-                    <Button
-                      type="button"
-                      onClick={() => emailValidated && setStep('credentials')}
-                      disabled={!emailValidated || loading}
-                      size="lg"
-                      className="w-full"
-                    >
-                      Continue
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
-                  </div>
-                )}
+                      <Button
+                        type="button"
+                        onClick={() => emailValidated && setStep('credentials')}
+                        disabled={!emailValidated || loading}
+                        size="lg"
+                        className="w-full"
+                      >
+                        Continue
+                        <ArrowRight className="ml-2 h-5 w-5" />
+                      </Button>
+                    </div>
+                  )}
 
-                {step === 'credentials' && (
-                  <div className="space-y-5 animate-fade-in">
-                    <button
-                      type="button"
-                      onClick={() => setStep('email')}
-                      className="caption-small text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
-                    >
-                      <ArrowRight className="h-4 w-4 rotate-180" />
-                      Change email
-                    </button>
+                  {step === 'credentials' && (
+                    <div className="space-y-5 animate-fade-in">
+                      <button
+                        type="button"
+                        onClick={() => setStep('email')}
+                        className="caption-small text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
+                      >
+                        <ArrowRight className="h-4 w-4 rotate-180" />
+                        Change email
+                      </button>
 
-                    {!isLogin && (
+                      <FormField
+                        control={loginForm.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <div className="relative group">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                <Input
+                                  {...field}
+                                  type={showPassword ? 'text' : 'password'}
+                                  placeholder="Password"
+                                  className="pl-12 pr-12 h-12 border-2"
+                                  disabled={loading}
+                                  autoComplete="current-password"
+                                  autoFocus
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                  tabIndex={-1}
+                                >
+                                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                </button>
+                              </div>
+                            </FormControl>
+                            <FormMessage className="caption-small" />
+                          </FormItem>
+                        )}
+                      />
+
+                      <Button
+                        type="submit"
+                        size="lg"
+                        className="w-full"
+                        disabled={loading}
+                      >
+                        {loading ? (
+                          <>
+                            <LoadingSpinner size="sm" className="mr-2" />
+                            Signing in...
+                          </>
+                        ) : (
+                          'Sign in'
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </form>
+              </Form>
+            ) : (
+              <Form {...signupForm}>
+                <form 
+                  onSubmit={signupForm.handleSubmit(handleSignup)} 
+                  className="space-y-5"
+                >
+                  {step === 'email' && (
+                    <div className="space-y-5">
+                      <FormField
+                        control={signupForm.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <div className="relative group">
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                <Input
+                                  {...field}
+                                  type="email"
+                                  placeholder="you@example.com"
+                                  className="pl-12 h-12 border-2"
+                                  disabled={loading}
+                                  autoComplete="email"
+                                  autoFocus
+                                />
+                                {emailValidated && (
+                                  <div className="absolute right-4 top-1/2 -translate-y-1/2 animate-scale-in">
+                                    <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center">
+                                      <Check className="h-4 w-4 text-white" />
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </FormControl>
+                            <FormMessage className="caption-small" />
+                          </FormItem>
+                        )}
+                      />
+
+                      <Button
+                        type="button"
+                        onClick={() => emailValidated && setStep('credentials')}
+                        disabled={!emailValidated || loading}
+                        size="lg"
+                        className="w-full"
+                      >
+                        Continue
+                        <ArrowRight className="ml-2 h-5 w-5" />
+                      </Button>
+                    </div>
+                  )}
+
+                  {step === 'credentials' && (
+                    <div className="space-y-5 animate-fade-in">
+                      <button
+                        type="button"
+                        onClick={() => setStep('email')}
+                        className="caption-small text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
+                      >
+                        <ArrowRight className="h-4 w-4 rotate-180" />
+                        Change email
+                      </button>
+
                       <FormField
                         control={signupForm.control}
                         name="name"
@@ -333,65 +446,62 @@ export default function Auth() {
                           </FormItem>
                         )}
                       />
-                    )}
 
-                    <FormField
-                      control={isLogin ? loginForm.control : signupForm.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <div className="relative group">
-                              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                              <Input
-                                {...field}
-                                type={showPassword ? 'text' : 'password'}
-                                placeholder={isLogin ? 'Password' : 'Create password'}
-                                className="pl-12 pr-12 h-12 border-2"
-                                disabled={loading}
-                                autoComplete={isLogin ? 'current-password' : 'new-password'}
-                                autoFocus={isLogin}
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                                tabIndex={-1}
-                              >
-                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                              </button>
-                            </div>
-                          </FormControl>
-                          <FormMessage className="caption-small" />
-                          {!isLogin && (
+                      <FormField
+                        control={signupForm.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <div className="relative group">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                <Input
+                                  {...field}
+                                  type={showPassword ? 'text' : 'password'}
+                                  placeholder="Create password"
+                                  className="pl-12 pr-12 h-12 border-2"
+                                  disabled={loading}
+                                  autoComplete="new-password"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                  tabIndex={-1}
+                                >
+                                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                </button>
+                              </div>
+                            </FormControl>
+                            <FormMessage className="caption-small" />
                             <p className="caption-small text-muted-foreground flex items-center gap-1.5 mt-1.5">
                               <Shield className="h-3.5 w-3.5" />
                               Minimum 6 characters
                             </p>
-                          )}
-                        </FormItem>
-                      )}
-                    />
+                          </FormItem>
+                        )}
+                      />
 
-                    <Button
-                      type="submit"
-                      size="lg"
-                      className="w-full"
-                      disabled={loading}
-                    >
-                      {loading ? (
-                        <>
-                          <LoadingSpinner size="sm" className="mr-2" />
-                          {isLogin ? 'Signing in...' : 'Creating account...'}
-                        </>
-                      ) : (
-                        isLogin ? 'Sign in' : 'Create account'
-                      )}
-                    </Button>
-                  </div>
-                )}
-              </form>
-            </Form>
+                      <Button
+                        type="submit"
+                        size="lg"
+                        className="w-full"
+                        disabled={loading}
+                      >
+                        {loading ? (
+                          <>
+                            <LoadingSpinner size="sm" className="mr-2" />
+                            Creating account...
+                          </>
+                        ) : (
+                          'Create account'
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </form>
+              </Form>
+            )}
 
             <div className="text-center">
               <button
