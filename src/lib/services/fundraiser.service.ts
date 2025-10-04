@@ -51,10 +51,7 @@ class FundraiserService {
       async () => {
         let query = supabase
           .from('fundraisers')
-          .select(`
-            *,
-            profiles!fundraisers_owner_user_id_fkey(name, avatar)
-          `, { count: 'exact' })
+          .select('*', { count: 'exact' })
           .eq('status', status)
           .eq('visibility', visibility)
           .order('created_at', { ascending: false });
@@ -80,9 +77,33 @@ class FundraiserService {
           );
         }
 
+        // Fetch owner profiles securely using RPC
+        const fundraisers = data || [];
+        if (fundraisers.length > 0) {
+          const uniqueOwnerIds = [...new Set(fundraisers.map(f => f.owner_user_id))];
+          
+          // Fetch all owner profiles in parallel
+          const profilePromises = uniqueOwnerIds.map(async (ownerId) => {
+            const { data: profileData } = await supabase
+              .rpc('get_public_user_profile', { profile_id: ownerId });
+            return { ownerId, profile: profileData?.[0] || null };
+          });
+
+          const profiles = await Promise.all(profilePromises);
+          const profileMap = profiles.reduce((acc, { ownerId, profile }) => {
+            acc[ownerId] = profile;
+            return acc;
+          }, {} as Record<string, any>);
+
+          // Attach profiles to fundraisers
+          fundraisers.forEach((fundraiser: any) => {
+            fundraiser.profiles = profileMap[fundraiser.owner_user_id] || null;
+          });
+        }
+
         return {
-          data: data || [],
-          hasMore: (data?.length || 0) === limit,
+          data: fundraisers,
+          hasMore: (fundraisers?.length || 0) === limit,
           total: count || 0,
         };
       },
@@ -169,10 +190,7 @@ class FundraiserService {
       async () => {
         const { data, error } = await supabase
           .from('fundraisers')
-          .select(`
-            *,
-            profiles!fundraisers_owner_user_id_fkey(name, avatar)
-          `)
+          .select('*')
           .eq('slug', slug)
           .eq('visibility', 'public')
           .maybeSingle();
@@ -184,6 +202,19 @@ class FundraiserService {
             undefined,
             true
           );
+        }
+
+        // Fetch owner profile securely using RPC
+        if (data && data.owner_user_id) {
+          const { data: profileData } = await supabase
+            .rpc('get_public_user_profile', { profile_id: data.owner_user_id });
+          
+          if (profileData && profileData.length > 0) {
+            (data as any).profiles = {
+              name: profileData[0].name,
+              avatar: profileData[0].avatar,
+            };
+          }
         }
 
         return data;

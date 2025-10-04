@@ -108,7 +108,6 @@ export default function FundraiserDetail() {
         .from('fundraisers')
         .select(`
           *,
-          profiles!fundraisers_owner_user_id_fkey(id, name),
           organizations!fundraisers_org_id_fkey(id, legal_name, dba_name)
         `)
         .eq('slug', slug)
@@ -118,6 +117,19 @@ export default function FundraiserDetail() {
         console.error('Error fetching fundraiser:', fundraiserError);
         setLoading(false);
         return;
+      }
+
+      // Fetch owner profile securely using RPC
+      if (fundraiserData.owner_user_id) {
+        const { data: profileData } = await supabase
+          .rpc('get_public_user_profile', { profile_id: fundraiserData.owner_user_id });
+        
+        if (profileData && profileData.length > 0) {
+          (fundraiserData as any).profiles = {
+            id: profileData[0].id,
+            name: profileData[0].name,
+          };
+        }
       }
 
       setFundraiser(fundraiserData as any);
