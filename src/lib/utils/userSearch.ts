@@ -58,16 +58,18 @@ export function generatePhoneticVariations(name: string): string[] {
  * Calculate optimal similarity threshold based on query length
  * Shorter queries need lower thresholds to avoid missing relevant matches
  * 
- * Note: The database function fuzzy_search_users also adjusts thresholds dynamically:
- * - ≤3 chars: 0.15 threshold (very permissive for "liu" → "Luibov")
- * - ≤5 chars: 0.25 threshold
- * - >5 chars: uses provided threshold (default 0.3)
+ * Note: The database function fuzzy_search_users uses multiple matching strategies:
+ * - ≤3 chars: Character set matching (e.g., "liu" matches "Luibov" - checks if all 
+ *   query characters appear in the first few characters of the name, any order)
+ * - ≤3 chars: Also uses 0.1 trigram similarity threshold (very permissive)
+ * - ≤5 chars: 0.2 trigram similarity threshold
+ * - >5 chars: Uses provided threshold (default 0.3)
  */
 export function calculateSimilarityThreshold(query: string): number {
   const length = query.trim().length;
   
-  if (length <= 3) return 0.15; // Very permissive for short queries like "liu"
-  if (length <= 5) return 0.25; // Moderate for medium queries
+  if (length <= 3) return 0.1;  // Very permissive for short queries with character set matching
+  if (length <= 5) return 0.2;  // Moderate for medium queries
   if (length <= 8) return 0.4;  // More lenient for longer queries
   return 0.3; // Default for very long queries
 }
