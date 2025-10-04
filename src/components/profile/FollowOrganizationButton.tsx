@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Building2, Building, Loader2 } from 'lucide-react';
-import { useFollowOrganization } from '@/hooks/useFollowOrganization';
+import { useFollowOrganizationEventDriven } from '@/hooks/useFollowOrganizationEventDriven';
 import { useAuth } from '@/hooks/useAuth';
 
 interface FollowOrganizationButtonProps {
@@ -24,7 +24,7 @@ export function FollowOrganizationButton({
     followOrganization, 
     unfollowOrganization, 
     checkFollowStatus 
-  } = useFollowOrganization(organizationId);
+  } = useFollowOrganizationEventDriven(organizationId);
 
   useEffect(() => {
     if (user && organizationId) {

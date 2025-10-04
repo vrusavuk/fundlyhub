@@ -57,12 +57,57 @@ export interface UserUnfollowedCampaignEvent extends DomainEvent<z.infer<typeof 
 }
 
 // User event union type
-export type UserEvent = 
+// Follow/Unfollow User Events
+export const UserFollowedUserSchema = z.object({
+  followerId: z.string().uuid(),
+  followedUserId: z.string().uuid(),
+  followerEmail: z.string().email().optional(),
+  followedUserEmail: z.string().email().optional(),
+});
+
+export const UserUnfollowedUserSchema = z.object({
+  followerId: z.string().uuid(),
+  unfollowedUserId: z.string().uuid(),
+});
+
+// Follow/Unfollow Organization Events
+export const UserFollowedOrganizationSchema = z.object({
+  followerId: z.string().uuid(),
+  organizationId: z.string().uuid(),
+  organizationName: z.string().optional(),
+});
+
+export const UserUnfollowedOrganizationSchema = z.object({
+  followerId: z.string().uuid(),
+  organizationId: z.string().uuid(),
+});
+
+export interface UserFollowedUserEvent extends DomainEvent<z.infer<typeof UserFollowedUserSchema>> {
+  type: 'user.followed_user';
+}
+
+export interface UserUnfollowedUserEvent extends DomainEvent<z.infer<typeof UserUnfollowedUserSchema>> {
+  type: 'user.unfollowed_user';
+}
+
+export interface UserFollowedOrganizationEvent extends DomainEvent<z.infer<typeof UserFollowedOrganizationSchema>> {
+  type: 'user.followed_organization';
+}
+
+export interface UserUnfollowedOrganizationEvent extends DomainEvent<z.infer<typeof UserUnfollowedOrganizationSchema>> {
+  type: 'user.unfollowed_organization';
+}
+
+export type UserEvent =
   | UserRegisteredEvent
   | UserLoggedInEvent
   | UserProfileUpdatedEvent
   | UserFollowedCampaignEvent
-  | UserUnfollowedCampaignEvent;
+  | UserUnfollowedCampaignEvent
+  | UserFollowedUserEvent
+  | UserUnfollowedUserEvent
+  | UserFollowedOrganizationEvent
+  | UserUnfollowedOrganizationEvent;
 
 // Event factory functions
 export const createUserRegisteredEvent = (
@@ -124,3 +169,71 @@ export const createUserUnfollowedCampaignEvent = (
   correlationId,
   payload: UserFollowedCampaignSchema.parse(payload),
 });
+
+/**
+ * Factory: User Followed User Event
+ */
+export function createUserFollowedUserEvent(
+  payload: z.infer<typeof UserFollowedUserSchema>,
+  correlationId?: string
+): UserFollowedUserEvent {
+  return {
+    id: crypto.randomUUID(),
+    type: 'user.followed_user',
+    timestamp: Date.now(),
+    version: '1.0.0',
+    correlationId,
+    payload: UserFollowedUserSchema.parse(payload),
+  };
+}
+
+/**
+ * Factory: User Unfollowed User Event
+ */
+export function createUserUnfollowedUserEvent(
+  payload: z.infer<typeof UserUnfollowedUserSchema>,
+  correlationId?: string
+): UserUnfollowedUserEvent {
+  return {
+    id: crypto.randomUUID(),
+    type: 'user.unfollowed_user',
+    timestamp: Date.now(),
+    version: '1.0.0',
+    correlationId,
+    payload: UserUnfollowedUserSchema.parse(payload),
+  };
+}
+
+/**
+ * Factory: User Followed Organization Event
+ */
+export function createUserFollowedOrganizationEvent(
+  payload: z.infer<typeof UserFollowedOrganizationSchema>,
+  correlationId?: string
+): UserFollowedOrganizationEvent {
+  return {
+    id: crypto.randomUUID(),
+    type: 'user.followed_organization',
+    timestamp: Date.now(),
+    version: '1.0.0',
+    correlationId,
+    payload: UserFollowedOrganizationSchema.parse(payload),
+  };
+}
+
+/**
+ * Factory: User Unfollowed Organization Event
+ */
+export function createUserUnfollowedOrganizationEvent(
+  payload: z.infer<typeof UserUnfollowedOrganizationSchema>,
+  correlationId?: string
+): UserUnfollowedOrganizationEvent {
+  return {
+    id: crypto.randomUUID(),
+    type: 'user.unfollowed_organization',
+    timestamp: Date.now(),
+    version: '1.0.0',
+    correlationId,
+    payload: UserUnfollowedOrganizationSchema.parse(payload),
+  };
+}

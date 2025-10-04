@@ -22,6 +22,7 @@ export * from './publishers/ServiceEventPublisher';
 // Subscribers
 export * from './subscribers/AnalyticsSubscriber';
 export * from './subscribers/CacheSubscriber';
+export * from './subscribers/SubscriptionEventSubscriber';
 
 // Create hybrid event bus instance
 import { HybridEventBus } from './HybridEventBus';
@@ -55,3 +56,7 @@ export const globalEventBus = new HybridEventBus({
 
 // Initialize the event bus
 globalEventBus.connect().catch(console.error);
+
+// Initialize subscription event subscribers
+import { initializeSubscriptionSubscribers } from './subscribers/SubscriptionEventSubscriber';
+initializeSubscriptionSubscribers(globalEventBus);

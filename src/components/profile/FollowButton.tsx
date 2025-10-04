@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { UserPlus, UserMinus, Loader2 } from 'lucide-react';
-import { useFollowUser } from '@/hooks/useFollowUser';
+import { useFollowUserEventDriven } from '@/hooks/useFollowUserEventDriven';
 import { useAuth } from '@/hooks/useAuth';
 
 interface FollowButtonProps {
@@ -13,7 +13,7 @@ interface FollowButtonProps {
 
 export function FollowButton({ userId, variant = 'default', size = 'default', className }: FollowButtonProps) {
   const { user } = useAuth();
-  const { isFollowing, loading, followUser, unfollowUser, checkFollowStatus } = useFollowUser(userId);
+  const { isFollowing, loading, followUser, unfollowUser, checkFollowStatus } = useFollowUserEventDriven(userId);
 
   useEffect(() => {
     if (user && user.id !== userId) {
