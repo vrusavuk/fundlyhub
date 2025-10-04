@@ -24,12 +24,25 @@ const loginSchema = emailSchema.extend({
     .max(128, 'Password must be less than 128 characters'),
 });
 
-const signupSchema = loginSchema.extend({
+const signupSchema = z.object({
   name: z.string()
     .trim()
     .min(2, 'Name must be at least 2 characters')
     .max(100, 'Name must be less than 100 characters')
     .regex(/^[a-zA-Z\s'-]+$/, 'Name can only contain letters, spaces, hyphens, and apostrophes'),
+  email: z.string()
+    .trim()
+    .email('Please enter a valid email address')
+    .max(255, 'Email must be less than 255 characters'),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[a-zA-Z]/, 'Password must contain letters')
+    .regex(/\d/, 'Password must contain at least 1 digit')
+    .max(128, 'Password must be less than 128 characters'),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -42,6 +55,14 @@ export default function Auth() {
   const [step, setStep] = useState<'email' | 'credentials'>('email');
   const [emailInput, setEmailInput] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
+  
+  // Password validation criteria
+  const passwordCriteria = {
+    minLength: passwordInput.length >= 8,
+    hasLetters: /[a-zA-Z]/.test(passwordInput),
+    hasDigit: /\d/.test(passwordInput),
+  };
   
   const { user, signUp, signIn, signInWithGoogle } = useAuth();
   const { toast } = useToast();
@@ -52,7 +73,7 @@ export default function Auth() {
   });
 
   const signupForm = useForm<SignupFormData>({
-    defaultValues: { name: '', email: '', password: '' },
+    defaultValues: { name: '', email: '', password: '', confirmPassword: '' },
     mode: 'onSubmit',
   });
 
@@ -154,8 +175,9 @@ export default function Auth() {
     setShowPassword(false);
     setStep('email');
     setEmailError('');
+    setPasswordInput('');
     loginForm.reset({ email: '', password: '' });
-    signupForm.reset({ name: '', email: '', password: '' });
+    signupForm.reset({ name: '', email: '', password: '', confirmPassword: '' });
   };
 
   const handleGoogleSignIn = async () => {
@@ -473,6 +495,10 @@ export default function Auth() {
                                   className="pl-12 pr-12 h-12 border-2"
                                   disabled={loading}
                                   autoComplete="new-password"
+                                  onChange={(e) => {
+                                    field.onChange(e);
+                                    setPasswordInput(e.target.value);
+                                  }}
                                 />
                                 <button
                                   type="button"
@@ -485,10 +511,71 @@ export default function Auth() {
                               </div>
                             </FormControl>
                             <FormMessage className="caption-small" />
-                            <p className="caption-small text-muted-foreground flex items-center gap-1.5 mt-1.5">
-                              <Shield className="h-3.5 w-3.5" />
-                              Minimum 6 characters
-                            </p>
+                            
+                            {/* Password Requirements */}
+                            <div className="space-y-2 mt-3">
+                              <div className="flex items-center gap-2 caption-small">
+                                <div className={`w-4 h-4 rounded-full flex items-center justify-center transition-colors ${
+                                  passwordCriteria.minLength ? 'bg-green-500' : 'bg-muted'
+                                }`}>
+                                  {passwordCriteria.minLength && <Check className="h-3 w-3 text-white" />}
+                                </div>
+                                <span className={passwordCriteria.minLength ? 'text-green-600' : 'text-muted-foreground'}>
+                                  Minimum 8 characters
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 caption-small">
+                                <div className={`w-4 h-4 rounded-full flex items-center justify-center transition-colors ${
+                                  passwordCriteria.hasLetters ? 'bg-green-500' : 'bg-muted'
+                                }`}>
+                                  {passwordCriteria.hasLetters && <Check className="h-3 w-3 text-white" />}
+                                </div>
+                                <span className={passwordCriteria.hasLetters ? 'text-green-600' : 'text-muted-foreground'}>
+                                  Contains letters
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 caption-small">
+                                <div className={`w-4 h-4 rounded-full flex items-center justify-center transition-colors ${
+                                  passwordCriteria.hasDigit ? 'bg-green-500' : 'bg-muted'
+                                }`}>
+                                  {passwordCriteria.hasDigit && <Check className="h-3 w-3 text-white" />}
+                                </div>
+                                <span className={passwordCriteria.hasDigit ? 'text-green-600' : 'text-muted-foreground'}>
+                                  Contains at least 1 digit
+                                </span>
+                              </div>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={signupForm.control}
+                        name="confirmPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <div className="relative group">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                <Input
+                                  {...field}
+                                  type={showPassword ? 'text' : 'password'}
+                                  placeholder="Confirm password"
+                                  className="pl-12 pr-12 h-12 border-2"
+                                  disabled={loading}
+                                  autoComplete="new-password"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                  tabIndex={-1}
+                                >
+                                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                </button>
+                              </div>
+                            </FormControl>
+                            <FormMessage className="caption-small" />
                           </FormItem>
                         )}
                       />
