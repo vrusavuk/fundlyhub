@@ -15,7 +15,7 @@ export default function CreateFundraiser() {
         <PageHeader
           title="Create New Fundraiser"
           description="Follow the steps below to launch your campaign with AI-powered assistance"
-          className="text-center mb-6 sm:mb-8"
+          className="mb-6 sm:mb-8"
         />
         <CreateFundraiserWizard />
       </PageContainer>
