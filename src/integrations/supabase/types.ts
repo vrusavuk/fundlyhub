@@ -1839,6 +1839,10 @@ export type Database = {
         Args: { text1: string; text2: string }
         Returns: number
       }
+      char_sequence_match: {
+        Args: { name_text: string; query_text: string }
+        Returns: boolean
+      }
       fuzzy_search_users: {
         Args: { search_query: string; similarity_threshold?: number }
         Returns: {
