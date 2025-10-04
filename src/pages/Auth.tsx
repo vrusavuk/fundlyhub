@@ -45,13 +45,11 @@ export default function Auth() {
   const { toast } = useToast();
 
   const loginForm = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
     mode: 'onSubmit',
   });
 
   const signupForm = useForm<SignupFormData>({
-    resolver: zodResolver(signupSchema),
     defaultValues: { name: '', email: '', password: '' },
     mode: 'onSubmit',
   });
@@ -73,6 +71,18 @@ export default function Auth() {
   }
 
   const handleLogin = async (data: LoginFormData) => {
+    // Manual validation
+    const validation = loginSchema.safeParse(data);
+    if (!validation.success) {
+      validation.error.errors.forEach(err => {
+        loginForm.setError(err.path[0] as any, {
+          type: 'manual',
+          message: err.message,
+        });
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       const { error } = await signIn(data.email, data.password);
@@ -95,6 +105,18 @@ export default function Auth() {
   };
 
   const handleSignup = async (data: SignupFormData) => {
+    // Manual validation
+    const validation = signupSchema.safeParse(data);
+    if (!validation.success) {
+      validation.error.errors.forEach(err => {
+        signupForm.setError(err.path[0] as any, {
+          type: 'manual',
+          message: err.message,
+        });
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       const { error } = await signUp(data.email, data.password, data.name);
