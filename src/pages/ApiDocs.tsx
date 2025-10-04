@@ -23,6 +23,7 @@ import { EventsDonationEvents } from "./docs/EventsDonationEvents";
 import { EventsOrganizationEvents } from "./docs/EventsOrganizationEvents";
 import { EventsAdminEvents } from "./docs/EventsAdminEvents";
 import { EventsExplorer } from "./docs/EventsExplorer";
+import { EventsSagas } from "./docs/EventsSagas";
 
 const ApiDocs = () => {
   return (
@@ -44,6 +45,7 @@ const ApiDocs = () => {
         <Route path="/events/donation-events" element={<EventsDonationEvents />} />
         <Route path="/events/organization-events" element={<EventsOrganizationEvents />} />
         <Route path="/events/admin-events" element={<EventsAdminEvents />} />
+        <Route path="/events/sagas" element={<EventsSagas />} />
         <Route path="/events/explorer" element={<EventsExplorer />} />
         <Route path="/javascript-examples" element={<DocsJavaScriptExamples />} />
         <Route path="/curl-examples" element={<DocsCurlExamples />} />

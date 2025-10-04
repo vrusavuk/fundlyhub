@@ -7,14 +7,24 @@ export const eventSpecification = {
   asyncapi: '2.6.0',
   info: {
     title: 'Fundly Event System',
-    version: '1.0.0',
-    description: 'Event-driven architecture documentation for the Fundly platform. All events are published through a hybrid event bus with Supabase persistence and Redis streaming.',
+    version: '2.0.0',
+    description: 'Event-driven architecture with CQRS, Saga orchestration, and distributed event streaming. All events are published through a hybrid event bus with Supabase persistence, Redis Upstash streaming, and edge function processing.',
   },
   servers: {
     production: {
       url: 'supabase://sgcaqrtnxqhrrqzxmupa',
       protocol: 'supabase',
-      description: 'Production event store',
+      description: 'Production Supabase event store with real-time subscriptions',
+    },
+    redis: {
+      url: 'redis://upstash',
+      protocol: 'redis',
+      description: 'Upstash Redis for distributed event streaming and caching',
+    },
+    edgeFunctions: {
+      url: 'https://sgcaqrtnxqhrrqzxmupa.supabase.co/functions/v1',
+      protocol: 'https',
+      description: 'Edge functions for async event processing and saga orchestration',
     },
   },
   channels: {
@@ -345,37 +355,80 @@ export const eventSpecification = {
       CampaignCreatedEvent: {
         name: 'CampaignCreatedEvent',
         title: 'Campaign Created',
-        summary: 'Published when a new campaign is created',
+        summary: 'Published when a new campaign is created. Triggers CampaignCreationSaga for orchestrated processing.',
         payload: {
           type: 'object',
           properties: {
+            id: { type: 'string', format: 'uuid', description: 'Event ID' },
+            type: { type: 'string', const: 'campaign.created' },
+            timestamp: { type: 'number', description: 'Unix timestamp' },
+            version: { type: 'string', example: '1.0.0' },
+            correlationId: { type: 'string', format: 'uuid' },
             payload: {
               type: 'object',
               properties: {
-                campaignId: { type: 'string', format: 'uuid' },
-                createdBy: { type: 'string', format: 'uuid' },
-                title: { type: 'string' },
-                goalAmount: { type: 'number' },
-                category: { type: 'string' },
+                campaignId: { type: 'string', format: 'uuid', description: 'Generated campaign ID' },
+                userId: { type: 'string', format: 'uuid', description: 'Campaign creator user ID' },
+                title: { type: 'string', description: 'Campaign title' },
+                description: { type: 'string', description: 'Campaign description/story' },
+                goalAmount: { type: 'number', description: 'Funding goal amount' },
+                categoryId: { type: 'string', format: 'uuid', description: 'Category ID' },
+                visibility: { type: 'string', enum: ['public', 'private'], description: 'Campaign visibility' },
+                endDate: { type: 'string', format: 'date', description: 'Campaign end date (optional)' },
               },
+              required: ['campaignId', 'userId', 'title', 'description', 'goalAmount', 'categoryId', 'visibility'],
             },
           },
         },
+        examples: [{
+          payload: {
+            id: '550e8400-e29b-41d4-a716-446655440000',
+            type: 'campaign.created',
+            timestamp: 1704067200000,
+            version: '1.0.0',
+            correlationId: '660e8400-e29b-41d4-a716-446655440001',
+            payload: {
+              campaignId: '770e8400-e29b-41d4-a716-446655440002',
+              userId: '880e8400-e29b-41d4-a716-446655440003',
+              title: 'Help Build a School in Rural Kenya',
+              description: 'We are raising funds to build a school...',
+              goalAmount: 50000,
+              categoryId: '990e8400-e29b-41d4-a716-446655440004',
+              visibility: 'public',
+              endDate: '2025-12-31',
+            },
+          },
+        }],
       },
       CampaignUpdatedEvent: {
         name: 'CampaignUpdatedEvent',
         title: 'Campaign Updated',
-        summary: 'Published when campaign is updated',
+        summary: 'Published when campaign details are modified. Updates CQRS projections.',
         payload: {
           type: 'object',
           properties: {
+            id: { type: 'string', format: 'uuid' },
+            type: { type: 'string', const: 'campaign.updated' },
+            timestamp: { type: 'number' },
+            version: { type: 'string' },
+            correlationId: { type: 'string', format: 'uuid' },
             payload: {
               type: 'object',
               properties: {
                 campaignId: { type: 'string', format: 'uuid' },
-                updatedBy: { type: 'string', format: 'uuid' },
-                changes: { type: 'object' },
+                userId: { type: 'string', format: 'uuid', description: 'User who made the update' },
+                changes: { 
+                  type: 'object',
+                  description: 'Object containing changed fields',
+                  additionalProperties: true,
+                },
+                previousValues: {
+                  type: 'object',
+                  description: 'Previous values for audit trail',
+                  additionalProperties: true,
+                },
               },
+              required: ['campaignId', 'userId', 'changes'],
             },
           },
         },

@@ -110,17 +110,55 @@ export const EventsOverview = () => {
             Event Infrastructure
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <h4 className="font-semibold">Hybrid Event Bus</h4>
-          <p className="text-muted-foreground">
-            The system uses a hybrid approach combining Supabase persistence with optional Redis streaming:
-          </p>
-          <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-            <li><strong>Supabase Event Store:</strong> All events persisted to <code>event_store</code> table</li>
-            <li><strong>Redis Streams:</strong> Real-time event distribution (server-side only)</li>
-            <li><strong>Edge Functions:</strong> Async event processing via <code>event-processor</code></li>
-            <li><strong>Middleware:</strong> Logging, validation, idempotency, circuit breakers</li>
-          </ul>
+        <CardContent className="space-y-6">
+          <div>
+            <h4 className="font-semibold mb-2">Hybrid Event Bus with Redis Upstash</h4>
+            <p className="text-muted-foreground mb-3">
+              The system uses a distributed event-driven architecture with CQRS and Saga orchestration:
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+              <li><strong>Supabase Event Store:</strong> All events persisted to <code>event_store</code> table with real-time subscriptions</li>
+              <li><strong>Redis Upstash Streams:</strong> Distributed event streaming via <code>events:stream</code> for scalable processing</li>
+              <li><strong>Edge Functions:</strong> Dedicated processors (<code>event-processor</code>, <code>campaign-processor</code>) for async event handling</li>
+              <li><strong>Event Middleware:</strong> Logging, validation, idempotency, circuit breakers, dead-letter queues</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-2">CQRS Read Models</h4>
+            <p className="text-muted-foreground mb-3">
+              Optimized projection tables for fast reads:
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+              <li><strong>campaign_summary_projection:</strong> Denormalized campaign data for list views</li>
+              <li><strong>campaign_stats_projection:</strong> Real-time aggregated statistics and analytics</li>
+              <li><strong>campaign_search_projection:</strong> Full-text search with tsvector indexing</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-2">Saga Orchestration</h4>
+            <p className="text-muted-foreground mb-3">
+              Complex workflows managed by saga patterns with compensation logic:
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+              <li><strong>CampaignCreationSaga:</strong> Orchestrates multi-step campaign creation (validation → creation → role update → projections)</li>
+              <li><strong>Saga State Management:</strong> Tracked in <code>saga_instances</code> and <code>saga_steps</code> tables</li>
+              <li><strong>Automatic Compensation:</strong> Rollback on failures with detailed error tracking</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-2">Event Processors</h4>
+            <p className="text-muted-foreground mb-3">
+              Specialized processors for event handling:
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+              <li><strong>CampaignWriteProcessor:</strong> Idempotent writes to <code>fundraisers</code> table</li>
+              <li><strong>CampaignProjectionProcessor:</strong> Updates CQRS projection views</li>
+              <li><strong>CampaignRoleProcessor:</strong> Automatic user role promotion on campaign creation</li>
+            </ul>
+          </div>
         </CardContent>
       </Card>
 

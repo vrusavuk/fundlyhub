@@ -78,6 +78,7 @@ export function DocsLayout({ children }: DocsLayoutProps) {
                     <li><Link to="/docs/events/donation-events" className={getLinkClassName('/docs/events/donation-events')}>Donation Events</Link></li>
                     <li><Link to="/docs/events/organization-events" className={getLinkClassName('/docs/events/organization-events')}>Organization Events</Link></li>
                     <li><Link to="/docs/events/admin-events" className={getLinkClassName('/docs/events/admin-events')}>Admin Events</Link></li>
+                    <li><Link to="/docs/events/sagas" className={getLinkClassName('/docs/events/sagas')}>Saga Pattern</Link></li>
                     <li><Link to="/docs/events/explorer" className={getLinkClassName('/docs/events/explorer')}>Event Explorer</Link></li>
                   </ul>
                 </div>
