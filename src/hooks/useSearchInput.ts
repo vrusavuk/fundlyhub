@@ -27,7 +27,7 @@ interface UseSearchInputResult {
 
 export function useSearchInput({
   initialQuery = '',
-  debounceMs = 150,
+  debounceMs = 50,
   minQueryLength = 0,
   autoFocus = false
 }: UseSearchInputOptions = {}): UseSearchInputResult {

@@ -38,13 +38,21 @@ export function useEnhancedSearch(options: UseEnhancedSearchOptions): UseEnhance
   const [executionTimeMs, setExecutionTimeMs] = useState(0);
   const [cached, setCached] = useState(false);
   
-  const debouncedQuery = useDebounce(options.query, 300);
+  const debouncedQuery = useDebounce(options.query, 50);
   const abortControllerRef = useRef<AbortController | null>(null);
+  
+  // Show loading immediately when query changes (not debounced)
+  useEffect(() => {
+    if (options.query !== debouncedQuery && options.query.trim() && options.enabled) {
+      setLoading(true);
+    }
+  }, [options.query, debouncedQuery, options.enabled]);
   
   const executeSearch = useCallback(async (query: string) => {
     if (!query.trim() || !options.enabled) {
       setResults([]);
       setSuggestions([]);
+      setLoading(false);
       return;
     }
     

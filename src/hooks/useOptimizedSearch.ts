@@ -26,7 +26,7 @@ export function useOptimizedSearch({
   query,
   enabled = true,
   category,
-  debounceMs = 300
+  debounceMs = 50
 }: UseOptimizedSearchOptions): UseOptimizedSearchResult {
   
   // Memoize search parameters to prevent unnecessary API calls
