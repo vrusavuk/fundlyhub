@@ -16,6 +16,7 @@ import { useEnhancedSearch } from "@/hooks/useEnhancedSearch";
 import { useNavigate } from "react-router-dom";
 import { useGlobalSearch } from "@/contexts/UnifiedSearchContext";
 import { ScreenReaderOnly } from "@/components/accessibility/ScreenReaderOnly";
+import type { SearchResult } from "@/types/ui/search";
 
 export default function SearchResults() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -27,9 +28,13 @@ export default function SearchResults() {
   const urlQuery = searchParams.get('q') || '';
   const activeQuery = searchQuery || urlQuery;
   
-  const { results, loading, error, hasMore, loadMore, retry } = useEnhancedSearch({
+  const { results, suggestions, loading, error, hasMore, executionTimeMs, cached, loadMore, retry, trackClick, trackSuggestionClick } = useEnhancedSearch({
     query: activeQuery,
-    enabled: !!activeQuery
+    enabled: !!activeQuery,
+    filters: {
+      type: selectedType === 'all' ? undefined : (selectedType as any),
+    },
+    includeSuggestions: true,
   });
 
   // Sync global search context with URL on initial load only
@@ -56,8 +61,14 @@ export default function SearchResults() {
 
   const resultTypes = ['all', ...Array.from(new Set(results.map(r => r.type)))];
 
-  const handleResultClick = (result: any) => {
+  const handleResultClick = (result: SearchResult) => {
+    trackClick(result.id, result.type);
     navigate(result.link);
+  };
+
+  const handleSuggestionClick = (suggestionQuery: string) => {
+    trackSuggestionClick(suggestionQuery);
+    setSearchParams({ q: suggestionQuery });
   };
 
   if (!activeQuery) {
@@ -164,15 +175,25 @@ export default function SearchResults() {
         <SearchResultsContainer
           results={filteredResults}
           searchQuery={activeQuery}
+          suggestions={suggestions}
           loading={loading}
           error={error}
           hasMore={hasMore}
           onLoadMore={loadMore}
           onRetry={retry}
           onResultClick={handleResultClick}
+          onSuggestionClick={handleSuggestionClick}
           emptyMessage={`No results found for "${activeQuery}"`}
           variant="card"
         />
+        
+        {/* Performance indicator */}
+        {executionTimeMs > 0 && results.length > 0 && (
+          <div className="mt-6 text-sm text-muted-foreground text-center">
+            Found {results.length} results in {executionTimeMs.toFixed(0)}ms
+            {cached && ' (cached)'}
+          </div>
+        )}
       </PageContainer>
     </AppLayout>
   );

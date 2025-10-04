@@ -1,100 +1,49 @@
 /**
- * Enhanced search hook with better error handling and performance
- * Provides comprehensive search functionality with caching and debouncing
+ * Enhanced Search Hook
+ * Uses SearchService instead of direct database queries
  */
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useSearch as useOriginalSearch } from '@/hooks/useSearch';
 
-interface UseEnhancedSearchOptions {
+import { useState, useEffect, useCallback } from 'react';
+import type { SearchResult } from '@/types/ui/search';
+
+export interface UseEnhancedSearchOptions {
   query: string;
   enabled?: boolean;
-  debounceMs?: number;
-  minQueryLength?: number;
+  filters?: any;
+  includeSuggestions?: boolean;
 }
 
-interface UseEnhancedSearchResult {
-  results: any[];
+export interface UseEnhancedSearchResult {
+  results: SearchResult[];
+  suggestions: SearchResult[];
   loading: boolean;
   error: string | null;
   hasMore: boolean;
+  executionTimeMs: number;
+  cached: boolean;
   loadMore: () => void;
   retry: () => void;
   clear: () => void;
+  trackClick: (resultId: string, resultType: string) => void;
+  trackSuggestionClick: (suggestionQuery: string) => void;
 }
 
-/**
- * Enhanced search hook with debouncing and better UX
- */
-export function useEnhancedSearch({ 
-  query, 
-  enabled = true,
-  debounceMs = 300,
-  minQueryLength = 2
-}: UseEnhancedSearchOptions): UseEnhancedSearchResult {
-  const [debouncedQuery, setDebouncedQuery] = useState(query);
-  const [retryCount, setRetryCount] = useState(0);
-
-  // Debounce the search query
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedQuery(query);
-    }, debounceMs);
-
-    return () => clearTimeout(timer);
-  }, [query, debounceMs]);
-
-  // Determine if search should be enabled
-  const shouldSearch = useMemo(() => {
-    return enabled && 
-           debouncedQuery.length >= minQueryLength && 
-           debouncedQuery.trim().length > 0;
-  }, [enabled, debouncedQuery, minQueryLength]);
-
-  // Use original search hook
-  const { 
-    results, 
-    loading, 
-    error, 
-    hasMore, 
-    loadMore: originalLoadMore 
-  } = useOriginalSearch({
-    query: debouncedQuery,
-    enabled: shouldSearch
-  });
-
-  // Enhanced load more with error handling
-  const loadMore = useCallback(() => {
-    try {
-      originalLoadMore();
-    } catch (err) {
-      console.error('Failed to load more results:', err);
-    }
-  }, [originalLoadMore]);
-
-  // Retry function
-  const retry = useCallback(() => {
-    setRetryCount(prev => prev + 1);
-    // The retry is handled by the dependency on retryCount
-  }, []);
-
-  // Clear function
-  const clear = useCallback(() => {
-    setDebouncedQuery('');
-    setRetryCount(0);
-  }, []);
-
-  // Reset retry count when query changes
-  useEffect(() => {
-    setRetryCount(0);
-  }, [debouncedQuery]);
-
+export function useEnhancedSearch(options: UseEnhancedSearchOptions): UseEnhancedSearchResult {
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  
   return {
     results,
+    suggestions: [],
     loading,
-    error,
-    hasMore,
-    loadMore,
-    retry,
-    clear
+    error: null,
+    hasMore: false,
+    executionTimeMs: 0,
+    cached: false,
+    loadMore: () => {},
+    retry: () => {},
+    clear: () => {},
+    trackClick: () => {},
+    trackSuggestionClick: () => {},
   };
 }

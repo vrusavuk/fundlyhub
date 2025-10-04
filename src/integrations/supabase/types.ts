@@ -1206,6 +1206,75 @@ export type Database = {
           },
         ]
       }
+      search_results_cache: {
+        Row: {
+          cache_key: string
+          created_at: string
+          expires_at: string
+          hit_count: number | null
+          query: string
+          result_count: number
+          results: Json
+          suggestions: Json | null
+        }
+        Insert: {
+          cache_key: string
+          created_at?: string
+          expires_at?: string
+          hit_count?: number | null
+          query: string
+          result_count: number
+          results: Json
+          suggestions?: Json | null
+        }
+        Update: {
+          cache_key?: string
+          created_at?: string
+          expires_at?: string
+          hit_count?: number | null
+          query?: string
+          result_count?: number
+          results?: Json
+          suggestions?: Json | null
+        }
+        Relationships: []
+      }
+      search_suggestions_projection: {
+        Row: {
+          created_at: string
+          id: string
+          match_type: string
+          query: string
+          relevance_score: number
+          success_rate: number | null
+          suggestion: string
+          updated_at: string
+          usage_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          match_type: string
+          query: string
+          relevance_score?: number
+          success_rate?: number | null
+          suggestion: string
+          updated_at?: string
+          usage_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          match_type?: string
+          query?: string
+          relevance_score?: number
+          success_rate?: number | null
+          suggestion?: string
+          updated_at?: string
+          usage_count?: number | null
+        }
+        Relationships: []
+      }
       security_events: {
         Row: {
           created_at: string | null
@@ -1664,6 +1733,84 @@ export type Database = {
           },
         ]
       }
+      user_search_projection: {
+        Row: {
+          account_status: string
+          avatar: string | null
+          bio: string | null
+          campaign_count: number | null
+          created_at: string
+          email: string | null
+          follower_count: number | null
+          is_verified: boolean | null
+          location: string | null
+          name: string
+          name_bigrams: string[] | null
+          name_dmetaphone: string | null
+          name_lowercase: string
+          name_metaphone: string | null
+          name_soundex: string | null
+          name_tokens: string[] | null
+          name_trigrams: string[] | null
+          profile_visibility: string
+          relevance_boost: number | null
+          role: Database["public"]["Enums"]["user_role"]
+          search_vector: unknown | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_status: string
+          avatar?: string | null
+          bio?: string | null
+          campaign_count?: number | null
+          created_at?: string
+          email?: string | null
+          follower_count?: number | null
+          is_verified?: boolean | null
+          location?: string | null
+          name: string
+          name_bigrams?: string[] | null
+          name_dmetaphone?: string | null
+          name_lowercase: string
+          name_metaphone?: string | null
+          name_soundex?: string | null
+          name_tokens?: string[] | null
+          name_trigrams?: string[] | null
+          profile_visibility: string
+          relevance_boost?: number | null
+          role: Database["public"]["Enums"]["user_role"]
+          search_vector?: unknown | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_status?: string
+          avatar?: string | null
+          bio?: string | null
+          campaign_count?: number | null
+          created_at?: string
+          email?: string | null
+          follower_count?: number | null
+          is_verified?: boolean | null
+          location?: string | null
+          name?: string
+          name_bigrams?: string[] | null
+          name_dmetaphone?: string | null
+          name_lowercase?: string
+          name_metaphone?: string | null
+          name_soundex?: string | null
+          name_tokens?: string[] | null
+          name_trigrams?: string[] | null
+          profile_visibility?: string
+          relevance_boost?: number | null
+          role?: Database["public"]["Enums"]["user_role"]
+          search_vector?: unknown | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       event_statistics: {
@@ -1842,6 +1989,25 @@ export type Database = {
       char_sequence_match: {
         Args: { name_text: string; query_text: string }
         Returns: boolean
+      }
+      enhanced_fuzzy_search_users: {
+        Args: {
+          include_suggestions?: boolean
+          max_results?: number
+          search_query: string
+        }
+        Returns: {
+          avatar: string
+          bio: string
+          campaign_count: number
+          follower_count: number
+          is_suggestion: boolean
+          match_name: string
+          match_type: string
+          relevance_score: number
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }[]
       }
       fuzzy_search_users: {
         Args: { search_query: string; similarity_threshold?: number }
@@ -2099,6 +2265,10 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
+      levenshtein_distance: {
+        Args: { s1: string; s2: string }
+        Returns: number
+      }
       log_audit_event: {
         Args: {
           _action: string
@@ -2124,6 +2294,10 @@ export type Database = {
         }
         Returns: string
       }
+      ngram_similarity_enhanced: {
+        Args: { n?: number; text1: string; text2: string }
+        Returns: number
+      }
       phonetic_match: {
         Args: { text1: string; text2: string }
         Returns: boolean
@@ -2135,6 +2309,10 @@ export type Database = {
       refresh_searchable_content: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      token_match_score: {
+        Args: { name_text: string; query_text: string }
+        Returns: number
       }
       update_campaign_analytics_safe: {
         Args: { p_amount: number; p_campaign_id: string; p_donor_id: string }

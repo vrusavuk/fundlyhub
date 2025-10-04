@@ -15,6 +15,7 @@ export * from './domain/CampaignEvents';
 export * from './domain/DonationEvents';
 export * from './domain/OrganizationEvents';
 export * from './domain/AdminEvents';
+export * from './domain/SearchEvents';
 
 // Publishers
 export * from './publishers/ServiceEventPublisher';
@@ -45,6 +46,7 @@ import { ValidationMiddleware } from './middleware/ValidationMiddleware';
 import { CampaignWriteProcessor } from './processors/CampaignWriteProcessor';
 import { CampaignProjectionProcessor } from './processors/CampaignProjectionProcessor';
 import { CampaignRoleProcessor } from './processors/CampaignRoleProcessor';
+import { UserSearchProjectionProcessor } from './processors/UserSearchProjectionProcessor';
 
 // Export utility classes
 export { EventIdempotency, eventIdempotency } from './EventIdempotency';
@@ -86,6 +88,13 @@ globalEventBus.subscribe('campaign.deleted', campaignProjectionProcessor);
 globalEventBus.subscribe('campaign.created', campaignRoleProcessor);
 
 console.log('[EventBus] Campaign processors registered');
+
+// Register search projection processor
+const userSearchProjectionProcessor = new UserSearchProjectionProcessor();
+globalEventBus.subscribe('user.registered', userSearchProjectionProcessor);
+globalEventBus.subscribe('user.profile_updated', userSearchProjectionProcessor);
+
+console.log('[EventBus] Search processors registered');
 
 // Initialize subscription event subscribers
 import { initializeSubscriptionSubscribers } from './subscribers/SubscriptionEventSubscriber';
