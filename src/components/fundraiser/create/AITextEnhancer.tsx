@@ -75,46 +75,42 @@ export function AITextEnhancer({
     }
   };
 
-  // Show suggestion UI if we have a suggestion
+  // Show suggestion overlay if we have a suggestion
   if (suggestedText) {
     return (
-      <div className={cn('space-y-3 p-4 border rounded-lg bg-accent/50', className)}>
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
-            AI Suggestion
-          </span>
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleReject}
-              disabled={isLoading}
-            >
-              <X className="h-4 w-4 mr-1" />
-              Decline
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleRegenerate}
-              disabled={isLoading}
-            >
-              <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
-            </Button>
-            <Button
-              size="sm"
-              onClick={handleAccept}
-              disabled={isLoading}
-            >
-              <Check className="h-4 w-4 mr-1" />
-              Accept
-            </Button>
-          </div>
+      <div className="absolute inset-0 z-10 flex flex-col">
+        <div className="flex-1 bg-primary/5 backdrop-blur-sm rounded-md border-2 border-primary p-3 overflow-y-auto">
+          <p className="text-sm whitespace-pre-wrap">{suggestedText}</p>
         </div>
-        <p className="text-sm bg-background p-3 rounded border">
-          {suggestedText}
-        </p>
+        <div className="absolute top-2 right-2 flex gap-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={handleReject}
+            disabled={isLoading}
+            className="h-8"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={handleRegenerate}
+            disabled={isLoading}
+            className="h-8"
+          >
+            <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
+          </Button>
+          <Button
+            size="sm"
+            onClick={handleAccept}
+            disabled={isLoading}
+            className="h-8"
+          >
+            <Check className="h-4 w-4 mr-1" />
+            Accept
+          </Button>
+        </div>
       </div>
     );
   }
