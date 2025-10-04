@@ -47,14 +47,14 @@ const Index = () => {
           
           {!loading && fundraisers.length === 0 && !error && (
             <div className="text-center component-hierarchy py-12">
-              <Button className="cta-primary mt-4" asChild>
+              <Button className="mt-4" size="lg" asChild>
                 <Link to="/create">Be the first to create one!</Link>
               </Button>
             </div>
           )}
           
           <div className="text-center component-hierarchy mt-12">
-            <Button variant="outline" size="lg" className="cta-secondary" asChild>
+            <Button variant="outline" size="lg" asChild>
               <Link to="/campaigns">
                 View All Campaigns
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -76,7 +76,7 @@ const Index = () => {
           <p className="body-large text-white/90 mb-8">
             Start your fundraiser today and connect with people who want to help
           </p>
-          <Button variant="accent" size="lg" className="cta-primary text-lg px-8 py-6" asChild>
+          <Button variant="accent" size="lg" className="text-lg px-8 py-6" asChild>
             <Link to="/create">
               Start Your Campaign Now
               <ArrowRight className="ml-2 h-5 w-5" />

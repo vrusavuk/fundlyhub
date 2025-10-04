@@ -284,14 +284,16 @@ export default function CreateFundraiser() {
                   type="button"
                   variant="outline"
                   onClick={() => navigate('/')}
-                  className="cta-secondary touch-button"
+                  className="touch-button"
+                  size="lg"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="cta-primary touch-button shadow-medium hover:shadow-glow transition-all duration-300"
+                  className="touch-button"
+                  size="lg"
                 >
                   {loading ? (
                     <div className="flex items-center">

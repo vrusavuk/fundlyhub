@@ -280,14 +280,6 @@
           box-shadow: var(--shadow-elevated);
         }
 
-        /* Simplified CTA and button styles */
-        .cta-primary {
-          @apply bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-lg shadow-standard hover:bg-primary/90 transition-colors duration-200;
-        }
-        
-        .cta-secondary {
-          @apply bg-background text-foreground font-medium px-6 py-2.5 rounded-md border border-border hover:bg-muted/50 transition-colors duration-200;
-        }
 
         /* Simplified card styles */
         .card-enhanced {

@@ -298,53 +298,51 @@ export default function Auth() {
                 className="space-y-5"
               >
                 {/* Email Step */}
-                <div className={cn(
-                  "space-y-5 transition-all duration-300",
-                  step === 'credentials' && "opacity-40 pointer-events-none"
-                )}>
-                  <FormField
-                    control={currentForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <div className="relative group">
-                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                            <Input
-                              {...field}
-                              type="email"
-                              placeholder="you@example.com"
-                              className="pl-12 h-12 border-2 mobile-input-padding"
-                              disabled={loading || step === 'credentials'}
-                              autoComplete="email"
-                              autoFocus
-                            />
-                            {emailValidated && step === 'email' && (
-                              <div className="absolute right-4 top-1/2 -translate-y-1/2 animate-scale-in">
-                                <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center">
-                                  <Check className="h-4 w-4 text-white" />
+                {step === 'email' ? (
+                  <div className="space-y-5">
+                    <FormField
+                      control={currentForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <div className="relative group">
+                              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                              <Input
+                                {...field}
+                                type="email"
+                                placeholder="you@example.com"
+                                className="pl-12 h-12 border-2 mobile-input-padding"
+                                disabled={loading}
+                                autoComplete="email"
+                                autoFocus
+                              />
+                              {emailValidated && (
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 animate-scale-in">
+                                  <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center">
+                                    <Check className="h-4 w-4 text-white" />
+                                  </div>
                                 </div>
-                              </div>
-                            )}
-                          </div>
-                        </FormControl>
-                        <FormMessage className="caption-small" />
-                      </FormItem>
-                    )}
-                  />
+                              )}
+                            </div>
+                          </FormControl>
+                          <FormMessage className="caption-small" />
+                        </FormItem>
+                      )}
+                    />
 
-                  {step === 'email' && (
                     <Button
                       type="button"
                       onClick={handleContinueWithEmail}
                       disabled={!emailValidated || loading}
-                      className="w-full h-12 font-semibold cta-primary touch-button shadow-medium hover:shadow-elevated transition-all"
+                      className="w-full h-12 font-semibold touch-button"
+                      size="lg"
                     >
                       Continue
                       <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
-                  )}
-                </div>
+                  </div>
+                ) : null}
 
                 {/* Credentials Step */}
                 {step === 'credentials' && (
@@ -426,7 +424,8 @@ export default function Auth() {
                     {/* Submit Button */}
                     <Button
                       type="submit"
-                      className="w-full h-12 font-semibold cta-primary touch-button shadow-medium hover:shadow-elevated transition-all"
+                      className="w-full h-12 font-semibold touch-button"
+                      size="lg"
                       disabled={loading}
                     >
                       {loading ? (

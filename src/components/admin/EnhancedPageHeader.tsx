@@ -85,7 +85,6 @@ export function EnhancedPageHeader({
                 disabled={action.disabled || action.loading}
                 className={cn(
                   "shadow-soft transition-all duration-200",
-                  action.variant === 'default' && "cta-primary hover:shadow-medium",
                   action.variant === 'outline' && "border-primary/20 hover:border-primary/30 hover:bg-primary/5"
                 )}
               >
