@@ -67,16 +67,16 @@ export const EventsOverview = () => {
             <div className="p-4 border rounded-lg">
               <h4 className="font-semibold mb-2">User Events</h4>
               <p className="text-sm text-muted-foreground">
-                Registration, login, profile updates, campaign following
+                Registration, login, profile updates, follow/unfollow users and organizations
               </p>
-              <p className="text-xs text-muted-foreground mt-2">5 event types</p>
+              <p className="text-xs text-muted-foreground mt-2">9 event types including social features</p>
             </div>
             <div className="p-4 border rounded-lg">
               <h4 className="font-semibold mb-2">Campaign Events</h4>
               <p className="text-sm text-muted-foreground">
                 Creation, updates, deletions, goal reached, status changes
               </p>
-              <p className="text-xs text-muted-foreground mt-2">9 event types for user actions including follow/unfollow</p>
+              <p className="text-xs text-muted-foreground mt-2">5 event types</p>
             </div>
             <div className="p-4 border rounded-lg">
               <h4 className="font-semibold mb-2">Donation Events</h4>
@@ -151,13 +151,65 @@ export const EventsOverview = () => {
           <div>
             <h4 className="font-semibold mb-2">Event Processors</h4>
             <p className="text-muted-foreground mb-3">
-              Specialized processors for event handling:
+              Specialized processors for event handling with idempotency and parallel execution:
             </p>
             <ul className="list-disc list-inside space-y-2 text-muted-foreground">
               <li><strong>CampaignWriteProcessor:</strong> Idempotent writes to <code>fundraisers</code> table</li>
-              <li><strong>CampaignProjectionProcessor:</strong> Updates CQRS projection views</li>
+              <li><strong>CampaignProjectionProcessor:</strong> Updates CQRS projection views (summary, stats, search)</li>
               <li><strong>CampaignRoleProcessor:</strong> Automatic user role promotion on campaign creation</li>
+              <li><strong>SubscriptionWriteProcessor:</strong> Handles follow events for users and organizations</li>
+              <li><strong>SubscriptionDeleteProcessor:</strong> Handles unfollow events</li>
+              <li><strong>ActivityFeedProcessor:</strong> Creates social activity feed entries</li>
+              <li><strong>CountProjectionProcessor:</strong> Updates follower/following counts in real-time</li>
             </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-2">Follow/Unfollow Event Architecture</h4>
+            <p className="text-muted-foreground mb-3">
+              Social features powered by event-driven architecture with 4 specialized processors:
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+              <li><strong>Event Types:</strong> user.followed_user, user.unfollowed_user, user.followed_organization, user.unfollowed_organization</li>
+              <li><strong>Parallel Processing:</strong> All 4 processors handle each event simultaneously without blocking</li>
+              <li><strong>Eventual Consistency:</strong> Counts and activity feeds update asynchronously</li>
+              <li><strong>Idempotency:</strong> Duplicate events are safely ignored via event_processing_status tracking</li>
+              <li><strong>Data Flow:</strong> User action → Event published → Subscription write → Activity feed → Count update → Profile refresh</li>
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Follow/Unfollow Flow Diagram</CardTitle>
+          <CardDescription>Complete event flow from user action to database updates</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="bg-muted rounded-lg p-4">
+            <h4 className="font-semibold mb-3">Event Processing Pipeline:</h4>
+            <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+              <li>User clicks "Follow" button in UI</li>
+              <li>Frontend publishes <code>user.followed_user</code> event to global event bus</li>
+              <li>Event is validated with Zod schema and stored in <code>event_store</code> table</li>
+              <li>Event is streamed to Redis Upstash (production) or in-memory bus (development)</li>
+              <li><strong>Parallel Processing (all simultaneous):</strong>
+                <ul className="list-disc list-inside ml-6 mt-1 space-y-1">
+                  <li>SubscriptionWriteProcessor → Insert into <code>subscriptions</code> table</li>
+                  <li>ActivityFeedProcessor → Insert into <code>user_activities</code> table</li>
+                  <li>CountProjectionProcessor → Update <code>profiles.follower_count</code> and <code>following_count</code></li>
+                </ul>
+              </li>
+              <li>Each processor marks event as complete in <code>event_processing_status</code></li>
+              <li>UI refreshes via Supabase real-time subscriptions showing updated counts</li>
+            </ol>
+          </div>
+          <div className="border-l-4 border-primary pl-4">
+            <p className="text-sm font-semibold mb-1">Key Benefits:</p>
+            <p className="text-sm text-muted-foreground">
+              This architecture ensures that even if one processor fails (e.g., activity feed), 
+              the core follow action still succeeds. Failed events go to the dead letter queue for manual retry.
+            </p>
           </div>
         </CardContent>
       </Card>
