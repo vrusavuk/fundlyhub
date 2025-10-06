@@ -1,5 +1,5 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { Eye, CheckCircle, XCircle, Flag, Trash2 } from "lucide-react";
+import { Eye, Edit, CheckCircle, XCircle, Flag, Trash2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -57,6 +57,7 @@ const truncateText = (text: string, maxLength: number = 60): string => {
 // Create campaign columns
 export function createCampaignColumns(
   onViewDetails: (campaign: CampaignData) => void,
+  onEditCampaign: (campaign: CampaignData) => void,
   onStatusChange: (campaignId: string, status: string) => void,
   permissions: {
     canModerate: boolean;
@@ -227,6 +228,11 @@ export function createCampaignColumns(
           label: "View Details",
           icon: Eye,
           onClick: onViewDetails,
+        },
+        {
+          label: "Edit Campaign",
+          icon: Edit,
+          onClick: onEditCampaign,
         },
         ...(permissions.canModerate ? [
           {

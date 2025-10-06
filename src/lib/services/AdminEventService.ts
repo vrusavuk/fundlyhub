@@ -194,36 +194,105 @@ export class AdminEventService {
   }
 
   /**
-   * Update campaign and publish event
+   * Update campaign and publish event with validation
    */
   static async updateCampaign(
     campaignId: string,
     updatedBy: string,
-    changes: Record<string, any>
+    changes: Record<string, any>,
+    options?: {
+      validateTransitions?: boolean;
+      reason?: string;
+    }
   ) {
-    // Database operation
-    const { error } = await supabase
+    const { data: user } = await supabase.auth.getUser();
+    if (!user?.user) throw new Error('User not authenticated');
+
+    // 1. Fetch current campaign data for validation
+    const { data: campaign, error: fetchError } = await supabase
       .from('fundraisers')
-      .update(changes)
+      .select('*, donations(id)')
+      .eq('id', campaignId)
+      .single();
+
+    if (fetchError || !campaign) {
+      throw new Error(`Failed to fetch campaign: ${fetchError?.message}`);
+    }
+
+    // 2. Validate changes
+    if (options?.validateTransitions !== false) {
+      // Prevent reducing goal amount if donations exist
+      if (changes.goal_amount && campaign.donations && campaign.donations.length > 0) {
+        if (changes.goal_amount < campaign.goal_amount) {
+          throw new Error('Cannot reduce goal amount after receiving donations');
+        }
+      }
+
+      // Prevent changing currency if donations exist
+      if (changes.currency && campaign.donations && campaign.donations.length > 0) {
+        if (changes.currency !== campaign.currency) {
+          throw new Error('Cannot change currency after receiving donations');
+        }
+      }
+
+      // Validate status transitions
+      if (changes.status) {
+        const validTransitions: Record<string, string[]> = {
+          draft: ['pending', 'active'],
+          pending: ['active', 'draft'],
+          active: ['paused', 'closed', 'ended'],
+          paused: ['active', 'closed'],
+          closed: [],
+          ended: [],
+        };
+
+        const currentStatus = campaign.status;
+        const newStatus = changes.status;
+        
+        if (!validTransitions[currentStatus]?.includes(newStatus)) {
+          throw new Error(`Invalid status transition from ${currentStatus} to ${newStatus}`);
+        }
+      }
+    }
+
+    // 3. Update database
+    const { error: updateError } = await supabase
+      .from('fundraisers')
+      .update({
+        ...changes,
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', campaignId);
 
-    if (error) throw error;
+    if (updateError) {
+      console.error('❌ Failed to update campaign:', updateError);
+      throw new Error(`Failed to update campaign: ${updateError.message}`);
+    }
 
-    // Publish event
-    const event = createCampaignUpdatedEvent({
-      campaignId,
-      userId: updatedBy,
-      changes,
-    });
-    await globalEventBus.publish(event);
+    console.log(`✅ Campaign ${campaignId} updated successfully`);
 
-    // Log audit
+    // 4. Publish event
+    await globalEventBus.publish(
+      createCampaignUpdatedEvent({
+        campaignId,
+        userId: updatedBy,
+        changes,
+        previousValues: options?.reason ? { reason: options.reason, ownerId: campaign.owner_user_id } : undefined,
+      })
+    );
+
+    // 5. Log audit trail with detailed field tracking
     await supabase.rpc('log_audit_event', {
       _actor_id: updatedBy,
       _action: 'campaign_updated',
       _resource_type: 'campaign',
       _resource_id: campaignId,
-      _metadata: { changes },
+      _metadata: { 
+        changes, 
+        reason: options?.reason,
+        changed_fields: Object.keys(changes),
+        admin_edit: updatedBy !== campaign.owner_user_id,
+      },
     });
 
     return { success: true };

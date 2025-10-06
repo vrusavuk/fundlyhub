@@ -25,6 +25,7 @@ import { useEventSubscriber } from '@/hooks/useEventBus';
 import { AdminEventService } from '@/lib/services/AdminEventService';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { CampaignDetailsDialog } from '@/components/admin/ViewDetailsDialog';
+import { EditCampaignDialog } from '@/components/admin/EditCampaignDialog';
 import { createCampaignColumns, CampaignData } from '@/lib/data-table/campaign-columns';
 import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
 import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
@@ -58,6 +59,8 @@ export function CampaignManagement() {
   const [selectedCampaigns, setSelectedCampaigns] = useState<CampaignData[]>([]);
   const [selectedCampaign, setSelectedCampaign] = useState<CampaignData | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingCampaign, setEditingCampaign] = useState<CampaignData | null>(null);
   const [confirmAction, setConfirmAction] = useState<{
     open: boolean;
     title: string;
@@ -175,6 +178,39 @@ export function CampaignManagement() {
     }
   }, [pagination.state.page, pagination.state.pageSize, debouncedSearch, filters, toast]);
 
+  const handleCampaignUpdate = async (campaignId: string, changes: Record<string, any>) => {
+    return optimisticUpdates.executeAction(
+      {
+        type: 'update',
+        description: `Update campaign fields`,
+        originalData: { ...editingCampaign },
+        rollbackFn: async () => {
+          await fetchCampaigns();
+        }
+      },
+      async () => {
+        const { data: user } = await supabase.auth.getUser();
+        if (!user?.user) throw new Error('Not authenticated');
+
+        await AdminEventService.updateCampaign(
+          campaignId,
+          user.user.id,
+          changes,
+          { reason: 'Admin manual update' }
+        );
+
+        toast({
+          title: "Campaign updated",
+          description: "Changes have been saved successfully.",
+        });
+
+        await fetchCampaigns();
+        setShowEditDialog(false);
+        setEditingCampaign(null);
+      }
+    );
+  };
+
   const handleCampaignStatusChange = async (campaignId: string, newStatus: string, reason?: string) => {
     const campaign = campaigns.find(c => c.id === campaignId);
     if (!campaign) return;
@@ -282,6 +318,11 @@ export function CampaignManagement() {
     (campaign) => {
       setSelectedCampaign(campaign);
       setShowDetailsDialog(true);
+    },
+    // onEditCampaign
+    (campaign) => {
+      setEditingCampaign(campaign);
+      setShowEditDialog(true);
     },
     // onStatusChange
     (campaignId, status) => {
@@ -510,6 +551,13 @@ export function CampaignManagement() {
         campaign={selectedCampaign}
         open={showDetailsDialog}
         onOpenChange={setShowDetailsDialog}
+      />
+
+      <EditCampaignDialog
+        campaign={editingCampaign}
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        onSave={handleCampaignUpdate}
       />
 
       <ConfirmDialog

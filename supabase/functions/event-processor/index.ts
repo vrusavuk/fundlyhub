@@ -284,6 +284,9 @@ async function processNotifications(supabase: any, event: DomainEvent): Promise<
     case 'campaign.goal_reached':
       await sendGoalReachedNotification(supabase, event);
       break;
+    case 'campaign.updated':
+      await sendCampaignEditNotification(supabase, event);
+      break;
     case 'admin.user.suspended':
     case 'admin.user.unsuspended':
       await sendUserStatusNotification(supabase, event);
@@ -337,6 +340,18 @@ async function sendOrganizationStatusNotification(supabase: any, event: DomainEv
   // TODO: Send organization verification notification
 }
 
+async function sendCampaignEditNotification(supabase: any, event: DomainEvent): Promise<void> {
+  const { campaignId, userId, changes, previousValues } = event.payload;
+  const ownerId = previousValues?.ownerId;
+
+  // Only send notification if admin edited someone else's campaign
+  if (ownerId && userId !== ownerId) {
+    console.log(`[Notifications] Admin ${userId} edited campaign ${campaignId} owned by ${ownerId}`);
+    // TODO: Send email notification to campaign owner about admin changes
+    // Include: which fields were changed, reason for change
+  }
+}
+
 // Cache Invalidation Processor
 async function processCacheInvalidation(supabase: any, event: DomainEvent): Promise<void> {
   console.log(`[Cache] Processing event: ${event.type}`);
@@ -378,6 +393,9 @@ async function processProjections(supabase: any, event: DomainEvent): Promise<vo
     case 'campaign.status_changed':
       await updateCampaignStatus(supabase, event);
       break;
+    case 'campaign.updated':
+      await handleCampaignUpdated(supabase, event);
+      break;
     default:
       // Other projections are handled in analytics processor
       break;
@@ -403,4 +421,54 @@ async function updateCampaignStatus(supabase: any, event: DomainEvent): Promise<
   }
   
   console.log(`[Projections] Campaign status updated successfully. Reason: ${reason || 'N/A'}`);
+}
+
+async function handleCampaignUpdated(supabase: any, event: DomainEvent): Promise<void> {
+  const { campaignId, userId, changes, previousValues } = event.payload;
+  
+  console.log(`[Projections] Handling campaign.updated event for campaign ${campaignId}`);
+  
+  // 1. Update campaign search projection
+  const { data: campaign } = await supabase
+    .from('fundraisers')
+    .select('title, slug, summary, story_html, beneficiary_name, location, tags, status, visibility')
+    .eq('id', campaignId)
+    .single();
+
+  if (campaign) {
+    await supabase
+      .from('campaign_search_projection')
+      .upsert({
+        campaign_id: campaignId,
+        title: campaign.title,
+        slug: campaign.slug,
+        summary: campaign.summary,
+        story_text: campaign.story_html?.replace(/<[^>]*>/g, ''),
+        beneficiary_name: campaign.beneficiary_name,
+        location: campaign.location,
+        tags: campaign.tags,
+        status: campaign.status,
+        visibility: campaign.visibility,
+        updated_at: new Date().toISOString(),
+      });
+
+    console.log('[Projections] Campaign search projection updated');
+  }
+
+  // 2. Invalidate cache entries for this campaign
+  await supabase
+    .from('search_results_cache')
+    .delete()
+    .or(`query.ilike.%${campaign?.title}%,query.ilike.%${campaign?.slug}%`);
+
+  console.log('[Projections] Cache invalidated for campaign');
+
+  // 3. Check if this was an admin edit and notify owner if needed
+  const ownerId = previousValues?.ownerId;
+  if (ownerId && userId !== ownerId) {
+    console.log('[Projections] Admin edited campaign, owner notification needed');
+    // Notification will be handled by notifications processor
+  }
+
+  console.log(`[Projections] Campaign ${campaignId} projections updated successfully`);
 }
