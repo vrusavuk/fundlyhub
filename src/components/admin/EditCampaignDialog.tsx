@@ -35,6 +35,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { campaignEditSchema, type CampaignEditData } from '@/lib/validation/campaignEdit.schema';
 import { useCategories } from '@/hooks/useCategories';
+import { useToast } from '@/hooks/use-toast';
 
 interface EditCampaignDialogProps {
   campaign: any;
@@ -51,6 +52,7 @@ export function EditCampaignDialog({
 }: EditCampaignDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { categories } = useCategories();
+  const { toast } = useToast();
   
   const form = useForm<CampaignEditData>({
     resolver: zodResolver(campaignEditSchema),
@@ -113,14 +115,29 @@ export function EditCampaignDialog({
       });
 
       if (Object.keys(changes).length === 0) {
+        toast({
+          title: "No changes",
+          description: "No fields were modified.",
+        });
         onOpenChange(false);
         return;
       }
 
       await onSave(campaign.id, changes);
+      
+      toast({
+        title: "Campaign updated",
+        description: "Changes have been saved successfully.",
+      });
+      
       onOpenChange(false);
     } catch (error) {
       console.error('Failed to update campaign:', error);
+      toast({
+        variant: "destructive",
+        title: "Update failed",
+        description: error instanceof Error ? error.message : "Failed to update campaign. Please try again.",
+      });
     } finally {
       setIsSubmitting(false);
     }

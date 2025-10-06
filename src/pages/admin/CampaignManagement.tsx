@@ -105,6 +105,11 @@ export function CampaignManagement() {
     },
     onError: (action, error) => {
       console.error(`Action ${action.type} failed:`, error);
+      toast({
+        variant: "destructive",
+        title: "Operation failed",
+        description: error instanceof Error ? error.message : "An error occurred. Please try again.",
+      });
     }
   });
 
@@ -199,14 +204,7 @@ export function CampaignManagement() {
           { reason: 'Admin manual update' }
         );
 
-        toast({
-          title: "Campaign updated",
-          description: "Changes have been saved successfully.",
-        });
-
         await fetchCampaigns();
-        setShowEditDialog(false);
-        setEditingCampaign(null);
       }
     );
   };
