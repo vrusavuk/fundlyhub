@@ -12,6 +12,9 @@ export { mutationService } from './mutation.service';
 // Search service (API Gateway - use this for all search operations)
 export { searchApi } from './searchApi.service';
 
+// Campaign access API (private fundraisers)
+export { campaignAccessApi } from '@/lib/api/campaignAccessApi';
+
 // Admin services
 export { 
   adminDataService, 

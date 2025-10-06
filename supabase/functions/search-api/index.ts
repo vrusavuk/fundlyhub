@@ -245,10 +245,12 @@ async function executeSearch(
     const searchPattern = `%${q}%`;
     
     // Build query with multiple filters
+    // ONLY show campaigns that are public AND discoverable
     let campaignQuery = supabase
       .from('campaign_search_projection')
       .select('campaign_id, slug, title, summary, story_text, category_name, location, status, visibility, beneficiary_name')
       .eq('visibility', 'public')
+      .eq('is_discoverable', true)
       .in('status', ['active', 'ended', 'closed']);
     
     // Apply search filters

@@ -20,3 +20,12 @@ verify_jwt = false
 
 [functions.enhance-fundraiser-text]
 verify_jwt = true
+
+[functions.campaign-create]
+verify_jwt = true
+
+[functions.campaign-access]
+verify_jwt = false
+
+[functions.campaign-rotate-link]
+verify_jwt = true

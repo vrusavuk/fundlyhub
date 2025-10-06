@@ -11,7 +11,7 @@ export interface FundraiserQueryOptions {
   category?: string;
   searchTerm?: string;
   status?: 'active' | 'draft' | 'ended' | 'closed' | 'pending';
-  visibility?: 'public' | 'unlisted';
+  visibility?: 'public' | 'unlisted' | 'private';
 }
 
 export interface FundraiserStats {
@@ -102,7 +102,7 @@ class FundraiserService {
         }
 
         return {
-          data: fundraisers,
+          data: fundraisers as Fundraiser[],
           hasMore: (fundraisers?.length || 0) === limit,
           total: count || 0,
         };
@@ -216,8 +216,8 @@ class FundraiserService {
             };
           }
         }
-
-        return data;
+        
+        return data as Fundraiser;
       },
       { key: cacheKey, ttl: this.CACHE_TTL }
     );

@@ -19,7 +19,11 @@ export interface Fundraiser extends BaseEntity {
   currency: string;
   category_id?: string;
   status: FundraiserStatus;
-  visibility: 'public' | 'unlisted';
+  visibility: 'public' | 'unlisted' | 'private';
+  type?: 'personal' | 'charity';
+  link_token?: string;
+  passcode_hash?: string;
+  is_discoverable?: boolean;
   urgency?: FundraiserUrgency;
   cover_image?: string;
   images?: string[];
