@@ -50,6 +50,62 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_access_rules: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          rule_type: string
+          rule_value: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          rule_type: string
+          rule_value: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          rule_type?: string
+          rule_value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_access_rules_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "fundraisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_access_rules_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "public_fundraiser_stats"
+            referencedColumns: ["fundraiser_id"]
+          },
+          {
+            foreignKeyName: "campaign_access_rules_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_access_rules_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_analytics_projection: {
         Row: {
           average_donation: number | null
@@ -82,6 +138,68 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      campaign_invites: {
+        Row: {
+          accepted_at: string | null
+          campaign_id: string
+          contact: string
+          created_at: string
+          created_by: string | null
+          id: string
+          role: string
+          status: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          campaign_id: string
+          contact: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          role?: string
+          status?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          campaign_id?: string
+          contact?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          role?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_invites_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "fundraisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_invites_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "public_fundraiser_stats"
+            referencedColumns: ["fundraiser_id"]
+          },
+          {
+            foreignKeyName: "campaign_invites_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_invites_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       campaign_search_projection: {
         Row: {
@@ -441,6 +559,7 @@ export type Database = {
           payment_provider: string | null
           payment_status: Database["public"]["Enums"]["payment_status"] | null
           receipt_id: string | null
+          receipt_type: string | null
           tip_amount: number | null
         }
         Insert: {
@@ -456,6 +575,7 @@ export type Database = {
           payment_provider?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"] | null
           receipt_id?: string | null
+          receipt_type?: string | null
           tip_amount?: number | null
         }
         Update: {
@@ -471,6 +591,7 @@ export type Database = {
           payment_provider?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"] | null
           receipt_id?: string | null
+          receipt_type?: string | null
           tip_amount?: number | null
         }
         Relationships: [
@@ -674,15 +795,19 @@ export type Database = {
           goal_amount: number
           id: string
           images: string[] | null
+          is_discoverable: boolean | null
+          link_token: string | null
           location: string | null
           org_id: string | null
           owner_user_id: string
+          passcode_hash: string | null
           slug: string
           status: Database["public"]["Enums"]["fundraiser_status"] | null
           story_html: string | null
           summary: string | null
           tags: string[] | null
           title: string
+          type: string
           updated_at: string | null
           video_url: string | null
           visibility: Database["public"]["Enums"]["visibility_type"] | null
@@ -701,15 +826,19 @@ export type Database = {
           goal_amount: number
           id?: string
           images?: string[] | null
+          is_discoverable?: boolean | null
+          link_token?: string | null
           location?: string | null
           org_id?: string | null
           owner_user_id: string
+          passcode_hash?: string | null
           slug: string
           status?: Database["public"]["Enums"]["fundraiser_status"] | null
           story_html?: string | null
           summary?: string | null
           tags?: string[] | null
           title: string
+          type?: string
           updated_at?: string | null
           video_url?: string | null
           visibility?: Database["public"]["Enums"]["visibility_type"] | null
@@ -728,15 +857,19 @@ export type Database = {
           goal_amount?: number
           id?: string
           images?: string[] | null
+          is_discoverable?: boolean | null
+          link_token?: string | null
           location?: string | null
           org_id?: string | null
           owner_user_id?: string
+          passcode_hash?: string | null
           slug?: string
           status?: Database["public"]["Enums"]["fundraiser_status"] | null
           story_html?: string | null
           summary?: string | null
           tags?: string[] | null
           title?: string
+          type?: string
           updated_at?: string | null
           video_url?: string | null
           visibility?: Database["public"]["Enums"]["visibility_type"] | null
@@ -2071,6 +2204,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      gen_base62_token: {
+        Args: { len?: number }
+        Returns: string
+      }
       get_campaign_aggregate_stats: {
         Args:
           | {
@@ -2403,7 +2540,7 @@ export type Database = {
       payment_status: "paid" | "refunded" | "failed"
       user_role: "visitor" | "creator" | "org_admin" | "admin"
       verification_status: "pending" | "approved" | "rejected"
-      visibility_type: "public" | "unlisted"
+      visibility_type: "public" | "unlisted" | "private"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2543,7 +2680,7 @@ export const Constants = {
       payment_status: ["paid", "refunded", "failed"],
       user_role: ["visitor", "creator", "org_admin", "admin"],
       verification_status: ["pending", "approved", "rejected"],
-      visibility_type: ["public", "unlisted"],
+      visibility_type: ["public", "unlisted", "private"],
     },
   },
 } as const
