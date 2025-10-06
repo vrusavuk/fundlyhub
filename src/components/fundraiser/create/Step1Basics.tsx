@@ -132,34 +132,44 @@ export function Step1Basics({ formData, errors, onChange }: Step1BasicsProps) {
           onValueChange={(value) => onChange({ visibility: value as 'public' | 'unlisted' | 'private' })}
         >
           <SelectTrigger id="visibility" className={errors.visibility ? 'border-destructive' : ''}>
-            <SelectValue placeholder="Select visibility" />
+            <SelectValue placeholder="Select visibility">
+              {formData.visibility === 'public' && (
+                <span className="flex items-center gap-2">
+                  <Globe className="h-4 w-4" />
+                  <span>Public</span>
+                </span>
+              )}
+              {formData.visibility === 'unlisted' && (
+                <span className="flex items-center gap-2">
+                  <Link2 className="h-4 w-4" />
+                  <span>Unlisted</span>
+                </span>
+              )}
+              {formData.visibility === 'private' && (
+                <span className="flex items-center gap-2">
+                  <Lock className="h-4 w-4" />
+                  <span>Private</span>
+                </span>
+              )}
+            </SelectValue>
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-background z-50">
             <SelectItem value="public">
               <div className="flex items-center gap-2">
                 <Globe className="h-4 w-4" />
-                <div>
-                  <div className="font-medium">Public</div>
-                  <div className="text-xs text-muted-foreground">Visible in search and discovery</div>
-                </div>
+                <span>Public</span>
               </div>
             </SelectItem>
             <SelectItem value="unlisted">
               <div className="flex items-center gap-2">
                 <Link2 className="h-4 w-4" />
-                <div>
-                  <div className="font-medium">Unlisted</div>
-                  <div className="text-xs text-muted-foreground">Only accessible via link</div>
-                </div>
+                <span>Unlisted</span>
               </div>
             </SelectItem>
             <SelectItem value="private">
               <div className="flex items-center gap-2">
                 <Lock className="h-4 w-4" />
-                <div>
-                  <div className="font-medium">Private</div>
-                  <div className="text-xs text-muted-foreground">Requires access code or invite</div>
-                </div>
+                <span>Private</span>
               </div>
             </SelectItem>
           </SelectContent>
@@ -167,6 +177,11 @@ export function Step1Basics({ formData, errors, onChange }: Step1BasicsProps) {
         {errors.visibility && (
           <p className="text-sm text-destructive">{errors.visibility}</p>
         )}
+        <p className="text-xs text-muted-foreground">
+          {formData.visibility === 'public' && 'Visible in search and discovery'}
+          {formData.visibility === 'unlisted' && 'Only accessible via link'}
+          {formData.visibility === 'private' && 'Requires access code or invite'}
+        </p>
       </div>
 
       {formData.visibility === 'private' && (

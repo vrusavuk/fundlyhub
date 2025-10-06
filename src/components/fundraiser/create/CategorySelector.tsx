@@ -1,14 +1,12 @@
 /**
  * Category Selector Component
- * Dynamic category selection using database categories
+ * Compact dropdown for category selection
  */
 
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Card } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useCategories } from '@/hooks/useCategories';
-import { cn } from '@/lib/utils';
 
 interface CategorySelectorProps {
   value?: string;
@@ -28,39 +26,33 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
   }
 
   return (
-    <div className="space-y-3">
-      <Label className="label-small">
+    <div className="space-y-2">
+      <Label htmlFor="category" className="label-small">
         Category <span className="text-destructive">*</span>
       </Label>
       
-      <RadioGroup value={value || ''} onValueChange={onChange} className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        {categories.map((category) => (
-          <Card
-            key={category.id}
-            className={cn(
-              'relative cursor-pointer transition-all hover:shadow-md',
-              value === category.id && 'ring-2 ring-primary shadow-glow'
+      <Select value={value || ''} onValueChange={onChange}>
+        <SelectTrigger id="category" className={error ? 'border-destructive' : ''}>
+          <SelectValue placeholder="Select a category">
+            {value && categories.find(c => c.id === value) && (
+              <span className="flex items-center gap-2">
+                <span>{categories.find(c => c.id === value)?.emoji}</span>
+                <span>{categories.find(c => c.id === value)?.name}</span>
+              </span>
             )}
-          >
-            <RadioGroupItem
-              value={category.id}
-              id={category.id}
-              className="sr-only"
-            />
-            <Label
-              htmlFor={category.id}
-              className="flex flex-col items-center gap-2 p-4 cursor-pointer"
-            >
-              <span className="text-3xl" aria-hidden="true">
-                {category.emoji}
-              </span>
-              <span className="text-sm font-medium text-center">
-                {category.name}
-              </span>
-            </Label>
-          </Card>
-        ))}
-      </RadioGroup>
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent className="bg-background z-50">
+          {categories.map((category) => (
+            <SelectItem key={category.id} value={category.id}>
+              <div className="flex items-center gap-2">
+                <span>{category.emoji}</span>
+                <span>{category.name}</span>
+              </div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
       {error && (
         <p className="text-sm text-destructive">{error}</p>
