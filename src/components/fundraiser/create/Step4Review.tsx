@@ -6,8 +6,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle2, AlertCircle, Calendar, MapPin, User, DollarSign } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Calendar, MapPin, User, Shield, Lock, Mail } from 'lucide-react';
 import { format } from 'date-fns';
+import { VisibilityBadge } from '@/components/fundraiser/VisibilityBadge';
 
 interface Step4ReviewProps {
   formData: {
@@ -20,6 +21,10 @@ interface Step4ReviewProps {
     location?: string;
     coverImage?: string;
     endDate?: string;
+    type?: 'personal' | 'charity';
+    visibility?: 'public' | 'unlisted' | 'private';
+    passcode?: string;
+    allowlistEmails?: string;
   };
   categoryName?: string;
   categoryEmoji?: string;
@@ -50,11 +55,22 @@ export function Step4Review({ formData, categoryName, categoryEmoji }: Step4Revi
               <CardTitle className="text-2xl mb-2">
                 {formData.title || 'Untitled Fundraiser'}
               </CardTitle>
-              {categoryName && (
-                <Badge variant="secondary" className="text-sm">
-                  {categoryEmoji} {categoryName}
-                </Badge>
-              )}
+              <div className="flex flex-wrap gap-2">
+                {categoryName && (
+                  <Badge variant="secondary" className="text-sm">
+                    {categoryEmoji} {categoryName}
+                  </Badge>
+                )}
+                {formData.type === 'charity' && (
+                  <Badge variant="default" className="text-sm">
+                    <Shield className="h-3 w-3 mr-1" />
+                    Tax-Deductible
+                  </Badge>
+                )}
+                {formData.visibility && (
+                  <VisibilityBadge visibility={formData.visibility} />
+                )}
+              </div>
             </div>
             {formData.goalAmount && (
               <div className="text-right">
@@ -81,6 +97,32 @@ export function Step4Review({ formData, categoryName, categoryEmoji }: Step4Revi
               <h4 className="text-sm font-medium mb-2 text-muted-foreground">Story</h4>
               <p className="text-sm whitespace-pre-wrap">{formData.story}</p>
             </div>
+          )}
+
+          {formData.visibility === 'private' && (formData.passcode || formData.allowlistEmails) && (
+            <>
+              <Separator />
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+                <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                  <Lock className="h-4 w-4" />
+                  Access Controls
+                </h4>
+                <div className="space-y-2 text-sm">
+                  {formData.passcode && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <CheckCircle2 className="h-4 w-4 text-success" />
+                      Passcode protected
+                    </div>
+                  )}
+                  {formData.allowlistEmails && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Mail className="h-4 w-4 text-success" />
+                      Allowlist: {formData.allowlistEmails.split(',').filter(Boolean).length} email(s)
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
           )}
 
           {(formData.beneficiaryName || formData.location || formData.endDate) && (

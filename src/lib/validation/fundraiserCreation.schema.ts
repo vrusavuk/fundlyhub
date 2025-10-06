@@ -17,6 +17,20 @@ export const fundraiserBasicsSchema = z.object({
     .positive('Goal amount must be greater than 0')
     .min(100, 'Goal amount must be at least $100')
     .max(10000000, 'Goal amount cannot exceed $10,000,000'),
+  
+  type: z.enum(['personal', 'charity']).default('personal'),
+  
+  visibility: z.enum(['public', 'unlisted', 'private']).default('public'),
+  
+  passcode: z.string()
+    .min(6, 'Passcode must be at least 6 characters')
+    .max(50, 'Passcode cannot exceed 50 characters')
+    .optional()
+    .or(z.literal('')),
+  
+  allowlistEmails: z.string()
+    .optional()
+    .or(z.literal('')),
 });
 
 export const fundraiserStorySchema = z.object({

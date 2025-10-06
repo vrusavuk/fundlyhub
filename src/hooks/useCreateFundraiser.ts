@@ -41,6 +41,10 @@ export function useCreateFundraiser() {
             title: formData.title,
             categoryId: formData.categoryId,
             goalAmount: formData.goalAmount,
+            type: formData.type,
+            visibility: formData.visibility,
+            passcode: formData.passcode,
+            allowlistEmails: formData.allowlistEmails,
           });
           break;
         case 2:
@@ -134,6 +138,10 @@ export function useCreateFundraiser() {
         location: formData.location,
         coverImage: formData.coverImage,
         endDate: formData.endDate,
+        type: formData.type || 'personal',
+        visibility: formData.visibility || 'public',
+        passcode: formData.passcode,
+        allowlistEmails: formData.allowlistEmails,
       });
 
       if (result.success && result.data) {
@@ -155,7 +163,13 @@ export function useCreateFundraiser() {
           });
         }
 
-        navigate(`/fundraiser/${result.data.slug}`);
+        // Navigate with link token if private/unlisted
+        const linkToken = result.data.link_token;
+        if (linkToken && (formData.visibility === 'private' || formData.visibility === 'unlisted')) {
+          navigate(`/fundraiser/${result.data.slug}?token=${linkToken}`);
+        } else {
+          navigate(`/fundraiser/${result.data.slug}`);
+        }
       } else {
         throw new Error(result.error || 'Failed to create fundraiser');
       }
