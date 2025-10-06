@@ -31,6 +31,7 @@ interface FundraiserGridProps {
   searchQuery?: string;
   showControls?: boolean;
   showStats?: boolean;
+  showStatus?: boolean;
   variant?: 'default' | 'polished';
   initialViewMode?: ViewMode;
   initialSortBy?: SortBy;
@@ -49,6 +50,7 @@ export function FundraiserGrid({
   searchQuery,
   showControls = false,
   showStats = false,
+  showStatus = false,
   variant = 'default',
   initialViewMode = 'grid',
   initialSortBy = 'newest'
@@ -180,6 +182,8 @@ export function FundraiserGrid({
                 isTrending={variant === 'polished' ? isTrending : undefined}
                 trustScore={variant === 'polished' ? trustScore : undefined}
                 searchQuery={searchQuery}
+                status={fundraiser.status}
+                showStatus={showStatus}
                 onClick={() => onCardClick(fundraiser.slug)}
                 onDonate={variant === 'polished' ? () => {
                   // Handle donation

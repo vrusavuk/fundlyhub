@@ -373,5 +373,34 @@ async function processCacheInvalidation(supabase: any, event: DomainEvent): Prom
 // Projections Processor
 async function processProjections(supabase: any, event: DomainEvent): Promise<void> {
   console.log(`[Projections] Processing event: ${event.type}`);
-  // Projections are handled in analytics processor for now
+  
+  switch (event.type) {
+    case 'campaign.status_changed':
+      await updateCampaignStatus(supabase, event);
+      break;
+    default:
+      // Other projections are handled in analytics processor
+      break;
+  }
+}
+
+async function updateCampaignStatus(supabase: any, event: DomainEvent): Promise<void> {
+  const { campaignId, newStatus, reason } = event.payload;
+  
+  console.log(`[Projections] Updating campaign ${campaignId} status to ${newStatus}`);
+  
+  const { error } = await supabase
+    .from('fundraisers')
+    .update({ 
+      status: newStatus,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', campaignId);
+  
+  if (error) {
+    console.error(`[Projections] Failed to update campaign status:`, error);
+    throw error;
+  }
+  
+  console.log(`[Projections] Campaign status updated successfully. Reason: ${reason || 'N/A'}`);
 }

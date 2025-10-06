@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
+import { StatusBadge } from '@/components/ui/StatusBadge';
 import { EnhancedButton } from '@/components/enhanced/EnhancedButton';
 import { HighlightedTitle, HighlightedDescription, HighlightedLabel } from '@/components/search/HighlightedText';
 import { useCategories } from '@/hooks/useCategories';
@@ -54,6 +55,8 @@ interface UnifiedFundraiserCardProps {
   onBookmark?: () => void;
   onLike?: () => void;
   variant?: 'default' | 'polished';
+  status?: string;
+  showStatus?: boolean;
 }
 
 export function UnifiedFundraiserCard({
@@ -83,6 +86,8 @@ export function UnifiedFundraiserCard({
   onBookmark,
   onLike,
   variant = 'default',
+  status,
+  showStatus = false,
 }: UnifiedFundraiserCardProps) {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
@@ -245,6 +250,10 @@ export function UnifiedFundraiserCard({
 
         {/* Top Badges */}
         <div className="absolute top-3 left-3 flex flex-wrap gap-2 max-w-[calc(100%-6rem)]">
+          {showStatus && status && (
+            <StatusBadge status={status} showIcon={true} className="shadow-md backdrop-blur-sm" />
+          )}
+          
           <Badge className={cn(
             "font-semibold shadow-md backdrop-blur-sm border-0 text-xs",
             categoryInfo.colorClass

@@ -18,37 +18,37 @@ export function ProfileTabs({ userId }: ProfileTabsProps) {
   const { user } = useAuth();
   const isOwnProfile = user?.id === userId;
   
-  const [activeCampaigns, setActiveCampaigns] = useState<Fundraiser[]>([]);
+  const [allCampaigns, setAllCampaigns] = useState<Fundraiser[]>([]);
   const [closedCampaigns, setClosedCampaigns] = useState<Fundraiser[]>([]);
-  const [activeLoading, setActiveLoading] = useState(true);
+  const [allLoading, setAllLoading] = useState(true);
   const [closedLoading, setClosedLoading] = useState(true);
 
   // Fetch campaigns for the user
   useEffect(() => {
     const fetchCampaigns = async () => {
-      setActiveLoading(true);
+      setAllLoading(true);
       setClosedLoading(true);
 
       try {
-        // Fetch active campaigns - include all visibility types if viewing own profile
-        let activeQuery = supabase
+        // Fetch all campaigns (draft, active, paused) - include all visibility types if viewing own profile
+        let allQuery = supabase
           .from('fundraisers')
           .select('*')
           .eq('owner_user_id', userId)
-          .eq('status', 'active')
+          .in('status', ['draft', 'active', 'paused'])
           .is('deleted_at', null)
           .order('created_at', { ascending: false });
 
-        // If not own profile, only show public campaigns
+        // If not own profile, only show public active campaigns
         if (!isOwnProfile) {
-          activeQuery = activeQuery.eq('visibility', 'public');
+          allQuery = allQuery.eq('visibility', 'public').eq('status', 'active');
         }
 
-        const { data: activeData, error: activeError } = await activeQuery;
+        const { data: allData, error: allError } = await allQuery;
         
-        if (activeError) throw activeError;
-        setActiveCampaigns((activeData as Fundraiser[]) || []);
-        setActiveLoading(false);
+        if (allError) throw allError;
+        setAllCampaigns((allData as Fundraiser[]) || []);
+        setAllLoading(false);
 
         // Fetch closed/ended campaigns
         let closedQuery = supabase
@@ -72,7 +72,7 @@ export function ProfileTabs({ userId }: ProfileTabsProps) {
 
       } catch (error) {
         console.error('Error fetching user campaigns:', error);
-        setActiveLoading(false);
+        setAllLoading(false);
         setClosedLoading(false);
       }
     };
@@ -85,8 +85,8 @@ export function ProfileTabs({ userId }: ProfileTabsProps) {
       <TabsList className="grid w-full grid-cols-4 mb-6">
         <TabsTrigger value="active" className="flex items-center gap-2">
           <Trophy className="h-4 w-4" />
-          <span className="hidden sm:inline">Active</span>
-          <span className="sm:hidden">Active</span>
+          <span className="hidden sm:inline">Campaigns</span>
+          <span className="sm:hidden">All</span>
         </TabsTrigger>
         <TabsTrigger value="completed" className="flex items-center gap-2">
           <Trophy className="h-4 w-4" />
@@ -110,23 +110,24 @@ export function ProfileTabs({ userId }: ProfileTabsProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Trophy className="h-5 w-5 text-primary" />
-              Active Campaigns ({activeCampaigns.length})
+              All Campaigns ({allCampaigns.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {activeLoading ? (
+            {allLoading ? (
               <LoadingState variant="fundraiser-cards" count={3} />
-            ) : activeCampaigns.length > 0 ? (
+            ) : allCampaigns.length > 0 ? (
               <FundraiserGrid 
-                fundraisers={activeCampaigns} 
+                fundraisers={allCampaigns} 
                 stats={{}}
-                loading={activeLoading}
+                loading={allLoading}
                 error={null}
+                showStatus={isOwnProfile}
                 onCardClick={(slug) => window.location.href = `/fundraiser/${slug}`}
               />
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                No active campaigns yet
+                No campaigns yet
               </div>
             )}
           </CardContent>

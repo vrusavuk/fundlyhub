@@ -8,7 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { mutationService } from './mutation.service';
 import { cacheService } from './cache.service';
 import { globalEventBus } from '@/lib/events';
-import { createCampaignCreatedEvent, createCampaignUpdatedEvent } from '@/lib/events/domain/CampaignEvents';
+import { createCampaignCreatedEvent, createCampaignUpdatedEvent, createCampaignStatusChangedEvent } from '@/lib/events/domain/CampaignEvents';
 import { FundraiserCreationRules } from '@/lib/business-rules/fundraiser-creation.rules';
 import { CompleteFundraiser } from '@/lib/validation/fundraiserCreation.schema';
 import { campaignAccessApi } from '@/lib/api/campaignAccessApi';
@@ -159,6 +159,21 @@ export class FundraiserMutationService {
       });
       
       await globalEventBus.publish(event);
+
+      // For personal private/unlisted campaigns, publish status change event to activate them
+      const shouldAutoActivate = (input.type === 'personal' || !input.type) && 
+                                  (input.visibility === 'private' || input.visibility === 'unlisted');
+      
+      if (shouldAutoActivate) {
+        const statusEvent = createCampaignStatusChangedEvent({
+          campaignId: response.campaign_id,
+          previousStatus: 'draft',
+          newStatus: 'active',
+          reason: 'Private/unlisted personal campaigns are auto-activated'
+        });
+        
+        await globalEventBus.publish(statusEvent);
+      }
 
       // Return with link_token for navigation
       return { 
