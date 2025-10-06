@@ -3,36 +3,82 @@ import { FundraiserGrid } from '@/components/fundraisers/FundraiserGrid';
 import { FollowersList } from './FollowersList';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Users, Trophy } from 'lucide-react';
-import { useFundraisers } from '@/hooks/useFundraisers';
 import { LoadingState } from '@/components/common/LoadingState';
 import { ProfileTabContentSkeleton } from '@/components/skeletons/ProfilePageSkeleton';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useState, useEffect } from 'react';
+import type { Fundraiser } from '@/types';
 
 interface ProfileTabsProps {
   userId: string;
 }
 
 export function ProfileTabs({ userId }: ProfileTabsProps) {
-  const { 
-    fundraisers: activeCampaigns, 
-    loading: activeLoading 
-  } = useFundraisers({ 
-    searchTerm: '',
-    category: '',
-    status: 'active'
-  });
+  const { user } = useAuth();
+  const isOwnProfile = user?.id === userId;
+  
+  const [activeCampaigns, setActiveCampaigns] = useState<Fundraiser[]>([]);
+  const [closedCampaigns, setClosedCampaigns] = useState<Fundraiser[]>([]);
+  const [activeLoading, setActiveLoading] = useState(true);
+  const [closedLoading, setClosedLoading] = useState(true);
 
-  const { 
-    fundraisers: closedCampaigns, 
-    loading: closedLoading 
-  } = useFundraisers({ 
-    searchTerm: '',
-    category: '',
-    status: 'ended'
-  });
+  // Fetch campaigns for the user
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      setActiveLoading(true);
+      setClosedLoading(true);
 
-  // Filter campaigns by user
-  const userActiveCampaigns = activeCampaigns.filter(f => f.owner_user_id === userId);
-  const userClosedCampaigns = closedCampaigns.filter(f => f.owner_user_id === userId);
+      try {
+        // Fetch active campaigns - include all visibility types if viewing own profile
+        let activeQuery = supabase
+          .from('fundraisers')
+          .select('*')
+          .eq('owner_user_id', userId)
+          .eq('status', 'active')
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false });
+
+        // If not own profile, only show public campaigns
+        if (!isOwnProfile) {
+          activeQuery = activeQuery.eq('visibility', 'public');
+        }
+
+        const { data: activeData, error: activeError } = await activeQuery;
+        
+        if (activeError) throw activeError;
+        setActiveCampaigns((activeData as Fundraiser[]) || []);
+        setActiveLoading(false);
+
+        // Fetch closed/ended campaigns
+        let closedQuery = supabase
+          .from('fundraisers')
+          .select('*')
+          .eq('owner_user_id', userId)
+          .in('status', ['ended', 'closed'])
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false });
+
+        // If not own profile, only show public campaigns
+        if (!isOwnProfile) {
+          closedQuery = closedQuery.eq('visibility', 'public');
+        }
+
+        const { data: closedData, error: closedError } = await closedQuery;
+        
+        if (closedError) throw closedError;
+        setClosedCampaigns((closedData as Fundraiser[]) || []);
+        setClosedLoading(false);
+
+      } catch (error) {
+        console.error('Error fetching user campaigns:', error);
+        setActiveLoading(false);
+        setClosedLoading(false);
+      }
+    };
+
+    fetchCampaigns();
+  }, [userId, isOwnProfile]);
 
   return (
     <Tabs defaultValue="active" className="w-full">
@@ -64,15 +110,15 @@ export function ProfileTabs({ userId }: ProfileTabsProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Trophy className="h-5 w-5 text-primary" />
-              Active Campaigns ({userActiveCampaigns.length})
+              Active Campaigns ({activeCampaigns.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             {activeLoading ? (
               <LoadingState variant="fundraiser-cards" count={3} />
-            ) : userActiveCampaigns.length > 0 ? (
+            ) : activeCampaigns.length > 0 ? (
               <FundraiserGrid 
-                fundraisers={userActiveCampaigns} 
+                fundraisers={activeCampaigns} 
                 stats={{}}
                 loading={activeLoading}
                 error={null}
@@ -92,15 +138,15 @@ export function ProfileTabs({ userId }: ProfileTabsProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Trophy className="h-5 w-5 text-green-600" />
-              Completed Campaigns ({userClosedCampaigns.length})
+              Completed Campaigns ({closedCampaigns.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             {closedLoading ? (
               <LoadingState variant="fundraiser-cards" count={3} />
-            ) : userClosedCampaigns.length > 0 ? (
+            ) : closedCampaigns.length > 0 ? (
               <FundraiserGrid 
-                fundraisers={userClosedCampaigns} 
+                fundraisers={closedCampaigns} 
                 stats={{}}
                 loading={closedLoading}
                 error={null}
