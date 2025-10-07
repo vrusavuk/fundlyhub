@@ -60,7 +60,10 @@ export const campaignEditSchema = z.object({
   images: z.array(z.string()).optional().nullable(),
   
   // Timeline
-  end_date: z.string().date().optional().nullable(),
+  end_date: z.preprocess(
+    (val) => (val === '' ? null : val),
+    z.string().nullable().optional()
+  ),
   
   // Beneficiary
   beneficiary_name: z.string()

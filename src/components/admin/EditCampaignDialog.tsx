@@ -103,8 +103,11 @@ export function EditCampaignDialog({
   }, [campaign, form]);
 
   const onSubmit = async (data: CampaignEditData) => {
+    console.log('Form submit triggered', data);
+    
     // Trigger validation explicitly
     const isValid = await form.trigger();
+    console.log('Form validation result:', isValid);
     
     if (!isValid) {
       const errors = form.formState.errors;
@@ -119,6 +122,7 @@ export function EditCampaignDialog({
     }
     
     setIsSubmitting(true);
+    console.log('Starting save operation...');
     
     try {
       // Only send changed fields
@@ -130,6 +134,8 @@ export function EditCampaignDialog({
         }
       });
 
+      console.log('Changes detected:', changes);
+
       if (Object.keys(changes).length === 0) {
         toast({
           title: "No changes",
@@ -139,6 +145,7 @@ export function EditCampaignDialog({
         return;
       }
 
+      console.log('Calling onSave with:', campaign.id, changes);
       await onSave(campaign.id, changes);
       
       toast({
