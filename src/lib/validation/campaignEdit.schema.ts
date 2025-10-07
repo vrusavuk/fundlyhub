@@ -49,8 +49,14 @@ export const campaignEditSchema = z.object({
   status: z.enum(['draft', 'pending', 'active', 'paused', 'closed', 'ended']),
   
   // Media
-  cover_image: z.string().url().optional().nullable(),
-  video_url: z.string().url().optional().nullable(),
+  cover_image: z.preprocess(
+    (val) => (val === '' ? null : val),
+    z.string().url().nullable().optional()
+  ),
+  video_url: z.preprocess(
+    (val) => (val === '' ? null : val),
+    z.string().url().nullable().optional()
+  ),
   images: z.array(z.string()).optional().nullable(),
   
   // Timeline

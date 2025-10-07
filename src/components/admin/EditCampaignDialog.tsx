@@ -103,7 +103,23 @@ export function EditCampaignDialog({
   }, [campaign, form]);
 
   const onSubmit = async (data: CampaignEditData) => {
+    // Trigger validation explicitly
+    const isValid = await form.trigger();
+    
+    if (!isValid) {
+      const errors = form.formState.errors;
+      console.error('Validation errors:', errors);
+      
+      toast({
+        variant: "destructive",
+        title: "Validation failed",
+        description: "Please check the form for errors.",
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
+    
     try {
       // Only send changed fields
       const changes: Record<string, any> = {};
