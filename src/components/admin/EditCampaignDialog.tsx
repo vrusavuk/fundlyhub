@@ -100,24 +100,64 @@ export function EditCampaignDialog({
     }
   }, [campaign, form]);
 
-  // Simplified change detection - Phase 3
+  // Normalize values for comparison - Step 4
+  const normalizeValue = (value: any): any => {
+    // Null/undefined normalization
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+    
+    // Number normalization
+    if (typeof value === 'number') {
+      return value;
+    }
+    
+    // String that looks like number
+    if (typeof value === 'string' && !isNaN(Number(value)) && value.trim() !== '') {
+      return Number(value);
+    }
+    
+    // Boolean normalization
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    
+    // Array normalization
+    if (Array.isArray(value)) {
+      return value.length === 0 ? null : value;
+    }
+    
+    return value;
+  };
+
+  // Enhanced change detection with type coercion - Step 4
   const detectChanges = (formData: CampaignEditData, original: any) => {
+    console.log('[DEBUG] detectChanges called', { formData, original });
     const changes: Record<string, any> = {};
     
     Object.entries(formData).forEach(([key, value]) => {
       const originalValue = original[key];
       
+      // Normalize both values
+      const normalizedNew = normalizeValue(value);
+      const normalizedOld = normalizeValue(originalValue);
+      
+      console.log(`[DEBUG] Comparing ${key}:`, {
+        raw: { new: value, old: originalValue },
+        normalized: { new: normalizedNew, old: normalizedOld },
+        types: { new: typeof normalizedNew, old: typeof normalizedOld }
+      });
+      
       // Direct comparison for primitives
-      if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-        if (value !== originalValue) {
-          console.log(`[EditCampaign] Change detected in ${key}:`, { old: originalValue, new: value });
-          changes[key] = value;
+      if (typeof normalizedNew === 'string' || typeof normalizedNew === 'number' || typeof normalizedNew === 'boolean') {
+        if (normalizedNew !== normalizedOld) {
+          console.log(`[EditCampaign] Change detected in ${key}:`, { old: normalizedOld, new: normalizedNew });
+          changes[key] = value; // Use original value, not normalized
         }
       }
       // JSON comparison for objects/arrays
-      else if (JSON.stringify(value) !== JSON.stringify(originalValue)) {
-        console.log(`[EditCampaign] Change detected in ${key}:`, { old: originalValue, new: value });
-        changes[key] = value;
+      else if (JSON.stringify(normalizedNew) !== JSON.stringify(normalizedOld)) {
+        console.log(`[EditCampaign] Change detected in ${key}:`, { old: normalizedOld, new: normalizedNew });
+        changes[key] = value; // Use original value, not normalized
       }
     });
     
@@ -125,7 +165,16 @@ export function EditCampaignDialog({
   };
 
   const onSubmit = async (data: CampaignEditData) => {
-    if (!campaign) return;
+    // Step 1: Debug logging at the very beginning
+    console.log('[DEBUG] ========== FORM SUBMISSION STARTED ==========');
+    console.log('[DEBUG] onSubmit called with data:', data);
+    console.log('[DEBUG] campaign:', campaign);
+    console.log('[DEBUG] form.formState:', form.formState);
+    
+    if (!campaign) {
+      console.error('[DEBUG] No campaign provided!');
+      return;
+    }
     
     console.log('[EditCampaign] Starting submission', { campaignId: campaign.id });
     setStatusMessage("Validating changes...");
@@ -184,6 +233,19 @@ export function EditCampaignDialog({
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
               <strong>Warning:</strong> This campaign is currently live. Changes will be visible to donors immediately.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Step 3: Display form validation errors */}
+        {Object.keys(form.formState.errors).length > 0 && (
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Form Validation Errors:</strong>
+              <pre className="mt-2 text-xs overflow-auto">
+                {JSON.stringify(form.formState.errors, null, 2)}
+              </pre>
             </AlertDescription>
           </Alert>
         )}
@@ -418,7 +480,18 @@ export function EditCampaignDialog({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Status *</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select 
+                          onValueChange={(value) => {
+                            // Step 2: Log status changes
+                            console.log('[DEBUG] Status field changed:', { 
+                              oldValue: field.value, 
+                              newValue: value,
+                              campaignId: campaign?.id
+                            });
+                            field.onChange(value);
+                          }} 
+                          value={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue />
@@ -493,7 +566,19 @@ export function EditCampaignDialog({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                onClick={() => {
+                  // Step 5: Log button click
+                  console.log('[DEBUG] Save button clicked!', {
+                    isSubmitting,
+                    hasErrors: Object.keys(form.formState.errors).length > 0,
+                    isDirty: form.formState.isDirty,
+                    formValues: form.getValues()
+                  });
+                }}
+              >
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save Changes
               </Button>
