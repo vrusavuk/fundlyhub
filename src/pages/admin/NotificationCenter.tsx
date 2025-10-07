@@ -1,5 +1,1 @@
-import { NotificationCenter } from '@/components/admin/notifications/NotificationCenter';
-
-export function AdminNotificationCenter() {
-  return <NotificationCenter />;
-}
+export { NotificationCenter as default } from '@/components/admin/notifications/NotificationCenter';

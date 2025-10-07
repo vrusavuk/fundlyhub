@@ -46,7 +46,7 @@ export const LazyRoleManagement = lazy(() => import('@/pages/admin/RoleManagemen
 export const LazyAuditLogs = lazy(() => import('@/pages/admin/AuditLogs').then(m => ({ default: m.AuditLogs })));
 export const LazySystemHealth = lazy(() => import('@/pages/admin/SystemHealth').then(m => ({ default: m.SystemHealth })));
 export const LazySystemSettings = lazy(() => import('@/pages/admin/SystemSettings').then(m => ({ default: m.SystemSettings })));
-export const LazyAdminNotificationCenter = lazy(() => import('@/pages/admin/NotificationCenter').then(m => ({ default: m.AdminNotificationCenter })));
+export const LazyAdminNotificationCenter = lazy(() => import('@/pages/admin/NotificationCenter'));
 export const LazyEventMonitoring = lazy(() => import('@/pages/admin/EventMonitoring'));
 export const LazyDesignSystemDocs = lazy(() => import('@/pages/admin/DesignSystemDocs').then(m => ({ default: m.DesignSystemDocs })));
 

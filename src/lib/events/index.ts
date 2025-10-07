@@ -99,3 +99,7 @@ console.log('[EventBus] Search processors registered');
 // Initialize subscription event subscribers
 import { initializeSubscriptionSubscribers } from './subscribers/SubscriptionEventSubscriber';
 initializeSubscriptionSubscribers(globalEventBus);
+
+// Initialize notification service
+import { notificationService } from '@/lib/services/NotificationService';
+notificationService.initialize();

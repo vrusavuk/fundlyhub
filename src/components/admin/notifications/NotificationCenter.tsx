@@ -1,605 +1,443 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Bell, Check, Trash2, Filter, Search, Archive, CheckCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { 
-  Bell, 
-  BellRing, 
-  Mail, 
-  MessageSquare, 
-  AlertTriangle, 
-  CheckCircle, 
-  Clock, 
-  User,
-  Users,
-  Send,
-  Trash2,
-  Eye,
-  EyeOff,
-  Filter,
-  Plus,
-  Settings
-} from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { Link } from 'react-router-dom';
+import { formatDistanceToNow, isToday, isYesterday, isThisWeek, isThisMonth } from 'date-fns';
+import * as LucideIcons from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useToast } from '@/hooks/use-toast';
 
 interface Notification {
   id: string;
-  type: 'system' | 'user' | 'campaign' | 'donation' | 'alert';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
+  type: string;
+  category: string;
+  priority: string;
   title: string;
   message: string;
-  recipient?: string;
-  recipientType: 'user' | 'role' | 'all';
-  status: 'draft' | 'sent' | 'scheduled' | 'failed';
-  createdAt: string;
-  scheduledFor?: string;
-  readBy?: string[];
-  actions?: NotificationAction[];
+  icon: string;
+  action_url: string | null;
+  action_label: string | null;
+  is_read: boolean;
+  is_archived: boolean;
+  created_at: string;
 }
 
-interface NotificationAction {
-  label: string;
-  action: string;
-  variant?: 'default' | 'destructive' | 'outline';
-}
-
-interface CreateNotificationData {
-  type: Notification['type'];
-  priority: Notification['priority'];
-  title: string;
-  message: string;
-  recipientType: Notification['recipientType'];
-  recipient?: string;
-  scheduledFor?: string;
-}
+type FilterTab = 'all' | 'unread' | 'campaign' | 'donation' | 'social' | 'security';
 
 export function NotificationCenter() {
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedFilter, setSelectedFilter] = useState<'all' | 'unread' | 'sent' | 'scheduled'>('all');
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [newNotification, setNewNotification] = useState<CreateNotificationData>({
-    type: 'system',
-    priority: 'medium',
-    title: '',
-    message: '',
-    recipientType: 'all'
-  });
-  const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTab, setSelectedTab] = useState<FilterTab>('all');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showArchived, setShowArchived] = useState(false);
 
-  // Mock data for demonstration
   useEffect(() => {
-    const mockNotifications: Notification[] = [
-      {
-        id: '1',
-        type: 'system',
-        priority: 'high',
-        title: 'System Maintenance Scheduled',
-        message: 'Platform will undergo maintenance on Sunday at 2 AM EST. Expected downtime: 2 hours.',
-        recipientType: 'all',
-        status: 'sent',
-        createdAt: '2024-01-15T10:30:00Z',
-        readBy: ['user1', 'user2']
-      },
-      {
-        id: '2',
-        type: 'campaign',
-        priority: 'medium',
-        title: 'Campaign Approval Required',
-        message: 'Medical campaign "Help Sarah Fight Cancer" requires admin review and approval.',
-        recipientType: 'role',
-        recipient: 'admin',
-        status: 'sent',
-        createdAt: '2024-01-15T09:15:00Z',
-        actions: [
-          { label: 'Review Campaign', action: 'review_campaign', variant: 'default' },
-          { label: 'Approve', action: 'approve_campaign', variant: 'default' },
-          { label: 'Reject', action: 'reject_campaign', variant: 'destructive' }
-        ]
-      },
-      {
-        id: '3',
-        type: 'donation',
-        priority: 'low',
-        title: 'Large Donation Alert',
-        message: 'A donation of $5,000 was made to "Emergency Relief Fund" campaign.',
-        recipientType: 'role',
-        recipient: 'financial_admin',
-        status: 'sent',
-        createdAt: '2024-01-15T08:45:00Z'
-      },
-      {
-        id: '4',
-        type: 'user',
-        priority: 'urgent',
-        title: 'Account Security Alert',
-        message: 'Multiple failed login attempts detected for user john.doe@example.com.',
-        recipientType: 'role',
-        recipient: 'security_admin',
-        status: 'sent',
-        createdAt: '2024-01-15T08:00:00Z',
-        actions: [
-          { label: 'Lock Account', action: 'lock_account', variant: 'destructive' },
-          { label: 'Reset Password', action: 'reset_password', variant: 'outline' }
-        ]
-      },
-      {
-        id: '5',
-        type: 'system',
-        priority: 'medium',
-        title: 'Weekly Report Ready',
-        message: 'Your weekly analytics report is ready for download.',
-        recipientType: 'all',
-        status: 'scheduled',
-        createdAt: '2024-01-15T07:30:00Z',
-        scheduledFor: '2024-01-16T09:00:00Z'
-      }
-    ];
+    if (!user) return;
+    
+    fetchNotifications();
+    const unsubscribe = subscribeToNotifications();
+    
+    return () => {
+      unsubscribe();
+    };
+  }, [user, showArchived]);
 
-    setTimeout(() => {
-      setNotifications(mockNotifications);
-      setLoading(false);
-    }, 1000);
-  }, []);
+  const fetchNotifications = async () => {
+    if (!user) return;
 
-  const filteredNotifications = notifications.filter(notification => {
-    switch (selectedFilter) {
-      case 'unread':
-        return !notification.readBy?.length;
-      case 'sent':
-        return notification.status === 'sent';
-      case 'scheduled':
-        return notification.status === 'scheduled';
-      default:
-        return true;
+    let query = supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    if (!showArchived) {
+      query = query.eq('is_archived', false);
     }
-  });
 
-  const getPriorityColor = (priority: Notification['priority']) => {
-    switch (priority) {
-      case 'urgent': return 'destructive';
-      case 'high': return 'destructive';
-      case 'medium': return 'default';
-      case 'low': return 'secondary';
-      default: return 'secondary';
+    const { data, error } = await query;
+
+    if (!error && data) {
+      setNotifications(data);
     }
+    setLoading(false);
   };
 
-  const getTypeIcon = (type: Notification['type']) => {
-    switch (type) {
-      case 'system': return <Settings className="h-4 w-4" />;
-      case 'user': return <User className="h-4 w-4" />;
-      case 'campaign': return <MessageSquare className="h-4 w-4" />;
-      case 'donation': return <CheckCircle className="h-4 w-4" />;
-      case 'alert': return <AlertTriangle className="h-4 w-4" />;
-      default: return <Bell className="h-4 w-4" />;
-    }
+  const subscribeToNotifications = () => {
+    if (!user) return () => {};
+
+    const channel = supabase
+      .channel('notifications-page')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          fetchNotifications();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   };
 
-  const createNotification = async () => {
-    if (!newNotification.title || !newNotification.message) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please fill in all required fields',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    try {
-      const notification: Notification = {
-        id: Date.now().toString(),
-        ...newNotification,
-        status: newNotification.scheduledFor ? 'scheduled' : 'sent',
-        createdAt: new Date().toISOString(),
-        readBy: []
-      };
-
-      setNotifications(prev => [notification, ...prev]);
-      setCreateDialogOpen(false);
-      setNewNotification({
-        type: 'system',
-        priority: 'medium',
-        title: '',
-        message: '',
-        recipientType: 'all'
-      });
-
-      toast({
-        title: 'Notification Created',
-        description: `Notification ${newNotification.scheduledFor ? 'scheduled' : 'sent'} successfully`
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to create notification',
-        variant: 'destructive'
-      });
-    }
+  const markAsRead = async (ids: string[]) => {
+    await supabase
+      .from('notifications')
+      .update({ is_read: true, read_at: new Date().toISOString() })
+      .in('id', ids);
+    
+    fetchNotifications();
+    setSelectedIds(new Set());
   };
 
-  const markAsRead = (notificationId: string) => {
-    setNotifications(prev => prev.map(notification => 
-      notification.id === notificationId 
-        ? { ...notification, readBy: [...(notification.readBy || []), 'current_user'] }
-        : notification
-    ));
-  };
-
-  const deleteNotification = (notificationId: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== notificationId));
+  const archiveNotifications = async (ids: string[]) => {
+    await supabase
+      .from('notifications')
+      .update({ is_archived: true, archived_at: new Date().toISOString() })
+      .in('id', ids);
+    
     toast({
-      title: 'Notification Deleted',
-      description: 'Notification has been removed successfully'
-    });
-  };
-
-  const handleNotificationAction = (notificationId: string, action: string) => {
-    toast({
-      title: 'Action Executed',
-      description: `Action "${action}" has been executed for notification`
+      title: 'Notifications Archived',
+      description: `${ids.length} notification(s) archived successfully.`
     });
     
-    // Mark as read when action is taken
-    markAsRead(notificationId);
+    fetchNotifications();
+    setSelectedIds(new Set());
   };
 
-  if (loading) {
+  const deleteNotifications = async (ids: string[]) => {
+    await supabase
+      .from('notifications')
+      .delete()
+      .in('id', ids);
+    
+    toast({
+      title: 'Notifications Deleted',
+      description: `${ids.length} notification(s) deleted successfully.`
+    });
+    
+    fetchNotifications();
+    setSelectedIds(new Set());
+  };
+
+  const markAllAsRead = async () => {
+    const ids = filteredNotifications.filter(n => !n.is_read).map(n => n.id);
+    if (ids.length > 0) {
+      await markAsRead(ids);
+    }
+  };
+
+  const toggleSelection = (id: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const getIcon = (iconName: string) => {
+    const Icon = (LucideIcons as any)[iconName] || Bell;
+    return Icon;
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return 'text-destructive';
+      case 'high': return 'text-orange-500';
+      case 'medium': return 'text-primary';
+      default: return 'text-muted-foreground';
+    }
+  };
+
+  const filterNotifications = (notifications: Notification[]) => {
+    let filtered = notifications;
+
+    switch (selectedTab) {
+      case 'unread':
+        filtered = filtered.filter(n => !n.is_read);
+        break;
+      case 'campaign':
+        filtered = filtered.filter(n => n.type === 'campaign' || n.type === 'admin');
+        break;
+      case 'donation':
+        filtered = filtered.filter(n => n.type === 'donation');
+        break;
+      case 'social':
+        filtered = filtered.filter(n => n.type === 'social');
+        break;
+      case 'security':
+        filtered = filtered.filter(n => n.type === 'security');
+        break;
+    }
+
+    if (searchQuery) {
+      filtered = filtered.filter(n =>
+        n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        n.message.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    return filtered;
+  };
+
+  const groupByDate = (notifications: Notification[]) => {
+    const groups: Record<string, Notification[]> = {
+      'Today': [],
+      'Yesterday': [],
+      'This Week': [],
+      'This Month': [],
+      'Earlier': []
+    };
+
+    notifications.forEach(notification => {
+      const date = new Date(notification.created_at);
+      if (isToday(date)) {
+        groups['Today'].push(notification);
+      } else if (isYesterday(date)) {
+        groups['Yesterday'].push(notification);
+      } else if (isThisWeek(date)) {
+        groups['This Week'].push(notification);
+      } else if (isThisMonth(date)) {
+        groups['This Month'].push(notification);
+      } else {
+        groups['Earlier'].push(notification);
+      }
+    });
+
+    return groups;
+  };
+
+  const filteredNotifications = filterNotifications(notifications);
+  const groupedNotifications = groupByDate(filteredNotifications);
+  const unreadCount = notifications.filter(n => !n.is_read).length;
+
+  if (!user) {
     return (
-      <div className="space-y-4">
-        {[...Array(5)].map((_, i) => (
-          <Card key={i}>
-            <CardContent className="p-4">
-              <div className="animate-pulse space-y-2">
-                <div className="h-4 bg-muted rounded w-3/4"></div>
-                <div className="h-3 bg-muted rounded w-1/2"></div>
-                <div className="h-3 bg-muted rounded w-full"></div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="container mx-auto p-6">
+        <Card>
+          <CardContent className="p-12 text-center">
+            <p className="text-muted-foreground">Please sign in to view notifications</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Notification Center</h2>
-          <p className="text-muted-foreground">
-            Manage system notifications and communications
-          </p>
+          <h1 className="text-3xl font-bold">Notifications</h1>
+          <p className="text-muted-foreground">Stay updated with your activity</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Notification
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Create New Notification</DialogTitle>
-                <DialogDescription>
-                  Send notifications to users or schedule them for later
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Type</label>
-                    <Select 
-                      value={newNotification.type} 
-                      onValueChange={(value: Notification['type']) => 
-                        setNewNotification(prev => ({ ...prev, type: value }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="system">System</SelectItem>
-                        <SelectItem value="user">User</SelectItem>
-                        <SelectItem value="campaign">Campaign</SelectItem>
-                        <SelectItem value="donation">Donation</SelectItem>
-                        <SelectItem value="alert">Alert</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Priority</label>
-                    <Select 
-                      value={newNotification.priority} 
-                      onValueChange={(value: Notification['priority']) => 
-                        setNewNotification(prev => ({ ...prev, priority: value }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Low</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                        <SelectItem value="urgent">Urgent</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Title</label>
-                  <Input
-                    value={newNotification.title}
-                    onChange={(e) => setNewNotification(prev => ({ ...prev, title: e.target.value }))}
-                    placeholder="Notification title"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Message</label>
-                  <Textarea
-                    value={newNotification.message}
-                    onChange={(e) => setNewNotification(prev => ({ ...prev, message: e.target.value }))}
-                    placeholder="Notification message"
-                    rows={4}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Recipients</label>
-                    <Select 
-                      value={newNotification.recipientType} 
-                      onValueChange={(value: Notification['recipientType']) => 
-                        setNewNotification(prev => ({ ...prev, recipientType: value }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Users</SelectItem>
-                        <SelectItem value="role">Specific Role</SelectItem>
-                        <SelectItem value="user">Specific User</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {newNotification.recipientType !== 'all' && (
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">
-                        {newNotification.recipientType === 'role' ? 'Role' : 'User'}
-                      </label>
-                      <Input
-                        value={newNotification.recipient || ''}
-                        onChange={(e) => setNewNotification(prev => ({ ...prev, recipient: e.target.value }))}
-                        placeholder={newNotification.recipientType === 'role' ? 'admin, moderator, etc.' : 'user@example.com'}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Schedule For (Optional)</label>
-                  <Input
-                    type="datetime-local"
-                    value={newNotification.scheduledFor || ''}
-                    onChange={(e) => setNewNotification(prev => ({ ...prev, scheduledFor: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={createNotification}>
-                  <Send className="h-4 w-4 mr-2" />
-                  {newNotification.scheduledFor ? 'Schedule' : 'Send'} Notification
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Bell className="h-4 w-4 text-muted-foreground" />
-              <div>
-                <div className="text-2xl font-bold">{notifications.length}</div>
-                <div className="text-sm text-muted-foreground">Total</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <BellRing className="h-4 w-4 text-muted-foreground" />
-              <div>
-                <div className="text-2xl font-bold">
-                  {notifications.filter(n => !n.readBy?.length).length}
-                </div>
-                <div className="text-sm text-muted-foreground">Unread</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <div>
-                <div className="text-2xl font-bold">
-                  {notifications.filter(n => n.status === 'scheduled').length}
-                </div>
-                <div className="text-sm text-muted-foreground">Scheduled</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-              <div>
-                <div className="text-2xl font-bold">
-                  {notifications.filter(n => n.priority === 'urgent' || n.priority === 'high').length}
-                </div>
-                <div className="text-sm text-muted-foreground">High Priority</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters */}
-      <div className="flex items-center gap-2">
-        <Filter className="h-4 w-4 text-muted-foreground" />
-        <div className="flex items-center gap-1">
-          {(['all', 'unread', 'sent', 'scheduled'] as const).map((filter) => (
-            <Button
-              key={filter}
-              variant={selectedFilter === filter ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setSelectedFilter(filter)}
-              className="capitalize"
-            >
-              {filter}
+        <div className="flex gap-2">
+          {unreadCount > 0 && (
+            <Button variant="outline" onClick={markAllAsRead}>
+              <CheckCheck className="h-4 w-4 mr-2" />
+              Mark All Read
             </Button>
-          ))}
+          )}
+          <Button 
+            variant="outline" 
+            onClick={() => setShowArchived(!showArchived)}
+          >
+            <Archive className="h-4 w-4 mr-2" />
+            {showArchived ? 'Hide Archived' : 'Show Archived'}
+          </Button>
         </div>
       </div>
 
-      {/* Notifications List */}
-      <div className="space-y-4">
-        {filteredNotifications.length === 0 ? (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No notifications found</h3>
-              <p className="text-muted-foreground">
-                {selectedFilter === 'all' 
-                  ? 'No notifications have been created yet'
-                  : `No ${selectedFilter} notifications found`
-                }
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          filteredNotifications.map((notification) => {
-            const isUnread = !notification.readBy?.length;
-            
-            return (
-              <Card key={notification.id} className={isUnread ? 'border-primary/20 bg-primary/5' : ''}>
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3 flex-1">
-                      <div className="flex-shrink-0 mt-1">
-                        {getTypeIcon(notification.type)}
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-semibold">{notification.title}</h4>
-                          <Badge variant={getPriorityColor(notification.priority)} className="text-xs">
-                            {notification.priority}
-                          </Badge>
-                          {notification.status === 'scheduled' && (
-                            <Badge variant="outline" className="text-xs">
-                              <Clock className="h-3 w-3 mr-1" />
-                              Scheduled
-                            </Badge>
-                          )}
-                          {isUnread && (
-                            <Badge variant="default" className="text-xs">
-                              New
-                            </Badge>
-                          )}
-                        </div>
-                        
-                        <p className="text-sm text-muted-foreground mb-2">
-                          {notification.message}
-                        </p>
-                        
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          <span>
-                            {new Date(notification.createdAt).toLocaleDateString()} {' '}
-                            {new Date(notification.createdAt).toLocaleTimeString()}
-                          </span>
-                          <span className="capitalize">
-                            {notification.recipientType} recipient{notification.recipientType !== 'user' ? 's' : ''}
-                          </span>
-                          {notification.scheduledFor && (
-                            <span>
-                              Scheduled for: {new Date(notification.scheduledFor).toLocaleDateString()}
-                            </span>
-                          )}
-                        </div>
-
-                        {notification.actions && notification.actions.length > 0 && (
-                          <div className="flex items-center gap-2 mt-3">
-                            {notification.actions.map((action) => (
-                              <Button 
-                                key={action.action}
-                                variant={action.variant || 'outline'}
-                                size="sm"
-                                onClick={() => handleNotificationAction(notification.id, action.action)}
-                              >
-                                {action.label}
-                              </Button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      {isUnread && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => markAsRead(notification.id)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteNotification(notification.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })
-        )}
+      <div className="flex gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search notifications..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
       </div>
+
+      <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as FilterTab)}>
+        <TabsList>
+          <TabsTrigger value="all">
+            All {notifications.length > 0 && `(${notifications.length})`}
+          </TabsTrigger>
+          <TabsTrigger value="unread">
+            Unread {unreadCount > 0 && (
+              <Badge variant="destructive" className="ml-2">{unreadCount}</Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="campaign">Campaigns</TabsTrigger>
+          <TabsTrigger value="donation">Donations</TabsTrigger>
+          <TabsTrigger value="social">Social</TabsTrigger>
+          <TabsTrigger value="security">Security</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value={selectedTab} className="mt-6 space-y-6">
+          {selectedIds.size > 0 && (
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">
+                    {selectedIds.size} notification(s) selected
+                  </span>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => markAsRead(Array.from(selectedIds))}
+                    >
+                      <Check className="h-4 w-4 mr-2" />
+                      Mark Read
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => archiveNotifications(Array.from(selectedIds))}
+                    >
+                      <Archive className="h-4 w-4 mr-2" />
+                      Archive
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => deleteNotifications(Array.from(selectedIds))}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {loading ? (
+            <div className="space-y-4">
+              {[...Array(5)].map((_, i) => (
+                <Card key={i}>
+                  <CardContent className="p-6">
+                    <div className="animate-pulse space-y-3">
+                      <div className="h-4 bg-muted rounded w-3/4" />
+                      <div className="h-3 bg-muted rounded w-full" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : filteredNotifications.length === 0 ? (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <Bell className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No notifications</h3>
+                <p className="text-muted-foreground">
+                  {selectedTab === 'unread' 
+                    ? "You're all caught up!" 
+                    : "No notifications in this category yet"}
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            Object.entries(groupedNotifications).map(([group, items]) => {
+              if (items.length === 0) return null;
+              
+              return (
+                <div key={group} className="space-y-3">
+                  <h3 className="text-sm font-semibold text-muted-foreground">{group}</h3>
+                  {items.map((notification) => {
+                    const Icon = getIcon(notification.icon);
+                    return (
+                      <Card key={notification.id} className={!notification.is_read ? 'border-primary/50' : ''}>
+                        <CardContent className="p-6">
+                          <div className="flex gap-4">
+                            <Checkbox
+                              checked={selectedIds.has(notification.id)}
+                              onCheckedChange={() => toggleSelection(notification.id)}
+                            />
+                            
+                            <div className={`mt-1 ${getPriorityColor(notification.priority)}`}>
+                              <Icon className="h-6 w-6" />
+                            </div>
+                            
+                            <div className="flex-1 space-y-2">
+                              <div className="flex items-start justify-between gap-4">
+                                <div>
+                                  <h4 className="font-semibold flex items-center gap-2">
+                                    {notification.title}
+                                    {!notification.is_read && (
+                                      <Badge variant="default" className="text-xs">New</Badge>
+                                    )}
+                                  </h4>
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    {notification.message}
+                                  </p>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-muted-foreground">
+                                  {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                                </span>
+                                
+                                <div className="flex gap-2">
+                                  {notification.action_url && (
+                                    <Button variant="outline" size="sm" asChild>
+                                      <Link to={notification.action_url} onClick={() => !notification.is_read && markAsRead([notification.id])}>
+                                        {notification.action_label}
+                                      </Link>
+                                    </Button>
+                                  )}
+                                  {!notification.is_read && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => markAsRead([notification.id])}
+                                    >
+                                      <Check className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => archiveNotifications([notification.id])}
+                                  >
+                                    <Archive className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              );
+            })
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

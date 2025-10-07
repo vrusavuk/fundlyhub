@@ -9,6 +9,7 @@ import { NavigationMenu } from './NavigationMenu';
 import { UserMenu } from './UserMenu';
 import { SearchTrigger } from './SearchTrigger';
 import { MobileNavigation } from './MobileNavigation';
+import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
 
 export function Navigation() {
   const { isHeaderSearchOpen, closeHeaderSearch } = useGlobalSearch();
@@ -35,6 +36,9 @@ export function Navigation() {
             <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
               {/* Search Trigger */}
               <SearchTrigger />
+              
+              {/* Notifications */}
+              <NotificationDropdown />
               
               {/* User Menu */}
               <UserMenu />

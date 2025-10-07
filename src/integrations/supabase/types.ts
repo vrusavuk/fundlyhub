@@ -917,7 +917,11 @@ export type Database = {
           campaign_updates: boolean | null
           created_at: string
           donation_alerts: boolean | null
+          email_campaign_updates: boolean | null
+          email_donations: boolean | null
           email_notifications: boolean | null
+          email_security: boolean | null
+          email_social: boolean | null
           id: string
           new_follower: boolean | null
           push_notifications: boolean | null
@@ -928,7 +932,11 @@ export type Database = {
           campaign_updates?: boolean | null
           created_at?: string
           donation_alerts?: boolean | null
+          email_campaign_updates?: boolean | null
+          email_donations?: boolean | null
           email_notifications?: boolean | null
+          email_security?: boolean | null
+          email_social?: boolean | null
           id?: string
           new_follower?: boolean | null
           push_notifications?: boolean | null
@@ -939,12 +947,91 @@ export type Database = {
           campaign_updates?: boolean | null
           created_at?: string
           donation_alerts?: boolean | null
+          email_campaign_updates?: boolean | null
+          email_donations?: boolean | null
           email_notifications?: boolean | null
+          email_security?: boolean | null
+          email_social?: boolean | null
           id?: string
           new_follower?: boolean | null
           push_notifications?: boolean | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          action_label: string | null
+          action_url: string | null
+          archived_at: string | null
+          category: string
+          correlation_id: string | null
+          created_at: string | null
+          event_id: string | null
+          expires_at: string | null
+          icon: string | null
+          id: string
+          is_archived: boolean | null
+          is_global: boolean | null
+          is_read: boolean | null
+          message: string
+          priority: string
+          read_at: string | null
+          related_resource_id: string | null
+          related_resource_type: string | null
+          role_name: string | null
+          title: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          action_label?: string | null
+          action_url?: string | null
+          archived_at?: string | null
+          category: string
+          correlation_id?: string | null
+          created_at?: string | null
+          event_id?: string | null
+          expires_at?: string | null
+          icon?: string | null
+          id?: string
+          is_archived?: boolean | null
+          is_global?: boolean | null
+          is_read?: boolean | null
+          message: string
+          priority?: string
+          read_at?: string | null
+          related_resource_id?: string | null
+          related_resource_type?: string | null
+          role_name?: string | null
+          title: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          action_label?: string | null
+          action_url?: string | null
+          archived_at?: string | null
+          category?: string
+          correlation_id?: string | null
+          created_at?: string | null
+          event_id?: string | null
+          expires_at?: string | null
+          icon?: string | null
+          id?: string
+          is_archived?: boolean | null
+          is_global?: boolean | null
+          is_read?: boolean | null
+          message?: string
+          priority?: string
+          read_at?: string | null
+          related_resource_id?: string | null
+          related_resource_type?: string | null
+          role_name?: string | null
+          title?: string
+          type?: string
+          user_id?: string | null
         }
         Relationships: []
       }

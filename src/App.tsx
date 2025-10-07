@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Routes, Route, Navigate } from "react-router-dom";
@@ -12,6 +12,8 @@ import { CreateSampleAdmin } from '@/components/admin/CreateSampleAdmin';
 import { NavigationProgress } from '@/components/navigation/NavigationProgress';
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+
+const NotificationCenterPage = lazy(() => import("@/pages/admin/NotificationCenter"));
 
 // High-traffic routes - imported directly for instant loading
 import AllCampaigns from "./pages/AllCampaigns";
@@ -182,6 +184,15 @@ const App = () => (
             </Suspense>
           } />
         </Route>
+        
+        {/* User Notification Center (outside admin) */}
+        <Route path="/notifications" element={
+          <ProtectedRoute>
+            <Suspense fallback={<div className="min-h-screen" />}>
+              <NotificationCenterPage />
+            </Suspense>
+          </ProtectedRoute>
+        } />
         
         {/* 404 - minimal skeleton */}
         <Route path="*" element={
