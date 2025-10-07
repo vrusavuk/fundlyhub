@@ -194,7 +194,7 @@ export class AdminEventService {
   }
 
   /**
-   * Update campaign and publish event with validation
+   * Update campaign and publish event with validation - Phase 4 Enhanced Logging
    */
   static async updateCampaign(
     campaignId: string,
@@ -205,14 +205,21 @@ export class AdminEventService {
       reason?: string;
     }
   ) {
+    console.log('[AdminEventService] updateCampaign called', {
+      campaignId,
+      updatedBy,
+      changes,
+      options
+    });
+
     const { data: user } = await supabase.auth.getUser();
-    if (!user?.user) throw new Error('User not authenticated');
+    if (!user?.user) {
+      console.error('[AdminEventService] User not authenticated');
+      throw new Error('User not authenticated');
+    }
 
-    console.log('🔐 Checking permissions for campaign update...');
-    console.log('  - User ID:', updatedBy);
-    console.log('  - Campaign ID:', campaignId);
-
-    // 1. Fetch current campaign data for validation
+    // 1. Fetch current campaign
+    console.log('[AdminEventService] Fetching campaign data...');
     const { data: campaign, error: fetchError } = await supabase
       .from('fundraisers')
       .select('*, donations(id)')
@@ -220,29 +227,45 @@ export class AdminEventService {
       .single();
 
     if (fetchError || !campaign) {
-      console.error('❌ Failed to fetch campaign:', fetchError);
+      console.error('[AdminEventService] Failed to fetch campaign:', fetchError);
       throw new Error(`Failed to fetch campaign: ${fetchError?.message}`);
     }
 
-    // 2. Check if user has permission (admin or owner)
+    console.log('[AdminEventService] Campaign fetched:', { 
+      id: campaign.id, 
+      owner: campaign.owner_user_id,
+      status: campaign.status 
+    });
+
+    // 2. Check permissions with detailed logging
+    console.log('[AdminEventService] Checking permissions...');
     const isOwner = campaign.owner_user_id === updatedBy;
-    const { data: hasPermission } = await supabase.rpc('user_has_permission', {
+    
+    const { data: hasPermission, error: permError } = await supabase.rpc('user_has_permission', {
       _user_id: updatedBy,
       _permission_name: 'manage_campaigns'
     });
 
+    console.log('[AdminEventService] Permission check results:', {
+      isOwner,
+      hasManageCampaigns: hasPermission,
+      permissionError: permError,
+      canProceed: isOwner || hasPermission
+    });
+
     if (!isOwner && !hasPermission) {
-      console.error('❌ Permission denied - user is not owner or admin');
+      console.error('[AdminEventService] Permission denied');
       throw new Error('You do not have permission to update this campaign');
     }
 
-    console.log('✅ Permission check passed:', isOwner ? 'owner' : 'admin');
-
     // 3. Validate changes
     if (options?.validateTransitions !== false) {
+      console.log('[AdminEventService] Validating transitions...');
+      
       // Prevent reducing goal amount if donations exist
       if (changes.goal_amount && campaign.donations && campaign.donations.length > 0) {
         if (changes.goal_amount < campaign.goal_amount) {
+          console.error('[AdminEventService] Cannot reduce goal with donations');
           throw new Error('Cannot reduce goal amount after receiving donations');
         }
       }
@@ -250,6 +273,7 @@ export class AdminEventService {
       // Prevent changing currency if donations exist
       if (changes.currency && campaign.donations && campaign.donations.length > 0) {
         if (changes.currency !== campaign.currency) {
+          console.error('[AdminEventService] Cannot change currency with donations');
           throw new Error('Cannot change currency after receiving donations');
         }
       }
@@ -269,27 +293,40 @@ export class AdminEventService {
         const newStatus = changes.status;
         
         if (!validTransitions[currentStatus]?.includes(newStatus)) {
+          console.error('[AdminEventService] Invalid status transition:', {
+            from: currentStatus,
+            to: newStatus
+          });
           throw new Error(`Invalid status transition from ${currentStatus} to ${newStatus}`);
         }
       }
+      
+      console.log('[AdminEventService] Validation passed');
     }
 
-    // 4. Update database
-    console.log('📝 Updating campaign in database...', changes);
-    const { error: updateError } = await supabase
+    // 4. Execute update with detailed logging
+    console.log('[AdminEventService] Executing database update:', changes);
+    const { data: updatedCampaign, error: updateError } = await supabase
       .from('fundraisers')
       .update({
         ...changes,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', campaignId);
+      .eq('id', campaignId)
+      .select()
+      .single();
 
     if (updateError) {
-      console.error('❌ Failed to update campaign:', updateError);
-      throw new Error(`Failed to update campaign: ${updateError.message}`);
+      console.error('[AdminEventService] Database update failed:', {
+        code: updateError.code,
+        message: updateError.message,
+        details: updateError.details,
+        hint: updateError.hint
+      });
+      throw updateError;
     }
 
-    console.log(`✅ Campaign ${campaignId} updated successfully`);
+    console.log('[AdminEventService] Campaign updated successfully:', updatedCampaign);
 
     // 5. Publish event
     await globalEventBus.publish(
@@ -301,7 +338,7 @@ export class AdminEventService {
       })
     );
 
-    // 6. Log audit trail with detailed field tracking
+    // 6. Log audit trail
     await supabase.rpc('log_audit_event', {
       _actor_id: updatedBy,
       _action: 'campaign_updated',
@@ -315,6 +352,7 @@ export class AdminEventService {
       },
     });
 
+    console.log('[AdminEventService] Event published and audit logged');
     return { success: true };
   }
 

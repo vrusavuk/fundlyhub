@@ -83,41 +83,56 @@ export function useOptimisticUpdates(options: UseOptimisticUpdatesOptions = {}) 
           failedActions: [...prev.failedActions, action]
         }));
         
-        // Extract detailed error message from Supabase error
-        let errorMessage = `Failed to ${action.description.toLowerCase()}`;
+        // Phase 4: Enhanced error extraction with comprehensive logging
+        console.log('[OptimisticUpdates] Processing error:', error);
+        
+        let errorMessage = "An unexpected error occurred";
         
         if (error && typeof error === 'object') {
-          // Supabase error structure
           const supabaseError = error as any;
           
-          if (supabaseError.message) {
+          // Log full error structure for debugging
+          console.error('[OptimisticUpdates] Full error details:', {
+            code: supabaseError.code,
+            message: supabaseError.message,
+            details: supabaseError.details,
+            hint: supabaseError.hint,
+            error_description: supabaseError.error_description
+          });
+          
+          // Check for RLS policy violation (42501 is PostgreSQL's permission denied code)
+          if (supabaseError.code === '42501' || 
+              supabaseError.message?.includes('row-level security') ||
+              supabaseError.message?.includes('policy')) {
+            errorMessage = "Permission denied: You don't have access to perform this action";
+            console.error('[OptimisticUpdates] RLS policy violation detected');
+          }
+          // Check for other PostgreSQL errors
+          else if (supabaseError.code) {
+            const friendlyMessages: Record<string, string> = {
+              '23505': 'This record already exists',
+              '23503': 'Related record not found',
+              '23502': 'Required field is missing',
+              '22P02': 'Invalid input format',
+              'PGRST116': 'No rows returned from query'
+            };
+            
+            errorMessage = friendlyMessages[supabaseError.code] || 
+              `Database error (${supabaseError.code}): ${supabaseError.message || supabaseError.hint || 'Unknown error'}`;
+          }
+          // Generic Supabase error
+          else if (supabaseError.message) {
             errorMessage = supabaseError.message;
           } else if (supabaseError.error_description) {
             errorMessage = supabaseError.error_description;
           } else if (supabaseError.details) {
             errorMessage = supabaseError.details;
           }
-          
-          // Check for RLS policy errors
-          if (errorMessage.includes('row-level security') || errorMessage.includes('policy')) {
-            errorMessage = 'Permission denied: You do not have access to perform this action';
-          }
-          
-          // Check for validation errors
-          if (supabaseError.code === '23505') {
-            errorMessage = 'This record already exists';
-          } else if (supabaseError.code === '23503') {
-            errorMessage = 'Related record not found';
-          }
         } else if (error instanceof Error) {
           errorMessage = error.message;
         }
         
-        console.error('❌ Optimistic update failed:', {
-          action: action.description,
-          error,
-          extractedMessage: errorMessage
-        });
+        console.error('[OptimisticUpdates] Final error message:', errorMessage);
         
         toast({
           title: 'Action Failed',

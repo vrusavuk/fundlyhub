@@ -29,13 +29,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { campaignEditSchema, type CampaignEditData } from '@/lib/validation/campaignEdit.schema';
 import { useCategories } from '@/hooks/useCategories';
-import { useToast } from '@/hooks/use-toast';
 
 interface EditCampaignDialogProps {
   campaign: any;
@@ -51,8 +49,8 @@ export function EditCampaignDialog({
   onSave 
 }: EditCampaignDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string>("");
   const { categories } = useCategories();
-  const { toast } = useToast();
   
   const form = useForm<CampaignEditData>({
     resolver: zodResolver(campaignEditSchema),
@@ -102,98 +100,62 @@ export function EditCampaignDialog({
     }
   }, [campaign, form]);
 
-  // Helper function to normalize values for proper comparison
-  const normalizeValue = (value: any): any => {
-    // Handle null/undefined/empty string - treat all as null
-    if (value === null || value === undefined || value === '') return null;
+  // Simplified change detection - Phase 3
+  const detectChanges = (formData: CampaignEditData, original: any) => {
+    const changes: Record<string, any> = {};
     
-    // Handle numeric strings - coerce to numbers for comparison
-    if (typeof value === 'string' && !isNaN(Number(value)) && value.trim() !== '') {
-      return Number(value);
-    }
+    Object.entries(formData).forEach(([key, value]) => {
+      const originalValue = original[key];
+      
+      // Direct comparison for primitives
+      if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+        if (value !== originalValue) {
+          console.log(`[EditCampaign] Change detected in ${key}:`, { old: originalValue, new: value });
+          changes[key] = value;
+        }
+      }
+      // JSON comparison for objects/arrays
+      else if (JSON.stringify(value) !== JSON.stringify(originalValue)) {
+        console.log(`[EditCampaign] Change detected in ${key}:`, { old: originalValue, new: value });
+        changes[key] = value;
+      }
+    });
     
-    // Handle empty arrays - treat as null
-    if (Array.isArray(value)) {
-      return value.length === 0 ? null : value;
-    }
-    
-    // Handle empty objects - treat as null
-    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-      return Object.keys(value).length === 0 ? null : value;
-    }
-    
-    return value;
+    return changes;
   };
 
   const onSubmit = async (data: CampaignEditData) => {
-    console.group('📝 Campaign Edit Form Submission');
-    console.log('Form data:', data);
-    console.log('Campaign original data:', campaign);
+    if (!campaign) return;
     
+    console.log('[EditCampaign] Starting submission', { campaignId: campaign.id });
+    setStatusMessage("Validating changes...");
+    
+    // Detect changes
+    const changes = detectChanges(data, campaign);
+    
+    console.log('[EditCampaign] Changes detected:', { changeCount: Object.keys(changes).length, changes });
+    
+    if (Object.keys(changes).length === 0) {
+      console.log('[EditCampaign] No changes detected');
+      setStatusMessage("");
+      onOpenChange(false);
+      return;
+    }
+
     setIsSubmitting(true);
+    setStatusMessage("Saving changes...");
     
     try {
-      // Detect changes with normalized values for proper type comparison
-      const changes: Record<string, any> = {};
-      
-      (Object.keys(data) as Array<keyof CampaignEditData>).forEach((key) => {
-        const formValue = data[key];
-        const campaignValue = campaign[key];
-        
-        // Normalize both values for comparison
-        const normalizedFormValue = normalizeValue(formValue);
-        const normalizedCampaignValue = normalizeValue(campaignValue);
-        
-        // Deep comparison using JSON stringify
-        const isChanged = JSON.stringify(normalizedFormValue) !== JSON.stringify(normalizedCampaignValue);
-        
-        if (isChanged) {
-          console.log(`Field "${key}" changed:`, {
-            originalForm: formValue,
-            originalCampaign: campaignValue,
-            normalizedForm: normalizedFormValue,
-            normalizedCampaign: normalizedCampaignValue
-          });
-          // Use the original form value (not normalized) for the update
-          changes[key] = formValue;
-        }
-      });
-
-      console.log('📊 Changes detected:', changes);
-      console.log('📊 Number of changes:', Object.keys(changes).length);
-
-      if (Object.keys(changes).length === 0) {
-        console.log('ℹ️ No changes detected, closing dialog');
-        toast({
-          title: "No changes",
-          description: "No fields were modified.",
-        });
-        onOpenChange(false);
-        console.groupEnd();
-        return;
-      }
-
-      console.log('🚀 Calling onSave with campaign ID:', campaign.id);
-      console.log('🚀 Changes payload:', changes);
-      
-      // Call onSave - it will throw on error which is caught by OptimisticUpdates
+      console.log('[EditCampaign] Calling onSave');
       await onSave(campaign.id, changes);
-      
-      console.log('✅ Campaign updated successfully');
-      toast({
-        title: "Campaign updated",
-        description: `Successfully updated ${Object.keys(changes).length} field(s).`,
-      });
-      
+      console.log('[EditCampaign] Save successful');
+      setStatusMessage("");
       onOpenChange(false);
-      console.groupEnd();
     } catch (error) {
-      console.error('❌ Failed to update campaign:', error);
-      
-      // Error is already handled by OptimisticUpdates with detailed message
-      // Just log it here for debugging
-      console.groupEnd();
-      // Don't show duplicate toast - OptimisticUpdates already shows it
+      console.error('[EditCampaign] Save failed:', error);
+      setStatusMessage("");
+      // Error handled by OptimisticUpdates
+      throw error;
     } finally {
       setIsSubmitting(false);
     }
@@ -209,6 +171,12 @@ export function EditCampaignDialog({
           <DialogDescription>
             Make changes to "{campaign?.title}"
           </DialogDescription>
+          {statusMessage && (
+            <div className="mt-2 text-sm text-muted-foreground flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              {statusMessage}
+            </div>
+          )}
         </DialogHeader>
 
         {isLiveCampaign && (
