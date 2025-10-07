@@ -194,8 +194,6 @@ export function EditCampaignDialog({
     }
   };
 
-  const isLiveCampaign = campaign?.status === 'active';
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh]">
@@ -205,15 +203,6 @@ export function EditCampaignDialog({
             Make changes to "{campaign?.title}"
           </DialogDescription>
         </DialogHeader>
-
-        {/* Warning for live campaigns */}
-        {isLiveCampaign && (
-          <DialogErrorBadge
-            variant="warning"
-            title="Live Campaign"
-            message="This campaign is currently active. Changes will be visible to donors immediately."
-          />
-        )}
 
         {/* Validation errors */}
         {Object.keys(form.formState.errors).length > 0 && (
