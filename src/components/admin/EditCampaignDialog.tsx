@@ -34,7 +34,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { DialogErrorBadge } from "@/components/common/DialogErrorBadge";
-import { DialogStatusIndicator } from "@/components/common/DialogStatusIndicator";
 import { 
   formatValidationErrors, 
   extractSupabaseError, 
@@ -58,7 +57,6 @@ export function EditCampaignDialog({
   onSave 
 }: EditCampaignDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<string>("");
   const [submitError, setSubmitError] = useState<any>(null);
   const { toast } = useToast();
   const { categories } = useCategories();
@@ -140,9 +138,8 @@ export function EditCampaignDialog({
     return value;
   };
 
-  // Enhanced change detection with type coercion - Step 4
+  // Enhanced change detection with type coercion
   const detectChanges = (formData: CampaignEditData, original: any) => {
-    console.log('[DEBUG] detectChanges called', { formData, original });
     const changes: Record<string, any> = {};
     
     Object.entries(formData).forEach(([key, value]) => {
@@ -152,23 +149,15 @@ export function EditCampaignDialog({
       const normalizedNew = normalizeValue(value);
       const normalizedOld = normalizeValue(originalValue);
       
-      console.log(`[DEBUG] Comparing ${key}:`, {
-        raw: { new: value, old: originalValue },
-        normalized: { new: normalizedNew, old: normalizedOld },
-        types: { new: typeof normalizedNew, old: typeof normalizedOld }
-      });
-      
       // Direct comparison for primitives
       if (typeof normalizedNew === 'string' || typeof normalizedNew === 'number' || typeof normalizedNew === 'boolean') {
         if (normalizedNew !== normalizedOld) {
-          console.log(`[EditCampaign] Change detected in ${key}:`, { old: normalizedOld, new: normalizedNew });
-          changes[key] = value; // Use original value, not normalized
+          changes[key] = value;
         }
       }
       // JSON comparison for objects/arrays
       else if (JSON.stringify(normalizedNew) !== JSON.stringify(normalizedOld)) {
-        console.log(`[EditCampaign] Change detected in ${key}:`, { old: normalizedOld, new: normalizedNew });
-        changes[key] = value; // Use original value, not normalized
+        changes[key] = value;
       }
     });
     
@@ -176,54 +165,29 @@ export function EditCampaignDialog({
   };
 
   const onSubmit = async (data: CampaignEditData) => {
-    // Step 1: Debug logging at the very beginning
-    console.log('[DEBUG] ========== FORM SUBMISSION STARTED ==========');
-    console.log('[DEBUG] onSubmit called with data:', data);
-    console.log('[DEBUG] campaign:', campaign);
-    console.log('[DEBUG] form.formState:', form.formState);
-    
-    if (!campaign) {
-      console.error('[DEBUG] No campaign provided!');
-      return;
-    }
-    
-    console.log('[EditCampaign] Starting submission', { campaignId: campaign.id });
-    setStatusMessage("Validating changes...");
+    if (!campaign) return;
     
     // Detect changes
     const changes = detectChanges(data, campaign);
     
-    console.log('[EditCampaign] Changes detected:', { changeCount: Object.keys(changes).length, changes });
-    
     if (Object.keys(changes).length === 0) {
-      console.log('[EditCampaign] No changes detected');
-      setStatusMessage("");
       onOpenChange(false);
       return;
     }
 
     setIsSubmitting(true);
-    setStatusMessage("Saving changes...");
     
     try {
-      console.log('[EditCampaign] Calling onSave');
       await onSave(campaign.id, changes);
-      console.log('[EditCampaign] Save successful');
-      
-      setStatusMessage("Campaign updated successfully!");
       setSubmitError(null);
+      
       toast({
         title: "Campaign Updated",
         description: "Campaign has been successfully updated.",
       });
       
-      setTimeout(() => {
-        onOpenChange(false);
-        setStatusMessage("");
-      }, 1500);
+      onOpenChange(false);
     } catch (error: any) {
-      console.error('[EditCampaign] Save failed:', error);
-      setStatusMessage("");
       setSubmitError(error);
     } finally {
       setIsSubmitting(false);
@@ -274,14 +238,6 @@ export function EditCampaignDialog({
               label: "Retry",
               onClick: form.handleSubmit(onSubmit)
             } : undefined}
-          />
-        )}
-
-        {/* Status indicator */}
-        {statusMessage && (
-          <DialogStatusIndicator
-            status={statusMessage}
-            loading={isSubmitting}
           />
         )}
 
