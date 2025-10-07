@@ -13,8 +13,6 @@ import { NavigationProgress } from '@/components/navigation/NavigationProgress';
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 
-const NotificationCenterPage = lazy(() => import("@/pages/admin/NotificationCenter"));
-
 // High-traffic routes - imported directly for instant loading
 import AllCampaigns from "./pages/AllCampaigns";
 import SearchResults from "./pages/SearchResults";
@@ -189,7 +187,7 @@ const App = () => (
         <Route path="/notifications" element={
           <ProtectedRoute>
             <Suspense fallback={<div className="min-h-screen" />}>
-              <NotificationCenterPage />
+              <LazyAdminNotificationCenter />
             </Suspense>
           </ProtectedRoute>
         } />
