@@ -2,7 +2,6 @@ import { Outlet } from 'react-router-dom';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
 import { useRBAC } from '@/hooks/useRBAC';
-import { Toaster } from '@/components/ui/toaster';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
 import { SmartBreadcrumb } from '@/components/navigation/SmartBreadcrumb';
@@ -62,7 +61,6 @@ export function AdminLayout() {
       </div>
       
       <SessionTimeoutWarning />
-      <Toaster />
     </SidebarProvider>
   );
 }
