@@ -13,10 +13,13 @@ import {
   Crown,
   PieChart,
   FileText,
-  Bell
+  Bell,
+  Home,
+  ArrowLeft
 } from 'lucide-react';
 import { useRBAC } from '@/hooks/useRBAC';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface AdminNavItem {
   title: string;
@@ -127,6 +130,21 @@ export function MobileSidebar() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Return to Site Button */}
+      <div className="p-4 border-b">
+        <Button 
+          asChild 
+          variant="outline" 
+          className="w-full justify-start"
+          size="sm"
+        >
+          <NavLink to="/">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Return to Site
+          </NavLink>
+        </Button>
       </div>
 
       {/* Navigation */}

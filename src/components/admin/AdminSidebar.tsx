@@ -12,7 +12,9 @@ import {
   Crown,
   PieChart,
   Bell,
-  ChevronDown
+  ChevronDown,
+  Home,
+  ArrowLeft
 } from 'lucide-react';
 import {
   Sidebar,
@@ -158,6 +160,25 @@ export function AdminSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
+        {/* Return to Site */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  asChild
+                  tooltip={state === "collapsed" ? "Return to Site" : undefined}
+                >
+                  <NavLink to="/">
+                    <ArrowLeft className="size-4" />
+                    <span>Return to Site</span>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
         <SidebarGroup>
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
