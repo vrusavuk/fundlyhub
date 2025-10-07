@@ -184,27 +184,41 @@ export function CampaignManagement() {
   }, [pagination.state.page, pagination.state.pageSize, debouncedSearch, filters, toast]);
 
   const handleCampaignUpdate = async (campaignId: string, changes: Record<string, any>) => {
+    console.group('🔄 Campaign Update Handler');
+    console.log('Campaign ID:', campaignId);
+    console.log('Changes to apply:', changes);
+    
     return optimisticUpdates.executeAction(
       {
         type: 'update',
         description: `Update campaign fields`,
         originalData: { ...editingCampaign },
         rollbackFn: async () => {
+          console.log('⏮️ Rolling back campaign update');
           await fetchCampaigns();
         }
       },
       async () => {
         const { data: user } = await supabase.auth.getUser();
-        if (!user?.user) throw new Error('Not authenticated');
+        if (!user?.user) {
+          console.error('❌ User not authenticated');
+          throw new Error('Not authenticated');
+        }
 
+        console.log('📤 Calling AdminEventService.updateCampaign');
+        
+        // This will throw on error - no need to catch
         await AdminEventService.updateCampaign(
           campaignId,
           user.user.id,
           changes,
           { reason: 'Admin manual update' }
         );
-
-        await fetchCampaigns();
+        
+        console.log('✅ AdminEventService.updateCampaign completed');
+        console.groupEnd();
+        
+        // Event subscribers will trigger fetchCampaigns() - no need to call here
       }
     );
   };

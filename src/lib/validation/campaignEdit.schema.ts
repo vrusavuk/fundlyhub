@@ -24,10 +24,16 @@ export const campaignEditSchema = z.object({
     .optional()
     .nullable(),
   
-  // Financial
-  goal_amount: z.number()
-    .positive('Goal amount must be positive')
-    .max(100000000, 'Goal amount is too large'),
+  // Financial - with proper coercion
+  goal_amount: z.preprocess(
+    (val) => {
+      if (typeof val === 'string') return parseFloat(val);
+      return val;
+    },
+    z.number()
+      .positive('Goal amount must be positive')
+      .max(100000000, 'Goal amount is too large')
+  ),
   
   currency: z.string()
     .length(3, 'Currency must be 3 characters')
@@ -48,16 +54,19 @@ export const campaignEditSchema = z.object({
   
   status: z.enum(['draft', 'pending', 'active', 'paused', 'closed', 'ended']),
   
-  // Media
+  // Media - with proper URL validation
   cover_image: z.preprocess(
     (val) => (val === '' ? null : val),
-    z.string().url().nullable().optional()
+    z.string().url('Must be a valid URL').nullable().optional()
   ),
   video_url: z.preprocess(
     (val) => (val === '' ? null : val),
-    z.string().url().nullable().optional()
+    z.string().url('Must be a valid URL').nullable().optional()
   ),
-  images: z.array(z.string()).optional().nullable(),
+  images: z.preprocess(
+    (val) => (val === null || val === undefined || val === '' ? null : val),
+    z.array(z.string()).nullable().optional()
+  ),
   
   // Timeline
   end_date: z.preprocess(

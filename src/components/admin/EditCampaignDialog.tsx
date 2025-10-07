@@ -103,64 +103,80 @@ export function EditCampaignDialog({
   }, [campaign, form]);
 
   const onSubmit = async (data: CampaignEditData) => {
-    console.log('Form submit triggered', data);
-    
-    // Trigger validation explicitly
-    const isValid = await form.trigger();
-    console.log('Form validation result:', isValid);
-    
-    if (!isValid) {
-      const errors = form.formState.errors;
-      console.error('Validation errors:', errors);
-      
-      toast({
-        variant: "destructive",
-        title: "Validation failed",
-        description: "Please check the form for errors.",
-      });
-      return;
-    }
+    console.group('📝 Campaign Edit Form Submission');
+    console.log('Form data:', data);
+    console.log('Campaign original data:', campaign);
     
     setIsSubmitting(true);
-    console.log('Starting save operation...');
     
     try {
-      // Only send changed fields
+      // Detect changes with proper null/empty string handling and deep comparison
       const changes: Record<string, any> = {};
-      Object.keys(data).forEach((key) => {
-        const typedKey = key as keyof CampaignEditData;
-        if (data[typedKey] !== campaign[key]) {
-          changes[key] = data[typedKey];
+      
+      (Object.keys(data) as Array<keyof CampaignEditData>).forEach((key) => {
+        const formValue = data[key];
+        const campaignValue = campaign[key];
+        
+        // Normalize empty strings and null
+        const normalizedFormValue = formValue === '' ? null : formValue;
+        const normalizedCampaignValue = campaignValue === '' ? null : campaignValue;
+        
+        // Deep comparison for objects/arrays, JSON stringify for primitives
+        const isChanged = JSON.stringify(normalizedFormValue) !== JSON.stringify(normalizedCampaignValue);
+        
+        if (isChanged) {
+          console.log(`Field "${key}" changed:`, {
+            from: normalizedCampaignValue,
+            to: normalizedFormValue
+          });
+          changes[key] = normalizedFormValue;
         }
       });
 
-      console.log('Changes detected:', changes);
+      console.log('📊 Changes detected:', changes);
+      console.log('📊 Number of changes:', Object.keys(changes).length);
 
       if (Object.keys(changes).length === 0) {
+        console.log('⚠️ No changes detected, closing dialog');
         toast({
           title: "No changes",
           description: "No fields were modified.",
         });
         onOpenChange(false);
+        console.groupEnd();
         return;
       }
 
-      console.log('Calling onSave with:', campaign.id, changes);
+      console.log('🚀 Calling onSave with campaign ID:', campaign.id);
+      console.log('🚀 Changes payload:', changes);
+      
+      // Call onSave - it will throw on error
       await onSave(campaign.id, changes);
       
+      console.log('✅ Campaign updated successfully');
       toast({
         title: "Campaign updated",
-        description: "Changes have been saved successfully.",
+        description: `Successfully updated ${Object.keys(changes).length} field(s).`,
       });
       
       onOpenChange(false);
+      console.groupEnd();
     } catch (error) {
-      console.error('Failed to update campaign:', error);
+      console.error('❌ Failed to update campaign:', error);
+      
+      // Extract meaningful error message
+      let errorMessage = "Failed to update campaign. Please try again.";
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       toast({
         variant: "destructive",
         title: "Update failed",
-        description: error instanceof Error ? error.message : "Failed to update campaign. Please try again.",
+        description: errorMessage,
       });
+      console.groupEnd();
     } finally {
       setIsSubmitting(false);
     }
