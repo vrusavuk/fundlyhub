@@ -2,6 +2,13 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { DialogErrorBadge } from "@/components/common/DialogErrorBadge";
+import { DialogStatusIndicator } from "@/components/common/DialogStatusIndicator";
+import { 
+  formatValidationErrors, 
+  extractSupabaseError, 
+  getErrorTitle 
+} from "@/lib/utils/dialogNotifications";
 import {
   Dialog,
   DialogContent,
@@ -49,6 +56,7 @@ interface CreateUserDialogProps {
 
 export function CreateUserDialog({ open, onOpenChange, onSuccess }: CreateUserDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<any>(null);
   const { toast } = useToast();
 
   const form = useForm<UserFormData>({
@@ -78,6 +86,7 @@ export function CreateUserDialog({ open, onOpenChange, onSuccess }: CreateUserDi
 
       if (authError) throw authError;
 
+      setSubmitError(null);
       toast({
         title: 'User Created',
         description: `${data.name} has been successfully created.`,
@@ -88,11 +97,7 @@ export function CreateUserDialog({ open, onOpenChange, onSuccess }: CreateUserDi
       onSuccess();
     } catch (error: any) {
       console.error('Error creating user:', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to create user',
-        variant: 'destructive',
-      });
+      setSubmitError(error);
     } finally {
       setIsSubmitting(false);
     }
@@ -107,6 +112,36 @@ export function CreateUserDialog({ open, onOpenChange, onSuccess }: CreateUserDi
             Add a new user account to the platform. They will receive a welcome email.
           </DialogDescription>
         </DialogHeader>
+
+        {/* Validation errors */}
+        {Object.keys(form.formState.errors).length > 0 && (
+          <DialogErrorBadge
+            variant="error"
+            title="Form Validation Failed"
+            message={formatValidationErrors(form.formState.errors)}
+            dismissible
+            onDismiss={() => form.clearErrors()}
+          />
+        )}
+
+        {/* Submit error */}
+        {submitError && (
+          <DialogErrorBadge
+            variant="error"
+            title={getErrorTitle(submitError)}
+            message={extractSupabaseError(submitError)}
+            dismissible
+            onDismiss={() => setSubmitError(null)}
+          />
+        )}
+
+        {/* Status indicator */}
+        {isSubmitting && (
+          <DialogStatusIndicator
+            status="Creating user account..."
+            loading
+          />
+        )}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

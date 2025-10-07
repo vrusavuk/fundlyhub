@@ -19,6 +19,7 @@ interface UseOptimisticUpdatesOptions {
   onSuccess?: (action: OptimisticAction) => void;
   onError?: (action: OptimisticAction, error: any) => void;
   onRollback?: (action: OptimisticAction) => void;
+  skipToast?: boolean; // Skip toast notifications for dialog-initiated actions
 }
 
 interface OptimisticUpdatesState {
@@ -53,7 +54,8 @@ export function useOptimisticUpdates(options: UseOptimisticUpdatesOptions = {}) 
   const executeAction = useCallback(
     async <T,>(
       actionData: Omit<OptimisticAction, 'id' | 'timestamp'>,
-      asyncFn: () => Promise<T>
+      asyncFn: () => Promise<T>,
+      skipToast: boolean = options?.skipToast || false
     ): Promise<T> => {
       const action = addPendingAction(actionData);
       
@@ -67,11 +69,13 @@ export function useOptimisticUpdates(options: UseOptimisticUpdatesOptions = {}) 
           completedActions: [...prev.completedActions, action]
         }));
         
-        toast({
-          title: 'Success',
-          description: `${action.description} completed successfully`,
-          variant: 'default'
-        });
+        if (!skipToast) {
+          toast({
+            title: 'Success',
+            description: `${action.description} completed successfully`,
+            variant: 'default'
+          });
+        }
         
         options.onSuccess?.(action);
         return result;
@@ -134,11 +138,13 @@ export function useOptimisticUpdates(options: UseOptimisticUpdatesOptions = {}) 
         
         console.error('[OptimisticUpdates] Final error message:', errorMessage);
         
-        toast({
-          title: 'Action Failed',
-          description: errorMessage,
-          variant: 'destructive'
-        });
+        if (!skipToast) {
+          toast({
+            title: 'Action Failed',
+            description: errorMessage,
+            variant: 'destructive'
+          });
+        }
         
         options.onError?.(action, error);
         throw error;

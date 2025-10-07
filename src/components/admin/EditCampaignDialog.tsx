@@ -31,7 +31,16 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
+import { DialogErrorBadge } from "@/components/common/DialogErrorBadge";
+import { DialogStatusIndicator } from "@/components/common/DialogStatusIndicator";
+import { 
+  formatValidationErrors, 
+  extractSupabaseError, 
+  shouldShowRetry,
+  getErrorTitle 
+} from "@/lib/utils/dialogNotifications";
 import { campaignEditSchema, type CampaignEditData } from '@/lib/validation/campaignEdit.schema';
 import { useCategories } from '@/hooks/useCategories';
 
@@ -50,6 +59,8 @@ export function EditCampaignDialog({
 }: EditCampaignDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string>("");
+  const [submitError, setSubmitError] = useState<any>(null);
+  const { toast } = useToast();
   const { categories } = useCategories();
   
   const form = useForm<CampaignEditData>({
@@ -198,13 +209,22 @@ export function EditCampaignDialog({
       console.log('[EditCampaign] Calling onSave');
       await onSave(campaign.id, changes);
       console.log('[EditCampaign] Save successful');
-      setStatusMessage("");
-      onOpenChange(false);
-    } catch (error) {
+      
+      setStatusMessage("Campaign updated successfully!");
+      setSubmitError(null);
+      toast({
+        title: "Campaign Updated",
+        description: "Campaign has been successfully updated.",
+      });
+      
+      setTimeout(() => {
+        onOpenChange(false);
+        setStatusMessage("");
+      }, 1500);
+    } catch (error: any) {
       console.error('[EditCampaign] Save failed:', error);
       setStatusMessage("");
-      // Error handled by OptimisticUpdates
-      throw error;
+      setSubmitError(error);
     } finally {
       setIsSubmitting(false);
     }
@@ -220,34 +240,49 @@ export function EditCampaignDialog({
           <DialogDescription>
             Make changes to "{campaign?.title}"
           </DialogDescription>
-          {statusMessage && (
-            <div className="mt-2 text-sm text-muted-foreground flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              {statusMessage}
-            </div>
-          )}
         </DialogHeader>
 
+        {/* Warning for live campaigns */}
         {isLiveCampaign && (
-          <Alert variant="default" className="border-warning">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              <strong>Warning:</strong> This campaign is currently live. Changes will be visible to donors immediately.
-            </AlertDescription>
-          </Alert>
+          <DialogErrorBadge
+            variant="warning"
+            title="Live Campaign"
+            message="This campaign is currently active. Changes will be visible to donors immediately."
+          />
         )}
 
-        {/* Step 3: Display form validation errors */}
+        {/* Validation errors */}
         {Object.keys(form.formState.errors).length > 0 && (
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              <strong>Form Validation Errors:</strong>
-              <pre className="mt-2 text-xs overflow-auto">
-                {JSON.stringify(form.formState.errors, null, 2)}
-              </pre>
-            </AlertDescription>
-          </Alert>
+          <DialogErrorBadge
+            variant="error"
+            title="Form Validation Failed"
+            message={formatValidationErrors(form.formState.errors)}
+            dismissible
+            onDismiss={() => form.clearErrors()}
+          />
+        )}
+
+        {/* Submit error */}
+        {submitError && (
+          <DialogErrorBadge
+            variant="error"
+            title={getErrorTitle(submitError)}
+            message={extractSupabaseError(submitError)}
+            dismissible
+            onDismiss={() => setSubmitError(null)}
+            action={shouldShowRetry(submitError) ? {
+              label: "Retry",
+              onClick: form.handleSubmit(onSubmit)
+            } : undefined}
+          />
+        )}
+
+        {/* Status indicator */}
+        {statusMessage && (
+          <DialogStatusIndicator
+            status={statusMessage}
+            loading={isSubmitting}
+          />
         )}
 
         <Form {...form}>
