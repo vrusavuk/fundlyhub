@@ -102,6 +102,29 @@ export function EditCampaignDialog({
     }
   }, [campaign, form]);
 
+  // Helper function to normalize values for proper comparison
+  const normalizeValue = (value: any): any => {
+    // Handle null/undefined/empty string - treat all as null
+    if (value === null || value === undefined || value === '') return null;
+    
+    // Handle numeric strings - coerce to numbers for comparison
+    if (typeof value === 'string' && !isNaN(Number(value)) && value.trim() !== '') {
+      return Number(value);
+    }
+    
+    // Handle empty arrays - treat as null
+    if (Array.isArray(value)) {
+      return value.length === 0 ? null : value;
+    }
+    
+    // Handle empty objects - treat as null
+    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      return Object.keys(value).length === 0 ? null : value;
+    }
+    
+    return value;
+  };
+
   const onSubmit = async (data: CampaignEditData) => {
     console.group('📝 Campaign Edit Form Submission');
     console.log('Form data:', data);
@@ -110,26 +133,29 @@ export function EditCampaignDialog({
     setIsSubmitting(true);
     
     try {
-      // Detect changes with proper null/empty string handling and deep comparison
+      // Detect changes with normalized values for proper type comparison
       const changes: Record<string, any> = {};
       
       (Object.keys(data) as Array<keyof CampaignEditData>).forEach((key) => {
         const formValue = data[key];
         const campaignValue = campaign[key];
         
-        // Normalize empty strings and null
-        const normalizedFormValue = formValue === '' ? null : formValue;
-        const normalizedCampaignValue = campaignValue === '' ? null : campaignValue;
+        // Normalize both values for comparison
+        const normalizedFormValue = normalizeValue(formValue);
+        const normalizedCampaignValue = normalizeValue(campaignValue);
         
-        // Deep comparison for objects/arrays, JSON stringify for primitives
+        // Deep comparison using JSON stringify
         const isChanged = JSON.stringify(normalizedFormValue) !== JSON.stringify(normalizedCampaignValue);
         
         if (isChanged) {
           console.log(`Field "${key}" changed:`, {
-            from: normalizedCampaignValue,
-            to: normalizedFormValue
+            originalForm: formValue,
+            originalCampaign: campaignValue,
+            normalizedForm: normalizedFormValue,
+            normalizedCampaign: normalizedCampaignValue
           });
-          changes[key] = normalizedFormValue;
+          // Use the original form value (not normalized) for the update
+          changes[key] = formValue;
         }
       });
 
@@ -137,7 +163,7 @@ export function EditCampaignDialog({
       console.log('📊 Number of changes:', Object.keys(changes).length);
 
       if (Object.keys(changes).length === 0) {
-        console.log('⚠️ No changes detected, closing dialog');
+        console.log('ℹ️ No changes detected, closing dialog');
         toast({
           title: "No changes",
           description: "No fields were modified.",
@@ -150,7 +176,7 @@ export function EditCampaignDialog({
       console.log('🚀 Calling onSave with campaign ID:', campaign.id);
       console.log('🚀 Changes payload:', changes);
       
-      // Call onSave - it will throw on error
+      // Call onSave - it will throw on error which is caught by OptimisticUpdates
       await onSave(campaign.id, changes);
       
       console.log('✅ Campaign updated successfully');
@@ -164,19 +190,10 @@ export function EditCampaignDialog({
     } catch (error) {
       console.error('❌ Failed to update campaign:', error);
       
-      // Extract meaningful error message
-      let errorMessage = "Failed to update campaign. Please try again.";
-      
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-      
-      toast({
-        variant: "destructive",
-        title: "Update failed",
-        description: errorMessage,
-      });
+      // Error is already handled by OptimisticUpdates with detailed message
+      // Just log it here for debugging
       console.groupEnd();
+      // Don't show duplicate toast - OptimisticUpdates already shows it
     } finally {
       setIsSubmitting(false);
     }

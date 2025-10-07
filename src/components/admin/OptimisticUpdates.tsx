@@ -83,9 +83,45 @@ export function useOptimisticUpdates(options: UseOptimisticUpdatesOptions = {}) 
           failedActions: [...prev.failedActions, action]
         }));
         
+        // Extract detailed error message from Supabase error
+        let errorMessage = `Failed to ${action.description.toLowerCase()}`;
+        
+        if (error && typeof error === 'object') {
+          // Supabase error structure
+          const supabaseError = error as any;
+          
+          if (supabaseError.message) {
+            errorMessage = supabaseError.message;
+          } else if (supabaseError.error_description) {
+            errorMessage = supabaseError.error_description;
+          } else if (supabaseError.details) {
+            errorMessage = supabaseError.details;
+          }
+          
+          // Check for RLS policy errors
+          if (errorMessage.includes('row-level security') || errorMessage.includes('policy')) {
+            errorMessage = 'Permission denied: You do not have access to perform this action';
+          }
+          
+          // Check for validation errors
+          if (supabaseError.code === '23505') {
+            errorMessage = 'This record already exists';
+          } else if (supabaseError.code === '23503') {
+            errorMessage = 'Related record not found';
+          }
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+        
+        console.error('❌ Optimistic update failed:', {
+          action: action.description,
+          error,
+          extractedMessage: errorMessage
+        });
+        
         toast({
           title: 'Action Failed',
-          description: `Failed to ${action.description.toLowerCase()}`,
+          description: errorMessage,
           variant: 'destructive'
         });
         

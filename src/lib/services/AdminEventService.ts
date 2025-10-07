@@ -208,6 +208,10 @@ export class AdminEventService {
     const { data: user } = await supabase.auth.getUser();
     if (!user?.user) throw new Error('User not authenticated');
 
+    console.log('🔐 Checking permissions for campaign update...');
+    console.log('  - User ID:', updatedBy);
+    console.log('  - Campaign ID:', campaignId);
+
     // 1. Fetch current campaign data for validation
     const { data: campaign, error: fetchError } = await supabase
       .from('fundraisers')
@@ -216,10 +220,25 @@ export class AdminEventService {
       .single();
 
     if (fetchError || !campaign) {
+      console.error('❌ Failed to fetch campaign:', fetchError);
       throw new Error(`Failed to fetch campaign: ${fetchError?.message}`);
     }
 
-    // 2. Validate changes
+    // 2. Check if user has permission (admin or owner)
+    const isOwner = campaign.owner_user_id === updatedBy;
+    const { data: hasPermission } = await supabase.rpc('user_has_permission', {
+      _user_id: updatedBy,
+      _permission_name: 'manage_campaigns'
+    });
+
+    if (!isOwner && !hasPermission) {
+      console.error('❌ Permission denied - user is not owner or admin');
+      throw new Error('You do not have permission to update this campaign');
+    }
+
+    console.log('✅ Permission check passed:', isOwner ? 'owner' : 'admin');
+
+    // 3. Validate changes
     if (options?.validateTransitions !== false) {
       // Prevent reducing goal amount if donations exist
       if (changes.goal_amount && campaign.donations && campaign.donations.length > 0) {
@@ -255,7 +274,8 @@ export class AdminEventService {
       }
     }
 
-    // 3. Update database
+    // 4. Update database
+    console.log('📝 Updating campaign in database...', changes);
     const { error: updateError } = await supabase
       .from('fundraisers')
       .update({
@@ -271,7 +291,7 @@ export class AdminEventService {
 
     console.log(`✅ Campaign ${campaignId} updated successfully`);
 
-    // 4. Publish event
+    // 5. Publish event
     await globalEventBus.publish(
       createCampaignUpdatedEvent({
         campaignId,
@@ -281,7 +301,7 @@ export class AdminEventService {
       })
     );
 
-    // 5. Log audit trail with detailed field tracking
+    // 6. Log audit trail with detailed field tracking
     await supabase.rpc('log_audit_event', {
       _actor_id: updatedBy,
       _action: 'campaign_updated',
