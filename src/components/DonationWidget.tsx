@@ -39,6 +39,7 @@ interface DonationWidgetProps {
   donations?: Donation[];
   showDonors?: boolean;
   onViewAllDonors?: () => void;
+  showInSheet?: boolean;
 }
 
 const suggestedAmounts = [25, 50, 100, 250, 500];
@@ -59,13 +60,14 @@ export function DonationWidget({
   donations = [],
   showDonors = false,
   onViewAllDonors,
+  showInSheet = false,
 }: DonationWidgetProps) {
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState('');
   const [tipAmount, setTipAmount] = useState(0);
   const [showTip, setShowTip] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [showDonationForm, setShowDonationForm] = useState(false);
+  const [showDonationForm, setShowDonationForm] = useState(showInSheet);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const { toast } = useToast();
 
@@ -124,9 +126,137 @@ export function DonationWidget({
 
   return (
     <div className="space-y-6">
-      {/* Main donation card */}
-      <Card className={`shadow-lg border-0 transition-all duration-300 ${isFloating ? 'sticky top-4' : ''}`}>
-        {!showDonationForm ? (
+      {showInSheet ? (
+        // Compact Sheet Form (no Card wrapper)
+        <div className="space-y-4">
+          {/* Compact header */}
+          <div className="text-center pb-4 border-b">
+            <div className="text-2xl font-bold text-primary">
+              {formatAmount(raisedAmount)}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              of {formatAmount(goalAmount)} goal
+            </div>
+          </div>
+          
+          {/* Suggested amounts - compact grid */}
+          <div>
+            <p className="font-medium mb-2 text-sm">Select amount</p>
+            <div className="grid grid-cols-3 gap-2">
+              {suggestedAmounts.map((amount) => (
+                <Button
+                  key={amount}
+                  variant={selectedAmount === amount ? "default" : "outline"}
+                  onClick={() => handleAmountSelect(amount)}
+                  className="h-11"
+                >
+                  {formatAmount(amount)}
+                </Button>
+              ))}
+              <Button
+                variant={customAmount ? "default" : "outline"}
+                onClick={() => {
+                  setSelectedAmount(null);
+                  setShowTip(false);
+                }}
+                className="h-11"
+              >
+                Other
+              </Button>
+            </div>
+          </div>
+
+          {/* Custom amount - compact */}
+          {(!selectedAmount || customAmount) && (
+            <div>
+              <Input
+                type="number"
+                placeholder="Enter amount"
+                value={customAmount}
+                onChange={(e) => handleCustomAmount(e.target.value)}
+                className="h-11"
+                min="1"
+              />
+            </div>
+          )}
+
+          {/* Tip section - compact */}
+          {showTip && currentAmount > 0 && (
+            <div className="border rounded-lg p-3 bg-muted/30">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <p className="font-medium text-sm">Tip FundlyHub</p>
+                  <p className="text-xs text-muted-foreground">Help keep the platform running</p>
+                </div>
+                <Gift className="h-4 w-4 text-primary" />
+              </div>
+              <div className="grid grid-cols-4 gap-2">
+                {[0, 10, 15, 20].map((percentage) => (
+                  <Button
+                    key={percentage}
+                    variant={tipAmount === Math.round(currentAmount * (percentage / 100) * 100) / 100 ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleTipSelect(percentage)}
+                    className="text-xs h-8"
+                  >
+                    {percentage === 0 ? 'No tip' : `${percentage}%`}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Anonymous + Donate button - compact */}
+          {currentAmount > 0 && (
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="anonymous-sheet"
+                  checked={isAnonymous}
+                  onCheckedChange={(checked) => setIsAnonymous(checked as boolean)}
+                />
+                <label htmlFor="anonymous-sheet" className="text-sm flex items-center gap-2 cursor-pointer">
+                  <EyeOff className="h-4 w-4" />
+                  Make anonymous
+                </label>
+              </div>
+
+              {tipAmount > 0 && (
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>Your donation: {formatAmount(currentAmount)}</span>
+                  <span>Tip: {formatAmount(tipAmount)}</span>
+                </div>
+              )}
+
+              <Button
+                onClick={handleDonate}
+                disabled={loading || currentAmount <= 0}
+                className="w-full h-12 text-lg font-semibold"
+              >
+                {loading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                    Processing...
+                  </div>
+                ) : (
+                  <>
+                    <Heart className="mr-2 h-5 w-5" />
+                    Donate {formatAmount(totalAmount)}
+                  </>
+                )}
+              </Button>
+
+              <div className="flex gap-2 text-xs text-muted-foreground justify-center">
+                <CreditCard className="h-3 w-3" />
+                <span>Secure payment powered by Stripe</span>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        // Original Card-based layout for desktop
+        <Card className={`shadow-lg border-0 transition-all duration-300 ${isFloating ? 'sticky top-4' : ''}`}>
+          {!showDonationForm ? (
           // Summary View (GoFundMe style)
           <>
             <CardHeader className="pb-4">
@@ -416,8 +546,8 @@ export function DonationWidget({
             </CardContent>
           </>
         )}
-      </Card>
-
+        </Card>
+      )}
     </div>
   );
 }

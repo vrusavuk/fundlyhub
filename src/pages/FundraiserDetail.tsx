@@ -605,22 +605,28 @@ export default function FundraiserDetail() {
 
         {/* Mobile Donation Sheet */}
         <Sheet open={showMobileDonation} onOpenChange={setShowMobileDonation}>
-          <SheetContent side="bottom" className="h-[75vh] rounded-t-xl overflow-y-auto">
-            <DonationWidget
-              fundraiserId={fundraiser.id}
-              title={fundraiser.title}
-              creatorName={fundraiser.profiles?.name || 'Anonymous'}
-              goalAmount={fundraiser.goal_amount}
-              raisedAmount={totalRaised}
-              donorCount={donations.length}
-              progressPercentage={progressPercentage}
-              currency={fundraiser.currency}
-              onDonate={(amount, tipAmount, isAnonymous) => {
-                handleDonate(amount, tipAmount, isAnonymous);
-                setShowMobileDonation(false);
-              }}
-              loading={donating}
-            />
+          <SheetContent side="bottom" className="h-[60vh] rounded-t-xl overflow-y-auto p-0">
+            {/* Drag handle */}
+            <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mt-3 mb-2" />
+            
+            <div className="p-4">
+              <DonationWidget
+                fundraiserId={fundraiser.id}
+                title={fundraiser.title}
+                creatorName={fundraiser.profiles?.name || 'Anonymous'}
+                goalAmount={fundraiser.goal_amount}
+                raisedAmount={totalRaised}
+                donorCount={donations.length}
+                progressPercentage={progressPercentage}
+                currency={fundraiser.currency}
+                onDonate={(amount, tipAmount, isAnonymous) => {
+                  handleDonate(amount, tipAmount, isAnonymous);
+                  setShowMobileDonation(false);
+                }}
+                loading={donating}
+                showInSheet={true}
+              />
+            </div>
           </SheetContent>
         </Sheet>
 
