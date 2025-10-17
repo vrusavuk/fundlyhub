@@ -27,6 +27,7 @@ import { FollowButton } from '@/components/profile/FollowButton';
 import { SmartBreadcrumb } from '@/components/navigation/SmartBreadcrumb';
 import { SmartBackButton } from '@/components/navigation/SmartBackButton';
 import { FollowOrganizationButton } from '@/components/profile/FollowOrganizationButton';
+import { fundraiserService } from '@/lib/services/fundraiser.service';
 
 interface Fundraiser {
   id: string;
@@ -137,15 +138,21 @@ export default function FundraiserDetail() {
 
       setFundraiser(fundraiserData as any);
 
-      // Fetch donations using privacy-respecting view
-      // Cast to any because donations_with_privacy is a view not in generated types yet
-      const [donationsResponse, commentsResponse] = await Promise.all([
+      // Fetch donations, comments, and stats in parallel using centralized service
+      const [donationsResponse, commentsResponse, statsData] = await Promise.all([
         supabase
-          .from('donations_with_privacy' as any)
-          .select('*')
+          .from('donations')
+          .select(`
+            id,
+            amount,
+            currency,
+            created_at,
+            is_anonymous,
+            profiles:donor_user_id(name)
+          `)
           .eq('fundraiser_id', fundraiserData.id)
           .eq('payment_status', 'paid')
-          .order('created_at', { ascending: false }) as any,
+          .order('created_at', { ascending: false }),
         
         supabase
           .from('comments')
@@ -154,15 +161,35 @@ export default function FundraiserDetail() {
             profiles!comments_author_id_fkey(name)
           `)
           .eq('fundraiser_id', fundraiserData.id)
-          .order('created_at', { ascending: false })
+          .order('created_at', { ascending: false }),
+        
+        // Use centralized stats service - single source of truth
+        fundraiserService.getFundraiserStats([fundraiserData.id])
       ]);
 
       if (donationsResponse.error) {
         console.error('Error fetching donations:', donationsResponse.error);
+        setDonations([]);
       } else {
-        setDonations(donationsResponse.data || []);
-        const total = donationsResponse.data?.reduce((sum, donation) => sum + Number(donation.amount), 0) || 0;
-        setTotalRaised(total);
+        // Map to expected format with privacy handling
+        const mappedDonations = (donationsResponse.data || []).map(d => ({
+          id: d.id,
+          amount: d.amount,
+          currency: d.currency,
+          created_at: d.created_at,
+          is_anonymous: d.is_anonymous,
+          donor_name: d.is_anonymous ? null : d.profiles?.name,
+          donor_avatar: null,
+        }));
+        setDonations(mappedDonations as any);
+      }
+
+      // Use aggregated stats from service - SINGLE SOURCE OF TRUTH
+      const stats = statsData[fundraiserData.id];
+      if (stats) {
+        setTotalRaised(stats.totalRaised);
+      } else {
+        setTotalRaised(0);
       }
 
       if (commentsResponse.error) {
