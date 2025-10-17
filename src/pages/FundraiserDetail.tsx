@@ -141,14 +141,15 @@ export default function FundraiserDetail() {
       // Fetch donations, comments, and stats in parallel using centralized service
       const [donationsResponse, commentsResponse, statsData] = await Promise.all([
         supabase
-          .from('donations')
+          .from('donations_with_privacy' as any)
           .select(`
             id,
             amount,
             currency,
             created_at,
             is_anonymous,
-            profiles:donor_user_id(name)
+            donor_name,
+            donor_avatar
           `)
           .eq('fundraiser_id', fundraiserData.id)
           .eq('payment_status', 'paid')
@@ -171,15 +172,15 @@ export default function FundraiserDetail() {
         console.error('Error fetching donations:', donationsResponse.error);
         setDonations([]);
       } else {
-        // Map to expected format with privacy handling
-        const mappedDonations = (donationsResponse.data || []).map(d => ({
+        // Map to expected format with privacy handling from view
+        const mappedDonations = ((donationsResponse.data as any) || []).map((d: any) => ({
           id: d.id,
           amount: d.amount,
           currency: d.currency,
           created_at: d.created_at,
           is_anonymous: d.is_anonymous,
-          donor_name: d.is_anonymous ? null : d.profiles?.name,
-          donor_avatar: null,
+          donor_name: d.donor_name,
+          donor_avatar: d.donor_avatar,
         }));
         setDonations(mappedDonations as any);
       }
