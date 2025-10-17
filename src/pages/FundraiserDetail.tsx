@@ -9,8 +9,9 @@ import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { DonationWidget } from '@/components/DonationWidget';
-import { RecentDonors } from '@/components/fundraisers/RecentDonors';
+import { AllDonorsDialog } from '@/components/fundraisers/AllDonorsDialog';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { CampaignPageSkeleton } from '@/components/skeletons/CampaignPageSkeleton';
 import { ScreenReaderOnly } from '@/components/accessibility/ScreenReaderOnly';
@@ -18,7 +19,7 @@ import { LazyImage } from '@/components/lazy/LazyImage';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Share2, Calendar, MapPin, Verified, Facebook, Twitter, Copy } from 'lucide-react';
+import { Share2, Calendar, MapPin, Verified, Facebook, Twitter, Copy, Heart } from 'lucide-react';
 import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
 import { sanitizeHTML } from '@/lib/utils/sanitize';
 import { FollowButton } from '@/components/profile/FollowButton';
@@ -87,6 +88,7 @@ export default function FundraiserDetail() {
   const [donating, setDonating] = useState(false);
   const [commenting, setCommenting] = useState(false);
   const [showMobileDonation, setShowMobileDonation] = useState(false);
+  const [showAllDonors, setShowAllDonors] = useState(false);
   
   const { user } = useAuth();
   const { toast } = useToast();
@@ -437,21 +439,6 @@ export default function FundraiserDetail() {
               </div>
             </div>
 
-            {/* Mobile donation widget */}
-            <div className="lg:hidden">
-              <DonationWidget
-                fundraiserId={fundraiser.id}
-                title={fundraiser.title}
-                creatorName={fundraiser.profiles?.name || 'Anonymous'}
-                goalAmount={fundraiser.goal_amount}
-                raisedAmount={totalRaised}
-                donorCount={donations.length}
-                progressPercentage={progressPercentage}
-                currency={fundraiser.currency}
-                onDonate={handleDonate}
-                loading={donating}
-              />
-            </div>
 
             {/* Tabs for Story, Updates, Comments */}
             <Tabs defaultValue="story" className="w-full">
@@ -511,10 +498,6 @@ export default function FundraiserDetail() {
                   </CardContent>
                 </Card>
 
-                {/* Recent Donors - Desktop only in story tab */}
-                <div className="lg:hidden">
-                  <RecentDonors donations={donations} />
-                </div>
               </TabsContent>
               
               <TabsContent value="updates" className="mt-6">
@@ -590,67 +573,59 @@ export default function FundraiserDetail() {
                 onDonate={handleDonate}
                 loading={donating}
                 isFloating={true}
+                donations={donations}
+                showDonors={true}
+                onViewAllDonors={() => setShowAllDonors(true)}
               />
             </div>
-
-            {/* Recent Donors */}
-            <RecentDonors donations={donations} />
           </div>
         </div>
 
         {/* Fixed Mobile Donation Button */}
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border shadow-lg">
-          {!showMobileDonation ? (
-            <div className="p-3 sm:p-4">
-              <div className="flex items-center justify-between mb-2 sm:mb-3">
-                <div className="flex-1">
-                  <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="text-muted-foreground">Raised</span>
-                    <span className="font-medium">
-                      {MoneyMath.format(MoneyMath.create(totalRaised, fundraiser.currency))} of {MoneyMath.format(MoneyMath.create(fundraiser.goal_amount, fundraiser.currency))}
-                    </span>
-                  </div>
-                  <Progress value={progressPercentage} className="h-2" />
-                </div>
-              </div>
-              <Button 
-                className="w-full touch-target" 
-                size="lg"
-                onClick={() => setShowMobileDonation(true)}
-              >
-                Donate now
-              </Button>
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t shadow-lg">
+          <div className="p-4 space-y-3">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Progress</span>
+              <span className="font-semibold">{Math.round(progressPercentage)}%</span>
             </div>
-          ) : (
-            <div className="p-3 sm:p-4 max-h-[80vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Make a donation</h3>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setShowMobileDonation(false)}
-                >
-                  ✕
-                </Button>
-              </div>
-              <DonationWidget
-                fundraiserId={fundraiser.id}
-                title={fundraiser.title}
-                creatorName={fundraiser.profiles?.name || 'Anonymous'}
-                goalAmount={fundraiser.goal_amount}
-                raisedAmount={totalRaised}
-                donorCount={donations.length}
-                progressPercentage={progressPercentage}
-                currency={fundraiser.currency}
-                onDonate={(amount, tipAmount) => {
-                  handleDonate(amount, tipAmount);
-                  setShowMobileDonation(false);
-                }}
-                loading={donating}
-              />
-            </div>
-          )}
+            <Progress value={progressPercentage} className="h-2" />
+            <Button 
+              className="w-full h-12 text-lg font-semibold" 
+              onClick={() => setShowMobileDonation(true)}
+            >
+              <Heart className="mr-2 h-5 w-5" />
+              Donate now
+            </Button>
+          </div>
         </div>
+
+        {/* Mobile Donation Sheet */}
+        <Sheet open={showMobileDonation} onOpenChange={setShowMobileDonation}>
+          <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
+            <DonationWidget
+              fundraiserId={fundraiser.id}
+              title={fundraiser.title}
+              creatorName={fundraiser.profiles?.name || 'Anonymous'}
+              goalAmount={fundraiser.goal_amount}
+              raisedAmount={totalRaised}
+              donorCount={donations.length}
+              progressPercentage={progressPercentage}
+              currency={fundraiser.currency}
+              onDonate={(amount, tipAmount, isAnonymous) => {
+                handleDonate(amount, tipAmount, isAnonymous);
+                setShowMobileDonation(false);
+              }}
+              loading={donating}
+            />
+          </SheetContent>
+        </Sheet>
+
+        {/* All Donors Dialog */}
+        <AllDonorsDialog
+          isOpen={showAllDonors}
+          onClose={() => setShowAllDonors(false)}
+          donations={donations}
+        />
       </PageContainer>
     </AppLayout>
   );

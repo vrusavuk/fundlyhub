@@ -5,9 +5,23 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Heart, Share2, Facebook, Twitter, Copy, Check, Gift, CreditCard, Wallet, ChevronLeft, EyeOff } from 'lucide-react';
+import { Heart, Share2, Facebook, Twitter, Copy, Check, Gift, CreditCard, Wallet, ChevronLeft, EyeOff, Users } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
+
+interface Donation {
+  id: string;
+  amount: number;
+  currency: string;
+  created_at: string;
+  is_anonymous?: boolean;
+  donor_name?: string | null;
+  donor_avatar?: string | null;
+  profiles?: {
+    name: string;
+    avatar?: string;
+  } | null;
+}
 
 interface DonationWidgetProps {
   fundraiserId: string;
@@ -22,6 +36,9 @@ interface DonationWidgetProps {
   onDonate: (amount: number, tipAmount?: number, isAnonymous?: boolean) => void;
   loading?: boolean;
   isFloating?: boolean;
+  donations?: Donation[];
+  showDonors?: boolean;
+  onViewAllDonors?: () => void;
 }
 
 const suggestedAmounts = [25, 50, 100, 250, 500];
@@ -39,6 +56,9 @@ export function DonationWidget({
   onDonate,
   loading = false,
   isFloating = false,
+  donations = [],
+  showDonors = false,
+  onViewAllDonors,
 }: DonationWidgetProps) {
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState('');
@@ -170,6 +190,41 @@ export function DonationWidget({
                 <CreditCard className="h-3 w-3" />
                 <span>Secure payment powered by Stripe</span>
               </div>
+
+              {/* Integrated Donors Section */}
+              {showDonors && donations.length > 0 && (
+                <div className="border-t pt-4 mt-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-medium flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      Recent Donors
+                    </h4>
+                  </div>
+                  <div className="flex -space-x-2 mb-3">
+                    {donations.slice(0, 5).map((donation) => {
+                      const donorName = donation.donor_name || donation.profiles?.name || 'Anonymous';
+                      const donorAvatar = donation.donor_avatar || donation.profiles?.avatar;
+                      
+                      return (
+                        <Avatar key={donation.id} className="h-8 w-8 border-2 border-background">
+                          <AvatarImage src={donorAvatar} />
+                          <AvatarFallback className="text-xs">
+                            {donorName.charAt(0) || 'A'}
+                          </AvatarFallback>
+                        </Avatar>
+                      );
+                    })}
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="w-full text-xs"
+                    onClick={onViewAllDonors}
+                  >
+                    View all {donations.length} {donations.length === 1 ? 'donor' : 'donors'}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </>
         ) : (
