@@ -252,6 +252,43 @@ export function DonationWidget({
               </div>
             </div>
           )}
+
+          {/* Donor avatars section for mobile/tablet */}
+          {showDonors && donations && donations.length > 0 && (
+            <div className="border-t pt-4 mt-4">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-xs font-medium flex items-center gap-2 text-muted-foreground">
+                  <Users className="h-3 w-3" />
+                  {donations.length} Recent {donations.length === 1 ? 'Donor' : 'Donors'}
+                </h4>
+              </div>
+              <div className="flex -space-x-2 mb-3">
+                {donations.slice(0, 6).map((donation) => {
+                  const donorName = donation.donor_name || donation.profiles?.name || 'Anonymous';
+                  const donorAvatar = donation.donor_avatar || donation.profiles?.avatar;
+                  
+                  return (
+                    <Avatar key={donation.id} className="h-7 w-7 border-2 border-background">
+                      <AvatarImage src={donorAvatar} />
+                      <AvatarFallback className="text-xs">
+                        {donorName.charAt(0) || 'A'}
+                      </AvatarFallback>
+                    </Avatar>
+                  );
+                })}
+              </div>
+              {onViewAllDonors && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="w-full text-xs h-8"
+                  onClick={onViewAllDonors}
+                >
+                  View all {donations.length} {donations.length === 1 ? 'donor' : 'donors'}
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       ) : (
         // Original Card-based layout for desktop

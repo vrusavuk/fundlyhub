@@ -605,9 +605,6 @@ export default function FundraiserDetail() {
                 showDonors={true}
                 onViewAllDonors={() => setShowAllDonors(true)}
               />
-              
-              {/* Desktop Recent Donors - Full Card */}
-              <RecentDonors donations={donations} />
             </div>
           </div>
         </div>
@@ -652,6 +649,9 @@ export default function FundraiserDetail() {
                 }}
                 loading={donating}
                 showInSheet={true}
+                donations={donations}
+                showDonors={true}
+                onViewAllDonors={() => setShowAllDonors(true)}
               />
             </div>
           </SheetContent>
