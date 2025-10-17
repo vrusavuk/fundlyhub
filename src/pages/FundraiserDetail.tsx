@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { DonationWidget } from '@/components/DonationWidget';
 import { AllDonorsDialog } from '@/components/fundraisers/AllDonorsDialog';
+import { RecentDonors } from '@/components/fundraisers/RecentDonors';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { CampaignPageSkeleton } from '@/components/skeletons/CampaignPageSkeleton';
 import { ScreenReaderOnly } from '@/components/accessibility/ScreenReaderOnly';
@@ -340,7 +341,7 @@ export default function FundraiserDetail() {
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6 pb-32 lg:pb-0">
             {/* Hero Image */}
             <div className="aspect-video rounded-xl overflow-hidden shadow-lg">
               <img
@@ -560,7 +561,7 @@ export default function FundraiserDetail() {
 
           {/* Sidebar - Desktop Only */}
           <div className="hidden lg:block lg:col-span-1 space-y-4 sm:space-y-6">
-            <div className="sticky top-20 z-10">
+            <div className="sticky top-20 z-10 space-y-4">
               <DonationWidget
                 fundraiserId={fundraiser.id}
                 title={fundraiser.title}
@@ -577,18 +578,21 @@ export default function FundraiserDetail() {
                 showDonors={true}
                 onViewAllDonors={() => setShowAllDonors(true)}
               />
+              
+              {/* Desktop Recent Donors - Full Card */}
+              <RecentDonors donations={donations} />
             </div>
           </div>
         </div>
 
         {/* Fixed Mobile Donation Button */}
         <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t shadow-lg">
-          <div className="p-4 space-y-3">
+          <div className="px-4 py-3 space-y-3">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Progress</span>
               <span className="font-semibold">{Math.round(progressPercentage)}%</span>
             </div>
-            <Progress value={progressPercentage} className="h-2" />
+            <Progress value={progressPercentage} className="h-1.5" />
             <Button 
               className="w-full h-12 text-lg font-semibold" 
               onClick={() => setShowMobileDonation(true)}
@@ -601,7 +605,7 @@ export default function FundraiserDetail() {
 
         {/* Mobile Donation Sheet */}
         <Sheet open={showMobileDonation} onOpenChange={setShowMobileDonation}>
-          <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
+          <SheetContent side="bottom" className="h-[75vh] rounded-t-xl overflow-y-auto">
             <DonationWidget
               fundraiserId={fundraiser.id}
               title={fundraiser.title}
