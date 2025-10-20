@@ -75,17 +75,42 @@ const { data } = await supabase
 
 #### Donations with Privacy
 ```typescript
-// Always use the privacy-respecting view
+// Always use the privacy-respecting SECURITY DEFINER function
 const { data } = await supabase
-  .from('donations_with_privacy')
-  .select('*')
-  .eq('fundraiser_id', fundraiserId);
+  .rpc('get_donations_with_privacy', {
+    p_fundraiser_id: fundraiserId
+  });
 
-// This view automatically:
+// This function automatically:
 // - Hides donor info for anonymous donations
 // - Shows donor info only to authorized users
 // - Respects user privacy preferences
+// - Works for both authenticated and anonymous users
+// - Only shows donations for public, non-deleted fundraisers
 ```
+
+#### SECURITY DEFINER Pattern
+
+Some functions use `SECURITY DEFINER` to bypass RLS while implementing explicit access control. This pattern is used when:
+- Public data needs to be accessible to anonymous (non-authenticated) users
+- RLS would block legitimate public access
+- The function implements **explicit filtering** for public/visible data only
+
+**✅ Safe SECURITY DEFINER functions:**
+- `get_public_fundraiser_stats()` - Aggregated stats for public fundraisers
+- `get_donations_with_privacy(fundraiser_id)` - Donations for public fundraisers with privacy controls
+- `get_public_user_profile(user_id)` - Public profile data only
+
+**Why this pattern is safe:**
+1. Functions filter explicitly to `visibility = 'public'` or equivalent
+2. Functions never expose sensitive fields (emails, payment IDs, etc.)
+3. Functions implement anonymity/privacy logic internally
+4. Functions are documented with their security model
+
+**⚠️ Never create SECURITY DEFINER functions that:**
+- Expose all table data without filtering
+- Return sensitive fields
+- Allow writes without proper authorization checks
 
 ### 3. Data Privacy Rules
 
@@ -212,6 +237,8 @@ These functions are available for secure operations:
 - `get_my_permissions()` - Get own permissions without exposing security architecture
 - `get_public_organization_info(org_id)` - Get public org info only
 - `get_public_fundraiser(slug)` - Get fundraiser WITHOUT beneficiary_contact
+- `get_donations_with_privacy(fundraiser_id)` - Get donations respecting privacy for public fundraisers
+- `get_public_fundraiser_stats()` - Get aggregated stats for public fundraisers
 - `user_has_permission(user_id, permission)` - Check permissions
 - `has_role(user_id, role)` - Check role assignment
 - `is_super_admin(user_id)` - Check super admin status
@@ -224,8 +251,9 @@ Always use these views instead of querying tables directly:
 
 - `public_profiles` - User profiles WITHOUT email or security fields
 - `public_organizations` - Organizations WITHOUT EIN, payment IDs, addresses
-- `donations_with_privacy` - Donations respecting is_anonymous flag
-- `public_fundraiser_stats` - Aggregated stats safe for public access
+- `public_fundraiser_stats` - Aggregated stats safe for public access (materialized view)
+
+**Note:** For donations, use the `get_donations_with_privacy(fundraiser_id)` RPC function instead of a view, as it needs to work for anonymous users.
 
 ## Restricted Access Tables
 

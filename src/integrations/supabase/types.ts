@@ -2277,6 +2277,26 @@ export type Database = {
           total_raised: number
         }[]
       }
+      get_donations_with_privacy: {
+        Args: { p_fundraiser_id: string }
+        Returns: {
+          amount: number
+          created_at: string
+          currency: string
+          donor_avatar: string
+          donor_name: string
+          donor_user_id: string
+          fee_amount: number
+          fundraiser_id: string
+          id: string
+          is_anonymous: boolean
+          net_amount: number
+          payment_provider: string
+          payment_status: Database["public"]["Enums"]["payment_status"]
+          receipt_id: string
+          tip_amount: number
+        }[]
+      }
       get_fundraiser_totals: {
         Args: { fundraiser_ids: string[] }
         Returns: {

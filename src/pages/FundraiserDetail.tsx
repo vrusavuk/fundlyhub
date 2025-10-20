@@ -141,19 +141,9 @@ export default function FundraiserDetail() {
       // Fetch donations, comments, and stats in parallel using centralized service
       const [donationsResponse, commentsResponse, statsData] = await Promise.all([
         supabase
-          .from('donations_with_privacy' as any)
-          .select(`
-            id,
-            amount,
-            currency,
-            created_at,
-            is_anonymous,
-            donor_name,
-            donor_avatar
-          `)
-          .eq('fundraiser_id', fundraiserData.id)
-          .eq('payment_status', 'paid')
-          .order('created_at', { ascending: false }),
+          .rpc('get_donations_with_privacy', {
+            p_fundraiser_id: fundraiserData.id
+          }),
         
         supabase
           .from('comments')
