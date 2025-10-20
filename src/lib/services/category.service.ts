@@ -1,69 +1,36 @@
 /**
- * Enterprise category service with unified data management
+ * Category Service - Thin wrapper around unified API
+ * Domain-specific logic for category operations
  */
 import { supabase } from '@/integrations/supabase/client';
-import { apiService, ApiError } from './api.service';
+import { unifiedApi } from './unified-api.service';
 import type { Category, CategoryStats } from '@/types';
 
 class CategoryService {
-  private readonly CACHE_TTL = 10 * 60 * 1000; // 10 minutes for categories (less frequent changes)
+  private readonly CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
   /**
    * Fetch all active categories
    */
   async getCategories(): Promise<Category[]> {
-    const cacheKey = 'categories:active';
+    const cacheKey = 'categories:all';
 
-    return apiService.executeWithCache(
+    return unifiedApi.query(
       async () => {
         const { data, error } = await supabase
           .from('categories')
           .select('*')
           .eq('is_active', true)
-          .order('display_order');
+          .order('display_order', { ascending: true });
 
-        if (error) {
-          throw new ApiError(
-            `Failed to fetch categories: ${error.message}`,
-            error.code,
-            undefined,
-            true
-          );
-        }
-
-        return data || [];
+        return { data: data as Category[], error };
       },
-      { key: cacheKey, ttl: this.CACHE_TTL }
+      { cache: { key: cacheKey, ttl: this.CACHE_TTL, tags: ['categories'] } }
     );
   }
 
   /**
-   * Fetch category statistics with proper aggregation
-   */
-  async getCategoryStats(): Promise<CategoryStats[]> {
-    const cacheKey = 'category-stats:all';
-
-    return apiService.executeWithCache(
-      async () => {
-        const { data, error } = await supabase.rpc('get_category_stats');
-
-        if (error) {
-          throw new ApiError(
-            `Failed to fetch category statistics: ${error.message}`,
-            error.code,
-            undefined,
-            true
-          );
-        }
-
-        return data || [];
-      },
-      { key: cacheKey, ttl: this.CACHE_TTL / 2 } // Shorter cache for stats
-    );
-  }
-
-  /**
-   * Get category by name
+   * Fetch category by name
    */
   async getCategoryByName(name: string): Promise<Category | null> {
     const categories = await this.getCategories();
@@ -71,10 +38,25 @@ class CategoryService {
   }
 
   /**
-   * Clear category-related cache
+   * Fetch category statistics
+   */
+  async getCategoryStats(): Promise<CategoryStats[]> {
+    const cacheKey = 'categories:stats';
+
+    return unifiedApi.query(
+      async () => {
+        const { data, error } = await supabase.rpc('get_category_stats');
+        return { data: data as CategoryStats[], error };
+      },
+      { cache: { key: cacheKey, ttl: this.CACHE_TTL / 2, tags: ['category-stats'] } }
+    );
+  }
+
+  /**
+   * Clear category cache
    */
   clearCache(pattern?: string): void {
-    apiService.clearCache(pattern || 'categor*');
+    unifiedApi.clearCache(pattern || 'categories*');
   }
 }
 

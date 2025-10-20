@@ -1,8 +1,9 @@
 /**
- * Enterprise fundraiser service with proper data management
+ * Fundraiser Service - Thin wrapper around unified API
+ * Domain-specific logic for fundraiser operations
  */
 import { supabase } from '@/integrations/supabase/client';
-import { apiService, ApiError } from './api.service';
+import { unifiedApi } from './unified-api.service';
 import type { Fundraiser } from '@/types';
 
 export interface FundraiserQueryOptions {
@@ -47,7 +48,7 @@ class FundraiserService {
 
     const cacheKey = `fundraisers:${JSON.stringify(options)}`;
 
-    return apiService.executeWithCache(
+    return unifiedApi.query(
       async () => {
         let query = supabase
           .from('fundraisers')
@@ -68,21 +69,13 @@ class FundraiserService {
 
         const { data, error, count } = await query.range(offset, offset + limit - 1);
 
-        if (error) {
-          throw new ApiError(
-            `Failed to fetch fundraisers: ${error.message}`,
-            error.code,
-            undefined,
-            true
-          );
-        }
+        if (error) return { data: null, error };
 
         // Fetch owner profiles securely using RPC
         const fundraisers = data || [];
         if (fundraisers.length > 0) {
           const uniqueOwnerIds = [...new Set(fundraisers.map(f => f.owner_user_id))];
           
-          // Fetch all owner profiles in parallel
           const profilePromises = uniqueOwnerIds.map(async (ownerId) => {
             const { data: profileData } = await supabase
               .rpc('get_public_user_profile', { profile_id: ownerId });
@@ -95,19 +88,21 @@ class FundraiserService {
             return acc;
           }, {} as Record<string, any>);
 
-          // Attach profiles to fundraisers
           fundraisers.forEach((fundraiser: any) => {
             fundraiser.profiles = profileMap[fundraiser.owner_user_id] || null;
           });
         }
 
         return {
-          data: fundraisers as Fundraiser[],
-          hasMore: (fundraisers?.length || 0) === limit,
-          total: count || 0,
+          data: {
+            data: fundraisers as Fundraiser[],
+            hasMore: (fundraisers?.length || 0) === limit,
+            total: count || 0,
+          },
+          error: null
         };
       },
-      { key: cacheKey, ttl: this.CACHE_TTL }
+      { cache: { key: cacheKey, ttl: this.CACHE_TTL, tags: ['fundraisers'] } }
     );
   }
 
@@ -119,45 +114,27 @@ class FundraiserService {
 
     const cacheKey = `fundraiser-stats:${fundraiserIds.sort().join(',')}`;
 
-    return apiService.executeWithCache(
+    return unifiedApi.query(
       async () => {
-        // Get fundraiser details for days calculation
         const { data: fundraisers, error: fundraiserError } = await supabase
           .from('fundraisers')
           .select('id, end_date')
           .in('id', fundraiserIds);
 
-        if (fundraiserError) {
-          throw new ApiError(
-            `Failed to fetch fundraiser details: ${fundraiserError.message}`,
-            fundraiserError.code,
-            undefined,
-            true
-          );
-        }
+        if (fundraiserError) return { data: null, error: fundraiserError };
 
-        // Get stats from the aggregated view
         const { data: statsData, error: statsError } = await supabase
           .from('public_fundraiser_stats')
           .select('fundraiser_id, donor_count, total_raised')
           .in('fundraiser_id', fundraiserIds);
 
-        if (statsError) {
-          throw new ApiError(
-            `Failed to fetch fundraiser stats: ${statsError.message}`,
-            statsError.code,
-            undefined,
-            true
-          );
-        }
+        if (statsError) return { data: null, error: statsError };
 
-        // Combine data
         const statsMap: Record<string, FundraiserStats> = {};
         
         fundraisers?.forEach(fundraiser => {
           const stat = statsData?.find(s => s.fundraiser_id === fundraiser.id);
           
-          // Calculate days left
           let daysLeft: number | null = null;
           if (fundraiser.end_date) {
             const endDate = new Date(fundraiser.end_date);
@@ -174,9 +151,9 @@ class FundraiserService {
           };
         });
 
-        return statsMap;
+        return { data: statsMap, error: null };
       },
-      { key: cacheKey, ttl: this.CACHE_TTL / 2 } // Shorter cache for stats
+      { cache: { key: cacheKey, ttl: this.CACHE_TTL / 2, tags: ['fundraiser-stats'] } }
     );
   }
 
@@ -186,7 +163,7 @@ class FundraiserService {
   async getFundraiserBySlug(slug: string): Promise<Fundraiser | null> {
     const cacheKey = `fundraiser:${slug}`;
 
-    return apiService.executeWithCache(
+    return unifiedApi.query(
       async () => {
         const { data, error } = await supabase
           .from('fundraisers')
@@ -195,16 +172,8 @@ class FundraiserService {
           .eq('visibility', 'public')
           .maybeSingle();
 
-        if (error) {
-          throw new ApiError(
-            `Failed to fetch fundraiser: ${error.message}`,
-            error.code,
-            undefined,
-            true
-          );
-        }
+        if (error) return { data: null, error };
 
-        // Fetch owner profile securely using RPC
         if (data && data.owner_user_id) {
           const { data: profileData } = await supabase
             .rpc('get_public_user_profile', { profile_id: data.owner_user_id });
@@ -217,9 +186,9 @@ class FundraiserService {
           }
         }
         
-        return data as Fundraiser;
+        return { data: data as Fundraiser, error: null };
       },
-      { key: cacheKey, ttl: this.CACHE_TTL }
+      { cache: { key: cacheKey, ttl: this.CACHE_TTL, tags: ['fundraisers'] } }
     );
   }
 
@@ -227,7 +196,7 @@ class FundraiserService {
    * Clear fundraiser-related cache
    */
   clearCache(pattern?: string): void {
-    apiService.clearCache(pattern || 'fundraiser*');
+    unifiedApi.clearCache(pattern || 'fundraiser*');
   }
 }
 

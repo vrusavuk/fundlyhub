@@ -167,5 +167,5 @@ class ApiService {
 
 export const apiService = new ApiService();
 
-// Re-export the enterprise API as the enhanced version
-export { enterpriseApi as enhancedApiService } from '../enterprise';
+// Legacy export for backward compatibility
+export const enhancedApiService = apiService;
