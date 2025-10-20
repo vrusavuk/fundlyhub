@@ -84,13 +84,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "campaign_access_rules_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "public_fundraiser_stats"
-            referencedColumns: ["fundraiser_id"]
-          },
-          {
             foreignKeyName: "campaign_access_rules_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
@@ -179,13 +172,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "campaign_invites_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "public_fundraiser_stats"
-            referencedColumns: ["fundraiser_id"]
-          },
-          {
             foreignKeyName: "campaign_invites_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
@@ -264,13 +250,6 @@ export type Database = {
             referencedRelation: "fundraisers"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "campaign_search_projection_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: true
-            referencedRelation: "public_fundraiser_stats"
-            referencedColumns: ["fundraiser_id"]
-          },
         ]
       }
       campaign_stats_projection: {
@@ -326,13 +305,6 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "fundraisers"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "campaign_stats_projection_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: true
-            referencedRelation: "public_fundraiser_stats"
-            referencedColumns: ["fundraiser_id"]
           },
         ]
       }
@@ -416,13 +388,6 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "fundraisers"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "campaign_summary_projection_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: true
-            referencedRelation: "public_fundraiser_stats"
-            referencedColumns: ["fundraiser_id"]
           },
           {
             foreignKeyName: "campaign_summary_projection_category_id_fkey"
@@ -536,13 +501,6 @@ export type Database = {
             referencedRelation: "fundraisers"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "comments_fundraiser_id_fkey"
-            columns: ["fundraiser_id"]
-            isOneToOne: false
-            referencedRelation: "public_fundraiser_stats"
-            referencedColumns: ["fundraiser_id"]
-          },
         ]
       }
       donations: {
@@ -615,13 +573,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "fundraisers"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "donations_fundraiser_id_fkey"
-            columns: ["fundraiser_id"]
-            isOneToOne: false
-            referencedRelation: "public_fundraiser_stats"
-            referencedColumns: ["fundraiser_id"]
           },
         ]
       }
@@ -1744,13 +1695,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "fk_updates_fundraiser"
-            columns: ["fundraiser_id"]
-            isOneToOne: false
-            referencedRelation: "public_fundraiser_stats"
-            referencedColumns: ["fundraiser_id"]
-          },
-          {
             foreignKeyName: "updates_author_id_fkey"
             columns: ["author_id"]
             isOneToOne: false
@@ -1770,13 +1714,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "fundraisers"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "updates_fundraiser_id_fkey"
-            columns: ["fundraiser_id"]
-            isOneToOne: false
-            referencedRelation: "public_fundraiser_stats"
-            referencedColumns: ["fundraiser_id"]
           },
         ]
       }
@@ -2448,6 +2385,21 @@ export type Database = {
           title: string
           updated_at: string
           video_url: string
+          visibility: Database["public"]["Enums"]["visibility_type"]
+        }[]
+      }
+      get_public_fundraiser_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          currency: string
+          donor_count: number
+          end_date: string
+          fundraiser_id: string
+          goal_amount: number
+          status: Database["public"]["Enums"]["fundraiser_status"]
+          title: string
+          total_raised: number
           visibility: Database["public"]["Enums"]["visibility_type"]
         }[]
       }
