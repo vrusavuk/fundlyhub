@@ -16,6 +16,7 @@ import Auth from "./pages/Auth";
 import AllCampaigns from "./pages/AllCampaigns";
 import SearchResults from "./pages/SearchResults";
 import FundraiserDetail from "./pages/FundraiserDetail";
+import ProjectDetailExample from "./pages/ProjectDetailExample";
 
 // Route-specific skeleton loaders
 import {
@@ -67,6 +68,9 @@ const App = () => (
         <Route path="/campaigns" element={<AllCampaigns />} />
         <Route path="/search" element={<SearchResults />} />
         <Route path="/fundraiser/:slug" element={<FundraiserDetail />} />
+        
+        {/* Example: Project Detail Page */}
+        <Route path="/project-example" element={<ProjectDetailExample />} />
         
         {/* Medium-traffic routes with appropriate skeletons */}
         <Route path="/fundly-give" element={
