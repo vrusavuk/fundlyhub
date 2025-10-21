@@ -246,7 +246,7 @@ export default function ProjectDetailExample() {
                 fundraiserId={mockProject.id}
                 fundraiserTitle={mockProject.title}
                 fundraiserOwnerId={mockProject.owner.id}
-                milestones={[]}
+                milestones={mockMilestones}
               />
             </TabsContent>
 

@@ -33,6 +33,7 @@ import { UpdatesFeed } from '@/components/project/UpdatesFeed';
 import { ProjectStats } from '@/components/project/ProjectStats';
 import { ProjectDonationWidget } from '@/components/project/ProjectDonationWidget';
 import { useProjectStats } from '@/hooks/useProjectStats';
+import type { ProjectMilestone } from '@/types/domain/project';
 
 interface Fundraiser {
   id: string;
@@ -90,6 +91,7 @@ export default function FundraiserDetail() {
   const [fundraiser, setFundraiser] = useState<Fundraiser | null>(null);
   const [donations, setDonations] = useState<Donation[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [milestones, setMilestones] = useState<ProjectMilestone[]>([]);
   const [totalRaised, setTotalRaised] = useState(0);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
@@ -144,6 +146,19 @@ export default function FundraiserDetail() {
       }
 
       setFundraiser(fundraiserData as any);
+
+      // Fetch milestones if it's a project
+      if (fundraiserData.is_project) {
+        const { data: milestonesData } = await supabase
+          .from('project_milestones')
+          .select('*')
+          .eq('fundraiser_id', fundraiserData.id)
+          .order('due_date', { ascending: true });
+        
+        if (milestonesData) {
+          setMilestones(milestonesData as ProjectMilestone[]);
+        }
+      }
 
       // Fetch donations, comments, and stats in parallel using centralized service
       const [donationsResponse, commentsResponse, statsData] = await Promise.all([
@@ -541,7 +556,7 @@ export default function FundraiserDetail() {
                     fundraiserId={fundraiser.id} 
                     fundraiserTitle={fundraiser.title}
                     fundraiserOwnerId={fundraiser.owner_user_id}
-                    milestones={[]}
+                    milestones={milestones}
                   />
                 ) : (
                   <Card>
@@ -616,7 +631,7 @@ export default function FundraiserDetail() {
                     totalDisbursed={projectStats.totalDisbursed}
                   />
                   <ProjectDonationWidget
-                    milestones={[]}
+                    milestones={milestones}
                     onDonate={(amount) => handleDonate(amount)}
                   />
                 </>
