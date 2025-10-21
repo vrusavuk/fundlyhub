@@ -731,6 +731,87 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_dependencies: {
+        Row: {
+          created_at: string | null
+          dependency_type: string | null
+          depends_on_key: string
+          feature_key: string
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          dependency_type?: string | null
+          depends_on_key: string
+          feature_key: string
+          id?: string
+        }
+        Update: {
+          created_at?: string | null
+          dependency_type?: string | null
+          depends_on_key?: string
+          feature_key?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_depends_on_key"
+            columns: ["depends_on_key"]
+            isOneToOne: false
+            referencedRelation: "system_settings"
+            referencedColumns: ["setting_key"]
+          },
+          {
+            foreignKeyName: "fk_feature_key"
+            columns: ["feature_key"]
+            isOneToOne: false
+            referencedRelation: "system_settings"
+            referencedColumns: ["setting_key"]
+          },
+        ]
+      }
+      feature_usage_analytics: {
+        Row: {
+          action: string
+          created_at: string | null
+          feature_key: string
+          id: string
+          metadata: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          feature_key: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          feature_key?: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feature_usage_analytics_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feature_usage_analytics_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fundraisers: {
         Row: {
           beneficiary_contact: string | null
@@ -2524,6 +2605,10 @@ export type Database = {
           _resource_type: string
           _user_agent?: string
         }
+        Returns: string
+      }
+      log_feature_usage: {
+        Args: { _action: string; _feature_key: string; _metadata?: Json }
         Returns: string
       }
       log_security_event: {

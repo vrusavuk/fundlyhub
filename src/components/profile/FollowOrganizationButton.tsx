@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Building2, Building, Loader2 } from 'lucide-react';
 import { useFollowOrganizationEventDriven } from '@/hooks/useFollowOrganizationEventDriven';
 import { useAuth } from '@/hooks/useAuth';
+import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 
 interface FollowOrganizationButtonProps {
   organizationId: string;
@@ -18,6 +19,7 @@ export function FollowOrganizationButton({
   className 
 }: FollowOrganizationButtonProps) {
   const { user } = useAuth();
+  const { canFollowOrganizations } = useFeatureFlags();
   const { 
     isFollowing, 
     loading, 
@@ -32,7 +34,8 @@ export function FollowOrganizationButton({
     }
   }, [user, organizationId, checkFollowStatus]);
 
-  if (!user || !organizationId) {
+  // Don't show button if not logged in or feature disabled
+  if (!user || !organizationId || !canFollowOrganizations) {
     return null;
   }
 

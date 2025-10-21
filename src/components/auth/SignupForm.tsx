@@ -14,6 +14,9 @@ import { PasswordInput } from './PasswordInput';
 import { PasswordStrengthIndicator } from './PasswordStrengthIndicator';
 import { GoogleSignInButton } from './GoogleSignInButton';
 import type { AuthConfig } from '@/hooks/useAuthConfig';
+import { useFeatureFlags } from '@/hooks/useFeatureFlags';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Lock } from 'lucide-react';
 
 interface SignupFormProps {
   onToggleMode: () => void;
@@ -29,6 +32,35 @@ export const SignupForm = ({ onToggleMode, config }: SignupFormProps) => {
   const [loading, setLoading] = useState(false);
 
   const { toast } = useToast();
+  const { canRegister, getDisabledMessage } = useFeatureFlags();
+
+  // Check if registration is enabled
+  if (!canRegister) {
+    return (
+      <div className="space-y-6">
+        <div className="space-y-2 text-center">
+          <h1 className="text-3xl font-bold tracking-tight">Create an account</h1>
+        </div>
+        <Alert variant="destructive" className="bg-muted border-border">
+          <Lock className="h-4 w-4" />
+          <AlertTitle>Registration Disabled</AlertTitle>
+          <AlertDescription className="text-muted-foreground">
+            {getDisabledMessage('features.user_registration')}
+          </AlertDescription>
+        </Alert>
+        <p className="text-center text-sm text-muted-foreground">
+          Already have an account?{' '}
+          <button
+            type="button"
+            onClick={onToggleMode}
+            className="font-medium text-primary hover:underline"
+          >
+            Sign in
+          </button>
+        </p>
+      </div>
+    );
+  }
 
   const signupSchema = createSignupSchema(config);
   const form = useForm({

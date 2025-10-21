@@ -140,6 +140,37 @@ export function useSystemSettings() {
 
   useEffect(() => {
     fetchSettings();
+
+    // Phase 5: Real-time updates for feature toggles
+    const channel = supabase
+      .channel('system-settings-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'system_settings',
+        },
+        (payload) => {
+          const updated = payload.new as SystemSetting;
+          setSettings(prev => ({
+            ...prev,
+            [updated.setting_key]: updated
+          }));
+
+          // Log feature toggle changes
+          if (updated.setting_key.startsWith('features.')) {
+            console.log(
+              `[SystemSettings] Feature updated: ${updated.setting_key} = ${updated.setting_value.enabled ? 'enabled' : 'disabled'}`
+            );
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [fetchSettings]);
 
   return {

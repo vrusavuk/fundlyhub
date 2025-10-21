@@ -115,6 +115,12 @@ const navigationItems: AdminNavItem[] = [
     icon: Settings,
     permission: 'manage_system_settings' as const,
   },
+  {
+    title: 'Feature Toggles',
+    url: '/admin/feature-toggles',
+    icon: Shield,
+    permission: 'manage_system_settings' as const,
+  },
 ];
 
 export function AdminSidebar() {
