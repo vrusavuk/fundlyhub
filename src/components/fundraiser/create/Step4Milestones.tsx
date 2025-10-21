@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Plus, Trash2, CheckCircle2, AlertCircle, Sparkles, Edit2, Check } from 'lucide-react';
 import { Milestone } from '@/lib/validation/fundraiserCreation.schema';
-import { useAITextEnhancer } from '@/hooks/useAITextEnhancer';
+import { useAITextEnhancement } from '@/hooks/useAITextEnhancement';
 
 interface Step4MilestonesProps {
   value: Milestone[];
@@ -22,7 +22,7 @@ interface Step4MilestonesProps {
 
 export function Step4Milestones({ value, currency, onChange }: Step4MilestonesProps) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const { enhanceText, isEnhancing } = useAITextEnhancer();
+  const { enhanceText, isLoading: isEnhancing } = useAITextEnhancement();
 
   const handleAddNew = () => {
     const newMilestone: Partial<Milestone> = {
@@ -54,9 +54,13 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
     if (!description.trim()) return;
 
     const milestone = value[index];
-    const context = `Milestone: ${milestone.title}\nTarget Amount: ${milestone.currency} ${milestone.target_amount}`;
     
-    const enhanced = await enhanceText(description, 'description', context);
+    const enhanced = await enhanceText('refine', description, {
+      field: 'milestone',
+      milestoneTitle: milestone.title,
+      milestoneAmount: milestone.target_amount,
+    });
+    
     if (enhanced) {
       handleUpdate(index, 'description', enhanced);
     }
