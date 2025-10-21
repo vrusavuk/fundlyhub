@@ -37,7 +37,11 @@ export function useCreateFundraiser() {
       
       switch (step) {
         case 0:
-          // Step 0 is just choosing project type, no validation needed
+          // Step 0: Must select a fundraiser type
+          if (formData.isProject === undefined) {
+            setValidationErrors({ isProject: 'Please select a fundraising type' });
+            return false;
+          }
           return true;
         case 1:
           fundraiserBasicsSchema.parse({

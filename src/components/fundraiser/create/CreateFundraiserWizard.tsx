@@ -116,9 +116,8 @@ export function CreateFundraiserWizard() {
         <CardContent className="p-4 sm:p-6 md:p-8">
           {currentStep === 0 && (
             <Step0ProjectType
-              value={formData.isProject || false}
+              value={formData.isProject}
               onChange={(isProject) => updateFormData({ isProject })}
-              onNext={handleNext}
             />
           )}
 
@@ -189,18 +188,16 @@ export function CreateFundraiserWizard() {
         </div>
 
         {currentStep < (formData.isProject ? 5 : 4) ? (
-          currentStep > 0 && (
-            <Button
-              type="button"
-              onClick={handleNext}
-              disabled={isSubmitting}
-              size="lg"
-              className="w-full sm:w-auto min-h-[44px]"
-            >
-              Next
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-          )
+          <Button
+            type="button"
+            onClick={handleNext}
+            disabled={isSubmitting || (currentStep === 0 && formData.isProject === undefined)}
+            size="lg"
+            className="w-full sm:w-auto min-h-[44px]"
+          >
+            Next
+            <ArrowRight className="h-4 w-4 ml-2" />
+          </Button>
         ) : (
           <Button
             type="button"

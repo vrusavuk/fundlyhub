@@ -25,8 +25,31 @@ export function ProgressIndicator({
   onStepClick,
   completedSteps,
 }: ProgressIndicatorProps) {
+  const progress = ((completedSteps.length + 1) / steps.length) * 100;
+  
   return (
-    <nav aria-label="Progress" className="mb-8">
+    <nav aria-label="Progress" className="space-y-4 mb-8">
+      {/* Progress Bar */}
+      <div className="w-full max-w-3xl mx-auto">
+        <div className="flex items-center justify-between text-xs sm:text-sm text-muted-foreground mb-2">
+          <span className="font-medium">
+            Step {currentStep + 1} of {steps.length}
+          </span>
+          <span className="font-medium">{Math.round(progress)}% Complete</span>
+        </div>
+        <div className="h-2 bg-muted rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 ease-out rounded-full"
+            style={{ width: `${progress}%` }}
+            role="progressbar"
+            aria-valuenow={progress}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          />
+        </div>
+      </div>
+      
+      {/* Step Indicators */}
       <ol className="flex items-center justify-between w-full max-w-3xl mx-auto">
         {steps.map((step, index) => {
           const isCompleted = completedSteps.includes(step.number) && step.number !== currentStep;
