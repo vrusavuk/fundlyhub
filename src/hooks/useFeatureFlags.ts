@@ -140,6 +140,10 @@ export function useFeatureFlags() {
     return isFeatureEnabled('features.ai_text_enhancement');
   }, [isFeatureEnabled]);
 
+  const canCreateProjectUpdates = useMemo(() => {
+    return isFeatureEnabled('features.project_updates', { checkRole: true });
+  }, [isFeatureEnabled]);
+
   return {
     isFeatureEnabled,
     getFeatureConfig,
@@ -154,5 +158,6 @@ export function useFeatureFlags() {
     canEditProfile,
     canCreateOrganization,
     canUseAIEnhancement,
+    canCreateProjectUpdates,
   };
 }

@@ -16,6 +16,7 @@ export * from './domain/DonationEvents';
 export * from './domain/OrganizationEvents';
 export * from './domain/AdminEvents';
 export * from './domain/SearchEvents';
+export * from './domain/ProjectEvents';
 
 // Publishers
 export * from './publishers/ServiceEventPublisher';
@@ -112,6 +113,10 @@ console.log('[EventBus] Search processors registered');
 // Initialize subscription event subscribers
 import { initializeSubscriptionSubscribers } from './subscribers/SubscriptionEventSubscriber';
 initializeSubscriptionSubscribers(globalEventBus);
+
+// Initialize project update subscribers
+import { initializeProjectUpdateSubscribers } from './subscribers/ProjectUpdateSubscriber';
+initializeProjectUpdateSubscribers(globalEventBus);
 
 // Initialize notification service
 import { notificationService } from '@/lib/services/NotificationService';

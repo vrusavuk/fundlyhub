@@ -242,7 +242,12 @@ export default function ProjectDetailExample() {
             </TabsContent>
 
             <TabsContent value="updates" className="mt-6">
-              <UpdatesFeed fundraiserId={mockProject.id} />
+              <UpdatesFeed 
+                fundraiserId={mockProject.id}
+                fundraiserTitle={mockProject.title}
+                fundraiserOwnerId={mockProject.owner.id}
+                milestones={[]}
+              />
             </TabsContent>
 
             <TabsContent value="comments" className="mt-6">

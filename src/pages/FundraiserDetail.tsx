@@ -537,7 +537,12 @@ export default function FundraiserDetail() {
               
               <TabsContent value="updates" className="mt-6">
                 {fundraiser.is_project ? (
-                  <UpdatesFeed fundraiserId={fundraiser.id} />
+                  <UpdatesFeed 
+                    fundraiserId={fundraiser.id} 
+                    fundraiserTitle={fundraiser.title}
+                    fundraiserOwnerId={fundraiser.owner_user_id}
+                    milestones={[]}
+                  />
                 ) : (
                   <Card>
                     <CardContent className="p-6">

@@ -1,16 +1,37 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { formatDistanceToNow } from 'date-fns';
 import { useProjectUpdates } from '@/hooks/useProjectUpdates';
+import { AddUpdateDialog } from './AddUpdateDialog';
+import { useFeatureFlags } from '@/hooks/useFeatureFlags';
+import { useAuth } from '@/hooks/useAuth';
+import { Plus } from 'lucide-react';
+import type { ProjectMilestone } from '@/types/domain/project';
 
 interface UpdatesFeedProps {
   fundraiserId: string;
+  fundraiserTitle: string;
+  fundraiserOwnerId: string;
+  milestones?: ProjectMilestone[];
 }
 
-export function UpdatesFeed({ fundraiserId }: UpdatesFeedProps) {
+export function UpdatesFeed({ 
+  fundraiserId, 
+  fundraiserTitle, 
+  fundraiserOwnerId,
+  milestones = []
+}: UpdatesFeedProps) {
+  const [dialogOpen, setDialogOpen] = useState(false);
   const { updates, isLoading } = useProjectUpdates(fundraiserId);
+  const { canCreateProjectUpdates } = useFeatureFlags();
+  const { user } = useAuth();
+
+  const isOwner = user?.id === fundraiserOwnerId;
+  const canPostUpdate = isOwner && canCreateProjectUpdates;
 
   if (isLoading) {
     return (
@@ -32,6 +53,26 @@ export function UpdatesFeed({ fundraiserId }: UpdatesFeedProps) {
 
   return (
     <div className="space-y-6">
+      {canPostUpdate && (
+        <div className="flex justify-end">
+          <Button onClick={() => setDialogOpen(true)} size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Post Update
+          </Button>
+        </div>
+      )}
+
+      {canPostUpdate && user && (
+        <AddUpdateDialog
+          fundraiserId={fundraiserId}
+          fundraiserTitle={fundraiserTitle}
+          authorId={user.id}
+          milestones={milestones}
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+        />
+      )}
+
       {updates.map((update: any) => (
         <Card key={update.id}>
           <CardHeader>
