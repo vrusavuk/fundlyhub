@@ -12,6 +12,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { Plus } from 'lucide-react';
 import type { ProjectMilestone, ProjectUpdateWithRelations } from '@/types/domain/project';
 
+/**
+ * UpdatesFeed Component
+ * 
+ * Displays updates for ANY fundraiser type (causes or projects).
+ * Note: Component is named "project/UpdatesFeed" for legacy reasons,
+ * but it works for all fundraiser types.
+ */
 interface UpdatesFeedProps {
   fundraiserId: string;
   fundraiserTitle: string;
@@ -27,11 +34,11 @@ export function UpdatesFeed({
 }: UpdatesFeedProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const { updates, isLoading } = useProjectUpdates(fundraiserId);
-  const { canCreateProjectUpdates } = useFeatureFlags();
+  const { canCreateCampaignUpdates } = useFeatureFlags();
   const { user } = useAuth();
 
   const isOwner = user?.id === fundraiserOwnerId;
-  const canPostUpdate = isOwner && canCreateProjectUpdates;
+  const canPostUpdate = isOwner && canCreateCampaignUpdates;
 
   return (
     <div className="space-y-6">

@@ -144,6 +144,13 @@ export function useFeatureFlags() {
     return isFeatureEnabled('features.project_updates', { checkRole: true });
   }, [isFeatureEnabled]);
 
+  // Alias for better semantic clarity - updates work for all fundraiser types
+  const canCreateCampaignUpdates = useMemo(() => {
+    // Note: Internal key is 'project_updates' for legacy reasons,
+    // but this feature works for ALL fundraiser types (causes and projects)
+    return isFeatureEnabled('features.project_updates', { checkRole: true });
+  }, [isFeatureEnabled]);
+
   return {
     isFeatureEnabled,
     getFeatureConfig,
@@ -158,6 +165,7 @@ export function useFeatureFlags() {
     canEditProfile,
     canCreateOrganization,
     canUseAIEnhancement,
-    canCreateProjectUpdates,
+    canCreateProjectUpdates, // Legacy name for backwards compatibility
+    canCreateCampaignUpdates, // Clearer name - works for all fundraiser types
   };
 }

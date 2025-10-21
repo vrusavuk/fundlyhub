@@ -96,7 +96,7 @@ export function AddUpdateDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Post Project Update</DialogTitle>
+          <DialogTitle>Post Update</DialogTitle>
           <DialogDescription>
             Share progress and updates with your supporters
           </DialogDescription>
