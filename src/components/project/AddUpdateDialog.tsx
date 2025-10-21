@@ -69,9 +69,9 @@ export function AddUpdateDialog({
 
   const handleGenerateAI = async () => {
     const selectedMilestone = milestones.find(m => m.id === selectedMilestoneId);
-    const action = currentBody.trim() ? 'improve' : 'generate';
+    const action = currentBody?.trim() ? 'improve' : 'generate';
     
-    const enhanced = await enhanceText(action, currentBody, {
+    const enhanced = await enhanceText(action, currentBody || '', {
       fundraiserTitle,
       fundraiserId,
       milestoneTitle: selectedMilestone?.title,
@@ -187,7 +187,7 @@ export function AddUpdateDialog({
                   ) : (
                     <>
                       <Sparkles className="h-3.5 w-3.5" />
-                      {currentBody.trim() ? 'Improve with AI' : 'Generate with AI'}
+                      {currentBody?.trim() ? 'Improve with AI' : 'Generate with AI'}
                     </>
                   )}
                 </Button>
