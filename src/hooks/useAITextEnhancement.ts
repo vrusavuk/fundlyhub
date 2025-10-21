@@ -10,12 +10,14 @@ import { useToast } from '@/hooks/use-toast';
 export type AIAction = 'generate' | 'refine' | 'expand' | 'shorten';
 
 interface AIContext {
-  field: 'summary' | 'story';
+  field: 'summary' | 'story' | 'milestone';
   title?: string;
   category?: string;
   goalAmount?: number;
   beneficiaryName?: string;
   summary?: string;
+  milestoneTitle?: string;
+  milestoneAmount?: number;
 }
 
 interface UseAITextEnhancementReturn {

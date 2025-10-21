@@ -97,6 +97,24 @@ serve(async (req) => {
           userPrompt = `Shorten this story while keeping key emotional elements and the call to action (150-1000 characters): "${text}". Maintain the core message.`;
           break;
       }
+    } else if (context.field === 'milestone') {
+      maxLength = 300;
+      systemPrompt = 'You are a project management expert for fundraising campaigns. Create clear, actionable milestone descriptions that explain what will be accomplished and how funds will be used. Keep descriptions between 50-300 characters. Be specific and transparent.';
+      
+      switch (action) {
+        case 'generate':
+          userPrompt = `Generate a clear milestone description (50-300 characters) for milestone titled "${context.milestoneTitle}" with target amount of $${context.milestoneAmount} for project "${context.title}". Explain: 1) What will be accomplished, 2) How funds will be allocated, 3) Expected timeline/deliverables.`;
+          break;
+        case 'refine':
+          userPrompt = `Refine this milestone description to be more specific and actionable (50-300 characters): "${text}". Milestone: "${context.milestoneTitle}". Amount: $${context.milestoneAmount}. Make it clearer and more transparent.`;
+          break;
+        case 'expand':
+          userPrompt = `Expand this milestone description with more specific details about deliverables and fund usage (up to 300 characters): "${text}". Add clarity about the milestone's objectives.`;
+          break;
+        case 'shorten':
+          userPrompt = `Shorten this milestone description while keeping key deliverables and fund allocation details (50-300 characters): "${text}". Maintain transparency.`;
+          break;
+      }
     }
 
     // Call Lovable AI Gateway

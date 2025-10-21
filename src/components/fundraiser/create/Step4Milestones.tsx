@@ -8,7 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Trash2, Calendar } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Plus, Trash2, Calendar, Lightbulb } from 'lucide-react';
+import { AITextEnhancer } from './AITextEnhancer';
+import { cn } from '@/lib/utils';
 import type { Milestone } from '@/lib/validation/fundraiserCreation.schema';
 
 interface Step4MilestonesProps {
@@ -27,6 +30,7 @@ export function Step4Milestones({ value, currency, onChange, onNext, onBack }: S
     currency: currency,
     due_date: '',
   });
+  const [descriptionSuggestion, setDescriptionSuggestion] = useState<string | null>(null);
 
   const handleAddMilestone = () => {
     if (!currentMilestone.title || !currentMilestone.target_amount) {
@@ -41,6 +45,7 @@ export function Step4Milestones({ value, currency, onChange, onNext, onBack }: S
       currency: currency,
       due_date: '',
     });
+    setDescriptionSuggestion(null);
   };
 
   const handleRemoveMilestone = (index: number) => {
@@ -57,6 +62,13 @@ export function Step4Milestones({ value, currency, onChange, onNext, onBack }: S
           Break down your project into clear milestones with specific goals and timelines
         </p>
       </div>
+
+      <Alert>
+        <Lightbulb className="h-4 w-4" />
+        <AlertDescription>
+          Use AI to generate compelling milestone descriptions that clearly explain what will be accomplished and how funds will be used.
+        </AlertDescription>
+      </Alert>
 
       {/* Current milestones */}
       {value.length > 0 && (
@@ -132,15 +144,40 @@ export function Step4Milestones({ value, currency, onChange, onNext, onBack }: S
             />
           </div>
 
-          <div>
-            <Label htmlFor="milestone-description">Description (Optional)</Label>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="milestone-description">Description (Optional)</Label>
+              <AITextEnhancer
+                field="milestone"
+                currentText={currentMilestone.description || ''}
+                onTextGenerated={(text) => {
+                  setCurrentMilestone({ ...currentMilestone, description: text });
+                  setDescriptionSuggestion(null);
+                }}
+                onSuggestionChange={setDescriptionSuggestion}
+                context={{
+                  milestoneTitle: currentMilestone.title,
+                  milestoneAmount: currentMilestone.target_amount,
+                }}
+              />
+            </div>
             <Textarea
               id="milestone-description"
-              placeholder="Describe what this milestone will accomplish..."
+              placeholder="Describe what this milestone will accomplish and how funds will be used..."
               rows={3}
-              value={currentMilestone.description}
+              value={descriptionSuggestion || currentMilestone.description || ''}
               onChange={(e) => setCurrentMilestone({ ...currentMilestone, description: e.target.value })}
+              className={cn(
+                descriptionSuggestion && 'border-primary border-2 bg-primary/5'
+              )}
+              readOnly={!!descriptionSuggestion}
+              maxLength={300}
             />
+            {(descriptionSuggestion || currentMilestone.description) && (
+              <p className="text-xs text-muted-foreground text-right">
+                {(descriptionSuggestion || currentMilestone.description || '').length}/300 characters
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">

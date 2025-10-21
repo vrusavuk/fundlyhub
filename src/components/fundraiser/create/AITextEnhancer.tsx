@@ -10,7 +10,7 @@ import { useAITextEnhancement, AIAction } from '@/hooks/useAITextEnhancement';
 import { cn } from '@/lib/utils';
 
 interface AITextEnhancerProps {
-  field: 'summary' | 'story';
+  field: 'summary' | 'story' | 'milestone';
   currentText: string;
   onTextGenerated: (text: string) => void;
   onSuggestionChange?: (suggestion: string | null) => void;
@@ -20,6 +20,8 @@ interface AITextEnhancerProps {
     goalAmount?: number;
     beneficiaryName?: string;
     summary?: string;
+    milestoneTitle?: string;
+    milestoneAmount?: number;
   };
 }
 
