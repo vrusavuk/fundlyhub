@@ -22,6 +22,7 @@ interface Step4MilestonesProps {
 
 export function Step4Milestones({ value, currency, onChange }: Step4MilestonesProps) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [descriptionSuggestions, setDescriptionSuggestions] = useState<Record<number, string | null>>({});
 
   const handleAddNew = () => {
     const newMilestone: Partial<Milestone> = {
@@ -47,6 +48,10 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
     if (editingIndex === index) {
       setEditingIndex(null);
     }
+    // Clear suggestion for removed milestone
+    const newSuggestions = { ...descriptionSuggestions };
+    delete newSuggestions[index];
+    setDescriptionSuggestions(newSuggestions);
   };
 
   const isValidMilestone = (milestone: Milestone) => {
@@ -145,7 +150,13 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
                           <AITextEnhancer
                             field="milestone"
                             currentText={milestone.description || ''}
-                            onTextGenerated={(text) => handleUpdate(index, 'description', text)}
+                            onTextGenerated={(text) => {
+                              handleUpdate(index, 'description', text);
+                              setDescriptionSuggestions({ ...descriptionSuggestions, [index]: null });
+                            }}
+                            onSuggestionChange={(suggestion) => {
+                              setDescriptionSuggestions({ ...descriptionSuggestions, [index]: suggestion });
+                            }}
                             context={{
                               milestoneTitle: milestone.title,
                               milestoneAmount: milestone.target_amount,
@@ -154,11 +165,13 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
                         </div>
                         <Textarea
                           id={`description-${index}`}
-                          value={milestone.description || ''}
+                          value={descriptionSuggestions[index] || milestone.description || ''}
                           onChange={(e) => handleUpdate(index, 'description', e.target.value)}
                           placeholder="Describe what will be achieved in this milestone..."
                           rows={3}
                           maxLength={500}
+                          readOnly={!!descriptionSuggestions[index]}
+                          className={descriptionSuggestions[index] ? 'border-primary border-2 bg-primary/5' : ''}
                         />
                       </div>
 
