@@ -828,6 +828,7 @@ export type Database = {
           id: string
           images: string[] | null
           is_discoverable: boolean | null
+          is_project: boolean | null
           link_token: string | null
           location: string | null
           org_id: string | null
@@ -859,6 +860,7 @@ export type Database = {
           id?: string
           images?: string[] | null
           is_discoverable?: boolean | null
+          is_project?: boolean | null
           link_token?: string | null
           location?: string | null
           org_id?: string | null
@@ -890,6 +892,7 @@ export type Database = {
           id?: string
           images?: string[] | null
           is_discoverable?: boolean | null
+          is_project?: boolean | null
           link_token?: string | null
           location?: string | null
           org_id?: string | null
@@ -1359,6 +1362,285 @@ export type Database = {
           website?: string | null
         }
         Relationships: []
+      }
+      project_allocations: {
+        Row: {
+          allocated_at: string
+          allocated_by: string
+          amount: number
+          fundraiser_id: string
+          id: string
+          milestone_id: string
+          notes: string | null
+        }
+        Insert: {
+          allocated_at?: string
+          allocated_by: string
+          amount: number
+          fundraiser_id: string
+          id?: string
+          milestone_id: string
+          notes?: string | null
+        }
+        Update: {
+          allocated_at?: string
+          allocated_by?: string
+          amount?: number
+          fundraiser_id?: string
+          id?: string
+          milestone_id?: string
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_allocations_allocated_by_fkey"
+            columns: ["allocated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_allocations_allocated_by_fkey"
+            columns: ["allocated_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_allocations_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "fundraisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_allocations_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "project_milestones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_disbursements: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          destination: string
+          evidence: Json | null
+          fundraiser_id: string
+          id: string
+          milestone_id: string
+          processed_at: string | null
+          processed_by: string | null
+          requested_by: string
+          status: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          destination: string
+          evidence?: Json | null
+          fundraiser_id: string
+          id?: string
+          milestone_id: string
+          processed_at?: string | null
+          processed_by?: string | null
+          requested_by: string
+          status?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          destination?: string
+          evidence?: Json | null
+          fundraiser_id?: string
+          id?: string
+          milestone_id?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          requested_by?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_disbursements_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "fundraisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_disbursements_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "project_milestones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_disbursements_processed_by_fkey"
+            columns: ["processed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_disbursements_processed_by_fkey"
+            columns: ["processed_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_disbursements_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_disbursements_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_milestones: {
+        Row: {
+          created_at: string
+          created_by: string
+          currency: string
+          description: string | null
+          due_date: string | null
+          fundraiser_id: string
+          id: string
+          proof_urls: string[] | null
+          status: string
+          target_amount: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          currency?: string
+          description?: string | null
+          due_date?: string | null
+          fundraiser_id: string
+          id?: string
+          proof_urls?: string[] | null
+          status?: string
+          target_amount: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          currency?: string
+          description?: string | null
+          due_date?: string | null
+          fundraiser_id?: string
+          id?: string
+          proof_urls?: string[] | null
+          status?: string
+          target_amount?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_milestones_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_milestones_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_milestones_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "fundraisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_updates: {
+        Row: {
+          attachments: Json | null
+          author_id: string
+          body: string
+          created_at: string
+          fundraiser_id: string
+          id: string
+          milestone_id: string | null
+          title: string
+          visibility: string
+        }
+        Insert: {
+          attachments?: Json | null
+          author_id: string
+          body: string
+          created_at?: string
+          fundraiser_id: string
+          id?: string
+          milestone_id?: string | null
+          title: string
+          visibility?: string
+        }
+        Update: {
+          attachments?: Json | null
+          author_id?: string
+          body?: string
+          created_at?: string
+          fundraiser_id?: string
+          id?: string
+          milestone_id?: string | null
+          title?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_updates_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_updates_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_updates_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "fundraisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_updates_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "project_milestones"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       role_permissions: {
         Row: {

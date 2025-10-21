@@ -68,10 +68,23 @@ export class FundraiserMutationService {
           visibility: 'public',
           type,
           is_discoverable: true,
+          is_project: input.isProject || false,
           currency: 'USD',
         })
         .select()
         .single();
+
+      if (error) throw error;
+
+      // If project, create milestones
+      if (input.isProject && input.milestones && input.milestones.length > 0) {
+        const { projectMutationService } = await import('./project.mutation.service');
+        await projectMutationService.createProjectMilestones({
+          fundraiserId: data.id,
+          milestones: input.milestones,
+          createdBy: input.userId,
+        });
+      }
 
       if (error) throw error;
 

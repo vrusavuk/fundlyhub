@@ -8,9 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, ArrowRight, Save } from 'lucide-react';
 import { ProgressIndicator } from './ProgressIndicator';
+import { Step0ProjectType } from './Step0ProjectType';
 import { Step1Basics } from './Step1Basics';
 import { Step2Story } from './Step2Story';
 import { Step3Details } from './Step3Details';
+import { Step4Milestones } from './Step4Milestones';
 import { Step4Review } from './Step4Review';
 import { useCreateFundraiser } from '@/hooks/useCreateFundraiser';
 import { useDraftPersistence } from '@/hooks/useDraftPersistence';
@@ -20,10 +22,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
 const STEPS = [
+  { number: 0, title: 'Type', description: 'Choose fundraising type' },
   { number: 1, title: 'Basics', description: 'Title, category, goal' },
   { number: 2, title: 'Story', description: 'Tell your story' },
   { number: 3, title: 'Details', description: 'Additional info' },
-  { number: 4, title: 'Review', description: 'Preview & publish' },
+  { number: 4, title: 'Milestones', description: 'Project goals (optional)' },
+  { number: 5, title: 'Review', description: 'Preview & publish' },
 ];
 
 export function CreateFundraiserWizard() {
@@ -61,10 +65,21 @@ export function CreateFundraiserWizard() {
     }
   }, []);
 
+  // Filter steps based on project type
+  const visibleSteps = STEPS.filter(step => {
+    if (step.number === 4 && !formData.isProject) {
+      return false; // Hide milestones step for non-projects
+    }
+    return true;
+  });
+  
   const selectedCategory = categories.find((cat) => cat.id === formData.categoryId);
   
   // Only mark steps as completed if we've moved past them
   const completedSteps = [];
+  if (currentStep > 0) {
+    completedSteps.push(0);
+  }
   if (currentStep > 1 && formData.title && formData.categoryId && formData.goalAmount) {
     completedSteps.push(1);
   }
@@ -73,6 +88,9 @@ export function CreateFundraiserWizard() {
   }
   if (currentStep > 3) {
     completedSteps.push(3);
+  }
+  if (currentStep > 4 && formData.isProject && formData.milestones && formData.milestones.length > 0) {
+    completedSteps.push(4);
   }
 
   const handleNext = () => {
@@ -89,13 +107,21 @@ export function CreateFundraiserWizard() {
     <div className="w-full space-y-6 sm:space-y-8">
       <ProgressIndicator
         currentStep={currentStep}
-        steps={STEPS}
+        steps={visibleSteps}
         onStepClick={goToStep}
         completedSteps={completedSteps}
       />
 
       <Card className="card-enhanced shadow-glow">
         <CardContent className="p-4 sm:p-6 md:p-8">
+          {currentStep === 0 && (
+            <Step0ProjectType
+              value={formData.isProject || false}
+              onChange={(isProject) => updateFormData({ isProject })}
+              onNext={handleNext}
+            />
+          )}
+
           {currentStep === 1 && (
             <Step1Basics
               formData={formData}
@@ -118,10 +144,21 @@ export function CreateFundraiserWizard() {
               formData={formData}
               errors={validationErrors}
               onChange={updateFormData}
+              isProject={formData.isProject || false}
             />
           )}
 
-          {currentStep === 4 && (
+          {currentStep === 4 && formData.isProject && (
+            <Step4Milestones
+              value={formData.milestones || []}
+              currency="USD"
+              onChange={(milestones) => updateFormData({ milestones })}
+              onNext={handleNext}
+              onBack={goToPreviousStep}
+            />
+          )}
+
+          {currentStep === (formData.isProject ? 5 : 4) && (
             <Step4Review
               formData={formData}
               categoryName={selectedCategory?.name}
@@ -132,34 +169,38 @@ export function CreateFundraiserWizard() {
       </Card>
 
       <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 sticky bottom-0 bg-background/95 backdrop-blur-sm p-4 sm:p-0 -mx-4 sm:mx-0 border-t sm:border-t-0">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={goToPreviousStep}
-          disabled={currentStep === 1 || isSubmitting}
-          size="lg"
-          className="w-full sm:w-auto min-h-[44px]"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Previous
-        </Button>
+        {currentStep > 0 && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={goToPreviousStep}
+            disabled={isSubmitting}
+            size="lg"
+            className="w-full sm:w-auto min-h-[44px]"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Previous
+          </Button>
+        )}
 
         <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
           <Save className="h-4 w-4" />
           <span>Auto-saving...</span>
         </div>
 
-        {currentStep < 4 ? (
-          <Button
-            type="button"
-            onClick={handleNext}
-            disabled={isSubmitting}
-            size="lg"
-            className="w-full sm:w-auto min-h-[44px]"
-          >
-            Next
-            <ArrowRight className="h-4 w-4 ml-2" />
-          </Button>
+        {currentStep < (formData.isProject ? 5 : 4) ? (
+          currentStep > 0 && (
+            <Button
+              type="button"
+              onClick={handleNext}
+              disabled={isSubmitting}
+              size="lg"
+              className="w-full sm:w-auto min-h-[44px]"
+            >
+              Next
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          )
         ) : (
           <Button
             type="button"

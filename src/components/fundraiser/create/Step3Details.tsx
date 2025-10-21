@@ -21,9 +21,10 @@ interface Step3DetailsProps {
   };
   errors: Record<string, string>;
   onChange: (updates: any) => void;
+  isProject?: boolean;
 }
 
-export function Step3Details({ formData, errors, onChange }: Step3DetailsProps) {
+export function Step3Details({ formData, errors, onChange, isProject }: Step3DetailsProps) {
   const selectedDate = formData.endDate ? new Date(formData.endDate) : undefined;
 
   return (

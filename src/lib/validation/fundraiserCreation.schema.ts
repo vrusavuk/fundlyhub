@@ -57,6 +57,16 @@ export const fundraiserDetailsSchema = z.object({
   coverImage: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
   
   endDate: z.string().optional(),
+  
+  isProject: z.boolean().default(false),
+  
+  milestones: z.array(z.object({
+    title: z.string().min(3, 'Title must be at least 3 characters').max(100),
+    description: z.string().max(500).optional(),
+    target_amount: z.number().positive('Amount must be positive'),
+    currency: z.string().default('USD'),
+    due_date: z.string().optional(),
+  })).optional(),
 });
 
 export const completeFundraiserSchema = fundraiserBasicsSchema
@@ -67,3 +77,4 @@ export type FundraiserBasics = z.infer<typeof fundraiserBasicsSchema>;
 export type FundraiserStory = z.infer<typeof fundraiserStorySchema>;
 export type FundraiserDetails = z.infer<typeof fundraiserDetailsSchema>;
 export type CompleteFundraiser = z.infer<typeof completeFundraiserSchema>;
+export type Milestone = NonNullable<FundraiserDetails['milestones']>[number];
