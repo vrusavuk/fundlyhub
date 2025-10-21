@@ -9,9 +9,16 @@ export interface UserRole {
   hierarchy_level: number;
 }
 
+export interface RoleDefinition {
+  name: string;
+  hierarchy_level: number;
+  context_type: string;
+}
+
 export interface RBACState {
   roles: UserRole[];
   permissions: string[];
+  roleDefinitions: RoleDefinition[];
   loading: boolean;
   error: string | null;
   activeContext: {
@@ -23,6 +30,7 @@ export interface RBACState {
 export interface RBACActions {
   hasPermission: (permission: string, contextType?: string, contextId?: string) => boolean;
   hasRole: (roleName: string, contextType?: string, contextId?: string) => boolean;
+  hasRoleOrHigher: (roleName: string, contextType?: string, contextId?: string) => boolean;
   getHighestRole: () => UserRole | null;
   switchContext: (contextType: string, contextId?: string) => void;
   refreshRBAC: () => Promise<void>;
@@ -36,6 +44,7 @@ export function useRBAC(): RBACState & RBACActions {
   const [state, setState] = useState<RBACState>({
     roles: [],
     permissions: [],
+    roleDefinitions: [],
     loading: true,
     error: null,
     activeContext: { type: 'global' }
@@ -44,6 +53,19 @@ export function useRBAC(): RBACState & RBACActions {
   const fetchUserRoles = useCallback(async (userId: string) => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
+
+      // Fetch role definitions for hierarchy checking
+      const { data: roleDefsData, error: roleDefsError } = await supabase
+        .from('roles')
+        .select('name, hierarchy_level');
+
+      if (roleDefsError) throw roleDefsError;
+
+      // Transform to include context_type (all roles are global)
+      const roleDefinitions = roleDefsData?.map(role => ({
+        ...role,
+        context_type: 'global'
+      })) || [];
 
       // Get user roles using the database function
       const { data: rolesData, error: rolesError } = await supabase
@@ -83,6 +105,7 @@ export function useRBAC(): RBACState & RBACActions {
           ...prev,
           roles: rolesData || [],
           permissions: [...new Set(permissions)],
+          roleDefinitions,
           loading: false
         }));
       } else {
@@ -90,6 +113,7 @@ export function useRBAC(): RBACState & RBACActions {
           ...prev,
           roles: rolesData || [],
           permissions: [],
+          roleDefinitions,
           loading: false
         }));
       }
@@ -160,6 +184,38 @@ export function useRBAC(): RBACState & RBACActions {
     );
   }, [state.loading, state.roles]);
 
+  const hasRoleOrHigher = useCallback((
+    roleName: string, 
+    contextType: string = 'global', 
+    contextId?: string
+  ): boolean => {
+    if (state.loading) return false;
+
+    // Super admin bypass - they have all roles by hierarchy
+    if (state.permissions.includes('super_admin_access')) {
+      return true;
+    }
+
+    // Get the required role's hierarchy level
+    const requiredRole = state.roleDefinitions.find(r => r.name === roleName);
+    if (!requiredRole) {
+      // If role definition not found, fall back to exact match
+      return hasRole(roleName, contextType, contextId);
+    }
+
+    // Check if user has this role OR a higher hierarchy role in the same context
+    return state.roles.some(userRole => {
+      // Check context match
+      const contextMatches = userRole.context_type === 'global' || 
+                            (userRole.context_type === contextType && userRole.context_id === contextId);
+      
+      if (!contextMatches) return false;
+
+      // Check if user's role is same or higher in hierarchy
+      return userRole.hierarchy_level >= requiredRole.hierarchy_level;
+    });
+  }, [state.loading, state.roles, state.roleDefinitions, state.permissions, hasRole]);
+
   const getHighestRole = useCallback((): UserRole | null => {
     if (state.roles.length === 0) return null;
     
@@ -199,6 +255,7 @@ export function useRBAC(): RBACState & RBACActions {
     loading: state.loading || authLoading,
     hasPermission,
     hasRole,
+    hasRoleOrHigher,
     getHighestRole,
     switchContext,
     refreshRBAC,

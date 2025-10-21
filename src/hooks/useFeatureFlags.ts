@@ -26,38 +26,72 @@ export interface FeatureConfig {
 
 export function useFeatureFlags() {
   const { getSettingValue } = useSystemSettings();
-  const { hasRole } = useRBAC();
+  const { hasRole, hasRoleOrHigher, isSuperAdmin } = useRBAC();
   const { user } = useAuth();
 
   const isFeatureEnabled = useCallback((
     featureKey: string, 
     options: FeatureFlagOptions = {}
   ): boolean => {
+    console.log(`[FeatureFlags] Checking feature: ${featureKey}`, {
+      hasUser: !!user,
+      options
+    });
+
     // Get feature setting
     const featureSetting = getSettingValue(featureKey) as FeatureConfig;
     
     if (!featureSetting) {
-      console.warn(`Feature flag ${featureKey} not found, defaulting to enabled for backwards compatibility`);
+      console.warn(`[FeatureFlags] ${featureKey} not found, defaulting to enabled`);
       return true; // Default to enabled during migration
     }
 
-    // Check if globally enabled
+    console.log(`[FeatureFlags] ${featureKey} config:`, {
+      enabled: featureSetting.enabled,
+      allowedRoles: featureSetting.allowed_roles
+    });
+
+    // Check if globally disabled
     if (featureSetting.enabled === false) {
+      console.log(`[FeatureFlags] ${featureKey} is globally disabled`);
       return false;
     }
 
-    // Check role requirements if specified
-    if (options.checkRole && featureSetting.allowed_roles && user) {
-      const hasRequiredRole = featureSetting.allowed_roles.some((role: string) => 
-        hasRole(role)
-      );
-      if (!hasRequiredRole) {
-        return false;
-      }
+    // Super admin bypass - they can access everything
+    if (user && isSuperAdmin()) {
+      console.log(`[FeatureFlags] ${featureKey} allowed - super admin bypass`);
+      return true;
     }
 
+    // If no allowed_roles defined or empty array, feature is open to all authenticated users
+    if (!featureSetting.allowed_roles || featureSetting.allowed_roles.length === 0) {
+      const result = !!user;
+      console.log(`[FeatureFlags] ${featureKey} open to authenticated users: ${result}`);
+      return result;
+    }
+
+    // Check role requirements if specified
+    if (options.checkRole !== false && user) {
+      // Check if user has ANY of the required roles OR higher hierarchy
+      const hasRequiredRole = featureSetting.allowed_roles.some((requiredRole: string) => {
+        // Use hierarchy-aware role checking
+        return hasRoleOrHigher(requiredRole);
+      });
+      
+      if (!hasRequiredRole) {
+        console.log(`[FeatureFlags] ${featureKey} blocked - missing required role`, {
+          requiredRoles: featureSetting.allowed_roles
+        });
+        return false;
+      }
+
+      console.log(`[FeatureFlags] ${featureKey} allowed - has required role`);
+      return true;
+    }
+
+    console.log(`[FeatureFlags] ${featureKey} allowed - no role check`);
     return true;
-  }, [getSettingValue, hasRole, user]);
+  }, [getSettingValue, hasRole, hasRoleOrHigher, isSuperAdmin, user]);
 
   const getFeatureConfig = useCallback((featureKey: string): FeatureConfig => {
     const config = getSettingValue(featureKey) as FeatureConfig;
