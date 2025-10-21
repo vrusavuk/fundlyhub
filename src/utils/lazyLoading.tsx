@@ -29,6 +29,7 @@ export const LazyAllCampaigns = lazy(() => import('@/pages/AllCampaigns'));
 export const LazySearchResults = lazy(() => import('@/pages/SearchResults'));
 export const LazyFundraiserDetail = lazy(() => import('@/pages/FundraiserDetail'));
 export const LazyCreateFundraiser = lazy(() => import('@/pages/CreateFundraiser'));
+export const LazyProjects = lazy(() => import('@/pages/Projects'));
 export const LazyUserProfile = lazy(() => import('@/pages/UserProfile').then(module => ({ default: module.UserProfile })));
 export const LazyOrganizationProfile = lazy(() => import('@/pages/OrganizationProfile').then(module => ({ default: module.OrganizationProfile })));
 export const LazyApiDocs = lazy(() => import('@/pages/ApiDocs'));

@@ -13,6 +13,7 @@ export interface FundraiserQueryOptions {
   searchTerm?: string;
   status?: 'active' | 'draft' | 'ended' | 'closed' | 'pending';
   visibility?: 'public' | 'unlisted' | 'private';
+  isProject?: boolean;
 }
 
 export interface FundraiserStats {
@@ -43,7 +44,8 @@ class FundraiserService {
       category,
       searchTerm,
       status = 'active',
-      visibility = 'public'
+      visibility = 'public',
+      isProject
     } = options;
 
     const cacheKey = `fundraisers:${JSON.stringify(options)}`;
@@ -65,6 +67,10 @@ class FundraiserService {
           query = query.or(
             `title.ilike.%${searchTerm}%,summary.ilike.%${searchTerm}%`
           );
+        }
+
+        if (isProject !== undefined) {
+          query = query.eq('is_project', isProject);
         }
 
         const { data, error, count } = await query.range(offset, offset + limit - 1);

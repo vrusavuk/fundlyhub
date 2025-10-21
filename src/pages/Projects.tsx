@@ -1,19 +1,24 @@
-import { useNavigate } from "react-router-dom";
-import { AppLayout } from "@/components/layout/AppLayout";
-import { PageContainer } from "@/components/ui/PageContainer";
-import { PageHeader } from "@/components/ui/PageHeader";
-import { FundraiserGrid } from "@/components/fundraisers/FundraiserGrid";
-import { CampaignFilters } from "@/components/fundraisers/CampaignFilters";
-import { useFundraisers } from "@/hooks/useFundraisers";
-import { useCampaignStats } from "@/hooks/useCampaignStats";
-import { useCategories } from "@/hooks/useCategories";
-import { useGlobalSearch } from "@/contexts/UnifiedSearchContext";
-import { useCampaignFilters } from "@/hooks/useCampaignFilters";
-import { LoadingState } from "@/components/common/LoadingState";
-import { ScreenReaderOnly } from "@/components/accessibility/ScreenReaderOnly";
-import { Heart } from "lucide-react";
+/**
+ * Projects Page
+ * Displays only structured milestone-based projects
+ */
 
-export default function AllCampaigns() {
+import { useNavigate } from "react-router-dom";
+import { AppLayout } from '@/components/layout/AppLayout';
+import { PageContainer } from '@/components/ui/PageContainer';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { FundraiserGrid } from '@/components/fundraisers/FundraiserGrid';
+import { CampaignFilters } from '@/components/fundraisers/CampaignFilters';
+import { useFundraisers } from '@/hooks/useFundraisers';
+import { useCampaignStats } from '@/hooks/useCampaignStats';
+import { useCategories } from '@/hooks/useCategories';
+import { useGlobalSearch } from '@/contexts/UnifiedSearchContext';
+import { useCampaignFilters } from '@/hooks/useCampaignFilters';
+import { LoadingState } from '@/components/common/LoadingState';
+import { ScreenReaderOnly } from '@/components/accessibility/ScreenReaderOnly';
+import { Briefcase } from 'lucide-react';
+
+export default function Projects() {
   const navigate = useNavigate();
   const { searchQuery } = useGlobalSearch();
   const campaignStats = useCampaignStats();
@@ -29,8 +34,7 @@ export default function AllCampaigns() {
     refresh 
   } = useFundraisers({ 
     limit: 24,
-    category: undefined,
-    isProject: false
+    isProject: true
   });
 
   const {
@@ -52,12 +56,12 @@ export default function AllCampaigns() {
     <AppLayout>
       <PageContainer>
         <ScreenReaderOnly>
-          <h1>Causes - Browse and Support Fundraisers</h1>
+          <h1>Projects - Browse Structured Milestone-Based Projects</h1>
         </ScreenReaderOnly>
         
         <PageHeader
-          title="Causes"
-          description="Support personal fundraisers and charitable causes"
+          title="Projects"
+          description="Discover structured milestone-based projects with transparent progress tracking"
           actions={
             <div className="flex items-center gap-4 text-sm">
               <div className="flex flex-col items-end">
@@ -68,7 +72,7 @@ export default function AllCampaigns() {
                     campaignStats.activeCampaigns.toLocaleString()
                   )} Active
                 </span>
-                <span className="text-xs text-muted-foreground">campaigns</span>
+                <span className="text-xs text-muted-foreground">projects</span>
               </div>
               <div className="flex flex-col items-end">
                 <span className="font-medium text-blue-600">
@@ -78,7 +82,7 @@ export default function AllCampaigns() {
                     campaignStats.successfulCampaigns.toLocaleString()
                   )} Closed
                 </span>
-                <span className="text-xs text-muted-foreground">campaigns</span>
+                <span className="text-xs text-muted-foreground">projects</span>
               </div>
               <div className="flex flex-col items-end">
                 <span className="font-medium text-primary">
@@ -94,7 +98,7 @@ export default function AllCampaigns() {
           }
         />
 
-        {/* Compact Filters Section - Inside PageContainer for proper alignment */}
+        {/* Filters Section */}
         <CampaignFilters
           onFiltersChange={handleFiltersChange}
           activeFiltersCount={getActiveFiltersCount()}
@@ -103,7 +107,7 @@ export default function AllCampaigns() {
         />
       </PageContainer>
       
-      {/* Campaign Grid */}
+      {/* Project Grid */}
       <PageContainer>
         <FundraiserGrid
           fundraisers={filteredFundraisers}
@@ -118,7 +122,7 @@ export default function AllCampaigns() {
           emptyMessage={
             searchQuery || selectedCategory !== "All" 
               ? "Try adjusting your search or filters"
-              : "No campaigns are currently available"
+              : "No projects are currently available"
           }
         />
       </PageContainer>

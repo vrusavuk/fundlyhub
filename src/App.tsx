@@ -33,6 +33,7 @@ import { AdminPageSkeleton } from '@/components/skeletons/AdminPageSkeleton';
 // Lazy-loaded pages for code splitting
 import { 
   LazyCreateFundraiser,
+  LazyProjects,
   LazyUserProfile,
   LazyOrganizationProfile,
   LazyApiDocs,
@@ -67,6 +68,12 @@ const App = () => (
         
         {/* High-traffic routes - direct imports for instant rendering */}
         <Route path="/campaigns" element={<AllCampaigns />} />
+        <Route path="/causes" element={<AllCampaigns />} />
+        <Route path="/projects" element={
+          <Suspense fallback={<CampaignsPageSkeleton />}>
+            <LazyProjects />
+          </Suspense>
+        } />
         <Route path="/search" element={<SearchResults />} />
         <Route path="/fundraiser/:slug" element={<FundraiserDetail />} />
         

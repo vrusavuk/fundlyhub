@@ -6,7 +6,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle2, AlertCircle, Calendar, MapPin, User, Shield, Lock, Mail } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Calendar, MapPin, User, Shield, Lock, Mail, Target } from 'lucide-react';
 import { format } from 'date-fns';
 import { VisibilityBadge } from '@/components/fundraiser/VisibilityBadge';
 
@@ -25,6 +25,14 @@ interface Step4ReviewProps {
     visibility?: 'public' | 'unlisted' | 'private';
     passcode?: string;
     allowlistEmails?: string;
+    isProject?: boolean;
+    milestones?: Array<{
+      title?: string;
+      description?: string;
+      target_amount?: number;
+      currency?: string;
+      due_date?: string;
+    }>;
   };
   categoryName?: string;
   categoryEmoji?: string;
@@ -32,7 +40,8 @@ interface Step4ReviewProps {
 
 export function Step4Review({ formData, categoryName, categoryEmoji }: Step4ReviewProps) {
   const isComplete = formData.title && formData.categoryId && formData.goalAmount && 
-                     formData.summary && formData.story;
+                     formData.summary && formData.story &&
+                     (!formData.isProject || (formData.milestones && formData.milestones.length > 0));
 
   return (
     <div className="space-y-6">
@@ -183,12 +192,68 @@ export function Step4Review({ formData, categoryName, categoryEmoji }: Step4Revi
         </CardContent>
       </Card>
 
+      {formData.isProject && formData.milestones && formData.milestones.length > 0 && (
+        <Card className="card-enhanced">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5" />
+              Project Milestones ({formData.milestones.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {formData.milestones.map((milestone, index) => (
+              <Card key={index} className="border-l-4 border-l-primary/50">
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <h5 className="font-semibold text-base">{milestone.title}</h5>
+                    <Badge variant="secondary" className="ml-2">
+                      {new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: milestone.currency,
+                      }).format(milestone.target_amount)}
+                    </Badge>
+                  </div>
+                  {milestone.description && (
+                    <p className="text-sm text-muted-foreground mb-2 whitespace-pre-wrap">
+                      {milestone.description}
+                    </p>
+                  )}
+                  {milestone.due_date && (
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Calendar className="h-3 w-3" />
+                      Due: {format(new Date(milestone.due_date), 'PPP')}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+            
+            <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
+              <p className="text-sm font-medium flex items-center justify-between">
+                <span>Total Milestone Goals:</span>
+                <span className="text-primary">
+                  {new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: formData.milestones[0]?.currency || 'USD',
+                  }).format(
+                    formData.milestones.reduce((sum, m) => sum + m.target_amount, 0)
+                  )}
+                </span>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="bg-accent/50 border border-border rounded-lg p-4">
         <h4 className="font-medium text-sm mb-2">Before you publish:</h4>
         <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
           <li>Review all information for accuracy</li>
           <li>Check that your story is clear and compelling</li>
           <li>Verify your goal amount is correct</li>
+          {formData.isProject && (
+            <li>Ensure all milestones are complete and realistic</li>
+          )}
           <li>Ensure all contact information is up to date</li>
         </ul>
       </div>

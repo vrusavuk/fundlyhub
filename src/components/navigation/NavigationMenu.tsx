@@ -3,6 +3,7 @@
  * Handles the primary navigation items
  */
 import { Link } from 'react-router-dom';
+import { FundliesDropdown } from './FundliesDropdown';
 
 interface NavigationMenuProps {
   className?: string;
@@ -10,8 +11,7 @@ interface NavigationMenuProps {
   vertical?: boolean;
 }
 
-const navigationItems = [
-  { to: '/campaigns', label: 'Fundlies' },
+const staticItems = [
   { to: '/fundly-give', label: 'Fundly Give' },
 ] as const;
 
@@ -23,7 +23,9 @@ export function NavigationMenu({ className, onNavigate, vertical = false }: Navi
 
   return (
     <nav className={`${containerClassName} ${className || ''}`} role={vertical ? "navigation" : undefined}>
-      {navigationItems.map(({ to, label }) => (
+      <FundliesDropdown vertical={vertical} onNavigate={onNavigate} />
+      
+      {staticItems.map(({ to, label }) => (
         <Link 
           key={to}
           to={to} 
