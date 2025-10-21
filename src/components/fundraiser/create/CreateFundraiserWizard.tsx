@@ -18,8 +18,6 @@ import { useCategories } from '@/hooks/useCategories';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { FeatureGate } from '@/components/common/FeatureGate';
-import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 
 const STEPS = [
   { number: 1, title: 'Basics', description: 'Title, category, goal' },
@@ -32,7 +30,6 @@ export function CreateFundraiserWizard() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { categories } = useCategories();
-  const { canCreateFundraiser, canCreateProject, getDisabledMessage } = useFeatureFlags();
   
   const {
     currentStep,
@@ -51,15 +48,6 @@ export function CreateFundraiserWizard() {
     autoSaveInterval: 30000, // 30 seconds
     enabled: !!user,
   });
-
-  // Check feature access - for now just check fundraiser creation
-  if (!canCreateFundraiser) {
-    return (
-      <div className="w-full max-w-4xl mx-auto py-8">
-        <FeatureGate featureKey="features.fundraiser_creation" showMessage={true} />
-      </div>
-    );
-  }
 
   // Load draft on mount
   useEffect(() => {
