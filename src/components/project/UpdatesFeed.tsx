@@ -33,24 +33,6 @@ export function UpdatesFeed({
   const isOwner = user?.id === fundraiserOwnerId;
   const canPostUpdate = isOwner && canCreateProjectUpdates;
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-12">
-        <LoadingSpinner />
-      </div>
-    );
-  }
-
-  if (updates.length === 0) {
-    return (
-      <Card>
-        <CardContent className="text-center py-12 text-muted-foreground">
-          No updates yet. Check back soon!
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <div className="space-y-6">
       {canPostUpdate && (
@@ -73,7 +55,24 @@ export function UpdatesFeed({
         />
       )}
 
-      {updates.map((update: any) => (
+      {isLoading && (
+        <div className="flex justify-center py-12">
+          <LoadingSpinner />
+        </div>
+      )}
+
+      {!isLoading && updates.length === 0 && (
+        <Card>
+          <CardContent className="text-center py-12 text-muted-foreground">
+            {canPostUpdate 
+              ? "No updates yet. Click 'Post Update' above to share your first update!"
+              : "No updates yet. Check back soon!"
+            }
+          </CardContent>
+        </Card>
+      )}
+
+      {!isLoading && updates.length > 0 && updates.map((update: any) => (
         <Card key={update.id}>
           <CardHeader>
             <div className="flex items-start justify-between gap-4">
