@@ -223,6 +223,9 @@ async function processAnalytics(supabase: any, event: DomainEvent): Promise<void
     case 'admin.role.permissions_updated':
       await trackRoleEvent(supabase, event);
       break;
+    case 'project.update.created':
+      await trackProjectUpdateEvent(supabase, event);
+      break;
     default:
       console.log(`[Analytics] No handler for event type: ${event.type}`);
   }
@@ -281,6 +284,43 @@ async function trackAdminAction(supabase: any, event: DomainEvent): Promise<void
 async function trackRoleEvent(supabase: any, event: DomainEvent): Promise<void> {
   console.log(`[Analytics] Role event: ${event.type}`, event.payload);
   // Track role changes for compliance and audit
+}
+
+async function trackProjectUpdateEvent(supabase: any, event: DomainEvent): Promise<void> {
+  const { updateId, fundraiserId, usedAI } = event.payload;
+  
+  console.log(`[Analytics] Project update created: ${updateId}`);
+  
+  // Track feature usage
+  const { error: featureError } = await supabase.rpc('log_feature_usage', {
+    _feature_key: 'project_updates',
+    _action: 'created',
+    _metadata: { 
+      fundraiser_id: fundraiserId,
+      update_id: updateId
+    }
+  });
+  
+  if (featureError) {
+    console.error('[Analytics] Failed to log feature usage:', featureError);
+  }
+  
+  // Track AI usage if used
+  if (usedAI) {
+    const { error: aiError } = await supabase.rpc('log_feature_usage', {
+      _feature_key: 'ai_text_generation',
+      _action: 'used',
+      _metadata: { 
+        context: 'project_update_enhancement',
+        fundraiser_id: fundraiserId,
+        update_id: updateId
+      }
+    });
+    
+    if (aiError) {
+      console.error('[Analytics] Failed to log AI usage:', aiError);
+    }
+  }
 }
 
 // Notifications Processor
@@ -429,6 +469,9 @@ async function processProjections(supabase: any, event: DomainEvent): Promise<vo
       break;
     case 'admin.role.permissions_updated':
       await handleRolePermissionsUpdated(supabase, event);
+      break;
+    case 'project.update.created':
+      await handleProjectUpdateCreated(supabase, event);
       break;
     default:
       // Other projections are handled in analytics processor
@@ -583,4 +626,63 @@ async function handleRolePermissionsUpdated(supabase: any, event: DomainEvent): 
   }
 
   console.log(`[Projections] Updated role permissions: +${addedPermissions.length} -${removedPermissions.length}`);
+}
+
+async function handleProjectUpdateCreated(supabase: any, event: DomainEvent): Promise<void> {
+  const { updateId, fundraiserId, authorId, title, body, milestoneId, visibility, attachments } = event.payload;
+  
+  console.log(`[Projections] Handling project.update.created for update ${updateId}`);
+  
+  // Server-side authorization check
+  const { data: fundraiser } = await supabase
+    .from('fundraisers')
+    .select('owner_user_id')
+    .eq('id', fundraiserId)
+    .single();
+
+  if (!fundraiser) {
+    throw new Error('Fundraiser not found');
+  }
+
+  const isOwner = fundraiser.owner_user_id === authorId;
+  
+  if (!isOwner) {
+    throw new Error('Unauthorized: Only fundraiser owners can post updates');
+  }
+
+  // Idempotent insert
+  const { data: existing } = await supabase
+    .from('project_updates')
+    .select('id')
+    .eq('id', updateId)
+    .maybeSingle();
+
+  if (existing) {
+    console.log(`[Projections] Update ${updateId} already exists`);
+    return;
+  }
+
+  // Insert the update
+  const { error } = await supabase
+    .from('project_updates')
+    .insert({
+      id: updateId,
+      fundraiser_id: fundraiserId,
+      author_id: authorId,
+      title,
+      body,
+      milestone_id: milestoneId || null,
+      visibility,
+      attachments: attachments || [],
+    });
+
+  if (error) throw error;
+
+  console.log(`[Projections] Created project update ${updateId}`);
+  
+  // Invalidate cache
+  await supabase
+    .from('search_results_cache')
+    .delete()
+    .or(`query.ilike.%${fundraiserId}%`);
 }

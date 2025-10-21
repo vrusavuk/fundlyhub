@@ -1,13 +1,12 @@
 /**
  * Hook for creating project updates with event publishing
+ * Following event-driven architecture - no direct DB writes
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { projectService } from '@/lib/services/project.service';
 import { useToast } from '@/hooks/use-toast';
 import { useEventPublisher } from '@/hooks/useEventBus';
 import { createProjectUpdateCreatedEvent } from '@/lib/events/domain/ProjectEvents';
-import type { ProjectUpdate } from '@/types/domain/project';
 
 interface CreateUpdateInput {
   fundraiserId: string;
@@ -16,7 +15,6 @@ interface CreateUpdateInput {
   authorId: string;
   milestoneId?: string;
   visibility: 'public' | 'donors_only';
-  attachments?: Array<{ type: string; url: string }>;
   usedAI?: boolean;
 }
 
@@ -27,47 +25,38 @@ export function useCreateProjectUpdate() {
 
   const mutation = useMutation({
     mutationFn: async (input: CreateUpdateInput) => {
-      // Create the update
-      const update = await projectService.createUpdate({
-        fundraiser_id: input.fundraiserId,
-        title: input.title,
-        body: input.body,
-        author_id: input.authorId,
-        milestone_id: input.milestoneId,
-        visibility: input.visibility,
-        attachments: input.attachments,
-      });
-
-      // Publish event
+      // Generate UUID for the update (deterministic ID before DB write)
+      const updateId = crypto.randomUUID();
+      
+      // Create and publish event - DB write happens in processor
       const event = createProjectUpdateCreatedEvent({
-        updateId: update.id,
+        updateId,
         fundraiserId: input.fundraiserId,
         authorId: input.authorId,
         title: input.title,
         body: input.body,
         milestoneId: input.milestoneId,
         visibility: input.visibility,
-        attachments: input.attachments as Array<{ type: 'image' | 'document'; url: string }> | undefined,
         usedAI: input.usedAI,
       });
 
       await publish(event);
-
-      return update;
+      
+      return { updateId };
     },
     onSuccess: (_, variables) => {
       // Invalidate queries to refetch updates
       queryClient.invalidateQueries({ 
         queryKey: ['project-updates', variables.fundraiserId] 
       });
-
+      
       toast({
-        title: 'Update posted',
-        description: 'Your project update has been posted successfully.',
+        title: 'Update posted successfully',
+        description: 'Your project update is now visible to supporters',
       });
     },
     onError: (error: Error) => {
-      console.error('Failed to create update:', error);
+      console.error('Failed to create project update:', error);
       toast({
         title: 'Failed to post update',
         description: error.message,
@@ -77,7 +66,7 @@ export function useCreateProjectUpdate() {
   });
 
   return {
-    createUpdate: mutation.mutate,
+    createUpdate: mutation.mutateAsync,
     isCreating: mutation.isPending,
     error: mutation.error,
   };

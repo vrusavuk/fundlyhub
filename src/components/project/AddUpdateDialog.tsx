@@ -60,6 +60,7 @@ export function AddUpdateDialog({
     resolver: zodResolver(updateSchema),
     defaultValues: {
       visibility: 'public',
+      milestoneId: undefined,
     },
   });
 
@@ -161,14 +162,13 @@ export function AddUpdateDialog({
             <div className="space-y-2">
               <Label htmlFor="milestone">Related Milestone (Optional)</Label>
               <Select
-                value={selectedMilestoneId}
-                onValueChange={(value) => setValue('milestoneId', value)}
+                value={selectedMilestoneId || undefined}
+                onValueChange={(value) => setValue('milestoneId', value || undefined)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a milestone" />
+                  <SelectValue placeholder="Select a milestone (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
                   {milestones.map((milestone) => (
                     <SelectItem key={milestone.id} value={milestone.id}>
                       {milestone.title}

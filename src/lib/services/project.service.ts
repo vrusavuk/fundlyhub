@@ -80,43 +80,6 @@ class ProjectService {
   }
 
   /**
-   * Create a new project update
-   */
-  async createUpdate(update: Omit<ProjectUpdate, 'id' | 'created_at'>): Promise<ProjectUpdate> {
-    // Verify user is fundraiser owner or authorized
-    const { data: fundraiser } = await supabase
-      .from('fundraisers')
-      .select('owner_user_id, org_id')
-      .eq('id', update.fundraiser_id)
-      .single();
-
-    if (!fundraiser) {
-      throw new Error('Fundraiser not found');
-    }
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      throw new Error('Unauthorized: Must be logged in');
-    }
-
-    const isOwner = fundraiser.owner_user_id === update.author_id;
-    // Note: org membership check would go here if needed
-    
-    if (!isOwner && user.id !== update.author_id) {
-      throw new Error('Unauthorized: Only fundraiser owners can post updates');
-    }
-
-    const { data, error } = await supabase
-      .from('project_updates')
-      .insert(update)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data as ProjectUpdate;
-  }
-
-  /**
    * Get project statistics
    */
   async getProjectStats(fundraiserId: string): Promise<ProjectStats> {

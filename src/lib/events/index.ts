@@ -30,6 +30,7 @@ export * from './subscribers/SubscriptionEventSubscriber';
 export * from './processors/CampaignWriteProcessor';
 export * from './processors/CampaignProjectionProcessor';
 export * from './processors/CampaignRoleProcessor';
+export * from './processors/ProjectUpdateWriteProcessor';
 
 // Saga Managers (Phase 4)
 export * from './sagas/CampaignCreationSaga';
@@ -48,6 +49,7 @@ import { CampaignWriteProcessor } from './processors/CampaignWriteProcessor';
 import { CampaignProjectionProcessor } from './processors/CampaignProjectionProcessor';
 import { CampaignRoleProcessor } from './processors/CampaignRoleProcessor';
 import { UserSearchProjectionProcessor } from './processors/UserSearchProjectionProcessor';
+import { ProjectUpdateWriteProcessor } from './processors/ProjectUpdateWriteProcessor';
 
 // Export utility classes
 export { EventIdempotency, eventIdempotency } from './EventIdempotency';
@@ -100,8 +102,13 @@ globalEventBus.subscribe('admin.user.role_assigned', roleAssignmentProcessor);
 globalEventBus.subscribe('admin.role.created', roleCreatedProcessor);
 globalEventBus.subscribe('admin.role.permissions_updated', rolePermissionsProcessor);
 
+// Register project update processors
+const projectUpdateWriteProcessor = new ProjectUpdateWriteProcessor();
+globalEventBus.subscribe('project.update.created', projectUpdateWriteProcessor);
+
 console.log('[EventBus] Campaign processors registered');
 console.log('[EventBus] Role management processors registered');
+console.log('[EventBus] Project update processors registered');
 
 // Register search projection processor
 const userSearchProjectionProcessor = new UserSearchProjectionProcessor();
