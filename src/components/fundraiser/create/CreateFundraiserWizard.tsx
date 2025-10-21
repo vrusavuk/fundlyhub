@@ -46,6 +46,12 @@ export function CreateFundraiserWizard() {
     submitFundraiser,
   } = useCreateFundraiser();
 
+  const { saveDraft, loadDraft } = useDraftPersistence({
+    formData,
+    autoSaveInterval: 30000, // 30 seconds
+    enabled: !!user,
+  });
+
   // Check feature access - for now just check fundraiser creation
   if (!canCreateFundraiser) {
     return (
@@ -54,12 +60,6 @@ export function CreateFundraiserWizard() {
       </div>
     );
   }
-
-  const { saveDraft, loadDraft } = useDraftPersistence({
-    formData,
-    autoSaveInterval: 30000, // 30 seconds
-    enabled: !!user,
-  });
 
   // Load draft on mount
   useEffect(() => {
