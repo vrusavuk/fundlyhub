@@ -43,7 +43,7 @@ export function AddUpdateDialog({
   open,
   onOpenChange,
 }: AddUpdateDialogProps) {
-  const [suggestion, setSuggestion] = useState<string | null>(null);
+  const [bodySuggestion, setBodySuggestion] = useState<string | null>(null);
   const [usedAI, setUsedAI] = useState(false);
 
   const { enhanceText, isLoading: isAILoading } = useProjectUpdateAI();
@@ -67,44 +67,31 @@ export function AddUpdateDialog({
   const currentBody = watch('body');
   const selectedMilestoneId = watch('milestoneId');
 
-  const handleGenerateWithAI = async () => {
+  const handleGenerateAI = async () => {
     const selectedMilestone = milestones.find(m => m.id === selectedMilestoneId);
+    const action = currentBody.trim() ? 'improve' : 'generate';
     
-    const enhanced = await enhanceText('generate', '', {
+    const enhanced = await enhanceText(action, currentBody, {
       fundraiserTitle,
       fundraiserId,
       milestoneTitle: selectedMilestone?.title,
     });
 
     if (enhanced) {
-      setSuggestion(enhanced);
-      setUsedAI(true);
-    }
-  };
-
-  const handleImproveWithAI = async () => {
-    if (!currentBody) return;
-
-    const enhanced = await enhanceText('improve', currentBody, {
-      fundraiserTitle,
-      fundraiserId,
-    });
-
-    if (enhanced) {
-      setSuggestion(enhanced);
+      setBodySuggestion(enhanced);
       setUsedAI(true);
     }
   };
 
   const handleAcceptSuggestion = () => {
-    if (suggestion) {
-      setValue('body', suggestion);
-      setSuggestion(null);
+    if (bodySuggestion) {
+      setValue('body', bodySuggestion);
+      setBodySuggestion(null);
     }
   };
 
   const handleRejectSuggestion = () => {
-    setSuggestion(null);
+    setBodySuggestion(null);
   };
 
   const onSubmit = (data: UpdateFormData) => {
@@ -120,14 +107,14 @@ export function AddUpdateDialog({
 
     // Reset form and close dialog
     reset();
-    setSuggestion(null);
+    setBodySuggestion(null);
     setUsedAI(false);
     onOpenChange(false);
   };
 
   const handleClose = () => {
     reset();
-    setSuggestion(null);
+    setBodySuggestion(null);
     setUsedAI(false);
     onOpenChange(false);
   };
@@ -180,87 +167,87 @@ export function AddUpdateDialog({
           )}
 
           {/* Body with AI Enhancement */}
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label htmlFor="body">Update Content *</Label>
-              <div className="flex gap-2">
-                {!currentBody && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleGenerateWithAI}
-                    disabled={isAILoading}
-                  >
-                    {isAILoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <Sparkles className="h-4 w-4 mr-2" />
-                    )}
-                    Generate with AI
-                  </Button>
-                )}
-                {currentBody && !suggestion && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleImproveWithAI}
-                    disabled={isAILoading}
-                  >
-                    {isAILoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <Sparkles className="h-4 w-4 mr-2" />
-                    )}
-                    Improve with AI
-                  </Button>
-                )}
-              </div>
+              {!bodySuggestion && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleGenerateAI}
+                  disabled={isAILoading}
+                  className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-primary"
+                >
+                  {isAILoading ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-3.5 w-3.5" />
+                      {currentBody.trim() ? 'Improve with AI' : 'Generate with AI'}
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
 
-            {suggestion ? (
-              <div className="space-y-3">
-                <Textarea
-                  value={suggestion}
-                  readOnly
-                  className="min-h-[200px] border-primary border-2 bg-primary/5"
-                />
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="default"
-                    size="sm"
-                    onClick={handleAcceptSuggestion}
-                  >
-                    <Check className="h-4 w-4 mr-2" />
-                    Accept
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleRejectSuggestion}
-                  >
-                    <X className="h-4 w-4 mr-2" />
-                    Reject
-                  </Button>
-                </div>
+            <Textarea
+              id="body"
+              {...register('body')}
+              placeholder="Share what you've accomplished, challenges you've overcome, or what's coming next..."
+              value={bodySuggestion || currentBody || ''}
+              onChange={(e) => setValue('body', e.target.value)}
+              className={`min-h-[200px] ${bodySuggestion ? 'border-primary border-2 bg-primary/5' : ''}`}
+              maxLength={2000}
+              readOnly={!!bodySuggestion}
+            />
+
+            {bodySuggestion && (
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="default"
+                  onClick={handleAcceptSuggestion}
+                  className="gap-1"
+                >
+                  <Check className="h-3 w-3" />
+                  Accept
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={handleGenerateAI}
+                  disabled={isAILoading}
+                  className="gap-1"
+                >
+                  {isAILoading ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-3 w-3" />
+                  )}
+                  Regenerate
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleRejectSuggestion}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
               </div>
-            ) : (
-              <Textarea
-                id="body"
-                {...register('body')}
-                placeholder="Share what you've accomplished, challenges you've overcome, or what's coming next..."
-                className="min-h-[200px]"
-                maxLength={2000}
-              />
             )}
+
             {errors.body && (
               <p className="text-sm text-destructive">{errors.body.message}</p>
             )}
             <p className="text-sm text-muted-foreground">
-              {currentBody?.length || 0} / 2000 characters
+              {(bodySuggestion || currentBody || '').length} / 2000 characters
             </p>
           </div>
 
