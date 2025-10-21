@@ -12,9 +12,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useProjectUpdateAI } from '@/hooks/useProjectUpdateAI';
+import { AITextEnhancer } from '@/components/fundraiser/create/AITextEnhancer';
 import { useCreateProjectUpdate } from '@/hooks/useCreateProjectUpdate';
-import { Loader2, Sparkles, Check, X } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import type { ProjectMilestone } from '@/types/domain/project';
 
 const updateSchema = z.object({
@@ -46,7 +47,6 @@ export function AddUpdateDialog({
   const [bodySuggestion, setBodySuggestion] = useState<string | null>(null);
   const [usedAI, setUsedAI] = useState(false);
 
-  const { enhanceText, isLoading: isAILoading } = useProjectUpdateAI();
   const { createUpdate, isCreating } = useCreateProjectUpdate();
 
   const {
@@ -66,33 +66,6 @@ export function AddUpdateDialog({
 
   const currentBody = watch('body');
   const selectedMilestoneId = watch('milestoneId');
-
-  const handleGenerateAI = async () => {
-    const selectedMilestone = milestones.find(m => m.id === selectedMilestoneId);
-    const action = currentBody?.trim() ? 'improve' : 'generate';
-    
-    const enhanced = await enhanceText(action, currentBody || '', {
-      fundraiserTitle,
-      fundraiserId,
-      milestoneTitle: selectedMilestone?.title,
-    });
-
-    if (enhanced) {
-      setBodySuggestion(enhanced);
-      setUsedAI(true);
-    }
-  };
-
-  const handleAcceptSuggestion = () => {
-    if (bodySuggestion) {
-      setValue('body', bodySuggestion);
-      setBodySuggestion(null);
-    }
-  };
-
-  const handleRejectSuggestion = () => {
-    setBodySuggestion(null);
-  };
 
   const onSubmit = (data: UpdateFormData) => {
     createUpdate({
@@ -170,28 +143,23 @@ export function AddUpdateDialog({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label htmlFor="body">Update Content *</Label>
-              {!bodySuggestion && (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleGenerateAI}
-                  disabled={isAILoading}
-                  className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-primary"
-                >
-                  {isAILoading ? (
-                    <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-3.5 w-3.5" />
-                      {currentBody?.trim() ? 'Improve with AI' : 'Generate with AI'}
-                    </>
-                  )}
-                </Button>
-              )}
+              <AITextEnhancer
+                field="story"
+                currentText={currentBody || ''}
+                onTextGenerated={(text) => {
+                  setValue('body', text);
+                  setBodySuggestion(null);
+                  setUsedAI(true);
+                }}
+                onSuggestionChange={setBodySuggestion}
+                context={{
+                  title: fundraiserTitle,
+                  category: 'project_update',
+                  summary: selectedMilestoneId 
+                    ? milestones.find(m => m.id === selectedMilestoneId)?.title 
+                    : undefined,
+                }}
+              />
             </div>
 
             <Textarea
@@ -200,48 +168,14 @@ export function AddUpdateDialog({
               placeholder="Share what you've accomplished, challenges you've overcome, or what's coming next..."
               value={bodySuggestion || currentBody || ''}
               onChange={(e) => setValue('body', e.target.value)}
-              className={`min-h-[200px] ${bodySuggestion ? 'border-primary border-2 bg-primary/5' : ''}`}
+              className={cn(
+                'min-h-[200px]',
+                errors.body && 'border-destructive',
+                bodySuggestion && 'border-primary border-2 bg-primary/5'
+              )}
               maxLength={2000}
               readOnly={!!bodySuggestion}
             />
-
-            {bodySuggestion && (
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="default"
-                  onClick={handleAcceptSuggestion}
-                  className="gap-1"
-                >
-                  <Check className="h-3 w-3" />
-                  Accept
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={handleGenerateAI}
-                  disabled={isAILoading}
-                  className="gap-1"
-                >
-                  {isAILoading ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                  ) : (
-                    <Sparkles className="h-3 w-3" />
-                  )}
-                  Regenerate
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleRejectSuggestion}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-            )}
 
             {errors.body && (
               <p className="text-sm text-destructive">{errors.body.message}</p>
@@ -273,7 +207,7 @@ export function AddUpdateDialog({
             <Button type="button" variant="outline" onClick={handleClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isCreating || isAILoading}>
+            <Button type="submit" disabled={isCreating}>
               {isCreating && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
               Post Update
             </Button>
