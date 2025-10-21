@@ -1626,7 +1626,7 @@ export type Database = {
       settings_audit_log: {
         Row: {
           change_reason: string | null
-          changed_by: string
+          changed_by: string | null
           created_at: string
           id: string
           ip_address: unknown | null
@@ -1637,7 +1637,7 @@ export type Database = {
         }
         Insert: {
           change_reason?: string | null
-          changed_by: string
+          changed_by?: string | null
           created_at?: string
           id?: string
           ip_address?: unknown | null
@@ -1648,7 +1648,7 @@ export type Database = {
         }
         Update: {
           change_reason?: string | null
-          changed_by?: string
+          changed_by?: string | null
           created_at?: string
           id?: string
           ip_address?: unknown | null
