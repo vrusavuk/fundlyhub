@@ -24,6 +24,12 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [descriptionSuggestions, setDescriptionSuggestions] = useState<Record<number, string | null>>({});
 
+  const getTextareaRows = (text: string | null | undefined, hasAISuggestion: boolean): number => {
+    if (!hasAISuggestion || !text) return 3;
+    const estimatedRows = Math.ceil(text.length / 80);
+    return Math.min(10, Math.max(3, estimatedRows));
+  };
+
   const handleAddNew = () => {
     const newMilestone: Partial<Milestone> = {
       title: '',
@@ -168,7 +174,10 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
                           value={descriptionSuggestions[index] || milestone.description || ''}
                           onChange={(e) => handleUpdate(index, 'description', e.target.value)}
                           placeholder="Describe what will be achieved in this milestone..."
-                          rows={3}
+                          rows={getTextareaRows(
+                            descriptionSuggestions[index] || milestone.description,
+                            !!descriptionSuggestions[index]
+                          )}
                           maxLength={500}
                           readOnly={!!descriptionSuggestions[index]}
                           className={descriptionSuggestions[index] ? 'border-primary border-2 bg-primary/5' : ''}
