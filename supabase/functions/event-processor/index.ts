@@ -218,6 +218,11 @@ async function processAnalytics(supabase: any, event: DomainEvent): Promise<void
     case 'admin.campaign.closed':
       await trackAdminAction(supabase, event);
       break;
+    case 'admin.user.role_assigned':
+    case 'admin.role.created':
+    case 'admin.role.permissions_updated':
+      await trackRoleEvent(supabase, event);
+      break;
     default:
       console.log(`[Analytics] No handler for event type: ${event.type}`);
   }
@@ -273,6 +278,11 @@ async function trackAdminAction(supabase: any, event: DomainEvent): Promise<void
   // Track admin operations for compliance and monitoring
 }
 
+async function trackRoleEvent(supabase: any, event: DomainEvent): Promise<void> {
+  console.log(`[Analytics] Role event: ${event.type}`, event.payload);
+  // Track role changes for compliance and audit
+}
+
 // Notifications Processor
 async function processNotifications(supabase: any, event: DomainEvent): Promise<void> {
   console.log(`[Notifications] Processing event: ${event.type}`);
@@ -298,6 +308,9 @@ async function processNotifications(supabase: any, event: DomainEvent): Promise<
     case 'organization.verified':
     case 'organization.rejected':
       await sendOrganizationStatusNotification(supabase, event);
+      break;
+    case 'admin.user.role_assigned':
+      await sendRoleChangeNotification(supabase, event);
       break;
     default:
       console.log(`[Notifications] No handler for event type: ${event.type}`);
@@ -352,6 +365,14 @@ async function sendCampaignEditNotification(supabase: any, event: DomainEvent): 
   }
 }
 
+async function sendRoleChangeNotification(supabase: any, event: DomainEvent): Promise<void> {
+  const { userId, roleName } = event.payload;
+  
+  console.log(`[Notifications] User ${userId} role changed to ${roleName}`);
+  // TODO: Send email notification to user about role change
+  // TODO: Send notification to admins for audit trail
+}
+
 // Cache Invalidation Processor
 async function processCacheInvalidation(supabase: any, event: DomainEvent): Promise<void> {
   console.log(`[Cache] Processing event: ${event.type}`);
@@ -380,6 +401,10 @@ async function processCacheInvalidation(supabase: any, event: DomainEvent): Prom
     case 'organization.rejected':
       console.log(`[Cache] Invalidating organization cache: ${event.payload.organizationId}`);
       break;
+    case 'admin.user.role_assigned':
+    case 'admin.role.permissions_updated':
+      console.log(`[Cache] Invalidating RBAC cache for user: ${event.payload.userId || 'all'}`);
+      break;
     default:
       console.log(`[Cache] No cache invalidation for event type: ${event.type}`);
   }
@@ -395,6 +420,15 @@ async function processProjections(supabase: any, event: DomainEvent): Promise<vo
       break;
     case 'campaign.updated':
       await handleCampaignUpdated(supabase, event);
+      break;
+    case 'admin.user.role_assigned':
+      await handleRoleAssigned(supabase, event);
+      break;
+    case 'admin.role.created':
+      await handleRoleCreated(supabase, event);
+      break;
+    case 'admin.role.permissions_updated':
+      await handleRolePermissionsUpdated(supabase, event);
       break;
     default:
       // Other projections are handled in analytics processor
@@ -471,4 +505,82 @@ async function handleCampaignUpdated(supabase: any, event: DomainEvent): Promise
   }
 
   console.log(`[Projections] Campaign ${campaignId} projections updated successfully`);
+}
+
+// Role Management Projection Handlers
+async function handleRoleAssigned(supabase: any, event: DomainEvent): Promise<void> {
+  const { userId, roleId, contextType, contextId } = event.payload;
+
+  // Check if assignment exists
+  const { data: existing } = await supabase
+    .from('user_role_assignments')
+    .select('id, is_active')
+    .eq('user_id', userId)
+    .eq('role_id', roleId)
+    .maybeSingle();
+
+  if (existing) {
+    if (!existing.is_active) {
+      await supabase
+        .from('user_role_assignments')
+        .update({ is_active: true, updated_at: new Date().toISOString() })
+        .eq('id', existing.id);
+    }
+  } else {
+    await supabase
+      .from('user_role_assignments')
+      .insert({
+        user_id: userId,
+        role_id: roleId,
+        context_type: contextType,
+        context_id: contextId,
+        is_active: true,
+      });
+  }
+
+  console.log(`[Projections] Assigned role ${roleId} to user ${userId}`);
+}
+
+async function handleRoleCreated(supabase: any, event: DomainEvent): Promise<void> {
+  const { roleId, name, displayName, description, hierarchyLevel, isSystemRole } = event.payload;
+
+  await supabase
+    .from('roles')
+    .insert({
+      id: roleId,
+      name,
+      display_name: displayName,
+      description,
+      hierarchy_level: hierarchyLevel,
+      is_system_role: isSystemRole,
+    });
+
+  console.log(`[Projections] Created role: ${name} (${roleId})`);
+}
+
+async function handleRolePermissionsUpdated(supabase: any, event: DomainEvent): Promise<void> {
+  const { roleId, addedPermissions, removedPermissions } = event.payload;
+
+  // Remove old permissions
+  if (removedPermissions.length > 0) {
+    await supabase
+      .from('role_permissions')
+      .delete()
+      .eq('role_id', roleId)
+      .in('permission_id', removedPermissions);
+  }
+
+  // Add new permissions
+  if (addedPermissions.length > 0) {
+    const newPerms = addedPermissions.map((permId: string) => ({
+      role_id: roleId,
+      permission_id: permId,
+    }));
+
+    await supabase
+      .from('role_permissions')
+      .insert(newPerms);
+  }
+
+  console.log(`[Projections] Updated role permissions: +${addedPermissions.length} -${removedPermissions.length}`);
 }

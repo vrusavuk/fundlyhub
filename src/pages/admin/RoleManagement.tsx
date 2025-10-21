@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useRBAC } from '@/hooks/useRBAC';
+import { useEventPublisher } from '@/hooks/useEventBus';
 import { supabase } from '@/integrations/supabase/client';
+import { 
+  createUserRoleAssignedEvent,
+  createRoleCreatedEvent,
+  createRolePermissionsUpdatedEvent
+} from '@/lib/events/domain/AdminEvents';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,6 +64,7 @@ export function RoleManagement() {
   const { hasPermission, isSuperAdmin } = useRBAC();
   const isMobile = useIsMobile();
   const { toast } = useToast();
+  const { publish } = useEventPublisher();
   const [roles, setRoles] = useState<Role[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [rolePermissions, setRolePermissions] = useState<RolePermission[]>([]);
@@ -108,44 +115,30 @@ export function RoleManagement() {
 
   const createRole = async () => {
     try {
-      const { data, error } = await supabase
-        .from('roles')
-        .insert([{
-          name: editingRole.name,
-          display_name: editingRole.display_name,
-          description: editingRole.description,
-          hierarchy_level: editingRole.hierarchy_level || 0,
-          is_system_role: false
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Log the action
-      await supabase.rpc('log_audit_event', {
-        _actor_id: (await supabase.auth.getUser()).data.user?.id,
-        _action: 'role_created',
-        _resource_type: 'role',
-        _resource_id: data.id,
-        _metadata: { role_name: data.name }
+      const roleId = crypto.randomUUID();
+      const user = (await supabase.auth.getUser()).data.user;
+      
+      const event = createRoleCreatedEvent({
+        roleId,
+        name: editingRole.name!,
+        displayName: editingRole.display_name!,
+        description: editingRole.description || undefined,
+        hierarchyLevel: editingRole.hierarchy_level || 0,
+        isSystemRole: false,
+        createdBy: user!.id,
       });
 
-      toast({
-        title: 'Success',
-        description: 'Role created successfully'
-      });
+      await publish(event);
 
+      toast({ title: 'Success', description: 'Role created successfully' });
       setShowRoleDialog(false);
       setEditingRole({});
-      fetchRolesAndPermissions();
+      
+      // Refresh via real-time subscription
+      setTimeout(fetchRolesAndPermissions, 500);
     } catch (error) {
       console.error('Error creating role:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to create role',
-        variant: 'destructive'
-      });
+      toast({ title: 'Error', description: 'Failed to create role', variant: 'destructive' });
     }
   };
 
@@ -245,48 +238,33 @@ export function RoleManagement() {
 
   const updateRolePermissions = async (roleId: string, permissionIds: string[]) => {
     try {
-      // Remove existing permissions
-      await supabase
-        .from('role_permissions')
-        .delete()
-        .eq('role_id', roleId);
+      const user = (await supabase.auth.getUser()).data.user;
+      const currentPermissionIds = getRolePermissions(roleId);
 
-      // Add new permissions
-      if (permissionIds.length > 0) {
-        const newPermissions = permissionIds.map(permissionId => ({
-          role_id: roleId,
-          permission_id: permissionId
-        }));
+      const addedPermissions = permissionIds.filter(id => !currentPermissionIds.includes(id));
+      const removedPermissions = currentPermissionIds.filter(id => !permissionIds.includes(id));
 
-        const { error } = await supabase
-          .from('role_permissions')
-          .insert(newPermissions);
-
-        if (error) throw error;
+      if (addedPermissions.length === 0 && removedPermissions.length === 0) {
+        toast({ title: 'Info', description: 'No changes to save' });
+        return;
       }
 
-      // Log the action
-      await supabase.rpc('log_audit_event', {
-        _actor_id: (await supabase.auth.getUser()).data.user?.id,
-        _action: 'role_permissions_updated',
-        _resource_type: 'role',
-        _resource_id: roleId,
-        _metadata: { permission_count: permissionIds.length }
+      const role = roles.find(r => r.id === roleId);
+      const event = createRolePermissionsUpdatedEvent({
+        roleId,
+        roleName: role!.name,
+        addedPermissions,
+        removedPermissions,
+        updatedBy: user!.id,
       });
 
-      toast({
-        title: 'Success',
-        description: 'Role permissions updated successfully'
-      });
+      await publish(event);
 
-      fetchRolesAndPermissions();
+      toast({ title: 'Success', description: 'Role permissions updated successfully' });
+      setTimeout(fetchRolesAndPermissions, 500);
     } catch (error) {
       console.error('Error updating role permissions:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update role permissions',
-        variant: 'destructive'
-      });
+      toast({ title: 'Error', description: 'Failed to update role permissions', variant: 'destructive' });
     }
   };
 
@@ -310,6 +288,25 @@ export function RoleManagement() {
 
   useEffect(() => {
     fetchRolesAndPermissions();
+
+    // Subscribe to real-time role changes
+    const channel = supabase
+      .channel('role-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'roles' },
+        () => fetchRolesAndPermissions()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'role_permissions' },
+        () => fetchRolesAndPermissions()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   if (!hasPermission('manage_roles')) {
@@ -648,3 +645,5 @@ function RolePermissionsEditor({
     </div>
   );
 }
+
+export default RoleManagement;

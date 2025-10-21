@@ -87,7 +87,20 @@ globalEventBus.subscribe('campaign.updated', campaignProjectionProcessor);
 globalEventBus.subscribe('campaign.deleted', campaignProjectionProcessor);
 globalEventBus.subscribe('campaign.created', campaignRoleProcessor);
 
+// Register role management processors
+import { RoleAssignmentWriteProcessor } from './processors/RoleAssignmentWriteProcessor';
+import { RoleCreatedProcessor, RolePermissionsUpdatedProcessor } from './processors/RoleCRUDProcessor';
+
+const roleAssignmentProcessor = new RoleAssignmentWriteProcessor();
+const roleCreatedProcessor = new RoleCreatedProcessor();
+const rolePermissionsProcessor = new RolePermissionsUpdatedProcessor();
+
+globalEventBus.subscribe('admin.user.role_assigned', roleAssignmentProcessor);
+globalEventBus.subscribe('admin.role.created', roleCreatedProcessor);
+globalEventBus.subscribe('admin.role.permissions_updated', rolePermissionsProcessor);
+
 console.log('[EventBus] Campaign processors registered');
+console.log('[EventBus] Role management processors registered');
 
 // Register search projection processor
 const userSearchProjectionProcessor = new UserSearchProjectionProcessor();

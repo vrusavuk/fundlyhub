@@ -68,6 +68,52 @@ export const CampaignClosedSchema = z.object({
   reason: z.string().optional(),
 });
 
+// Role CRUD Events
+export const RoleCreatedSchema = z.object({
+  roleId: z.string().uuid(),
+  name: z.string(),
+  displayName: z.string(),
+  description: z.string().optional(),
+  hierarchyLevel: z.number(),
+  isSystemRole: z.boolean(),
+  createdBy: z.string().uuid(),
+});
+
+export const RoleUpdatedSchema = z.object({
+  roleId: z.string().uuid(),
+  name: z.string(),
+  displayName: z.string().optional(),
+  description: z.string().optional(),
+  hierarchyLevel: z.number().optional(),
+  updatedBy: z.string().uuid(),
+  changes: z.record(z.any()),
+});
+
+export const RoleDeletedSchema = z.object({
+  roleId: z.string().uuid(),
+  name: z.string(),
+  deletedBy: z.string().uuid(),
+  reason: z.string().optional(),
+});
+
+export const RolePermissionsUpdatedSchema = z.object({
+  roleId: z.string().uuid(),
+  roleName: z.string(),
+  addedPermissions: z.array(z.string()),
+  removedPermissions: z.array(z.string()),
+  updatedBy: z.string().uuid(),
+});
+
+// Permission CRUD Events
+export const PermissionCreatedSchema = z.object({
+  permissionId: z.string().uuid(),
+  name: z.string(),
+  displayName: z.string(),
+  description: z.string().optional(),
+  category: z.string(),
+  createdBy: z.string().uuid(),
+});
+
 // ============= Event Interfaces =============
 
 export interface UserSuspendedEvent extends DomainEvent<z.infer<typeof UserSuspendedSchema>> {
@@ -108,6 +154,27 @@ export interface CampaignClosedEvent extends DomainEvent<z.infer<typeof Campaign
   readonly type: 'admin.campaign.closed';
 }
 
+// Role Management Event Interfaces
+export interface RoleCreatedEvent extends DomainEvent<z.infer<typeof RoleCreatedSchema>> {
+  readonly type: 'admin.role.created';
+}
+
+export interface RoleUpdatedEvent extends DomainEvent<z.infer<typeof RoleUpdatedSchema>> {
+  readonly type: 'admin.role.updated';
+}
+
+export interface RoleDeletedEvent extends DomainEvent<z.infer<typeof RoleDeletedSchema>> {
+  readonly type: 'admin.role.deleted';
+}
+
+export interface RolePermissionsUpdatedEvent extends DomainEvent<z.infer<typeof RolePermissionsUpdatedSchema>> {
+  readonly type: 'admin.role.permissions_updated';
+}
+
+export interface PermissionCreatedEvent extends DomainEvent<z.infer<typeof PermissionCreatedSchema>> {
+  readonly type: 'admin.permission.created';
+}
+
 // Union type for all admin events
 export type AdminEvent =
   | UserSuspendedEvent
@@ -118,7 +185,12 @@ export type AdminEvent =
   | CampaignApprovedEvent
   | CampaignRejectedEvent
   | CampaignPausedEvent
-  | CampaignClosedEvent;
+  | CampaignClosedEvent
+  | RoleCreatedEvent
+  | RoleUpdatedEvent
+  | RoleDeletedEvent
+  | RolePermissionsUpdatedEvent
+  | PermissionCreatedEvent;
 
 // ============= Event Factory Functions =============
 
@@ -247,5 +319,76 @@ export function createCampaignClosedEvent(
     timestamp: Date.now(),
     version: '1.0.0',
     correlationId,
+  };
+}
+
+// Role Management Event Factory Functions
+export function createRoleCreatedEvent(
+  payload: z.infer<typeof RoleCreatedSchema>,
+  correlationId?: string
+): RoleCreatedEvent {
+  return {
+    id: crypto.randomUUID(),
+    type: 'admin.role.created',
+    timestamp: Date.now(),
+    version: '1.0.0',
+    correlationId,
+    payload: RoleCreatedSchema.parse(payload),
+  };
+}
+
+export function createRoleUpdatedEvent(
+  payload: z.infer<typeof RoleUpdatedSchema>,
+  correlationId?: string
+): RoleUpdatedEvent {
+  return {
+    id: crypto.randomUUID(),
+    type: 'admin.role.updated',
+    timestamp: Date.now(),
+    version: '1.0.0',
+    correlationId,
+    payload: RoleUpdatedSchema.parse(payload),
+  };
+}
+
+export function createRoleDeletedEvent(
+  payload: z.infer<typeof RoleDeletedSchema>,
+  correlationId?: string
+): RoleDeletedEvent {
+  return {
+    id: crypto.randomUUID(),
+    type: 'admin.role.deleted',
+    timestamp: Date.now(),
+    version: '1.0.0',
+    correlationId,
+    payload: RoleDeletedSchema.parse(payload),
+  };
+}
+
+export function createRolePermissionsUpdatedEvent(
+  payload: z.infer<typeof RolePermissionsUpdatedSchema>,
+  correlationId?: string
+): RolePermissionsUpdatedEvent {
+  return {
+    id: crypto.randomUUID(),
+    type: 'admin.role.permissions_updated',
+    timestamp: Date.now(),
+    version: '1.0.0',
+    correlationId,
+    payload: RolePermissionsUpdatedSchema.parse(payload),
+  };
+}
+
+export function createPermissionCreatedEvent(
+  payload: z.infer<typeof PermissionCreatedSchema>,
+  correlationId?: string
+): PermissionCreatedEvent {
+  return {
+    id: crypto.randomUUID(),
+    type: 'admin.permission.created',
+    timestamp: Date.now(),
+    version: '1.0.0',
+    correlationId,
+    payload: PermissionCreatedSchema.parse(payload),
   };
 }
