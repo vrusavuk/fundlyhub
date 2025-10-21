@@ -49,6 +49,7 @@ export const LazySystemSettings = lazy(() => import('@/pages/admin/SystemSetting
 export const LazyAdminNotificationCenter = lazy(() => import('@/pages/admin/NotificationCenter'));
 export const LazyEventMonitoring = lazy(() => import('@/pages/admin/EventMonitoring'));
 export const LazyDesignSystemDocs = lazy(() => import('@/pages/admin/DesignSystemDocs').then(m => ({ default: m.DesignSystemDocs })));
+export const LazyFeatureToggles = lazy(() => import('@/pages/admin/FeatureToggles'));
 
 // Lazy load heavy components - Skip for now due to export issues
 // export const LazyFundraiserGrid = lazy(() => import('@/components/fundraisers/FundraiserGrid'));

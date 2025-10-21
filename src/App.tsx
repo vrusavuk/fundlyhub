@@ -51,6 +51,7 @@ import {
   LazyAdminNotificationCenter,
   LazyEventMonitoring,
   LazyDesignSystemDocs,
+  LazyFeatureToggles,
 } from '@/utils/lazyLoading';
 
 const App = () => (
@@ -182,6 +183,11 @@ const App = () => (
           <Route path="design-system" element={
             <Suspense fallback={<AdminPageSkeleton />}>
               <LazyDesignSystemDocs />
+            </Suspense>
+          } />
+          <Route path="feature-toggles" element={
+            <Suspense fallback={<AdminPageSkeleton />}>
+              <LazyFeatureToggles />
             </Suspense>
           } />
         </Route>
