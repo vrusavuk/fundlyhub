@@ -38,6 +38,23 @@ export interface ProjectUpdate {
   created_at: string;
 }
 
+/**
+ * Extended update with populated relationships (for read operations)
+ */
+export interface ProjectUpdateWithRelations extends ProjectUpdate {
+  author?: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
+  milestone?: {
+    id: string;
+    title: string;
+    status: MilestoneStatus;
+    due_date?: string;
+  } | null;
+}
+
 export interface ProjectAllocation {
   id: string;
   fundraiser_id: string;

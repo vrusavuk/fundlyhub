@@ -70,7 +70,13 @@ class ProjectService {
       .from('project_updates')
       .select(`
         *,
-        author:profiles!project_updates_author_id_fkey(id, name, avatar)
+        author:profiles!project_updates_author_id_fkey(id, name, avatar),
+        milestone:project_milestones!project_updates_milestone_id_fkey(
+          id,
+          title,
+          status,
+          due_date
+        )
       `)
       .eq('fundraiser_id', fundraiserId)
       .order('created_at', { ascending: false });

@@ -5,9 +5,10 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { projectService } from '@/lib/services/project.service';
+import type { ProjectUpdateWithRelations } from '@/types/domain/project';
 
 export function useProjectUpdates(fundraiserId: string) {
-  const updatesQuery = useQuery({
+  const updatesQuery = useQuery<ProjectUpdateWithRelations[]>({
     queryKey: ['project-updates', fundraiserId],
     queryFn: () => projectService.getUpdates(fundraiserId),
     enabled: !!fundraiserId,

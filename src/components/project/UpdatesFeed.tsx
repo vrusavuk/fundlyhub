@@ -10,7 +10,7 @@ import { AddUpdateDialog } from './AddUpdateDialog';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 import { useAuth } from '@/hooks/useAuth';
 import { Plus } from 'lucide-react';
-import type { ProjectMilestone } from '@/types/domain/project';
+import type { ProjectMilestone, ProjectUpdateWithRelations } from '@/types/domain/project';
 
 interface UpdatesFeedProps {
   fundraiserId: string;
@@ -72,7 +72,7 @@ export function UpdatesFeed({
         </Card>
       )}
 
-      {!isLoading && updates.length > 0 && updates.map((update: any) => (
+      {!isLoading && updates.length > 0 && updates.map((update: ProjectUpdateWithRelations) => (
         <Card key={update.id}>
           <CardHeader>
             <div className="flex items-start justify-between gap-4">
@@ -84,9 +84,9 @@ export function UpdatesFeed({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-semibold text-lg">{update.title}</h3>
-                    {update.milestone_id && (
+                    {update.milestone && (
                       <Badge variant="outline" className="text-xs">
-                        Milestone Update
+                        🎯 {update.milestone.title}
                       </Badge>
                     )}
                   </div>
@@ -94,6 +94,14 @@ export function UpdatesFeed({
                     <span className="font-medium">{update.author?.name || 'Anonymous'}</span>
                     {' • '}
                     Posted {formatDistanceToNow(new Date(update.created_at), { addSuffix: true })}
+                    {update.milestone && (
+                      <>
+                        {' • '}
+                        <span className="inline-flex items-center gap-1">
+                          Milestone: <span className="font-medium">{update.milestone.title}</span>
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
