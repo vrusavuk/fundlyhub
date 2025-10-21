@@ -26,3 +26,8 @@ export { useFollowOrganizationEventDriven as useFollowOrganization } from './use
 // Other
 export { useToast } from './use-toast';
 export { useIsMobile } from './use-mobile';
+
+// Project hooks
+export { useProjectMilestones } from './useProjectMilestones';
+export { useProjectUpdates } from './useProjectUpdates';
+export { useProjectStats } from './useProjectStats';

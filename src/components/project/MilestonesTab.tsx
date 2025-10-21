@@ -1,85 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { MilestoneCard } from './MilestoneCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import type { ProjectMilestone } from '@/types/domain/project';
+import { useProjectMilestones } from '@/hooks/useProjectMilestones';
 
 interface MilestonesTabProps {
   fundraiserId: string;
 }
 
-// Mock data for demonstration
-const mockMilestones: ProjectMilestone[] = [
-  {
-    id: '1',
-    fundraiser_id: 'demo',
-    title: 'Phase 1: Community Needs Assessment',
-    description: 'Conduct comprehensive survey and interviews with 200+ families to identify critical education gaps and infrastructure needs.',
-    target_amount: 15000,
-    currency: 'USD',
-    due_date: '2025-02-15',
-    status: 'completed',
-    proof_urls: ['https://example.com/report.pdf', 'https://example.com/photos.zip'],
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-20T00:00:00Z',
-    created_by: 'user-1'
-  },
-  {
-    id: '2',
-    fundraiser_id: 'demo',
-    title: 'Phase 2: Build Primary Classroom Wing',
-    description: 'Construction of 3 new classrooms with proper ventilation, electricity, and furniture for 90 students.',
-    target_amount: 45000,
-    currency: 'USD',
-    due_date: '2025-05-30',
-    status: 'in_progress',
-    created_at: '2025-01-15T00:00:00Z',
-    updated_at: '2025-01-15T00:00:00Z',
-    created_by: 'user-1'
-  },
-  {
-    id: '3',
-    fundraiser_id: 'demo',
-    title: 'Phase 3: Teacher Training Program',
-    description: 'Intensive 6-week training for 12 educators in modern teaching methodologies, technology integration, and student engagement.',
-    target_amount: 22000,
-    currency: 'USD',
-    due_date: '2025-07-15',
-    status: 'planned',
-    created_at: '2025-01-15T00:00:00Z',
-    updated_at: '2025-01-15T00:00:00Z',
-    created_by: 'user-1'
-  },
-  {
-    id: '4',
-    fundraiser_id: 'demo',
-    title: 'Phase 4: Digital Learning Lab Setup',
-    description: 'Install computer lab with 25 workstations, projectors, and educational software licenses for STEM learning.',
-    target_amount: 35000,
-    currency: 'USD',
-    due_date: '2025-09-01',
-    status: 'planned',
-    created_at: '2025-01-15T00:00:00Z',
-    updated_at: '2025-01-15T00:00:00Z',
-    created_by: 'user-1'
-  }
-];
-
 export function MilestonesTab({ fundraiserId }: MilestonesTabProps) {
-  const [milestones, setMilestones] = useState<ProjectMilestone[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { milestones, isLoading } = useProjectMilestones(fundraiserId);
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
 
-  useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setMilestones(mockMilestones);
-      setLoading(false);
-    }, 500);
-  }, [fundraiserId]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex justify-center py-12">
         <LoadingSpinner />
@@ -100,6 +34,16 @@ export function MilestonesTab({ fundraiserId }: MilestonesTabProps) {
     inProgress: milestones.filter(m => m.status === 'in_progress').length,
     planned: milestones.filter(m => m.status === 'planned').length
   };
+
+  if (milestones.length === 0) {
+    return (
+      <Card>
+        <CardContent className="text-center py-12 text-muted-foreground">
+          No milestones have been created for this project yet.
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">

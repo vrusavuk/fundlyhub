@@ -18,7 +18,7 @@ import {
 type FormData = Partial<CompleteFundraiser>;
 
 export function useCreateFundraiser() {
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<FormData>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
@@ -36,6 +36,9 @@ export function useCreateFundraiser() {
       setValidationErrors({});
       
       switch (step) {
+        case 0:
+          // Step 0 is just choosing project type, no validation needed
+          return true;
         case 1:
           fundraiserBasicsSchema.parse({
             title: formData.title,
@@ -59,7 +62,16 @@ export function useCreateFundraiser() {
             location: formData.location,
             coverImage: formData.coverImage,
             endDate: formData.endDate,
+            isProject: formData.isProject,
+            milestones: formData.milestones,
           });
+          break;
+        case 4:
+          // Milestones step - only validate if it's a project
+          if (formData.isProject && (!formData.milestones || formData.milestones.length === 0)) {
+            setValidationErrors({ milestones: 'Please add at least one milestone for your project' });
+            return false;
+          }
           break;
       }
       return true;
@@ -75,19 +87,30 @@ export function useCreateFundraiser() {
 
   const goToNextStep = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep((prev) => Math.min(prev + 1, 4));
+      const maxStep = formData.isProject ? 5 : 4;
+      // Skip step 4 (milestones) if not a project
+      if (currentStep === 3 && !formData.isProject) {
+        setCurrentStep(4); // Jump to review
+      } else {
+        setCurrentStep((prev) => Math.min(prev + 1, maxStep));
+      }
       return true;
     }
     return false;
   };
 
   const goToPreviousStep = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 1));
+    // Skip step 4 (milestones) if not a project when going back
+    if (currentStep === 4 && !formData.isProject) {
+      setCurrentStep(3);
+    } else {
+      setCurrentStep((prev) => Math.max(prev - 1, 0));
+    }
   };
 
   const goToStep = (step: number) => {
     // Validate all steps up to target step
-    for (let i = 1; i < step; i++) {
+    for (let i = 0; i < step; i++) {
       if (!validateStep(i)) {
         toast({
           title: 'Please complete previous steps',
@@ -142,6 +165,8 @@ export function useCreateFundraiser() {
         visibility: formData.visibility || 'public',
         passcode: formData.passcode,
         allowlistEmails: formData.allowlistEmails,
+        isProject: formData.isProject || false,
+        milestones: formData.milestones || [],
       });
 
       if (result.success && result.data) {

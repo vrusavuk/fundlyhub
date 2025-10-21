@@ -28,6 +28,11 @@ import { SmartBreadcrumb } from '@/components/navigation/SmartBreadcrumb';
 import { SmartBackButton } from '@/components/navigation/SmartBackButton';
 import { FollowOrganizationButton } from '@/components/profile/FollowOrganizationButton';
 import { fundraiserService } from '@/lib/services/fundraiser.service';
+import { MilestonesTab } from '@/components/project/MilestonesTab';
+import { UpdatesFeed } from '@/components/project/UpdatesFeed';
+import { ProjectStats } from '@/components/project/ProjectStats';
+import { ProjectDonationWidget } from '@/components/project/ProjectDonationWidget';
+import { useProjectStats } from '@/hooks/useProjectStats';
 
 interface Fundraiser {
   id: string;
@@ -45,6 +50,7 @@ interface Fundraiser {
   created_at: string;
   owner_user_id: string;
   org_id: string | null;
+  is_project: boolean;
   profiles: {
     id: string;
     name: string;
@@ -94,6 +100,7 @@ export default function FundraiserDetail() {
   
   const { user } = useAuth();
   const { toast } = useToast();
+  const { stats: projectStats } = useProjectStats(fundraiser?.id || '');
 
   const formatDate = useCallback((dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -461,8 +468,11 @@ export default function FundraiserDetail() {
 
             {/* Tabs for Story, Updates, Comments */}
             <Tabs defaultValue="story" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-4 sm:mb-6">
+              <TabsList className={`grid w-full ${fundraiser.is_project ? 'grid-cols-4' : 'grid-cols-3'} mb-4 sm:mb-6`}>
                 <TabsTrigger value="story" className="text-sm">Story</TabsTrigger>
+                {fundraiser.is_project && (
+                  <TabsTrigger value="milestones" className="text-sm">Milestones</TabsTrigger>
+                )}
                 <TabsTrigger value="updates" className="text-sm">Updates</TabsTrigger>
                 <TabsTrigger value="comments" className="text-sm">Comments ({comments.length})</TabsTrigger>
               </TabsList>
@@ -519,12 +529,22 @@ export default function FundraiserDetail() {
 
               </TabsContent>
               
+              {fundraiser.is_project && (
+                <TabsContent value="milestones" className="mt-6">
+                  <MilestonesTab fundraiserId={fundraiser.id} />
+                </TabsContent>
+              )}
+              
               <TabsContent value="updates" className="mt-6">
-                <Card>
-                  <CardContent className="p-6">
-                    <p className="text-center text-muted-foreground">No updates yet.</p>
-                  </CardContent>
-                </Card>
+                {fundraiser.is_project ? (
+                  <UpdatesFeed fundraiserId={fundraiser.id} />
+                ) : (
+                  <Card>
+                    <CardContent className="p-6">
+                      <p className="text-center text-muted-foreground">No updates yet.</p>
+                    </CardContent>
+                  </Card>
+                )}
               </TabsContent>
               
               <TabsContent value="comments" className="mt-6">
@@ -580,22 +600,39 @@ export default function FundraiserDetail() {
           {/* Sidebar - Desktop Only */}
           <div className="hidden lg:block lg:col-span-1 space-y-4 sm:space-y-6">
             <div className="sticky top-20 z-10 space-y-4">
-              <DonationWidget
-                fundraiserId={fundraiser.id}
-                title={fundraiser.title}
-                creatorName={fundraiser.profiles?.name || 'Anonymous'}
-                goalAmount={fundraiser.goal_amount}
-                raisedAmount={totalRaised}
-                donorCount={donations.length}
-                progressPercentage={progressPercentage}
-                currency={fundraiser.currency}
-                onDonate={handleDonate}
-                loading={donating}
-                isFloating={true}
-                donations={donations}
-                showDonors={true}
-                onViewAllDonors={() => setShowAllDonors(true)}
-              />
+              {fundraiser.is_project && projectStats ? (
+                <>
+                  <ProjectStats
+                    totalRaised={totalRaised}
+                    goalAmount={fundraiser.goal_amount}
+                    currency={fundraiser.currency}
+                    donorCount={donations.length}
+                    totalAllocated={projectStats.totalAllocated}
+                    totalDisbursed={projectStats.totalDisbursed}
+                  />
+                  <ProjectDonationWidget
+                    milestones={[]}
+                    onDonate={(amount) => handleDonate(amount)}
+                  />
+                </>
+              ) : (
+                <DonationWidget
+                  fundraiserId={fundraiser.id}
+                  title={fundraiser.title}
+                  creatorName={fundraiser.profiles?.name || 'Anonymous'}
+                  goalAmount={fundraiser.goal_amount}
+                  raisedAmount={totalRaised}
+                  donorCount={donations.length}
+                  progressPercentage={progressPercentage}
+                  currency={fundraiser.currency}
+                  onDonate={handleDonate}
+                  loading={donating}
+                  isFloating={true}
+                  donations={donations}
+                  showDonors={true}
+                  onViewAllDonors={() => setShowAllDonors(true)}
+                />
+              )}
             </div>
           </div>
         </div>

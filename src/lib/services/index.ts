@@ -18,6 +18,10 @@ export { searchApi } from './searchApi.service';
 // Campaign access API (private fundraisers)
 export { campaignAccessApi } from '@/lib/api/campaignAccessApi';
 
+// Project services
+export { projectService } from './project.service';
+export { projectMutationService } from './project.mutation.service';
+
 // Admin services
 export { 
   adminDataService, 
