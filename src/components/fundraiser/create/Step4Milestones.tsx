@@ -10,9 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Plus, Trash2, CheckCircle2, AlertCircle, Sparkles, Edit2, Check } from 'lucide-react';
+import { Plus, Trash2, CheckCircle2, AlertCircle, Edit2, Check, Sparkles } from 'lucide-react';
 import { Milestone } from '@/lib/validation/fundraiserCreation.schema';
-import { useAITextEnhancement } from '@/hooks/useAITextEnhancement';
+import { AITextEnhancer } from './AITextEnhancer';
 
 interface Step4MilestonesProps {
   value: Milestone[];
@@ -22,7 +22,6 @@ interface Step4MilestonesProps {
 
 export function Step4Milestones({ value, currency, onChange }: Step4MilestonesProps) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const { enhanceText, isLoading: isEnhancing } = useAITextEnhancement();
 
   const handleAddNew = () => {
     const newMilestone: Partial<Milestone> = {
@@ -47,22 +46,6 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
     onChange(updated);
     if (editingIndex === index) {
       setEditingIndex(null);
-    }
-  };
-
-  const handleEnhanceDescription = async (index: number, description: string) => {
-    if (!description.trim()) return;
-
-    const milestone = value[index];
-    
-    const enhanced = await enhanceText('refine', description, {
-      field: 'milestone',
-      milestoneTitle: milestone.title,
-      milestoneAmount: milestone.target_amount,
-    });
-    
-    if (enhanced) {
-      handleUpdate(index, 'description', enhanced);
     }
   };
 
@@ -157,29 +140,26 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor={`description-${index}`}>Description</Label>
-                        <div className="space-y-2">
-                          <Textarea
-                            id={`description-${index}`}
-                            value={milestone.description || ''}
-                            onChange={(e) => handleUpdate(index, 'description', e.target.value)}
-                            placeholder="Describe what will be achieved in this milestone..."
-                            rows={3}
-                            maxLength={500}
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor={`description-${index}`}>Description</Label>
+                          <AITextEnhancer
+                            field="milestone"
+                            currentText={milestone.description || ''}
+                            onTextGenerated={(text) => handleUpdate(index, 'description', text)}
+                            context={{
+                              milestoneTitle: milestone.title,
+                              milestoneAmount: milestone.target_amount,
+                            }}
                           />
-                          {milestone.description && milestone.description.length > 10 && (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEnhanceDescription(index, milestone.description || '')}
-                              disabled={isEnhancing}
-                            >
-                              <Sparkles className="h-4 w-4 mr-2" />
-                              {isEnhancing ? 'Enhancing...' : 'Enhance with AI'}
-                            </Button>
-                          )}
                         </div>
+                        <Textarea
+                          id={`description-${index}`}
+                          value={milestone.description || ''}
+                          onChange={(e) => handleUpdate(index, 'description', e.target.value)}
+                          placeholder="Describe what will be achieved in this milestone..."
+                          rows={3}
+                          maxLength={500}
+                        />
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
