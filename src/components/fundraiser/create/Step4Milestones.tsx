@@ -24,10 +24,15 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [descriptionSuggestions, setDescriptionSuggestions] = useState<Record<number, string | null>>({});
 
-  const getTextareaRows = (text: string | null | undefined, hasAISuggestion: boolean): number => {
-    if (!hasAISuggestion || !text) return 3;
+  const getTextareaHeight = (text: string | null | undefined, hasAISuggestion: boolean): string => {
+    if (!hasAISuggestion || !text) return 'auto';
+    // Calculate approximate rows needed (80 chars per row accounting for wrapping)
     const estimatedRows = Math.ceil(text.length / 80);
-    return Math.min(10, Math.max(3, estimatedRows));
+    const rows = Math.min(10, Math.max(3, estimatedRows));
+    // Each row is approximately 24px (1.5rem line height)
+    // Add padding: 12px top + 12px bottom = 24px
+    const height = (rows * 24) + 24;
+    return `${height}px`;
   };
 
   const handleAddNew = () => {
@@ -174,10 +179,12 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
                           value={descriptionSuggestions[index] || milestone.description || ''}
                           onChange={(e) => handleUpdate(index, 'description', e.target.value)}
                           placeholder="Describe what will be achieved in this milestone..."
-                          rows={getTextareaRows(
-                            descriptionSuggestions[index] || milestone.description,
-                            !!descriptionSuggestions[index]
-                          )}
+                          style={{ 
+                            minHeight: getTextareaHeight(
+                              descriptionSuggestions[index] || milestone.description,
+                              !!descriptionSuggestions[index]
+                            )
+                          }}
                           maxLength={500}
                           readOnly={!!descriptionSuggestions[index]}
                           className={descriptionSuggestions[index] ? 'border-primary border-2 bg-primary/5' : ''}
