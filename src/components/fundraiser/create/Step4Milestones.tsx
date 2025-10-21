@@ -18,11 +18,9 @@ interface Step4MilestonesProps {
   value: Milestone[];
   currency: string;
   onChange: (milestones: Milestone[]) => void;
-  onNext: () => void;
-  onBack: () => void;
 }
 
-export function Step4Milestones({ value, currency, onChange, onNext, onBack }: Step4MilestonesProps) {
+export function Step4Milestones({ value, currency, onChange }: Step4MilestonesProps) {
   const [currentMilestone, setCurrentMilestone] = useState<Partial<Milestone>>({
     title: '',
     description: '',
@@ -219,18 +217,6 @@ export function Step4Milestones({ value, currency, onChange, onNext, onBack }: S
         </CardContent>
       </Card>
 
-      {/* Navigation */}
-      <div className="flex justify-between pt-6">
-        <Button variant="outline" onClick={onBack}>
-          Back
-        </Button>
-        <Button 
-          onClick={onNext}
-          disabled={value.length === 0}
-        >
-          Continue to Review
-        </Button>
-      </div>
     </div>
   );
 }

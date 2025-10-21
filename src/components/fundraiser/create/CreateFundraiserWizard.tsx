@@ -152,8 +152,6 @@ export function CreateFundraiserWizard() {
               value={formData.milestones || []}
               currency="USD"
               onChange={(milestones) => updateFormData({ milestones })}
-              onNext={handleNext}
-              onBack={goToPreviousStep}
             />
           )}
 
