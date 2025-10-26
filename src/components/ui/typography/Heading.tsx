@@ -2,53 +2,93 @@
  * Heading component that enforces design system typography
  * Uses the typography scale from lib/design/typography.ts
  */
-import { typographyScale, getTypographyClasses } from '@/lib/design/typography';
+import { memo, forwardRef, ElementType, ComponentPropsWithoutRef } from 'react';
+import { getTypographyClasses } from '@/lib/design/typography';
 import { cn } from '@/lib/utils';
 
-interface HeadingProps {
+interface HeadingProps extends ComponentPropsWithoutRef<'h2'> {
   level: 'xl' | 'lg' | 'md' | 'sm' | 'xs';
-  as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-  children: React.ReactNode;
-  className?: string;
+  as?: ElementType;
   responsive?: boolean;
+  'aria-label'?: string;
 }
 
-export function Heading({ 
-  level, 
-  as: Component = 'h2', 
-  children, 
-  className,
-  responsive = false 
-}: HeadingProps) {
-  const classes = getTypographyClasses('heading', level, '', responsive);
-  
-  return (
-    <Component className={cn(classes, 'text-foreground', className)}>
-      {children}
-    </Component>
-  );
-}
+/**
+ * Enterprise-grade Heading component with performance optimizations
+ */
+export const Heading = memo(
+  forwardRef<HTMLHeadingElement, HeadingProps>(
+    ({ 
+      level, 
+      as: Component = 'h2',
+      children, 
+      className,
+      responsive = false,
+      id,
+      'aria-label': ariaLabel,
+      ...restProps 
+    }, ref) => {
+      const classes = getTypographyClasses('heading', level, '', responsive);
+      
+      const headingId = id || (typeof children === 'string' 
+        ? children.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+        : undefined);
+      
+      return (
+        <Component 
+          ref={ref}
+          id={headingId}
+          aria-label={ariaLabel}
+          className={cn(classes, 'text-foreground', className)}
+          {...restProps}
+        >
+          {children}
+        </Component>
+      );
+    }
+  )
+);
 
-interface DisplayHeadingProps {
+Heading.displayName = 'Heading';
+
+interface DisplayHeadingProps extends ComponentPropsWithoutRef<'h1'> {
   level: '2xl' | 'xl' | 'lg' | 'md' | 'sm';
-  as?: 'h1' | 'h2' | 'h3';
-  children: React.ReactNode;
-  className?: string;
+  as?: ElementType;
   responsive?: boolean;
+  'aria-label'?: string;
 }
 
-export function DisplayHeading({ 
-  level, 
-  as: Component = 'h1', 
-  children, 
-  className,
-  responsive = false 
-}: DisplayHeadingProps) {
-  const classes = getTypographyClasses('display', level, '', responsive);
-  
-  return (
-    <Component className={cn(classes, 'text-foreground', className)}>
-      {children}
-    </Component>
-  );
-}
+export const DisplayHeading = memo(
+  forwardRef<HTMLHeadingElement, DisplayHeadingProps>(
+    ({ 
+      level, 
+      as: Component = 'h1',
+      children, 
+      className,
+      responsive = false,
+      id,
+      'aria-label': ariaLabel,
+      ...restProps 
+    }, ref) => {
+      const classes = getTypographyClasses('display', level, '', responsive);
+      
+      const headingId = id || (typeof children === 'string' 
+        ? children.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+        : undefined);
+      
+      return (
+        <Component 
+          ref={ref}
+          id={headingId}
+          aria-label={ariaLabel}
+          className={cn(classes, 'text-foreground', className)}
+          {...restProps}
+        >
+          {children}
+        </Component>
+      );
+    }
+  )
+);
+
+DisplayHeading.displayName = 'DisplayHeading';

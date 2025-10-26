@@ -2,78 +2,106 @@
  * Text component that enforces design system typography
  * Uses the typography scale from lib/design/typography.ts
  */
+import { memo, forwardRef, ElementType, ComponentPropsWithoutRef } from 'react';
 import { getTypographyClasses, colorSemantics } from '@/lib/design/typography';
 import { cn } from '@/lib/utils';
 
-interface TextProps {
+interface TextProps extends ComponentPropsWithoutRef<'p'> {
   size: 'xl' | 'lg' | 'md' | 'sm';
-  as?: 'p' | 'span' | 'div';
-  children: React.ReactNode;
-  className?: string;
+  as?: ElementType;
   emphasis?: 'high' | 'medium' | 'low' | 'subtle';
   responsive?: boolean;
 }
 
-export function Text({ 
-  size, 
-  as: Component = 'p', 
-  children, 
-  className,
-  emphasis,
-  responsive = false 
-}: TextProps) {
-  const classes = getTypographyClasses('body', size, '', responsive);
-  const emphasisClass = emphasis ? colorSemantics.emphasis[emphasis] : '';
-  
-  return (
-    <Component className={cn(classes, emphasisClass, className)}>
-      {children}
-    </Component>
-  );
-}
+export const Text = memo(
+  forwardRef<HTMLParagraphElement, TextProps>(
+    ({ 
+      size, 
+      as: Component = 'p',
+      children, 
+      className,
+      emphasis,
+      responsive = false,
+      ...restProps 
+    }, ref) => {
+      const classes = getTypographyClasses('body', size, '', responsive);
+      const emphasisClass = emphasis ? colorSemantics.emphasis[emphasis] : '';
+      
+      return (
+        <Component 
+          ref={ref}
+          className={cn(classes, emphasisClass, className)}
+          {...restProps}
+        >
+          {children}
+        </Component>
+      );
+    }
+  )
+);
 
-interface CaptionProps {
+Text.displayName = 'Text';
+
+interface CaptionProps extends ComponentPropsWithoutRef<'span'> {
   size: 'lg' | 'md' | 'sm' | 'xs';
-  as?: 'p' | 'span' | 'div';
-  children: React.ReactNode;
-  className?: string;
+  as?: ElementType;
 }
 
-export function Caption({ 
-  size, 
-  as: Component = 'span', 
-  children, 
-  className 
-}: CaptionProps) {
-  const classes = getTypographyClasses('caption', size);
-  
-  return (
-    <Component className={cn(classes, 'text-muted-foreground', className)}>
-      {children}
-    </Component>
-  );
-}
+export const Caption = memo(
+  forwardRef<HTMLSpanElement, CaptionProps>(
+    ({ 
+      size, 
+      as: Component = 'span',
+      children, 
+      className,
+      ...restProps 
+    }, ref) => {
+      const classes = getTypographyClasses('caption', size);
+      
+      return (
+        <Component 
+          ref={ref}
+          className={cn(classes, 'text-muted-foreground', className)}
+          {...restProps}
+        >
+          {children}
+        </Component>
+      );
+    }
+  )
+);
 
-interface LabelProps {
+Caption.displayName = 'Caption';
+
+interface LabelProps extends ComponentPropsWithoutRef<'label'> {
   size: 'lg' | 'md' | 'sm';
-  as?: 'label' | 'span';
-  children: React.ReactNode;
-  className?: string;
-  htmlFor?: string;
+  as?: ElementType;
 }
 
-export function Label({ 
-  size, 
-  as: Component = 'label', 
-  children, 
-  className,
-  htmlFor 
-}: LabelProps) {
-  const classes = getTypographyClasses('label', size);
-  
-  return (
-    <Component htmlFor={htmlFor} className={cn(classes, 'text-foreground', className)}>
-      {children}
-    </Component>
-  );
-}
+export const Label = memo(
+  forwardRef<HTMLLabelElement, LabelProps>(
+    ({ 
+      size, 
+      as: Component = 'label',
+      children, 
+      className,
+      htmlFor,
+      ...restProps 
+    }, ref) => {
+      const classes = getTypographyClasses('label', size);
+      
+      return (
+        <Component 
+          ref={ref}
+          htmlFor={htmlFor}
+          className={cn(classes, 'text-foreground', className)}
+          {...restProps}
+        >
+          {children}
+        </Component>
+      );
+    }
+  )
+);
+
+Label.displayName = 'Label';
