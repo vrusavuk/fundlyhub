@@ -7,6 +7,7 @@ import { ReactNode } from 'react';
 import { SmartBreadcrumb } from '@/components/navigation/SmartBreadcrumb';
 import { SmartBackButton } from '@/components/navigation/SmartBackButton';
 import { useSmartNavigation } from '@/hooks/useSmartNavigation';
+import { DisplayHeading, Text } from '@/components/ui/typography';
 
 interface PageHeaderProps {
   title: string;
@@ -42,11 +43,13 @@ export function PageHeader({
             </p>
           )}
           
-          <h1 className="text-2xl sm:text-3xl font-bold leading-tight">{title}</h1>
+          <DisplayHeading level="sm" as="h1" responsive className="leading-tight">
+            {title}
+          </DisplayHeading>
           {description && (
-            <p className="text-sm text-muted-foreground mt-1 sm:mt-2">
+            <Text size="sm" emphasis="low" className="mt-1 sm:mt-2">
               {description}
-            </p>
+            </Text>
           )}
         </div>
         

@@ -7,6 +7,7 @@ import { useCategories } from '@/hooks/useCategories';
 import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
 import { LoadingState } from '@/components/common/LoadingState';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
+import { DisplayHeading, Heading, Text, Caption } from '@/components/ui/typography';
 
 export function CategoryFilter() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -50,12 +51,12 @@ export function CategoryFilter() {
     <section className="py-16 bg-gradient-to-br from-background via-muted/20 to-background" data-section="categories" data-category-filter>
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-foreground mb-4">
+          <DisplayHeading level="md" as="h2" className="mb-4">
             Browse Fundraising Categories
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          </DisplayHeading>
+          <Text size="lg" emphasis="low" className="max-w-2xl mx-auto">
             Discover campaigns across different causes and make a difference in the areas you care about most
-          </p>
+          </Text>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
@@ -91,27 +92,27 @@ export function CategoryFilter() {
                   </div>
                   
                   <div className="mb-4">
-                    <h3 className="text-xl font-semibold text-foreground mb-2">{category.category_name}</h3>
+                    <Heading level="lg" as="h3" className="mb-2">{category.category_name}</Heading>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground flex items-center gap-1">
+                        <Caption size="sm" as="span" className="flex items-center gap-1">
                           <Users className="h-4 w-4" />
                           Active Campaigns
-                        </span>
+                        </Caption>
                         <span className="font-medium text-foreground">{category.active_campaigns || 0}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground flex items-center gap-1">
+                        <Caption size="sm" as="span" className="flex items-center gap-1">
                           <Users className="h-4 w-4" />
                           Closed Campaigns
-                        </span>
+                        </Caption>
                         <span className="font-medium text-foreground">{category.closed_campaigns || 0}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground flex items-center gap-1">
+                        <Caption size="sm" as="span" className="flex items-center gap-1">
                           <Heart className="h-4 w-4" />
                           Total Raised
-                        </span>
+                        </Caption>
                         <span className="font-medium text-foreground">
                           {MoneyMath.format(MoneyMath.create(category.total_raised || 0, 'USD'))}
                         </span>
@@ -136,13 +137,13 @@ export function CategoryFilter() {
           <Card className="max-w-2xl mx-auto bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
             <CardContent className="p-8">
               <Users className="h-12 w-12 mx-auto mb-4 text-primary" />
-              <h3 className="text-2xl font-bold mb-4">
+              <Heading level="xl" as="h3" className="mb-4">
                 Start Your Own Fundraiser
-              </h3>
-              <p className="text-muted-foreground mb-6">
+              </Heading>
+              <Text size="md" emphasis="low" className="mb-6">
                 Join thousands of people who have successfully raised funds for their causes. 
                 It's free to start and our platform makes it easy to reach your goals.
-              </p>
+              </Text>
               <Button 
                 size="lg" 
                 className="px-8"

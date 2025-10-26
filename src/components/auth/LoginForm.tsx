@@ -9,6 +9,7 @@ import { createLoginSchema, emailSchema } from '@/lib/validation/dynamicAuthSche
 import { EmailInput } from './EmailInput';
 import { PasswordInput } from './PasswordInput';
 import { GoogleSignInButton } from './GoogleSignInButton';
+import { DisplayHeading, Text, Caption } from '@/components/ui/typography';
 import type { AuthConfig } from '@/hooks/useAuthConfig';
 
 interface LoginFormProps {
@@ -89,8 +90,8 @@ export const LoginForm = ({ onToggleMode, config }: LoginFormProps) => {
     return (
       <div className="space-y-6">
         <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
-          <p className="text-muted-foreground">Enter your email to sign in to your account</p>
+          <DisplayHeading level="md" as="h1">Welcome back</DisplayHeading>
+          <Text size="md" emphasis="low">Enter your email to sign in to your account</Text>
         </div>
 
         <form onSubmit={handleEmailContinue} className="space-y-4">
@@ -140,8 +141,8 @@ export const LoginForm = ({ onToggleMode, config }: LoginFormProps) => {
         >
           ← Back
         </button>
-        <h1 className="text-3xl font-bold tracking-tight">Enter your password</h1>
-        <p className="text-sm text-muted-foreground">{emailInput}</p>
+        <DisplayHeading level="md" as="h1">Enter your password</DisplayHeading>
+        <Caption size="sm">{emailInput}</Caption>
       </div>
 
       <Form {...form}>

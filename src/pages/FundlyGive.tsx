@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Zap, Shield, Receipt, CheckCircle, CreditCard, Building2, Users, Eye, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
+import { DisplayHeading, Heading, Text, Caption } from "@/components/ui/typography";
 
 // Partner logos
 import adpLogo from "@/assets/partners/adp-official-logo.png";
@@ -121,14 +122,14 @@ const FundlyGive = () => {
               <span className="font-semibold">Introducing Fundly Give</span>
             </div>
             
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight">
+            <DisplayHeading level="2xl" as="h1" responsive className="text-white leading-tight">
               Your Giving, Your Way—
               <span className="block text-yellow-300">Always Tax-Deductible</span>
-            </h1>
+            </DisplayHeading>
             
-            <p className="text-xl lg:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed">
+            <Text size="xl" emphasis="high" className="text-white/90 max-w-3xl mx-auto leading-relaxed">
               With Fundly Give, you can support verified nonprofits and charities through payroll, card, or ACH—every contribution comes with an IRS-compliant receipt.
-            </p>
+            </Text>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
@@ -155,12 +156,12 @@ const FundlyGive = () => {
       <section className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-6">
+            <DisplayHeading level="lg" as="h2" responsive className="mb-6">
               The simplest, smartest way to give
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
+            </DisplayHeading>
+            <Text size="xl" emphasis="low" className="max-w-4xl mx-auto leading-relaxed">
               Fundly Give is the simplest, smartest way to make tax-deductible donations to the causes you care about most. Whether you prefer the convenience of payroll giving, the flexibility of a credit card, or the consistency of ACH recurring payments, FundlyHub makes sure your generosity is always documented and impactful.
-            </p>
+            </Text>
           </div>
         </div>
       </section>
@@ -169,10 +170,10 @@ const FundlyGive = () => {
       <section className="py-20 bg-secondary/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-6">How It Works</h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            <DisplayHeading level="lg" as="h2" responsive className="mb-6">How It Works</DisplayHeading>
+            <Text size="xl" emphasis="low" className="max-w-3xl mx-auto">
               Choose your preferred giving method and start making an impact today
-            </p>
+            </Text>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-20">
@@ -258,7 +259,7 @@ const FundlyGive = () => {
       <section className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-6">Why Fundly Give Stands Out</h2>
+            <DisplayHeading level="lg" as="h2" responsive className="mb-6">Why Fundly Give Stands Out</DisplayHeading>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 mb-20">
@@ -309,8 +310,8 @@ const FundlyGive = () => {
       <section className="py-20 bg-secondary/10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-6">Simple 3-Step Process</h2>
-            <p className="text-xl text-muted-foreground">From setup to impact in minutes</p>
+            <DisplayHeading level="lg" as="h2" responsive className="mb-6">Simple 3-Step Process</DisplayHeading>
+            <Text size="xl" emphasis="low">From setup to impact in minutes</Text>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -351,10 +352,10 @@ const FundlyGive = () => {
       <section className="py-16 bg-secondary/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-4">Trusted Payroll Partners</h2>
-            <p className="text-xl text-muted-foreground">
+            <DisplayHeading level="lg" as="h2" responsive className="mb-4">Trusted Payroll Partners</DisplayHeading>
+            <Text size="xl" emphasis="low">
               Seamlessly integrated with leading payroll providers
-            </p>
+            </Text>
           </div>
           
           <div className="relative">
@@ -417,16 +418,16 @@ const FundlyGive = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-8 text-center">
             <div className="space-y-2">
-              <div className="text-3xl font-bold text-primary">$2.8M+</div>
-              <div className="text-muted-foreground">Total donations processed</div>
+              <Heading level="xl" className="text-primary">$2.8M+</Heading>
+              <Caption size="md">Total donations processed</Caption>
             </div>
             <div className="space-y-2">
-              <div className="text-3xl font-bold text-accent">5,200+</div>
-              <div className="text-muted-foreground">Active Fundly Give users</div>
+              <Heading level="xl" className="text-accent">5,200+</Heading>
+              <Caption size="md">Active Fundly Give users</Caption>
             </div>
             <div className="space-y-2">
-              <div className="text-3xl font-bold text-success">850+</div>
-              <div className="text-muted-foreground">Verified nonprofit partners</div>
+              <Heading level="xl" className="text-success">850+</Heading>
+              <Caption size="md">Verified nonprofit partners</Caption>
             </div>
           </div>
         </div>
@@ -435,12 +436,12 @@ const FundlyGive = () => {
       {/* CTA Section */}
       <section className="py-20 bg-gradient-hero">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">
+          <DisplayHeading level="lg" as="h2" responsive className="text-white mb-6">
             Ready to make giving effortless?
-          </h2>
-          <p className="text-xl text-white/90 mb-8">
+          </DisplayHeading>
+          <Text size="xl" emphasis="high" className="text-white/90 mb-8">
             Join thousands of people making consistent impact through Fundly Give
-          </p>
+          </Text>
           <Button variant="secondary" size="lg" className="text-lg px-8 py-6 bg-white text-primary hover:bg-white/90">
             Start Your Fundly Give Setup
             <ArrowRight className="ml-2 h-5 w-5" />

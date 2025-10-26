@@ -17,6 +17,7 @@ import type { AuthConfig } from '@/hooks/useAuthConfig';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Lock } from 'lucide-react';
+import { DisplayHeading, Text, Caption } from '@/components/ui/typography';
 
 interface SignupFormProps {
   onToggleMode: () => void;
@@ -39,7 +40,7 @@ export const SignupForm = ({ onToggleMode, config }: SignupFormProps) => {
     return (
       <div className="space-y-6">
         <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold tracking-tight">Create an account</h1>
+          <DisplayHeading level="md" as="h1">Create an account</DisplayHeading>
         </div>
         <Alert variant="destructive" className="bg-muted border-border">
           <Lock className="h-4 w-4" />
@@ -142,8 +143,8 @@ export const SignupForm = ({ onToggleMode, config }: SignupFormProps) => {
     return (
       <div className="space-y-6">
         <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold tracking-tight">Create an account</h1>
-          <p className="text-muted-foreground">Enter your email to get started</p>
+          <DisplayHeading level="md" as="h1">Create an account</DisplayHeading>
+          <Text size="md" emphasis="low">Enter your email to get started</Text>
         </div>
 
         <form onSubmit={handleEmailContinue} className="space-y-4">
@@ -193,8 +194,8 @@ export const SignupForm = ({ onToggleMode, config }: SignupFormProps) => {
         >
           ← Back
         </button>
-        <h1 className="text-3xl font-bold tracking-tight">Complete your profile</h1>
-        <p className="text-sm text-muted-foreground">{emailInput}</p>
+        <DisplayHeading level="md" as="h1">Complete your profile</DisplayHeading>
+        <Caption size="sm">{emailInput}</Caption>
       </div>
 
       <Form {...form}>

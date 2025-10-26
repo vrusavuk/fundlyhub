@@ -5,6 +5,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Zap, ArrowRight, CheckCircle } from "lucide-react";
+import { DisplayHeading, Text } from '@/components/ui/typography';
 
 export function FundlyGiveSection() {
   return (
@@ -18,13 +19,13 @@ export function FundlyGiveSection() {
             </div>
             
             <div className="space-y-6">
-              <h2 className="text-3xl lg:text-4xl font-bold">
+              <DisplayHeading level="lg" as="h2" responsive>
                 Your Giving, Your Way—
                 <span className="text-primary"> Always Tax-Deductible</span>
-              </h2>
-              <p className="text-lg text-muted-foreground leading-relaxed">
+              </DisplayHeading>
+              <Text size="lg" emphasis="low" className="leading-relaxed">
                 Support verified nonprofits and charities through payroll, card, or ACH—every contribution comes with an IRS-compliant receipt. Choose how you give and change it anytime.
-              </p>
+              </Text>
             </div>
             
             <div className="grid gap-4">

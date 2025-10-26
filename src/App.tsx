@@ -35,11 +35,9 @@ import { AdminPageSkeleton } from '@/components/skeletons/AdminPageSkeleton';
 // Lazy-loaded pages for code splitting
 import { 
   LazyCreateFundraiser,
-  LazyProjects,
   LazyUserProfile,
   LazyOrganizationProfile,
   LazyApiDocs,
-  LazyFundlyGive,
   LazyNotFound,
   LazyErrorRecovery,
   LazyAdminDashboard,

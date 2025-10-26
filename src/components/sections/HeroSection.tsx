@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Star } from "lucide-react";
 import { FloatingCategories } from './FloatingCategories';
+import { DisplayHeading, Text } from '@/components/ui/typography';
 
 export function HeroSection() {
   return (
@@ -26,18 +27,18 @@ export function HeroSection() {
         
         {/* Main hero content */}
         <div className="text-center space-y-6 sm:space-y-8 max-w-4xl mx-auto">
-          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-foreground leading-tight">
+          <DisplayHeading level="2xl" as="h1" responsive className="leading-tight">
             Successful
             <span className="block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               fundraisers
             </span>
             <span className="block text-foreground">start here</span>
-          </h1>
+          </DisplayHeading>
           
           <div className="max-w-2xl mx-auto">
-            <p className="text-xl text-muted-foreground leading-relaxed">
+            <Text size="xl" emphasis="low" className="leading-relaxed">
               Get started in just a few minutes — with helpful new tools, it's easier than ever to pick the perfect title, write a compelling story, and share it with the world.
-            </p>
+            </Text>
           </div>
           
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center pt-4 sm:pt-6">
@@ -60,13 +61,13 @@ export function HeroSection() {
         <div className="mt-32 lg:mt-40">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-3xl font-bold text-foreground mb-4">
+              <DisplayHeading level="md" as="h2" className="mb-4">
                 More than $2.5 million is raised every week on FundlyHub.*
-              </h2>
+              </DisplayHeading>
             </div>
-            <div className="text-muted-foreground text-lg leading-relaxed">
+            <Text size="lg" emphasis="low" className="leading-relaxed">
               Get started in just a few minutes — with helpful new tools, it's easier than ever to pick the perfect title, write a compelling story, and share it with the world.
-            </div>
+            </Text>
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DisplayHeading, Text } from '@/components/ui/typography';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -201,10 +202,10 @@ export function Analytics() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Analytics</h1>
-          <p className="text-muted-foreground">
+          <DisplayHeading level="sm" as="h1" responsive>Analytics</DisplayHeading>
+          <Text size="md" emphasis="low">
             Platform performance metrics and insights
-          </p>
+          </Text>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <Select value={timeRange} onValueChange={setTimeRange}>
