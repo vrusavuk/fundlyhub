@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import { baseTokens, semanticTokens } from './src/lib/design/tokens';
 
 export default {
   darkMode: ["class"],
@@ -14,8 +15,12 @@ export default {
     },
     extend: {
       spacing: {
+        ...baseTokens.spacing,
         'touch-target': '44px', // Minimum mobile touch target size
       },
+      fontSize: baseTokens.fontSize,
+      fontWeight: baseTokens.fontWeight,
+      lineHeight: baseTokens.lineHeight,
       minHeight: {
         'touch': '44px', // Mobile touch target height
       },

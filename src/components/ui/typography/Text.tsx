@@ -7,30 +7,33 @@ import { getTypographyClasses, colorSemantics } from '@/lib/design/typography';
 import { cn } from '@/lib/utils';
 
 interface TextProps extends ComponentPropsWithoutRef<'p'> {
-  size: 'xl' | 'lg' | 'md' | 'sm';
+  size?: 'xl' | 'lg' | 'md' | 'sm';
   as?: ElementType;
   emphasis?: 'high' | 'medium' | 'low' | 'subtle';
+  muted?: boolean;
   responsive?: boolean;
 }
 
 export const Text = memo(
   forwardRef<HTMLParagraphElement, TextProps>(
     ({ 
-      size, 
+      size = 'md', 
       as: Component = 'p',
       children, 
       className,
       emphasis,
+      muted,
       responsive = false,
       ...restProps 
     }, ref) => {
       const classes = getTypographyClasses('body', size, '', responsive);
       const emphasisClass = emphasis ? colorSemantics.emphasis[emphasis] : '';
+      const mutedClass = muted ? 'text-muted-foreground' : '';
       
       return (
         <Component 
           ref={ref}
-          className={cn(classes, emphasisClass, className)}
+          className={cn(classes, emphasisClass, mutedClass, className)}
           {...restProps}
         >
           {children}
@@ -43,25 +46,28 @@ export const Text = memo(
 Text.displayName = 'Text';
 
 interface CaptionProps extends ComponentPropsWithoutRef<'span'> {
-  size: 'lg' | 'md' | 'sm' | 'xs';
+  size?: 'lg' | 'md' | 'sm' | 'xs';
   as?: ElementType;
+  muted?: boolean;
 }
 
 export const Caption = memo(
   forwardRef<HTMLSpanElement, CaptionProps>(
     ({ 
-      size, 
+      size = 'md', 
       as: Component = 'span',
       children, 
       className,
+      muted = true,
       ...restProps 
     }, ref) => {
       const classes = getTypographyClasses('caption', size);
+      const mutedClass = muted ? 'text-muted-foreground' : '';
       
       return (
         <Component 
           ref={ref}
-          className={cn(classes, 'text-muted-foreground', className)}
+          className={cn(classes, mutedClass, className)}
           {...restProps}
         >
           {children}
@@ -74,14 +80,14 @@ export const Caption = memo(
 Caption.displayName = 'Caption';
 
 interface LabelProps extends ComponentPropsWithoutRef<'label'> {
-  size: 'lg' | 'md' | 'sm';
+  size?: 'lg' | 'md' | 'sm';
   as?: ElementType;
 }
 
 export const Label = memo(
   forwardRef<HTMLLabelElement, LabelProps>(
     ({ 
-      size, 
+      size = 'md', 
       as: Component = 'label',
       children, 
       className,

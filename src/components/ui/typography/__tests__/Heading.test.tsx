@@ -1,24 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { Heading, DisplayHeading } from '../Heading';
-
-const screen = {
-  getByRole: (role: string, options?: any) => {
-    const container = document.body;
-    if (role === 'heading') {
-      const level = options?.level;
-      const headings = container.querySelectorAll(`h${level || '1'},h${level || '2'},h${level || '3'},h${level || '4'},h${level || '5'},h${level || '6'}`);
-      return headings[0] || container.querySelector('[role="heading"]');
-    }
-    if (role === 'button') {
-      return container.querySelector('button');
-    }
-    return container.querySelector(`[role="${role}"]`);
-  },
-  getByLabelText: (text: string) => {
-    return document.body.querySelector(`[aria-label="${text}"]`);
-  }
-};
 
 describe('Heading Component', () => {
   describe('Rendering', () => {
