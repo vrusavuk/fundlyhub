@@ -16,8 +16,8 @@ const staticItems = [
 ] as const;
 
 export function NavigationMenu({ className, onNavigate, vertical = false }: NavigationMenuProps) {
-  const linkClassName = "text-foreground hover:text-primary transition-smooth";
-  const containerClassName = vertical 
+  const linkClassName = "text-base font-medium text-foreground hover:text-primary transition-smooth";
+  const containerClassName = vertical
     ? "flex flex-col space-y-1" 
     : "hidden md:flex items-center space-x-6";
 

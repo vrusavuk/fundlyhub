@@ -61,10 +61,10 @@ export function FundliesDropdown({ vertical = false, onNavigate }: FundliesDropd
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
-          className="text-foreground hover:text-primary transition-smooth h-auto px-3 py-2 font-normal"
-        >
+          <Button 
+            variant="ghost" 
+            className="text-base font-medium text-foreground hover:text-primary transition-smooth h-auto px-3 py-2"
+          >
           Fundlies
           <ChevronDown className="ml-1 h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
         </Button>

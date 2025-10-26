@@ -121,7 +121,7 @@ const FundlyGive = () => {
               <span className="font-semibold">Introducing Fundly Give</span>
             </div>
             
-            <h1 className="text-4xl lg:text-6xl font-bold text-white leading-tight">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight">
               Your Giving, Your Way—
               <span className="block text-yellow-300">Always Tax-Deductible</span>
             </h1>

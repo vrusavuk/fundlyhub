@@ -21,6 +21,9 @@ export { ContextualHelp } from './ContextualHelp';
 export { DesignSystemShowcase } from './DesignSystemShowcase';
 export { EnhancedPageHeader } from './EnhancedPageHeader';
 
+// Typography components
+export * from '../ui/typography';
+
 // New enterprise components
 export { ConfirmDialog } from './ConfirmDialog';
 export { SessionTimeoutWarning } from './SessionTimeoutWarning';

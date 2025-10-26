@@ -409,7 +409,7 @@ export default function FundraiserDetail() {
                 </Badge>
               </div>
               
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight">{fundraiser.title}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold leading-tight">{fundraiser.title}</h1>
               
               <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">{fundraiser.summary}</p>
               
