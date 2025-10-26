@@ -15,6 +15,7 @@ import Auth from "./pages/Auth";
 // High-traffic routes - imported directly for instant loading
 import AllCampaigns from "./pages/AllCampaigns";
 import Projects from "./pages/Projects";
+import FundlyGive from "./pages/FundlyGive";
 import SearchResults from "./pages/SearchResults";
 import FundraiserDetail from "./pages/FundraiserDetail";
 import ProjectDetailExample from "./pages/ProjectDetailExample";
@@ -78,11 +79,7 @@ const App = () => (
         <Route path="/project-example" element={<ProjectDetailExample />} />
         
         {/* Medium-traffic routes with appropriate skeletons */}
-        <Route path="/fundly-give" element={
-          <Suspense fallback={<FundlyGivePageSkeleton />}>
-            <LazyFundlyGive />
-          </Suspense>
-        } />
+        <Route path="/fundly-give" element={<FundlyGive />} />
         <Route path="/profile/:userId" element={
           <Suspense fallback={<ProfilePageSkeleton />}>
             <LazyUserProfile />
