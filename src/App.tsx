@@ -14,6 +14,7 @@ import Auth from "./pages/Auth";
 
 // High-traffic routes - imported directly for instant loading
 import AllCampaigns from "./pages/AllCampaigns";
+import Projects from "./pages/Projects";
 import SearchResults from "./pages/SearchResults";
 import FundraiserDetail from "./pages/FundraiserDetail";
 import ProjectDetailExample from "./pages/ProjectDetailExample";
@@ -69,11 +70,7 @@ const App = () => (
         {/* High-traffic routes - direct imports for instant rendering */}
         <Route path="/campaigns" element={<AllCampaigns />} />
         <Route path="/causes" element={<AllCampaigns />} />
-        <Route path="/projects" element={
-          <Suspense fallback={<CampaignsPageSkeleton />}>
-            <LazyProjects />
-          </Suspense>
-        } />
+        <Route path="/projects" element={<Projects />} />
         <Route path="/search" element={<SearchResults />} />
         <Route path="/fundraiser/:slug" element={<FundraiserDetail />} />
         

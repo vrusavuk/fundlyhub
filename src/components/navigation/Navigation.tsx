@@ -2,6 +2,7 @@
  * Navigation component using composition pattern
  * Combines smaller focused components for better maintainability
  */
+import { memo } from 'react';
 import { useGlobalSearch } from '@/contexts/UnifiedSearchContext';
 import { HeaderSearch } from '@/components/search/HeaderSearch';
 import { BrandLogo } from './BrandLogo';
@@ -11,7 +12,7 @@ import { SearchTrigger } from './SearchTrigger';
 import { MobileNavigation } from './MobileNavigation';
 import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
 
-export function Navigation() {
+export const Navigation = memo(function Navigation() {
   const { isHeaderSearchOpen, closeHeaderSearch } = useGlobalSearch();
 
   return (
@@ -51,4 +52,4 @@ export function Navigation() {
       </nav>
     </>
   );
-}
+});
