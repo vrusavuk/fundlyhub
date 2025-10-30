@@ -597,29 +597,6 @@ export default function FundraiserDetail() {
                       });
                     }}
                   />
-
-                  {/* Recent Donors */}
-                  {donations.length > 0 && (
-                    <Card>
-                      <CardHeader>
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-lg">Recent Donors</CardTitle>
-                          {donations.length > 3 && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setShowAllDonors(true)}
-                            >
-                              View All
-                            </Button>
-                          )}
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <RecentDonors donations={donations.slice(0, 5)} />
-                      </CardContent>
-                    </Card>
-                  )}
                 </div>
               )}
             </div>
