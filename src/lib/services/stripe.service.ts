@@ -26,7 +26,7 @@ export interface PaymentIntentResponse {
 
 export class StripeService {
   private stripePromise: Promise<Stripe | null> | null = null;
-  private readonly publishableKey = 'pk_test_51QjbQHEaFU4kF5x4lPuSfGi2gdhVJxlvPWv7ggb7xDAWs3b7jTkZEqIuKb1WVUFXp6SVvV2CeBYUvELTsrjbRJWS00OAqCSPrA'; // Replace with env var in production
+  private readonly publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 
   /**
    * Initialize Stripe.js

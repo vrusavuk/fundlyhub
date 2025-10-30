@@ -13,7 +13,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { StripePaymentForm } from '@/components/payments/StripePaymentForm';
 import { useStripePayment } from '@/hooks/useStripePayment';
 
-const stripePromise = loadStripe('pk_test_51QjbQHEaFU4kF5x4lPuSfGi2gdhVJxlvPWv7ggb7xDAWs3b7jTkZEqIuKb1WVUFXp6SVvV2CeBYUvELTsrjbRJWS00OAqCSPrA');
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY!);
 
 interface Donation {
   id: string;
