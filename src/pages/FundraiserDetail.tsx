@@ -321,7 +321,6 @@ export default function FundraiserDetail() {
         {/* Smart Navigation */}
         <div className="mb-4 sm:mb-6">
           <SmartBackButton />
-          <SmartBreadcrumb />
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
