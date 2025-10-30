@@ -574,33 +574,6 @@ export default function FundraiserDetail() {
                 </>
               ) : (
                 <div className="space-y-4">
-                  {/* Campaign Stats Card */}
-                  <Card>
-                    <CardContent className="p-6 space-y-4">
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-baseline">
-                          <span className="text-3xl font-bold text-primary">
-                            {MoneyMath.format(MoneyMath.create(totalRaised, fundraiser.currency))}
-                          </span>
-                          <span className="text-sm text-muted-foreground">
-                            raised of {MoneyMath.format(MoneyMath.create(fundraiser.goal_amount, fundraiser.currency))} goal
-                          </span>
-                        </div>
-                        <Progress value={progressPercentage} className="h-2" />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                        <div>
-                          <div className="text-2xl font-bold">{donations.length}</div>
-                          <div className="text-sm text-muted-foreground">Donors</div>
-                        </div>
-                        <div>
-                          <div className="text-2xl font-bold">{Math.round(progressPercentage)}%</div>
-                          <div className="text-sm text-muted-foreground">Funded</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
                   {/* Donation Widget */}
                   <DonationWidget
                     fundraiserId={fundraiser.id}
