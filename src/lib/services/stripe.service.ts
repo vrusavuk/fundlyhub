@@ -26,12 +26,21 @@ export interface PaymentIntentResponse {
 
 export class StripeService {
   private stripePromise: Promise<Stripe | null> | null = null;
-  private readonly publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+  private readonly publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '';
+
+  constructor() {
+    if (!this.publishableKey) {
+      console.error('Stripe publishable key is not configured. Please check VITE_STRIPE_PUBLISHABLE_KEY in .env file');
+    }
+  }
 
   /**
    * Initialize Stripe.js
    */
   private async getStripe(): Promise<Stripe | null> {
+    if (!this.publishableKey) {
+      throw new Error('Stripe publishable key is not configured');
+    }
     if (!this.stripePromise) {
       this.stripePromise = loadStripe(this.publishableKey);
     }

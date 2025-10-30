@@ -13,7 +13,11 @@ import { loadStripe } from '@stripe/stripe-js';
 import { StripePaymentForm } from '@/components/payments/StripePaymentForm';
 import { useStripePayment } from '@/hooks/useStripePayment';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY!);
+const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+if (!stripePublishableKey) {
+  console.error('VITE_STRIPE_PUBLISHABLE_KEY is not defined in environment variables');
+}
+const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
 
 interface Donation {
   id: string;
