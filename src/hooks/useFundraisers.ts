@@ -1,8 +1,10 @@
 /**
  * Fundraiser hook with unified data management
+ * Now using optimized query patterns for better performance
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { fundraiserService, type FundraiserQueryOptions } from '@/lib/services/fundraiser.service';
+import { useOptimizedQuery } from '@/lib/api/optimized-queries';
 import type { Fundraiser } from '@/types';
 
 interface UseFundraisersState {

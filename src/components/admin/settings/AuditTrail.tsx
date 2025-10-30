@@ -247,10 +247,10 @@ export function AuditTrail({ settingKey }: AuditTrailProps) {
                       <div className="grid gap-4 md:grid-cols-2">
                         {log.old_value && (
                           <div className="space-y-2">
-                            <label className="text-sm font-medium text-red-600 dark:text-red-400">
+                            <label className="text-sm font-medium text-status-error">
                               Previous Value
                             </label>
-                            <pre className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded p-3 text-sm overflow-auto max-h-32">
+                            <pre className="bg-status-error-light border border-status-error-border rounded p-3 text-sm overflow-auto max-h-32">
                               {formatValue(log.old_value)}
                             </pre>
                           </div>
@@ -258,10 +258,10 @@ export function AuditTrail({ settingKey }: AuditTrailProps) {
                         
                         {log.new_value && (
                           <div className="space-y-2">
-                            <label className="text-sm font-medium text-green-600 dark:text-green-400">
+                            <label className="text-sm font-medium text-status-success">
                               New Value
                             </label>
-                            <pre className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded p-3 text-sm overflow-auto max-h-32">
+                            <pre className="bg-status-success-light border border-status-success-border rounded p-3 text-sm overflow-auto max-h-32">
                               {formatValue(log.new_value)}
                             </pre>
                           </div>

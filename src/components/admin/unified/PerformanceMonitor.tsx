@@ -153,26 +153,26 @@ export function PerformanceMonitor({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'good':
-        return 'text-green-600 bg-green-100';
+        return 'text-status-success bg-status-success-light';
       case 'warning':
-        return 'text-yellow-600 bg-yellow-100';
+        return 'text-status-warning bg-status-warning-light';
       case 'critical':
-        return 'text-red-600 bg-red-100';
+        return 'text-status-error bg-status-error-light';
       default:
-        return 'text-gray-600 bg-gray-100';
+        return 'text-muted-foreground bg-muted';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'good':
-        return <Zap className="h-4 w-4 text-green-600" />;
+        return <Zap className="h-4 w-4 text-status-success" />;
       case 'warning':
-        return <Clock className="h-4 w-4 text-yellow-600" />;
+        return <Clock className="h-4 w-4 text-status-warning" />;
       case 'critical':
-        return <AlertTriangle className="h-4 w-4 text-red-600" />;
+        return <AlertTriangle className="h-4 w-4 text-status-error" />;
       default:
-        return <Activity className="h-4 w-4 text-gray-600" />;
+        return <Activity className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
@@ -279,8 +279,8 @@ export function PerformanceMonitor({
                 <div className="flex items-center gap-2">
                   <div className={cn(
                     "h-2 w-2 rounded-full",
-                    metric.status === 'success' ? 'bg-green-500' :
-                    metric.status === 'error' ? 'bg-red-500' : 'bg-yellow-500'
+                    metric.status === 'success' ? 'bg-status-success' :
+                    metric.status === 'error' ? 'bg-status-error' : 'bg-status-warning'
                   )} />
                   
                   <span className="text-muted-foreground">
@@ -313,11 +313,11 @@ export function PerformanceMonitor({
 
         {/* Performance Tips */}
         {metrics.some(m => m.status !== 'good') && (
-          <div className="p-3 rounded-lg bg-yellow-50 border border-yellow-200">
-            <h4 className="text-sm font-medium text-yellow-800 mb-1">
+          <div className="p-3 rounded-lg bg-status-warning-light border border-status-warning-border">
+            <h4 className="text-sm font-medium text-status-warning mb-1">
               Performance Tips
             </h4>
-            <ul className="text-xs text-yellow-700 space-y-1">
+            <ul className="text-xs text-muted-foreground space-y-1">
               {metrics.filter(m => m.status === 'critical').length > 0 && (
                 <li>• Critical issues detected - check network and server performance</li>
               )}

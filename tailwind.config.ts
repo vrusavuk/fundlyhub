@@ -56,6 +56,32 @@ export default {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
+        status: {
+          success: {
+            DEFAULT: "hsl(var(--status-success))",
+            foreground: "hsl(var(--status-success-foreground))",
+            light: "hsl(var(--status-success-light))",
+            border: "hsl(var(--status-success-border))",
+          },
+          warning: {
+            DEFAULT: "hsl(var(--status-warning))",
+            foreground: "hsl(var(--status-warning-foreground))",
+            light: "hsl(var(--status-warning-light))",
+            border: "hsl(var(--status-warning-border))",
+          },
+          error: {
+            DEFAULT: "hsl(var(--status-error))",
+            foreground: "hsl(var(--status-error-foreground))",
+            light: "hsl(var(--status-error-light))",
+            border: "hsl(var(--status-error-border))",
+          },
+          info: {
+            DEFAULT: "hsl(var(--status-info))",
+            foreground: "hsl(var(--status-info-foreground))",
+            light: "hsl(var(--status-info-light))",
+            border: "hsl(var(--status-info-border))",
+          },
+        },
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",

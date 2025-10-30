@@ -225,8 +225,8 @@ export function AdminSidebar() {
                 <div className="flex items-center justify-between text-xs px-2">
                   <span className="text-muted-foreground">Health</span>
                   <div className="flex items-center space-x-1">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-green-500 font-medium">Good</span>
+                    <div className="w-2 h-2 bg-status-success rounded-full"></div>
+                    <span className="text-status-success font-medium">Good</span>
                   </div>
                 </div>
                 
@@ -250,12 +250,12 @@ export function AdminSidebar() {
       <SidebarFooter>
         {/* Super Admin Warning */}
         {isSuperAdmin() && state === "expanded" && (
-          <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+          <div className="p-3 bg-status-warning-light border border-status-warning-border rounded-lg">
             <div className="flex items-start space-x-2">
-              <AlertTriangle className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="w-4 h-4 text-status-warning flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs font-medium text-yellow-500">Super Admin</p>
-                <p className="text-xs text-yellow-500/80 mt-1">
+                <p className="text-xs font-medium text-status-warning">Super Admin</p>
+                <p className="text-xs text-muted-foreground mt-1">
                   Full platform access. Use with caution.
                 </p>
               </div>

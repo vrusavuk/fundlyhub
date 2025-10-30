@@ -117,17 +117,17 @@ const FundlyGive = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-transparent to-accent/20"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="space-y-8">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-6 py-3 text-white">
+            <div className="inline-flex items-center gap-2 bg-card/10 backdrop-blur-sm rounded-full px-6 py-3 text-primary-foreground">
               <Zap className="h-5 w-5" />
               <span className="font-semibold">Introducing Fundly Give</span>
             </div>
             
-            <DisplayHeading level="2xl" as="h1" responsive className="text-white leading-tight">
+            <DisplayHeading level="2xl" as="h1" responsive className="text-primary-foreground leading-tight">
               Your Giving, Your Way—
-              <span className="block text-yellow-300">Always Tax-Deductible</span>
+              <span className="block text-accent-foreground">Always Tax-Deductible</span>
             </DisplayHeading>
             
-            <Text size="xl" emphasis="high" className="text-white/90 max-w-3xl mx-auto leading-relaxed">
+            <Text size="xl" emphasis="high" className="text-primary-foreground/90 max-w-3xl mx-auto leading-relaxed">
               With Fundly Give, you can support verified nonprofits and charities through payroll, card, or ACH—every contribution comes with an IRS-compliant receipt.
             </Text>
             
@@ -135,7 +135,7 @@ const FundlyGive = () => {
               <Button 
                 variant="secondary" 
                 size="lg" 
-                className="text-lg px-8 py-6 bg-white text-primary hover:bg-white/90"
+                className="text-lg px-8 py-6"
               >
                 Get Started with Fundly Give
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -143,7 +143,7 @@ const FundlyGive = () => {
               <Button 
                 variant="outline" 
                 size="lg" 
-                className="text-lg px-8 py-6 border-white text-white hover:bg-white/10"
+                className="text-lg px-8 py-6"
               >
                 Learn More
               </Button>
@@ -318,27 +318,25 @@ const FundlyGive = () => {
             <div className="text-center">
               <div className="relative mb-6">
                 <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-white">1</span>
+                  <span className="text-2xl font-bold text-primary-foreground">1</span>
                 </div>
                 <h3 className="text-xl font-semibold mb-2">Choose Your Method</h3>
-                <p className="text-muted-foreground">Select payroll, card, or ACH based on your preference</p>
+                <p className="text-muted-foreground">Payroll, card, or ACH recurring donations</p>
               </div>
             </div>
-            
             <div className="text-center">
               <div className="relative mb-6">
                 <div className="w-20 h-20 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-white">2</span>
+                  <span className="text-2xl font-bold text-accent-foreground">2</span>
                 </div>
                 <h3 className="text-xl font-semibold mb-2">Pick Your Cause</h3>
-                <p className="text-muted-foreground">Browse verified nonprofits and campaigns</p>
+                <p className="text-muted-foreground">Browse verified nonprofits or search for your favorite</p>
               </div>
             </div>
-            
             <div className="text-center">
               <div className="relative mb-6">
                 <div className="w-20 h-20 bg-success rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-white">3</span>
+                  <span className="text-2xl font-bold text-success-foreground">3</span>
                 </div>
                 <h3 className="text-xl font-semibold mb-2">Start Giving</h3>
                 <p className="text-muted-foreground">Set your amount and schedule—we handle the rest</p>
@@ -436,20 +434,20 @@ const FundlyGive = () => {
       {/* CTA Section */}
       <section className="py-20 bg-gradient-hero">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <DisplayHeading level="lg" as="h2" responsive className="text-white mb-6">
+          <DisplayHeading level="lg" as="h2" responsive className="text-primary-foreground mb-6">
             Ready to make giving effortless?
           </DisplayHeading>
-          <Text size="xl" emphasis="high" className="text-white/90 mb-8">
+          <Text size="xl" emphasis="high" className="text-primary-foreground/90 mb-8">
             Join thousands of people making consistent impact through Fundly Give
           </Text>
-          <Button variant="secondary" size="lg" className="text-lg px-8 py-6 bg-white text-primary hover:bg-white/90">
+          <Button variant="secondary" size="lg" className="text-lg px-8 py-6">
             Start Your Fundly Give Setup
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
           
           {/* Compliance Note */}
-          <div className="mt-12 pt-8 border-t border-white/20">
-            <p className="text-sm text-white/70 max-w-4xl mx-auto leading-relaxed">
+          <div className="mt-12 pt-8 border-t border-border/20">
+            <p className="text-sm text-primary-foreground/70 max-w-4xl mx-auto leading-relaxed">
               <strong>Compliance Note:</strong> Donations through Fundly Give are only tax-deductible when made to qualified §170(c) nonprofit organizations. Payroll deductions are taken after taxes but remain eligible as charitable contributions if you itemize. FundlyHub provides IRS-compliant receipts and annual summaries for all qualified donations.
             </p>
           </div>

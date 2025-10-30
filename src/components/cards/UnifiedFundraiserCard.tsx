@@ -213,12 +213,12 @@ export function UnifiedFundraiserCard({
         </div>
         
         {/* Hover Overlay */}
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+        <div className="absolute inset-0 bg-background/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
           <div className="flex gap-3">
             <Button
               size="sm"
               variant="secondary"
-              className="bg-white/90 hover:bg-white text-foreground shadow-lg backdrop-blur-sm"
+              className="bg-card/90 hover:bg-card shadow-lg backdrop-blur-sm"
               onClick={handleLike}
             >
               <Heart className={cn(

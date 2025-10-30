@@ -34,13 +34,13 @@ export function RealTimeIndicator({
   const getStatusIcon = () => {
     switch (connectionStatus) {
       case 'connected':
-        return <CheckCircle className="h-3 w-3 text-green-500" />;
+        return <CheckCircle className="h-3 w-3 text-status-success" />;
       case 'connecting':
-        return <Wifi className="h-3 w-3 text-yellow-500 animate-pulse" />;
+        return <Wifi className="h-3 w-3 text-status-warning animate-pulse" />;
       case 'error':
-        return <AlertCircle className="h-3 w-3 text-red-500" />;
+        return <AlertCircle className="h-3 w-3 text-status-error" />;
       default:
-        return <WifiOff className="h-3 w-3 text-gray-500" />;
+        return <WifiOff className="h-3 w-3 text-muted-foreground" />;
     }
   };
 
@@ -60,13 +60,13 @@ export function RealTimeIndicator({
   const getStatusColor = () => {
     switch (connectionStatus) {
       case 'connected':
-        return 'bg-green-500';
+        return 'bg-status-success';
       case 'connecting':
-        return 'bg-yellow-500';
+        return 'bg-status-warning';
       case 'error':
-        return 'bg-red-500';
+        return 'bg-status-error';
       default:
-        return 'bg-gray-500';
+        return 'bg-muted-foreground';
     }
   };
 
@@ -127,8 +127,8 @@ export function RealTimeIndicator({
   return (
     <div className={cn(
       "flex items-center justify-between p-3 rounded-lg border bg-card text-card-foreground",
-      connectionStatus === 'connected' && "border-green-200 bg-green-50/50",
-      connectionStatus === 'error' && "border-red-200 bg-red-50/50",
+      connectionStatus === 'connected' && "border-status-success-border bg-status-success-light",
+      connectionStatus === 'error' && "border-status-error-border bg-status-error-light",
       className
     )}>
       <div className="flex items-center gap-3">
@@ -150,7 +150,7 @@ export function RealTimeIndicator({
             
             {connectionStatus === 'connected' && (
               <span className="flex items-center gap-1">
-                <div className="h-1 w-1 bg-green-500 rounded-full animate-pulse" />
+                <div className="h-1 w-1 bg-status-success rounded-full animate-pulse" />
                 Real-time
               </span>
             )}
@@ -214,8 +214,8 @@ export function MultipleRealTimeIndicator({
             <div className="flex items-center gap-2">
               <div className={cn(
                 "h-2 w-2 rounded-full",
-                connection.isConnected ? "bg-green-500" : "bg-red-500",
-                connection.connectionStatus === 'connecting' && "animate-pulse bg-yellow-500"
+                connection.isConnected ? "bg-status-success" : "bg-status-error",
+                connection.connectionStatus === 'connecting' && "animate-pulse bg-status-warning"
               )} />
               <span className="text-sm">{connection.name}</span>
             </div>

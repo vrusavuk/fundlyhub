@@ -70,10 +70,10 @@ const Index = () => {
       {/* CTA Section */}
       <section className="section-hierarchy py-16 sm:py-20 bg-gradient-hero shadow-glow">
         <div className="max-w-4xl mx-auto mobile-container text-center">
-          <h2 className="heading-large text-white mb-6">
+          <h2 className="heading-large text-primary-foreground mb-6">
             Ready to make a difference?
           </h2>
-          <p className="body-large text-white/90 mb-8">
+          <p className="body-large text-primary-foreground/90 mb-8">
             Start your fundraiser today and connect with people who want to help
           </p>
           <Button variant="accent" size="lg" className="text-lg px-8 py-6" asChild>

@@ -47,6 +47,27 @@
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
+    
+    /* Status Colors - Semantic tokens for consistent status indicators */
+    --status-success: 142 76% 36%;
+    --status-success-foreground: 0 0% 98%;
+    --status-success-light: 142 76% 96%;
+    --status-success-border: 142 76% 86%;
+    
+    --status-warning: 45 93% 47%;
+    --status-warning-foreground: 0 0% 98%;
+    --status-warning-light: 45 93% 96%;
+    --status-warning-border: 45 93% 86%;
+    
+    --status-error: 0 84% 60%;
+    --status-error-foreground: 0 0% 98%;
+    --status-error-light: 0 84% 96%;
+    --status-error-border: 0 84% 86%;
+    
+    --status-info: 221 83% 53%;
+    --status-info-foreground: 0 0% 98%;
+    --status-info-light: 221 83% 96%;
+    --status-info-border: 221 83% 86%;
 
     --border: 214 32% 91%;
     --input: 214 32% 91%;
@@ -119,6 +140,27 @@
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
+    
+    /* Status Colors - Dark Mode */
+    --status-success: 142 76% 40%;
+    --status-success-foreground: 0 0% 98%;
+    --status-success-light: 142 76% 15%;
+    --status-success-border: 142 76% 25%;
+    
+    --status-warning: 45 93% 50%;
+    --status-warning-foreground: 0 0% 98%;
+    --status-warning-light: 45 93% 15%;
+    --status-warning-border: 45 93% 25%;
+    
+    --status-error: 0 84% 60%;
+    --status-error-foreground: 0 0% 98%;
+    --status-error-light: 0 84% 15%;
+    --status-error-border: 0 84% 25%;
+    
+    --status-info: 221 83% 53%;
+    --status-info-foreground: 0 0% 98%;
+    --status-info-light: 221 83% 15%;
+    --status-info-border: 221 83% 25%;
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
