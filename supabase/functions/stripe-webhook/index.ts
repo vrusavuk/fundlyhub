@@ -98,7 +98,6 @@ serve(async (req) => {
             amount: donationAmount / 100,
             tip_amount: tipAmount / 100,
             fee_amount: stripeFee / 100,
-            net_amount: netAmount / 100,
             currency: paymentIntent.currency.toUpperCase(),
             payment_provider: 'stripe',
             payment_status: 'paid',
