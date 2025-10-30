@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { DonationWidget } from '@/components/DonationWidget';
+import { DonationWidgetWithStripe } from '@/components/DonationWidgetWithStripe';
 import { AllDonorsDialog } from '@/components/fundraisers/AllDonorsDialog';
 import { RecentDonors } from '@/components/fundraisers/RecentDonors';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
@@ -95,7 +95,6 @@ export default function FundraiserDetail() {
   const [totalRaised, setTotalRaised] = useState(0);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
-  const [donating, setDonating] = useState(false);
   const [commenting, setCommenting] = useState(false);
   const [showMobileDonation, setShowMobileDonation] = useState(false);
   const [showAllDonors, setShowAllDonors] = useState(false);
@@ -222,67 +221,13 @@ export default function FundraiserDetail() {
     fetchFundraiserData();
   }, [fetchFundraiserData]);
 
-  const handleDonate = async (amount: number, tipAmount: number = 0, isAnonymous: boolean = false) => {
-    if (!fundraiser || !user) return;
-    
-    if (isNaN(amount) || amount <= 0) {
-      toast({
-        title: "Invalid amount",
-        description: "Please enter a valid donation amount.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setDonating(true);
-
-    try {
-      const { error } = await supabase
-        .from('donations')
-        .insert({
-          fundraiser_id: fundraiser.id,
-          donor_user_id: user.id,
-          amount: amount,
-          currency: 'USD',
-          tip_amount: tipAmount,
-          is_anonymous: isAnonymous,
-          payment_status: 'paid',
-          payment_provider: 'stripe',
-        });
-
-      if (error) {
-        toast({
-          title: "Donation failed",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Thank you!",
-          description: "Your donation has been processed successfully.",
-        });
-        
-        // Refresh data
-        await fetchFundraiserData();
-        
-        // Trigger events for analytics
-        window.dispatchEvent(new CustomEvent('donationMade'));
-        
-        setTimeout(() => {
-          if (window.location.pathname === '/campaigns') {
-            window.location.reload();
-          }
-        }, 1500);
-      }
-    } catch (error) {
-      toast({
-        title: "An error occurred",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
-    } finally {
-      setDonating(false);
-    }
+  // Temporary handler for project donations until project Stripe integration
+  const handleDonate = async (amount: number) => {
+    toast({
+      title: "Coming Soon",
+      description: "Project donations with Stripe integration will be available soon. Regular campaigns now support secure Stripe payments!",
+      variant: "default",
+    });
   };
 
   const handleComment = async (e: React.FormEvent) => {
@@ -628,22 +573,69 @@ export default function FundraiserDetail() {
                   />
                 </>
               ) : (
-                <DonationWidget
-                  fundraiserId={fundraiser.id}
-                  title={fundraiser.title}
-                  creatorName={fundraiser.profiles?.name || 'Anonymous'}
-                  goalAmount={fundraiser.goal_amount}
-                  raisedAmount={totalRaised}
-                  donorCount={donations.length}
-                  progressPercentage={progressPercentage}
-                  currency={fundraiser.currency}
-                  onDonate={handleDonate}
-                  loading={donating}
-                  isFloating={true}
-                  donations={donations}
-                  showDonors={true}
-                  onViewAllDonors={() => setShowAllDonors(true)}
-                />
+                <div className="space-y-4">
+                  {/* Campaign Stats Card */}
+                  <Card>
+                    <CardContent className="p-6 space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-baseline">
+                          <span className="text-3xl font-bold text-primary">
+                            {MoneyMath.format(MoneyMath.create(totalRaised, fundraiser.currency))}
+                          </span>
+                          <span className="text-sm text-muted-foreground">
+                            raised of {MoneyMath.format(MoneyMath.create(fundraiser.goal_amount, fundraiser.currency))} goal
+                          </span>
+                        </div>
+                        <Progress value={progressPercentage} className="h-2" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                        <div>
+                          <div className="text-2xl font-bold">{donations.length}</div>
+                          <div className="text-sm text-muted-foreground">Donors</div>
+                        </div>
+                        <div>
+                          <div className="text-2xl font-bold">{Math.round(progressPercentage)}%</div>
+                          <div className="text-sm text-muted-foreground">Funded</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Stripe Donation Widget */}
+                  <DonationWidgetWithStripe
+                    fundraiserId={fundraiser.id}
+                    onSuccess={() => {
+                      fetchFundraiserData();
+                      toast({
+                        title: "Thank you!",
+                        description: "Your donation has been processed successfully.",
+                      });
+                    }}
+                  />
+
+                  {/* Recent Donors */}
+                  {donations.length > 0 && (
+                    <Card>
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-lg">Recent Donors</CardTitle>
+                          {donations.length > 3 && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setShowAllDonors(true)}
+                            >
+                              View All
+                            </Button>
+                          )}
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <RecentDonors donations={donations.slice(0, 5)} />
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -674,24 +666,16 @@ export default function FundraiserDetail() {
             <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mt-3 mb-2" />
             
             <div className="p-4">
-              <DonationWidget
+              <DonationWidgetWithStripe
                 fundraiserId={fundraiser.id}
-                title={fundraiser.title}
-                creatorName={fundraiser.profiles?.name || 'Anonymous'}
-                goalAmount={fundraiser.goal_amount}
-                raisedAmount={totalRaised}
-                donorCount={donations.length}
-                progressPercentage={progressPercentage}
-                currency={fundraiser.currency}
-                onDonate={(amount, tipAmount, isAnonymous) => {
-                  handleDonate(amount, tipAmount, isAnonymous);
+                onSuccess={() => {
                   setShowMobileDonation(false);
+                  fetchFundraiserData();
+                  toast({
+                    title: "Thank you!",
+                    description: "Your donation has been processed successfully.",
+                  });
                 }}
-                loading={donating}
-                showInSheet={true}
-                donations={donations}
-                showDonors={true}
-                onViewAllDonors={() => setShowAllDonors(true)}
               />
             </div>
           </SheetContent>
