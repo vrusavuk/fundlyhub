@@ -8,6 +8,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Heart, Share2, Facebook, Twitter, Copy, Check, Gift, CreditCard, Wallet, ChevronLeft, EyeOff, Users } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import { StripePaymentForm } from '@/components/payments/StripePaymentForm';
+import { useStripePayment } from '@/hooks/useStripePayment';
+
+const stripePromise = loadStripe('pk_test_51QjbQHEaFU4kF5x4lPuSfGi2gdhVJxlvPWv7ggb7xDAWs3b7jTkZEqIuKb1WVUFXp6SVvV2CeBYUvELTsrjbRJWS00OAqCSPrA');
 
 interface Donation {
   id: string;
@@ -33,8 +39,7 @@ interface DonationWidgetProps {
   donorCount: number;
   progressPercentage: number;
   currency?: string;
-  onDonate: (amount: number, tipAmount?: number, isAnonymous?: boolean) => void;
-  loading?: boolean;
+  onSuccess?: () => void;
   isFloating?: boolean;
   donations?: Donation[];
   showDonors?: boolean;
@@ -54,8 +59,7 @@ export function DonationWidget({
   donorCount,
   progressPercentage,
   currency = 'USD',
-  onDonate,
-  loading = false,
+  onSuccess,
   isFloating = false,
   donations = [],
   showDonors = false,
@@ -69,7 +73,12 @@ export function DonationWidget({
   const [copied, setCopied] = useState(false);
   const [showDonationForm, setShowDonationForm] = useState(showInSheet);
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [donorEmail, setDonorEmail] = useState('');
+  const [donorName, setDonorName] = useState('');
   const { toast } = useToast();
+  const { createPaymentIntent, isLoading } = useStripePayment();
 
   const formatAmount = (amount: number) => new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -98,10 +107,50 @@ export function DonationWidget({
     setTipAmount(tip);
   };
 
-  const handleDonate = () => {
-    if (currentAmount > 0) {
-      onDonate(currentAmount, tipAmount, isAnonymous);
+  const handleDonate = async () => {
+    if (currentAmount <= 0) return;
+
+    const response = await createPaymentIntent({
+      fundraiser_id: fundraiserId,
+      amount: Math.round(currentAmount * 100),
+      tip_amount: Math.round(tipAmount * 100),
+      currency: currency,
+      donor_email: !isAnonymous ? donorEmail : undefined,
+      donor_name: !isAnonymous ? donorName : undefined,
+      is_anonymous: isAnonymous,
+    });
+
+    if (response?.client_secret) {
+      setClientSecret(response.client_secret);
+      setShowPaymentForm(true);
     }
+  };
+
+  const handlePaymentSuccess = () => {
+    setShowPaymentForm(false);
+    setShowDonationForm(false);
+    setClientSecret(null);
+    setSelectedAmount(null);
+    setCustomAmount('');
+    setTipAmount(0);
+    setShowTip(false);
+    setIsAnonymous(false);
+    setDonorEmail('');
+    setDonorName('');
+    toast({
+      title: 'Thank you!',
+      description: 'Your donation has been processed successfully.',
+    });
+    onSuccess?.();
+  };
+
+  const handlePaymentError = (error: string) => {
+    setShowPaymentForm(false);
+    toast({
+      title: 'Payment Failed',
+      description: error,
+      variant: 'destructive',
+    });
   };
 
   const handleShare = async (platform?: string) => {
@@ -228,23 +277,66 @@ export function DonationWidget({
                 </div>
               )}
 
-              <Button
-                onClick={handleDonate}
-                disabled={loading || currentAmount <= 0}
-                className="w-full h-12 text-lg font-semibold"
-              >
-                {loading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground" />
-                    Processing...
-                  </div>
-                ) : (
-                  <>
-                    <Heart className="mr-2 h-5 w-5" />
-                    Donate {formatAmount(totalAmount)}
-                  </>
-                )}
-              </Button>
+              {!showPaymentForm ? (
+                <>
+                  {!isAnonymous && (
+                    <>
+                      <div className="space-y-2">
+                        <Input
+                          type="text"
+                          placeholder="Your name"
+                          value={donorName}
+                          onChange={(e) => setDonorName(e.target.value)}
+                          className="h-11"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Input
+                          type="email"
+                          placeholder="your.email@example.com"
+                          value={donorEmail}
+                          onChange={(e) => setDonorEmail(e.target.value)}
+                          className="h-11"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  <Button
+                    onClick={handleDonate}
+                    disabled={isLoading || currentAmount <= 0}
+                    className="w-full h-12 text-lg font-semibold"
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground" />
+                        Processing...
+                      </div>
+                    ) : (
+                      <>
+                        <Heart className="mr-2 h-5 w-5" />
+                        Donate {formatAmount(totalAmount)}
+                      </>
+                    )}
+                  </Button>
+                </>
+              ) : (
+                clientSecret && (
+                  <Elements stripe={stripePromise}>
+                    <StripePaymentForm
+                      clientSecret={clientSecret}
+                      amount={Math.round(totalAmount * 100)}
+                      isAnonymous={isAnonymous}
+                      donorEmail={donorEmail}
+                      donorName={donorName}
+                      onSuccess={handlePaymentSuccess}
+                      onError={handlePaymentError}
+                      onEmailChange={setDonorEmail}
+                      onNameChange={setDonorName}
+                    />
+                  </Elements>
+                )
+              )}
 
               <div className="flex gap-2 text-xs text-muted-foreground justify-center">
                 <CreditCard className="h-3 w-3" />
@@ -555,24 +647,69 @@ export function DonationWidget({
                     <span>{formatAmount(totalAmount)}</span>
                   </div>
                   
-                  <Button
-                    onClick={handleDonate}
-                    disabled={loading || currentAmount <= 0}
-                    className="w-full h-12 text-lg font-semibold hover-scale"
-                    size="lg"
-                  >
-                    {loading ? (
-                      <div className="flex items-center gap-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground" />
-                        Processing...
-                      </div>
-                    ) : (
-                      <>
-                        <Heart className="mr-2 h-5 w-5" />
-                        Donate {formatAmount(totalAmount)}
-                      </>
-                    )}
-                  </Button>
+                  {!showPaymentForm ? (
+                    <>
+                      {!isAnonymous && (
+                        <>
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium">Name</label>
+                            <Input
+                              type="text"
+                              placeholder="Your name"
+                              value={donorName}
+                              onChange={(e) => setDonorName(e.target.value)}
+                              className="h-12"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium">Email</label>
+                            <Input
+                              type="email"
+                              placeholder="your.email@example.com"
+                              value={donorEmail}
+                              onChange={(e) => setDonorEmail(e.target.value)}
+                              className="h-12"
+                            />
+                          </div>
+                        </>
+                      )}
+
+                      <Button
+                        onClick={handleDonate}
+                        disabled={isLoading || currentAmount <= 0}
+                        className="w-full h-12 text-lg font-semibold hover-scale"
+                        size="lg"
+                      >
+                        {isLoading ? (
+                          <div className="flex items-center gap-2">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground" />
+                            Processing...
+                          </div>
+                        ) : (
+                          <>
+                            <Heart className="mr-2 h-5 w-5" />
+                            Donate {formatAmount(totalAmount)}
+                          </>
+                        )}
+                      </Button>
+                    </>
+                  ) : (
+                    clientSecret && (
+                      <Elements stripe={stripePromise}>
+                        <StripePaymentForm
+                          clientSecret={clientSecret}
+                          amount={Math.round(totalAmount * 100)}
+                          isAnonymous={isAnonymous}
+                          donorEmail={donorEmail}
+                          donorName={donorName}
+                          onSuccess={handlePaymentSuccess}
+                          onError={handlePaymentError}
+                          onEmailChange={setDonorEmail}
+                          onNameChange={setDonorName}
+                        />
+                      </Elements>
+                    )
+                  )}
 
                   <div className="flex gap-2 text-xs text-muted-foreground justify-center">
                     <CreditCard className="h-3 w-3" />

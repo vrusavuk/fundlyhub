@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { DonationWidgetWithStripe } from '@/components/DonationWidgetWithStripe';
+import { DonationWidget } from '@/components/DonationWidget';
 import { AllDonorsDialog } from '@/components/fundraisers/AllDonorsDialog';
 import { RecentDonors } from '@/components/fundraisers/RecentDonors';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
@@ -601,9 +601,21 @@ export default function FundraiserDetail() {
                     </CardContent>
                   </Card>
 
-                  {/* Stripe Donation Widget */}
-                  <DonationWidgetWithStripe
+                  {/* Donation Widget */}
+                  <DonationWidget
                     fundraiserId={fundraiser.id}
+                    title={fundraiser.title}
+                    creatorName={fundraiser.profiles?.name || 'Anonymous'}
+                    creatorAvatar={undefined}
+                    goalAmount={fundraiser.goal_amount}
+                    raisedAmount={totalRaised}
+                    donorCount={donations.length}
+                    progressPercentage={progressPercentage}
+                    currency={fundraiser.currency}
+                    isFloating={true}
+                    donations={donations}
+                    showDonors={true}
+                    onViewAllDonors={() => setShowAllDonors(true)}
                     onSuccess={() => {
                       fetchFundraiserData();
                       toast({
@@ -666,17 +678,32 @@ export default function FundraiserDetail() {
             <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mt-3 mb-2" />
             
             <div className="p-4">
-              <DonationWidgetWithStripe
-                fundraiserId={fundraiser.id}
-                onSuccess={() => {
-                  setShowMobileDonation(false);
-                  fetchFundraiserData();
-                  toast({
-                    title: "Thank you!",
-                    description: "Your donation has been processed successfully.",
-                  });
-                }}
-              />
+            <DonationWidget
+              fundraiserId={fundraiser.id}
+              title={fundraiser.title}
+              creatorName={fundraiser.profiles?.name || 'Anonymous'}
+              creatorAvatar={undefined}
+              goalAmount={fundraiser.goal_amount}
+              raisedAmount={totalRaised}
+              donorCount={donations.length}
+              progressPercentage={progressPercentage}
+              currency={fundraiser.currency}
+              donations={donations}
+              showDonors={true}
+              showInSheet={true}
+              onViewAllDonors={() => {
+                setShowMobileDonation(false);
+                setShowAllDonors(true);
+              }}
+              onSuccess={() => {
+                setShowMobileDonation(false);
+                fetchFundraiserData();
+                toast({
+                  title: "Thank you!",
+                  description: "Your donation has been processed successfully.",
+                });
+              }}
+            />
             </div>
           </SheetContent>
         </Sheet>
