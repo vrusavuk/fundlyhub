@@ -1,5 +1,11 @@
 project_id = "sgcaqrtnxqhrrqzxmupa"
 
+[functions.create-payment-intent]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+
 [functions.search-api]
 verify_jwt = false
 
