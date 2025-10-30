@@ -20,7 +20,7 @@ export type Database = {
           actor_id: string
           created_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           metadata: Json | null
           resource_id: string | null
           resource_type: string
@@ -31,7 +31,7 @@ export type Database = {
           actor_id: string
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           resource_id?: string | null
           resource_type: string
@@ -42,7 +42,7 @@ export type Database = {
           actor_id?: string
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           resource_id?: string | null
           resource_type?: string
@@ -196,7 +196,7 @@ export type Database = {
           location: string | null
           org_name: string | null
           owner_name: string | null
-          search_vector: unknown | null
+          search_vector: unknown
           slug: string | null
           status: Database["public"]["Enums"]["fundraiser_status"]
           story_text: string | null
@@ -214,7 +214,7 @@ export type Database = {
           location?: string | null
           org_name?: string | null
           owner_name?: string | null
-          search_vector?: unknown | null
+          search_vector?: unknown
           slug?: string | null
           status: Database["public"]["Enums"]["fundraiser_status"]
           story_text?: string | null
@@ -232,7 +232,7 @@ export type Database = {
           location?: string | null
           org_name?: string | null
           owner_name?: string | null
-          search_vector?: unknown | null
+          search_vector?: unknown
           slug?: string | null
           status?: Database["public"]["Enums"]["fundraiser_status"]
           story_text?: string | null
@@ -508,11 +508,14 @@ export type Database = {
           amount: number
           created_at: string | null
           currency: string | null
+          donor_email: string | null
+          donor_name: string | null
           donor_user_id: string | null
           fee_amount: number | null
           fundraiser_id: string
           id: string
           is_anonymous: boolean
+          message: string | null
           net_amount: number | null
           payment_provider: string | null
           payment_status: Database["public"]["Enums"]["payment_status"] | null
@@ -524,11 +527,14 @@ export type Database = {
           amount: number
           created_at?: string | null
           currency?: string | null
+          donor_email?: string | null
+          donor_name?: string | null
           donor_user_id?: string | null
           fee_amount?: number | null
           fundraiser_id: string
           id?: string
           is_anonymous?: boolean
+          message?: string | null
           net_amount?: number | null
           payment_provider?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"] | null
@@ -540,11 +546,14 @@ export type Database = {
           amount?: number
           created_at?: string | null
           currency?: string | null
+          donor_email?: string | null
+          donor_name?: string | null
           donor_user_id?: string | null
           fee_amount?: number | null
           fundraiser_id?: string
           id?: string
           is_anonymous?: boolean
+          message?: string | null
           net_amount?: number | null
           payment_provider?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"] | null
@@ -823,7 +832,7 @@ export type Database = {
           deleted_at: string | null
           deleted_by: string | null
           end_date: string | null
-          fts: unknown | null
+          fts: unknown
           goal_amount: number
           id: string
           images: string[] | null
@@ -855,7 +864,7 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           end_date?: string | null
-          fts?: unknown | null
+          fts?: unknown
           goal_amount: number
           id?: string
           images?: string[] | null
@@ -887,7 +896,7 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           end_date?: string | null
-          fts?: unknown | null
+          fts?: unknown
           goal_amount?: number
           id?: string
           images?: string[] | null
@@ -1131,7 +1140,7 @@ export type Database = {
           name_tokens: string[] | null
           org_id: string
           relevance_boost: number | null
-          search_vector: unknown | null
+          search_vector: unknown
           updated_at: string | null
           verification_status:
             | Database["public"]["Enums"]["verification_status"]
@@ -1148,7 +1157,7 @@ export type Database = {
           name_tokens?: string[] | null
           org_id: string
           relevance_boost?: number | null
-          search_vector?: unknown | null
+          search_vector?: unknown
           updated_at?: string | null
           verification_status?:
             | Database["public"]["Enums"]["verification_status"]
@@ -1165,7 +1174,7 @@ export type Database = {
           name_tokens?: string[] | null
           org_id?: string
           relevance_boost?: number | null
-          search_vector?: unknown | null
+          search_vector?: unknown
           updated_at?: string | null
           verification_status?:
             | Database["public"]["Enums"]["verification_status"]
@@ -1184,7 +1193,7 @@ export type Database = {
           deleted_at: string | null
           deleted_by: string | null
           ein: string | null
-          fts: unknown | null
+          fts: unknown
           id: string
           legal_name: string
           paypal_merchant_id: string | null
@@ -1204,7 +1213,7 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           ein?: string | null
-          fts?: unknown | null
+          fts?: unknown
           id?: string
           legal_name: string
           paypal_merchant_id?: string | null
@@ -1224,7 +1233,7 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           ein?: string | null
-          fts?: unknown | null
+          fts?: unknown
           id?: string
           legal_name?: string
           paypal_merchant_id?: string | null
@@ -1280,7 +1289,7 @@ export type Database = {
           failed_login_attempts: number | null
           follower_count: number | null
           following_count: number | null
-          fts: unknown | null
+          fts: unknown
           id: string
           is_verified: boolean | null
           last_login_at: string | null
@@ -1312,7 +1321,7 @@ export type Database = {
           failed_login_attempts?: number | null
           follower_count?: number | null
           following_count?: number | null
-          fts?: unknown | null
+          fts?: unknown
           id: string
           is_verified?: boolean | null
           last_login_at?: string | null
@@ -1344,7 +1353,7 @@ export type Database = {
           failed_login_attempts?: number | null
           follower_count?: number | null
           following_count?: number | null
-          fts?: unknown | null
+          fts?: unknown
           id?: string
           is_verified?: boolean | null
           last_login_at?: string | null
@@ -1872,7 +1881,7 @@ export type Database = {
           details: Json | null
           event_type: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           request_method: string | null
           request_path: string | null
           success: boolean | null
@@ -1884,7 +1893,7 @@ export type Database = {
           details?: Json | null
           event_type: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           request_method?: string | null
           request_path?: string | null
           success?: boolean | null
@@ -1896,7 +1905,7 @@ export type Database = {
           details?: Json | null
           event_type?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           request_method?: string | null
           request_path?: string | null
           success?: boolean | null
@@ -1911,7 +1920,7 @@ export type Database = {
           changed_by: string | null
           created_at: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           new_value: Json | null
           old_value: Json | null
           setting_key: string
@@ -1922,7 +1931,7 @@ export type Database = {
           changed_by?: string | null
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_value?: Json | null
           old_value?: Json | null
           setting_key: string
@@ -1933,7 +1942,7 @@ export type Database = {
           changed_by?: string | null
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_value?: Json | null
           old_value?: Json | null
           setting_key?: string
@@ -2332,7 +2341,7 @@ export type Database = {
           profile_visibility: string
           relevance_boost: number | null
           role: Database["public"]["Enums"]["user_role"]
-          search_vector: unknown | null
+          search_vector: unknown
           updated_at: string
           user_id: string
         }
@@ -2357,7 +2366,7 @@ export type Database = {
           profile_visibility: string
           relevance_boost?: number | null
           role: Database["public"]["Enums"]["user_role"]
-          search_vector?: unknown | null
+          search_vector?: unknown
           updated_at?: string
           user_id: string
         }
@@ -2382,7 +2391,7 @@ export type Database = {
           profile_visibility?: string
           relevance_boost?: number | null
           role?: Database["public"]["Enums"]["user_role"]
-          search_vector?: unknown | null
+          search_vector?: unknown
           updated_at?: string
           user_id?: string
         }
@@ -2465,7 +2474,7 @@ export type Database = {
           created_at: string | null
           follower_count: number | null
           following_count: number | null
-          fts: unknown | null
+          fts: unknown
           id: string | null
           is_verified: boolean | null
           location: string | null
@@ -2484,7 +2493,7 @@ export type Database = {
           created_at?: string | null
           follower_count?: number | null
           following_count?: number | null
-          fts?: unknown | null
+          fts?: unknown
           id?: string | null
           is_verified?: boolean | null
           location?: string | null
@@ -2503,7 +2512,7 @@ export type Database = {
           created_at?: string | null
           follower_count?: number | null
           following_count?: number | null
-          fts?: unknown | null
+          fts?: unknown
           id?: string | null
           is_verified?: boolean | null
           location?: string | null
@@ -2550,7 +2559,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           id: string | null
-          search_vector: unknown | null
+          search_vector: unknown
           status: string | null
           title: string | null
           visibility: string | null
@@ -2591,36 +2600,45 @@ export type Database = {
           user_id: string
         }[]
       }
-      gen_base62_token: {
-        Args: { len?: number }
-        Returns: string
-      }
-      get_campaign_aggregate_stats: {
-        Args:
-          | {
+      gen_base62_token: { Args: { len?: number }; Returns: string }
+      get_campaign_aggregate_stats:
+        | {
+            Args: {
               category_filter?: string
               search_term?: string
               status_filter?: string
             }
-          | {
+            Returns: {
+              active_campaigns: number
+              closed_campaigns: number
+              draft_campaigns: number
+              ended_campaigns: number
+              paused_campaigns: number
+              pending_campaigns: number
+              total_campaigns: number
+              total_raised: number
+            }[]
+          }
+        | {
+            Args: {
               category_filter?: string
               search_term?: string
               status_filter?: string
               visibility_filter?: string
             }
-        Returns: {
-          active_campaigns: number
-          closed_campaigns: number
-          draft_campaigns: number
-          ended_campaigns: number
-          paused_campaigns: number
-          pending_campaigns: number
-          total_campaigns: number
-          total_raised: number
-        }[]
-      }
+            Returns: {
+              active_campaigns: number
+              closed_campaigns: number
+              draft_campaigns: number
+              ended_campaigns: number
+              paused_campaigns: number
+              pending_campaigns: number
+              total_campaigns: number
+              total_raised: number
+            }[]
+          }
       get_campaign_stats: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           active_campaigns: number
           closed_campaigns: number
@@ -2628,7 +2646,7 @@ export type Database = {
         }[]
       }
       get_category_stats: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           active_campaigns: number
           campaign_count: number
@@ -2669,7 +2687,7 @@ export type Database = {
         }[]
       }
       get_my_complete_profile: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           account_locked_until: string | null
           account_status: string | null
@@ -2685,7 +2703,7 @@ export type Database = {
           failed_login_attempts: number | null
           follower_count: number | null
           following_count: number | null
-          fts: unknown | null
+          fts: unknown
           id: string
           is_verified: boolean | null
           last_login_at: string | null
@@ -2702,9 +2720,15 @@ export type Database = {
           verified_at: string | null
           website: string | null
         }[]
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       get_my_permissions: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           permission_category: string
           permission_display_name: string
@@ -2772,7 +2796,7 @@ export type Database = {
         }[]
       }
       get_public_fundraiser_stats: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           created_at: string
           currency: string
@@ -2831,7 +2855,7 @@ export type Database = {
         }[]
       }
       get_system_health: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           api: string
           database: string
@@ -2857,10 +2881,7 @@ export type Database = {
           role_name: string
         }[]
       }
-      has_existing_super_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      has_existing_super_admin: { Args: never; Returns: boolean }
       has_org_role: {
         Args: {
           _org_id: string
@@ -2873,10 +2894,7 @@ export type Database = {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
-      is_super_admin: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
+      is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       log_audit_event: {
         Args: {
           _action: string
@@ -2910,16 +2928,10 @@ export type Database = {
         Args: { text1: string; text2: string }
         Returns: boolean
       }
-      refresh_event_statistics: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      refresh_searchable_content: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      refresh_event_statistics: { Args: never; Returns: undefined }
+      refresh_searchable_content: { Args: never; Returns: undefined }
       resync_organization_search_projections: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           synced_count: number
         }[]
