@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +11,12 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { adminDataService } from "@/lib/services/AdminDataService";
+import { AllDonorsDialog } from "@/components/fundraisers/AllDonorsDialog";
+import { formatRelativeTime } from "@/lib/utils/formatters";
+import { MoneyMath } from "@/lib/enterprise/utils/MoneyMath";
+import { useEventSubscriber } from "@/hooks/useEventBus";
 
 interface UserDetailsDialogProps {
   user: any;
@@ -189,11 +196,55 @@ interface CampaignDetailsDialogProps {
 }
 
 export function CampaignDetailsDialog({ campaign, open, onOpenChange }: CampaignDetailsDialogProps) {
+  const [donations, setDonations] = useState<any[]>([]);
+  const [loadingDonations, setLoadingDonations] = useState(false);
+  const [showAllDonors, setShowAllDonors] = useState(false);
+
   if (!campaign) return null;
 
   const progress = campaign.stats?.total_raised && campaign.goal_amount
     ? (campaign.stats.total_raised / campaign.goal_amount) * 100
     : 0;
+
+  const fetchDonations = async () => {
+    if (!campaign?.id) return;
+    
+    setLoadingDonations(true);
+    try {
+      const donationData = await adminDataService.fetchCampaignDonations(campaign.id);
+      setDonations(donationData);
+    } catch (error) {
+      console.error('Error fetching donations:', error);
+    } finally {
+      setLoadingDonations(false);
+    }
+  };
+
+  // Fetch donations when dialog opens
+  useEffect(() => {
+    if (open && campaign?.id) {
+      fetchDonations();
+    }
+  }, [open, campaign?.id]);
+
+  // Real-time updates for donations
+  useEventSubscriber('donation.completed', (event) => {
+    if ((event.payload as any)?.fundraiserId === campaign?.id) {
+      console.log('[CampaignDetailsDialog] Donation completed, refreshing donors');
+      fetchDonations();
+    }
+  });
+
+  useEventSubscriber('donation.refunded', (event) => {
+    if ((event.payload as any)?.fundraiserId === campaign?.id) {
+      console.log('[CampaignDetailsDialog] Donation refunded, refreshing donors');
+      fetchDonations();
+    }
+  });
+
+  const totalDonated = donations.reduce((sum, d) => sum + d.amount, 0);
+  const averageDonation = donations.length > 0 ? totalDonated / donations.length : 0;
+  const displayedDonations = donations.slice(0, 10);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -205,8 +256,14 @@ export function CampaignDetailsDialog({ campaign, open, onOpenChange }: Campaign
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="h-[60vh]">
-          <div className="space-y-4">
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="donors">Donors ({donations.length})</TabsTrigger>
+          </TabsList>
+
+          <ScrollArea className="h-[60vh] mt-4">
+            <TabsContent value="overview" className="space-y-4">
             {campaign.cover_image && (
               <img
                 src={campaign.cover_image}
@@ -285,12 +342,118 @@ export function CampaignDetailsDialog({ campaign, open, onOpenChange }: Campaign
                     <span className="text-muted-foreground">End Date:</span>
                     <span>{new Date(campaign.end_date).toLocaleDateString()}</span>
                   </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </ScrollArea>
+                 )}
+               </div>
+             </div>
+            </TabsContent>
+
+            <TabsContent value="donors" className="space-y-4">
+              {loadingDonations ? (
+                <div className="space-y-3">
+                  <div className="text-center py-4 text-muted-foreground">
+                    <p>Loading donors...</p>
+                  </div>
+                </div>
+              ) : donations.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p className="text-lg font-medium">No donations yet</p>
+                  <p className="text-sm mt-1">This campaign hasn't received any donations.</p>
+                </div>
+              ) : (
+                <>
+                  {/* Summary Section */}
+                  <div className="grid grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Total Donors</p>
+                      <p className="text-2xl font-bold">{donations.length}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Total Raised</p>
+                      <p className="text-2xl font-bold">
+                        {MoneyMath.format(MoneyMath.create(totalDonated, campaign.currency))}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Avg Donation</p>
+                      <p className="text-2xl font-bold">
+                        {MoneyMath.format(MoneyMath.create(averageDonation, campaign.currency))}
+                      </p>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Donor List */}
+                  <div className="space-y-3">
+                    {displayedDonations.map((donation) => (
+                      <div
+                        key={donation.id}
+                        className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/30 transition-colors"
+                      >
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={donation.donor_avatar} />
+                          <AvatarFallback>
+                            {donation.donor_name?.charAt(0) || 'A'}
+                          </AvatarFallback>
+                        </Avatar>
+                        
+                        <div className="flex-1 min-w-0 space-y-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="font-medium truncate">
+                              {donation.donor_name}
+                            </p>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <Badge variant={donation.payment_status === 'paid' ? 'default' : 'secondary'}>
+                                {donation.payment_status}
+                              </Badge>
+                              <Badge variant="outline" className="text-primary font-semibold">
+                                {MoneyMath.format(MoneyMath.create(donation.amount, donation.currency))}
+                              </Badge>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            {donation.donor_email && (
+                              <span className="truncate">{donation.donor_email}</span>
+                            )}
+                            <span>•</span>
+                            <span>{formatRelativeTime(donation.created_at)}</span>
+                          </div>
+
+                          {donation.message && (
+                            <div className="mt-2 p-2 bg-muted/50 rounded text-sm">
+                              <p className="text-muted-foreground italic">"{donation.message}"</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* View All Button */}
+                  {donations.length > 10 && (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => setShowAllDonors(true)}
+                    >
+                      View All {donations.length} Donors
+                    </Button>
+                  )}
+                </>
+              )}
+            </TabsContent>
+          </ScrollArea>
+        </Tabs>
       </DialogContent>
+
+      {/* All Donors Dialog */}
+      <AllDonorsDialog
+        isOpen={showAllDonors}
+        onClose={() => setShowAllDonors(false)}
+        donations={donations}
+        isAdminView={true}
+      />
     </Dialog>
   );
 }

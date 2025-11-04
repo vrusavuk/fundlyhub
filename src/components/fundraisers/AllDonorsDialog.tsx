@@ -16,6 +16,9 @@ interface Donation {
   is_anonymous?: boolean;
   donor_name?: string | null;
   donor_avatar?: string | null;
+  donor_email?: string | null;
+  payment_status?: string;
+  message?: string;
   // Legacy support for old structure
   profiles?: {
     name: string;
@@ -27,21 +30,22 @@ interface AllDonorsDialogProps {
   isOpen: boolean;
   onClose: () => void;
   donations: Donation[];
+  isAdminView?: boolean;
 }
 
-export function AllDonorsDialog({ isOpen, onClose, donations }: AllDonorsDialogProps) {
+export function AllDonorsDialog({ isOpen, onClose, donations, isAdminView = false }: AllDonorsDialogProps) {
   const totalAmount = donations.reduce((sum, donation) => sum + donation.amount, 0);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>
             All Donors ({donations.length})
           </DialogTitle>
         </DialogHeader>
         
-        <ScrollArea className="h-[400px] pr-4">
+        <ScrollArea className="h-[500px] pr-4">
           <div className="space-y-3">
             {donations.map((donation) => {
               // Support both new privacy view and legacy structure
@@ -49,7 +53,7 @@ export function AllDonorsDialog({ isOpen, onClose, donations }: AllDonorsDialogP
               const donorAvatar = donation.donor_avatar || donation.profiles?.avatar;
               
               return (
-                <div key={donation.id} className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                <div key={donation.id} className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={donorAvatar} />
                     <AvatarFallback className="text-sm font-medium">
@@ -57,18 +61,38 @@ export function AllDonorsDialog({ isOpen, onClose, donations }: AllDonorsDialogP
                     </AvatarFallback>
                   </Avatar>
                   
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center justify-between gap-2">
                       <p className="font-medium truncate">
                         {donorName}
                       </p>
-                      <Badge variant="outline" className="text-primary font-semibold">
-                        {MoneyMath.format(MoneyMath.create(donation.amount, donation.currency))}
-                      </Badge>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {isAdminView && donation.payment_status && (
+                          <Badge variant={donation.payment_status === 'paid' ? 'default' : 'secondary'}>
+                            {donation.payment_status}
+                          </Badge>
+                        )}
+                        <Badge variant="outline" className="text-primary font-semibold">
+                          {MoneyMath.format(MoneyMath.create(donation.amount, donation.currency))}
+                        </Badge>
+                      </div>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      {formatRelativeTime(donation.created_at)}
-                    </p>
+                    
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      {isAdminView && donation.donor_email && (
+                        <>
+                          <span className="truncate">{donation.donor_email}</span>
+                          <span>•</span>
+                        </>
+                      )}
+                      <span>{formatRelativeTime(donation.created_at)}</span>
+                    </div>
+
+                    {isAdminView && donation.message && (
+                      <div className="mt-2 p-2 bg-muted/50 rounded text-sm">
+                        <p className="text-muted-foreground italic">"{donation.message}"</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               );

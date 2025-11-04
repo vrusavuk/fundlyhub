@@ -371,9 +371,66 @@ class AdminDataService {
   }
 
   /**
+   * Fetch donations for a specific campaign with donor information
+   */
+  async fetchCampaignDonations(campaignId: string) {
+    const cacheKey = `campaign-donations:${campaignId}`;
+    
+    return this.cache.getOrSet(cacheKey, async () => {
+      const { data, error } = await supabase
+        .from('donations')
+        .select(`
+          id,
+          amount,
+          currency,
+          created_at,
+          is_anonymous,
+          donor_name,
+          donor_email,
+          message,
+          payment_status,
+          profiles:donor_user_id(
+            name,
+            avatar
+          )
+        `)
+        .eq('fundraiser_id', campaignId)
+        .in('payment_status', ['paid'])
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching campaign donations:', error);
+        throw error;
+      }
+
+      // Format donations with proper privacy handling
+      const formattedDonations = data?.map((donation: any) => {
+        const isAnonymous = donation.is_anonymous;
+        
+        return {
+          id: donation.id,
+          amount: Number(donation.amount),
+          currency: donation.currency,
+          created_at: donation.created_at,
+          payment_status: donation.payment_status,
+          message: donation.message,
+          donor_email: isAnonymous ? null : donation.donor_email,
+          donor_name: isAnonymous 
+            ? 'Anonymous' 
+            : (donation.donor_name || donation.profiles?.name || 'Anonymous'),
+          donor_avatar: isAnonymous ? null : donation.profiles?.avatar,
+          is_anonymous: isAnonymous
+        };
+      }) || [];
+
+      return formattedDonations;
+    }, { ttl: 10000 }); // 10 second cache
+  }
+
+  /**
    * Clear cache for specific resource type
    */
-  invalidateCache(resource: 'users' | 'organizations' | 'campaigns' | 'roles' | 'dashboard' | 'all') {
+  invalidateCache(resource: 'users' | 'organizations' | 'campaigns' | 'roles' | 'dashboard' | 'donations' | 'all') {
     if (resource === 'all') {
       this.cache.clear();
     } else {
