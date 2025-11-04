@@ -221,7 +221,7 @@ class AdminDataService {
         pageSize,
         totalPages: Math.ceil((count || 0) / pageSize)
       };
-    }, { ttl: 30000 });
+    }, { ttl: 10000 }); // 10 second cache for faster updates
   }
 
   /**
@@ -330,7 +330,7 @@ class AdminDataService {
         ended: Number(stats.ended_campaigns),
         totalRaised: Number(stats.total_raised)
       };
-    }, { ttl: 30000 }); // 30 second cache
+    }, { ttl: 10000 }); // 10 second cache for faster updates
   }
 
   /**

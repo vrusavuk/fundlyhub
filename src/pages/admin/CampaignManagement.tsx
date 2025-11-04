@@ -289,6 +289,29 @@ export function CampaignManagement() {
     fetchCampaigns();
   });
 
+  // Subscribe to donation events for real-time campaign updates
+  useEventSubscriber('donation.completed', (event) => {
+    console.log('[CampaignManagement] Donation completed event:', event);
+    
+    // Invalidate campaign cache to force fresh data fetch
+    adminDataService.invalidateCache('campaigns');
+    
+    // Refresh both campaigns list and stats
+    fetchCampaigns();
+    fetchCampaignStats();
+  });
+
+  useEventSubscriber('donation.refunded', (event) => {
+    console.log('[CampaignManagement] Donation refunded event:', event);
+    
+    // Invalidate campaign cache to force fresh data fetch
+    adminDataService.invalidateCache('campaigns');
+    
+    // Refresh both campaigns list and stats
+    fetchCampaigns();
+    fetchCampaignStats();
+  });
+
   // Fetch campaigns when dependencies change
   useEffect(() => {
     fetchCampaigns();
@@ -397,7 +420,15 @@ export function CampaignManagement() {
       label: 'Refresh',
       icon: RefreshCw,
       variant: 'outline',
-      onClick: fetchCampaigns,
+      onClick: () => {
+        adminDataService.invalidateCache('campaigns');
+        fetchCampaigns();
+        fetchCampaignStats();
+        toast({
+          title: "Refreshed",
+          description: "Campaign data has been updated"
+        });
+      },
       loading: loading
     },
     {
