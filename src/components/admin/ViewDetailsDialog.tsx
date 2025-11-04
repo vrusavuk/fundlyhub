@@ -200,7 +200,11 @@ export function CampaignDetailsDialog({ campaign, open, onOpenChange }: Campaign
   const [loadingDonations, setLoadingDonations] = useState(false);
   const [showAllDonors, setShowAllDonors] = useState(false);
 
-  if (!campaign) return null;
+  // Early return with error handling
+  if (!campaign) {
+    console.warn('[CampaignDetailsDialog] No campaign provided');
+    return null;
+  }
 
   const progress = campaign.stats?.total_raised && campaign.goal_amount
     ? (campaign.stats.total_raised / campaign.goal_amount) * 100

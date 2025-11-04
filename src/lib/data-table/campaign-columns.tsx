@@ -24,6 +24,7 @@ export interface CampaignData {
   currency: string;
   status: 'draft' | 'pending' | 'active' | 'paused' | 'ended' | 'closed';
   created_at: string;
+  end_date?: string;
   owner_profile?: {
     name?: string;
     email?: string;
@@ -32,6 +33,7 @@ export interface CampaignData {
   stats?: {
     total_raised?: number;
     donor_count?: number;
+    unique_donors?: number;
   };
 }
 

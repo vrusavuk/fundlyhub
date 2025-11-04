@@ -207,6 +207,8 @@ class AdminDataService {
 
       const enrichedData = data?.map(campaign => ({
         ...campaign,
+        owner_profile: campaign.profiles || null, // Map profiles to owner_profile
+        profiles: undefined, // Remove original profiles field
         stats: statsMap.get(campaign.id) || {
           total_raised: 0,
           donor_count: 0,
