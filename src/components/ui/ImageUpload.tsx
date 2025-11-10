@@ -53,22 +53,30 @@ export function ImageUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // Sync previews with value prop changes
+  // Sync previews with value prop changes (controlled component pattern)
   useEffect(() => {
     const newPreviews = Array.isArray(value) ? value : value ? [value] : [];
-    console.log('[ImageUpload] useEffect triggered', {
+    
+    console.log('[ImageUpload] Syncing from parent value', {
       value,
-      previews,
+      currentPreviews: previews,
       newPreviews,
-      willUpdate: JSON.stringify(newPreviews) !== JSON.stringify(previews)
     });
     
-    // Only update if previews actually changed to avoid unnecessary re-renders
-    if (JSON.stringify(newPreviews) !== JSON.stringify(previews)) {
-      console.log('[ImageUpload] Updating previews', { from: previews, to: newPreviews });
-      setPreviews(newPreviews);
+    // Always update to match parent's value (it's the source of truth)
+    setPreviews(newPreviews);
+  }, [value]); // Only depend on value prop
+
+  // Validate preview URLs
+  const validPreviews = previews.filter(url => {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      console.warn('[ImageUpload] Invalid preview URL:', url);
+      return false;
     }
-  }, [value, previews]);
+  });
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -152,7 +160,9 @@ export function ImageUpload({
 
       for (let i = 0; i < fileArray.length; i++) {
         const file = fileArray[i];
+        console.log('[ImageUpload] Uploading file:', file.name);
         const result = await uploadFile(file);
+        console.log('[ImageUpload] Upload result:', result);
         if (result) {
           uploadedResults.push(result);
         }
@@ -160,14 +170,12 @@ export function ImageUpload({
 
       const newUrls = uploadedResults.map(r => r.url);
       const newImageIds = uploadedResults.map(r => r.imageId);
+      console.log('[ImageUpload] All uploads complete:', newUrls);
 
       const updatedPreviews = [...previews, ...newUrls];
       const updatedImageIds = [...imageIds, ...newImageIds];
 
-      setPreviews(updatedPreviews);
-      setImageIds(updatedImageIds);
-
-      // Update parent component
+      // ✅ Notify parent FIRST (source of truth)
       if (maxFiles === 1) {
         onChange(updatedPreviews[0] || '');
         onImageIdChange?.(updatedImageIds[0] || '');
@@ -175,6 +183,10 @@ export function ImageUpload({
         onChange(updatedPreviews);
         onImageIdChange?.(updatedImageIds);
       }
+
+      // Then update internal state (will be overwritten by useEffect anyway)
+      setPreviews(updatedPreviews);
+      setImageIds(updatedImageIds);
 
       toast({
         title: 'Upload successful',
@@ -275,7 +287,7 @@ export function ImageUpload({
               </p>
             </div>
           </div>
-        ) : previews.length === 0 ? (
+        ) : validPreviews.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-8 text-center">
             <div className="rounded-full bg-primary/10 p-4 mb-4">
               <Upload className="h-6 w-6 text-primary" />
@@ -291,9 +303,9 @@ export function ImageUpload({
       </div>
 
       {/* Preview Grid */}
-      {showPreview && previews.length > 0 && (
+      {showPreview && validPreviews.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {previews.map((preview, index) => (
+          {validPreviews.map((preview, index) => (
             <div
               key={index}
               className="relative group aspect-video rounded-lg overflow-hidden border bg-muted"
@@ -302,6 +314,13 @@ export function ImageUpload({
                 src={preview}
                 alt={`Preview ${index + 1}`}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  console.error('[ImageUpload] Image failed to load:', preview);
+                  e.currentTarget.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="%23999">Failed to load</text></svg>';
+                }}
+                onLoad={() => {
+                  console.log('[ImageUpload] Image loaded successfully:', preview);
+                }}
               />
               <button
                 type="button"
@@ -326,7 +345,7 @@ export function ImageUpload({
       )}
 
       {/* Add More Button */}
-      {previews.length > 0 && previews.length < maxFiles && !uploading && (
+      {validPreviews.length > 0 && validPreviews.length < maxFiles && !uploading && (
         <Button
           type="button"
           variant="outline"
@@ -335,7 +354,7 @@ export function ImageUpload({
           className="w-full"
         >
           <Upload className="h-4 w-4 mr-2" />
-          Add More Images ({previews.length}/{maxFiles})
+          Add More Images ({validPreviews.length}/{maxFiles})
         </Button>
       )}
     </div>
