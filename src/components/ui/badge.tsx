@@ -8,18 +8,18 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "border-transparent bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm",
-        secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "text-foreground border-border hover:bg-muted/50",
-        success: "border-transparent bg-success text-success-foreground hover:bg-success/90 shadow-sm",
-        warning: "border-transparent bg-warning text-warning-foreground hover:bg-warning/90 shadow-sm",
+        default: "border-transparent bg-[#635BFF] text-white hover:bg-[#5851EA]",
+        secondary: "border-transparent bg-[#E3E8EE] text-[#0A2540] hover:bg-[#D1D9E0]",
+        destructive: "border-transparent bg-[#DF1B41] text-white hover:bg-[#C71739]",
+        outline: "text-[#0A2540] border-[#E3E8EE] hover:bg-[#FAFBFC]",
+        success: "border-transparent bg-[#00D924] text-white hover:bg-[#00C020]",
+        warning: "border-transparent bg-[#FFC043] text-[#0A2540] hover:bg-[#F0B030]",
         // Stripe-inspired subtle variants
-        'stripe-success': "bg-status-success-light text-status-success-foreground ring-1 ring-inset ring-status-success-border",
-        'stripe-warning': "bg-status-warning-light text-status-warning-foreground ring-1 ring-inset ring-status-warning-border",
-        'stripe-error': "bg-status-error-light text-status-error-foreground ring-1 ring-inset ring-status-error-border",
-        'stripe-info': "bg-status-info-light text-status-info-foreground ring-1 ring-inset ring-status-info-border",
-        'stripe-neutral': "bg-muted text-muted-foreground ring-1 ring-inset ring-border",
+        'stripe-success': "bg-[#00D924]/10 text-[#00D924] ring-1 ring-inset ring-[#00D924]/20",
+        'stripe-warning': "bg-[#FFC043]/10 text-[#8B6A00] ring-1 ring-inset ring-[#FFC043]/20",
+        'stripe-error': "bg-[#DF1B41]/10 text-[#DF1B41] ring-1 ring-inset ring-[#DF1B41]/20",
+        'stripe-info': "bg-[#635BFF]/10 text-[#635BFF] ring-1 ring-inset ring-[#635BFF]/20",
+        'stripe-neutral': "bg-[#E3E8EE] text-[#0A2540] ring-1 ring-inset ring-[#E3E8EE]",
       },
     },
     defaultVariants: {

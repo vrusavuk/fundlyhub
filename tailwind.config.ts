@@ -28,6 +28,21 @@ export default {
         'touch': '44px', // Mobile touch target width
       },
       colors: {
+        // EXACT Stripe color palette
+        stripe: {
+          purple: '#635BFF',
+          'purple-dark': '#5851EA',
+          navy: '#0A2540',
+          'navy-light': '#1A3A5A',
+          'light-bg': '#F6F9FC',
+          'text-primary': '#0A2540',
+          'text-secondary': '#425466',
+          border: '#E3E8EE',
+          hover: '#FAFBFC',
+          'success-bg': '#00D924',
+          'warning-bg': '#FFC043',
+          'error-bg': '#DF1B41',
+        },
         // Stripe-inspired neutral palette
         'stripe-neutral': {
           50: 'hsl(248, 250, 252)',

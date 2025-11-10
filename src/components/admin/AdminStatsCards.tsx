@@ -1,95 +1,35 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { LucideIcon, TrendingUp, TrendingDown } from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getTypographyClasses, getSpacingClasses } from '@/lib/design/typography';
-import { StripeStatsCard, StatsChange } from './StripeStatsCard';
+import { StripeMetricCard, MetricChange } from './StripeMetricCard';
 
-interface AdminStatsCardProps {
+export interface AdminStatsCardProps {
   title: string;
   value: number | string;
   icon: LucideIcon;
   description?: string;
   trend?: {
-    value: number;
+    value: string | number;
     isPositive: boolean;
+    label?: string;
   };
   className?: string;
-  iconClassName?: string;
 }
 
-export function AdminStatsCard({ 
-  title, 
-  value, 
-  icon: Icon, 
-  description, 
-  trend, 
-  className,
-  iconClassName 
-}: AdminStatsCardProps) {
-  const isImportant = typeof value === 'number' && value > 1000;
-  
+// Legacy component - just wraps StripeMetricCard
+export function AdminStatsCard(props: AdminStatsCardProps) {
+  const change: MetricChange | undefined = props.trend ? {
+    value: typeof props.trend.value === 'number' ? props.trend.value.toString() : props.trend.value,
+    isPositive: props.trend.isPositive,
+    label: props.trend.label
+  } : undefined;
+
   return (
-    <Card className={cn(
-      "transition-colors duration-200 hover:bg-muted/50",
-      "border border-border shadow-minimal",
-      isImportant && "border-primary/30",
-      className
-    )}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-        <CardTitle className={cn(
-          getTypographyClasses('caption', 'md', 'text-muted-foreground'),
-          "uppercase tracking-wider font-semibold"
-        )}>
-          {title}
-        </CardTitle>
-        <div className={cn(
-          "p-2 rounded-lg bg-muted/50 transition-colors",
-          "border border-border"
-        )}>
-          <Icon className={cn("h-4 w-4 text-muted-foreground", iconClassName)} />
-        </div>
-      </CardHeader>
-      <CardContent className={getSpacingClasses('content', 'sm')}>
-        <div className={cn(
-          getTypographyClasses('display', 'sm', 'text-foreground'),
-          "font-bold tracking-tight"
-        )}>
-          {typeof value === 'number' ? value.toLocaleString() : value}
-        </div>
-        
-        {description && (
-          <p className={cn(
-            getTypographyClasses('body', 'sm', 'text-muted-foreground'),
-            "mt-1"
-          )}>
-            {description}
-          </p>
-        )}
-        
-        {trend && (
-          <div className="flex items-center justify-between mt-3 pt-2 border-t border-muted/30">
-            <div className="flex items-center space-x-1">
-              {trend.isPositive ? (
-                <TrendingUp className="h-3 w-3 text-success" />
-              ) : (
-                <TrendingDown className="h-3 w-3 text-destructive" />
-              )}
-              <span className={cn(
-                getTypographyClasses('caption', 'sm'),
-                "font-semibold",
-                trend.isPositive ? "text-success" : "text-destructive"
-              )}>
-                {trend.isPositive ? "+" : ""}{trend.value}%
-              </span>
-            </div>
-            <Badge variant="secondary" className="text-xs">
-              vs last month
-            </Badge>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <StripeMetricCard
+      label={props.title}
+      value={props.value}
+      change={change}
+      className={props.className}
+    />
   );
 }
 
@@ -105,27 +45,20 @@ export function AdminStatsGrid({ stats, className }: AdminStatsGridProps) {
       className
     )}>
       {stats.map((stat, index) => {
-        // Convert trend to StatsChange format if exists
-        const change: StatsChange | undefined = stat.trend ? {
-          value: Math.abs(stat.trend.value).toString(),
+        // Convert trend to MetricChange format if exists
+        const change: MetricChange | undefined = stat.trend ? {
+          value: typeof stat.trend.value === 'number' ? stat.trend.value.toString() : stat.trend.value,
           isPositive: stat.trend.isPositive,
-          label: 'vs last month'
+          label: stat.trend.label || 'vs last month'
         } : undefined;
 
         return (
-          <StripeStatsCard
+          <StripeMetricCard
             key={`stat-${index}-${stat.title}`}
-            title={stat.title}
+            label={stat.title}
             value={stat.value}
-            icon={stat.icon}
             change={change}
-            className={cn(
-              "animate-fade-in",
-              index === 0 && "animation-delay-0",
-              index === 1 && "animation-delay-100",
-              index === 2 && "animation-delay-200",
-              index === 3 && "animation-delay-300"
-            )}
+            className={stat.className}
           />
         );
       })}

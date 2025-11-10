@@ -154,19 +154,19 @@ export function AdminSidebar() {
     <Sidebar 
       variant="inset" 
       collapsible="icon"
-      className="border-r border-border bg-card"
+      className="border-r border-[#E3E8EE] bg-[#0A2540]"
     >
-      <SidebarHeader className="border-b border-border">
+      <SidebarHeader className="border-b border-[#1A3A5A]">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Crown className="size-4" />
+            <SidebarMenuButton size="lg" className="hover:bg-[#1A3A5A]">
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-[#635BFF]">
+                <Crown className="size-4 text-white" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">Admin Panel</span>
+                <span className="truncate font-semibold text-white">Admin Panel</span>
                 {highestRole && (
-                  <span className="truncate text-xs text-muted-foreground">
+                  <span className="truncate text-xs text-gray-400">
                     {highestRole.role_name.replace('_', ' ')}
                   </span>
                 )}
@@ -176,7 +176,7 @@ export function AdminSidebar() {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="bg-[#0A2540]">
         {/* Return to Site */}
         <SidebarGroup>
           <SidebarGroupContent>
@@ -185,6 +185,7 @@ export function AdminSidebar() {
                 <SidebarMenuButton 
                   asChild
                   tooltip={state === "collapsed" ? "Return to Site" : undefined}
+                  className="text-white hover:bg-[#1A3A5A] mx-2"
                 >
                   <NavLink to="/">
                     <ArrowLeft className="size-4" />
@@ -197,7 +198,7 @@ export function AdminSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          <SidebarGroupLabel className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
             Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -213,15 +214,15 @@ export function AdminSidebar() {
                       tooltip={state === "collapsed" ? item.title : undefined}
                       className={cn(
                         "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md mx-2",
-                        "transition-colors hover:bg-muted/50",
-                        isActiveRoute && "bg-primary/10 text-primary font-semibold"
+                        "transition-colors text-white hover:bg-[#1A3A5A]",
+                        isActiveRoute && "bg-[#635BFF] text-white font-semibold"
                       )}
                     >
                       <NavLink to={item.url} end={item.url === '/admin'}>
                         <item.icon className="size-4" />
                         <span>{item.title}</span>
                         {item.badge && state === "expanded" && (
-                          <Badge variant="stripe-error" className="ml-auto text-xs">
+                          <Badge className="ml-auto text-xs bg-[#DF1B41] text-white border-0">
                             {item.badge}
                           </Badge>
                         )}
@@ -237,25 +238,25 @@ export function AdminSidebar() {
         {/* System Status Section - Only show when expanded */}
         {state === "expanded" && (
           <SidebarGroup>
-            <SidebarGroupLabel>System</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-gray-400">System</SidebarGroupLabel>
             <SidebarGroupContent>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs px-2">
-                  <span className="text-muted-foreground">Health</span>
+                  <span className="text-gray-400">Health</span>
                   <div className="flex items-center space-x-1">
-                    <div className="w-2 h-2 bg-status-success rounded-full"></div>
-                    <span className="text-status-success font-medium">Good</span>
+                    <div className="w-2 h-2 bg-[#00D924] rounded-full"></div>
+                    <span className="text-[#00D924] font-medium">Good</span>
                   </div>
                 </div>
                 
                 <div className="flex items-center justify-between text-xs px-2">
-                  <span className="text-muted-foreground">Active Users</span>
-                  <span className="text-foreground font-medium">1,247</span>
+                  <span className="text-gray-400">Active Users</span>
+                  <span className="text-white font-medium">1,247</span>
                 </div>
                 
                 <div className="flex items-center justify-between text-xs px-2">
-                  <span className="text-muted-foreground">Pending Reviews</span>
-                  <Badge variant="secondary" className="text-xs">
+                  <span className="text-gray-400">Pending Reviews</span>
+                  <Badge className="text-xs bg-[#E3E8EE] text-[#0A2540] border-0">
                     23
                   </Badge>
                 </div>
@@ -265,15 +266,15 @@ export function AdminSidebar() {
         )}
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="bg-[#0A2540] border-t border-[#1A3A5A]">
         {/* Super Admin Warning */}
         {isSuperAdmin() && state === "expanded" && (
-          <div className="p-3 bg-status-warning-light border border-status-warning-border rounded-lg">
+          <div className="p-3 bg-[#FFC043]/10 border border-[#FFC043]/20 rounded-lg mx-2">
             <div className="flex items-start space-x-2">
-              <AlertTriangle className="w-4 h-4 text-status-warning flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="w-4 h-4 text-[#FFC043] flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs font-medium text-status-warning">Super Admin</p>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs font-medium text-[#FFC043]">Super Admin</p>
+                <p className="text-xs text-gray-400 mt-1">
                   Full platform access. Use with caution.
                 </p>
               </div>
