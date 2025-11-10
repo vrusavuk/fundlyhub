@@ -6,12 +6,20 @@ import {
   SortingState, 
   VisibilityState 
 } from '@tanstack/react-table';
-import { EnhancedDataTable, ServerPaginationState } from '@/components/ui/enhanced-data-table';
+import { DataTableExact } from '@/components/admin/data-table-exact';
+import { StripeCardExact } from '@/components/ui/stripe-card-exact';
 import { AdminTableControls, BulkAction, TableAction } from './AdminTableControls';
 import { AdminContentContainer } from './AdminContentContainer';
 import { UserMobileCard, CampaignMobileCard, OrganizationMobileCard } from '@/components/ui/mobile-card';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+
+export interface ServerPaginationState {
+  page: number;
+  pageSize: number;
+  totalCount?: number;
+  totalPages?: number;
+}
 
 interface AdminDataTableProps<TData, TValue> {
   // Core table props
@@ -106,6 +114,21 @@ export function AdminDataTable<TData, TValue>({
   const clearSelection = () => {
     handleSelectionChange([]);
   };
+
+  // Convert selection to row IDs for DataTableExact
+  const convertSelectionToRowIds = (selection: TData[]): Record<string, boolean> => {
+    const rowIds: Record<string, boolean> = {};
+    selection.forEach((item, index) => {
+      rowIds[String(index)] = true;
+    });
+    return rowIds;
+  };
+
+  // Handle selection change from DataTableExact
+  const handleDataTableSelectionChange = (selectedRowIds: Record<string, boolean>) => {
+    const selectedData = data.filter((_, index) => selectedRowIds[String(index)]);
+    handleSelectionChange(selectedData);
+  };
   
   return (
     <AdminContentContainer
@@ -122,7 +145,7 @@ export function AdminDataTable<TData, TValue>({
         <AdminTableControls
           title={title}
           selectedCount={currentSelection.length}
-          totalCount={data.length}
+          totalCount={paginationState?.totalCount || data.length}
           actions={actions}
           bulkActions={bulkActions}
           onBulkAction={handleBulkAction}
@@ -130,28 +153,17 @@ export function AdminDataTable<TData, TValue>({
           loading={loading}
         />
         
-        {/* Data Table */}
-        <EnhancedDataTable
-          columns={columns}
-          data={data}
-          loading={loading}
-          onRowClick={onRowClick}
-          enableSelection={enableSelection}
-          enableSorting={enableSorting}
-          enableColumnVisibility={enableColumnVisibility}
-          enablePagination={enablePagination}
-          searchPlaceholder={searchPlaceholder}
-          emptyTitle={emptyStateTitle}
-          emptyDescription={emptyStateDescription}
-          onSelectionChange={handleSelectionChange}
-          density={density}
-          pageSizeOptions={pageSizeOptions}
-          className="border-none shadow-none"
-          searchable={false}
-          serverPagination={paginationState}
-          onServerPageChange={onPageChange}
-          onServerPageSizeChange={onPageSizeChange}
-        />
+        {/* Data Table with Exact Stripe Styling */}
+        <StripeCardExact noPadding>
+          <DataTableExact
+            columns={columns}
+            data={data}
+            onRowClick={onRowClick}
+            enableSelection={enableSelection}
+            selectedRows={convertSelectionToRowIds(currentSelection)}
+            onSelectionChange={handleDataTableSelectionChange}
+          />
+        </StripeCardExact>
       </div>
     </AdminContentContainer>
   );

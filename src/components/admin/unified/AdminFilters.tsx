@@ -1,12 +1,11 @@
 import { ReactNode } from 'react';
-import { Search, Filter, X } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Search, X } from 'lucide-react';
+import { StripeCardExact } from '@/components/ui/stripe-card-exact';
+import { StripeBadgeExact } from '@/components/ui/stripe-badge-exact';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { getTypographyClasses } from '@/lib/design/typography';
 
 export interface FilterConfig {
   key: string;
@@ -41,17 +40,12 @@ export function AdminFilters({
   const hasActiveFilters = activeFilters.length > 0 || Object.values(values).some(v => v && v !== 'all' && v !== '');
 
   return (
-    <div className={className}>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-            <Filter className="h-4 w-4" />
+    <StripeCardExact className={className}>
+      <div className="px-6 py-4">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-[12px] font-semibold text-[#425466] uppercase tracking-[0.5px]">
             {title}
-            {hasActiveFilters && (
-              <Badge variant="secondary" className="text-xs">
-                {activeFilters.length || Object.values(values).filter(v => v && v !== 'all' && v !== '').length}
-              </Badge>
-            )}
           </h3>
           
           {hasActiveFilters && onClear && (
@@ -59,9 +53,8 @@ export function AdminFilters({
               variant="ghost"
               size="sm"
               onClick={onClear}
-              className="text-slate-600 hover:text-slate-900 h-8 px-2"
+              className="text-[#425466] hover:text-[#0A2540] h-8"
             >
-              <X className="h-3 w-3 mr-1" />
               Clear all
             </Button>
           )}
@@ -71,19 +64,19 @@ export function AdminFilters({
         {activeFilters.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-4">
             {activeFilters.map((filter) => (
-              <Badge
+              <StripeBadgeExact
                 key={`${filter.key}-${filter.value}`}
-                variant="secondary"
-                className="text-xs px-2 py-1 flex items-center gap-1"
+                variant="neutral"
+                className="flex items-center gap-1"
               >
                 <span>{filter.label}: {filter.value}</span>
                 <button
                   onClick={() => onChange(filter.key, '')}
-                  className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
+                  className="ml-1 hover:bg-[#0A2540]/10 rounded-full p-0.5"
                 >
                   <X className="h-2 w-2" />
                 </button>
-              </Badge>
+              </StripeBadgeExact>
             ))}
           </div>
         )}
@@ -94,12 +87,12 @@ export function AdminFilters({
             <div key={filter.key} className="flex-1 min-w-[200px]">
               {filter.type === 'search' && (
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#425466]" />
                   <Input
                     placeholder={filter.placeholder || `Search ${filter.label.toLowerCase()}...`}
                     value={values[filter.key] || ''}
                     onChange={(e) => onChange(filter.key, e.target.value)}
-                    className="pl-10 h-9 text-sm border-slate-200"
+                    className="h-9 pl-10 text-[14px] border-[#E3E8EE] focus:border-[#635BFF] focus:ring-1 focus:ring-[#635BFF]"
                   />
                 </div>
               )}
@@ -109,15 +102,15 @@ export function AdminFilters({
                   value={values[filter.key] || 'all'}
                   onValueChange={(value) => onChange(filter.key, value)}
                 >
-                  <SelectTrigger className="h-9 text-sm border-slate-200">
+                  <SelectTrigger className="h-9 text-[14px] border-[#E3E8EE] focus:border-[#635BFF]">
                     <SelectValue placeholder={filter.placeholder || `All ${filter.label.toLowerCase()}`} />
                   </SelectTrigger>
-                  <SelectContent className="bg-white border-slate-200">
+                  <SelectContent className="border-[#E3E8EE]">
                     {filter.options.map((option) => (
                       <SelectItem 
                         key={option.value} 
                         value={option.value}
-                        className="text-sm"
+                        className="text-[14px]"
                       >
                         {option.label}
                       </SelectItem>
@@ -130,6 +123,7 @@ export function AdminFilters({
             </div>
           ))}
         </div>
-    </div>
+      </div>
+    </StripeCardExact>
   );
 }

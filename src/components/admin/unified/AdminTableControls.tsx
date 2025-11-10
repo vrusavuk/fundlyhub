@@ -1,8 +1,7 @@
 import { ReactNode } from 'react';
-import { Download, RefreshCw, Plus, Settings2, CheckCircle2, X } from 'lucide-react';
+import { Download, RefreshCw, Plus, ChevronDown, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
+import { StripeBadgeExact } from '@/components/ui/stripe-badge-exact';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -12,7 +11,6 @@ import {
   DropdownMenuLabel
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { getTypographyClasses } from '@/lib/design/typography';
 
 export interface BulkAction {
   key: string;
@@ -66,14 +64,14 @@ export function AdminTableControls({
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           {title && (
-            <h2 className={getTypographyClasses('heading', 'md', 'text-foreground')}>
+            <h2 className="text-[16px] font-semibold text-[#0A2540]">
               {title}
             </h2>
           )}
           {totalCount > 0 && (
-            <Badge variant="secondary" className="text-xs">
-              {totalCount} total
-            </Badge>
+            <StripeBadgeExact variant="neutral">
+              {totalCount.toLocaleString()} total
+            </StripeBadgeExact>
           )}
         </div>
         
@@ -88,10 +86,7 @@ export function AdminTableControls({
                 size="sm"
                 onClick={action.onClick}
                 disabled={action.disabled || loading}
-                className={cn(
-                  'h-9 shadow-sm',
-                  action.variant === 'outline' && 'hover:bg-slate-50'
-                )}
+                className="h-9"
               >
                 {action.loading ? (
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
@@ -107,67 +102,55 @@ export function AdminTableControls({
 
       {/* Bulk Actions Bar */}
       {hasSelection && bulkActions.length > 0 && (
-        <Card className="border-primary/20 bg-primary/5">
-          <CardContent className="py-3 px-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-primary" />
-                  <Badge variant="secondary" className="font-medium">
-                    {selectedCount} selected
-                  </Badge>
-                  <span className={getTypographyClasses('body', 'sm', 'text-muted-foreground')}>
-                    of {totalCount} items
-                  </span>
-                </div>
-              </div>
+        <div className="bg-[#F6F9FC] border border-[#E3E8EE] rounded-lg px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <StripeBadgeExact variant="info">
+                {selectedCount} selected
+              </StripeBadgeExact>
               
-              <div className="flex items-center gap-2">
-                {/* Bulk Action Dropdown */}
-                {bulkActions.length > 0 && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button size="sm" variant="outline" className="shadow-soft">
-                        <Settings2 className="h-4 w-4 mr-2" />
-                        Bulk Actions
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="shadow-medium bg-background/95 backdrop-blur-sm">
-                      <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
-                        Actions for {selectedCount} items
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      {bulkActions.map((action) => (
-                        <DropdownMenuItem
-                          key={action.key}
-                          onClick={() => onBulkAction?.(action.key)}
-                          className={cn(
-                            'hover:bg-primary/5 cursor-pointer',
-                            action.variant === 'destructive' && 'text-destructive hover:bg-destructive/10'
-                          )}
-                        >
-                          {action.icon && <action.icon className="h-4 w-4 mr-2" />}
-                          {action.label}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-                
-                {/* Clear Selection */}
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={onClearSelection}
-                  className="text-muted-foreground hover:text-foreground hover:bg-primary/10"
-                >
-                  <X className="h-4 w-4 mr-1" />
-                  Clear
-                </Button>
-              </div>
+              {/* Bulk Action Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="default" size="sm" className="h-9">
+                    Bulk Actions
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="border-[#E3E8EE]">
+                  <DropdownMenuLabel className="text-[12px] font-medium text-[#425466]">
+                    Actions for {selectedCount} items
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {bulkActions.map((action) => (
+                    <DropdownMenuItem
+                      key={action.key}
+                      onClick={() => onBulkAction?.(action.key)}
+                      className={cn(
+                        'text-[14px] cursor-pointer',
+                        action.variant === 'destructive' && 'text-[#DF1B41]'
+                      )}
+                    >
+                      {action.icon && <action.icon className="h-4 w-4 mr-2" />}
+                      {action.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-          </CardContent>
-        </Card>
+            
+            {/* Clear Selection */}
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={onClearSelection}
+              className="h-8 text-[#425466] hover:text-[#0A2540] hover:bg-white"
+            >
+              <X className="h-4 w-4 mr-1" />
+              Clear Selection
+            </Button>
+          </div>
+        </div>
       )}
 
       {/* Custom Children */}
