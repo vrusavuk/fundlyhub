@@ -8,6 +8,7 @@ import {
 } from '@tanstack/react-table';
 import { DataTableExact } from '@/components/admin/data-table-exact';
 import { StripeCardExact } from '@/components/ui/stripe-card-exact';
+import { PaginationControls } from '@/components/ui/PaginationControls';
 import { AdminTableControls, BulkAction, TableAction } from './AdminTableControls';
 import { AdminContentContainer } from './AdminContentContainer';
 import { TableSkeleton } from '@/components/admin/TableSkeleton';
@@ -181,6 +182,20 @@ export function AdminDataTable<TData, TValue>({
               onSelectionChange={handleDataTableSelectionChange}
               density={density}
             />
+            
+            {/* Pagination Controls */}
+            {enablePagination && paginationState && onPageChange && onPageSizeChange && paginationState.totalPages && paginationState.totalPages > 1 && (
+              <div className="border-t border-border">
+                <PaginationControls
+                  pageIndex={paginationState.page - 1}
+                  pageSize={paginationState.pageSize}
+                  pageCount={paginationState.totalPages}
+                  total={paginationState.totalCount || 0}
+                  onPageChange={(newPageIndex) => onPageChange(newPageIndex + 1)}
+                  onPageSizeChange={onPageSizeChange}
+                />
+              </div>
+            )}
           </StripeCardExact>
         </div>
       </div>

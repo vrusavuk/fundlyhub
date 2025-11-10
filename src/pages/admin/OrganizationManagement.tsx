@@ -369,7 +369,12 @@ export function OrganizationManagement() {
         enableFiltering={false}
         enableColumnVisibility={true}
         enablePagination={true}
-        paginationState={pagination.state}
+        paginationState={{
+          page: pagination.state.page,
+          pageSize: pagination.state.pageSize,
+          totalCount: pagination.state.total,
+          totalPages: pagination.state.totalPages
+        }}
         onPageChange={pagination.goToPage}
         onPageSizeChange={pagination.setPageSize}
       />
