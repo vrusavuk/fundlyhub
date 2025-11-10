@@ -185,15 +185,16 @@ export function CampaignManagement() {
     }
   }, [pagination.state.page, pagination.state.pageSize, debouncedSearch, filters, toast]);
 
-  const handleCampaignUpdate = async (campaignId: string, changes: Record<string, any>) => {
+  const handleCampaignUpdate = async (campaignId: string, changes: Record<string, any>, imageOperations?: any) => {
     console.group('🔄 Campaign Update Handler');
     console.log('Campaign ID:', campaignId);
     console.log('Changes to apply:', changes);
+    console.log('Image operations:', imageOperations);
     
     return optimisticUpdates.executeAction(
       {
         type: 'update',
-        description: `Update campaign fields`,
+        description: `Update campaign fields${imageOperations ? ' and images' : ''}`,
         originalData: { ...editingCampaign },
         rollbackFn: async () => {
           console.log('⏮️ Rolling back campaign update');
@@ -214,13 +215,22 @@ export function CampaignManagement() {
           campaignId,
           user.user.id,
           changes,
-          { reason: 'Admin manual update' }
+          { 
+            validateTransitions: true,
+            reason: 'Admin manual update',
+            imageOperations
+          }
         );
         
         console.log('✅ AdminEventService.updateCampaign completed');
         console.groupEnd();
         
-        // Event subscribers will trigger fetchCampaigns() - no need to call here
+        // Optimistic update in UI
+        setCampaigns((prev) =>
+          prev.map((c) => (c.id === campaignId ? { ...c, ...changes } : c))
+        );
+        
+        await fetchCampaigns();
       }
     );
   };

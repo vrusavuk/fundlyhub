@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Dialog,
   DialogContent,
@@ -42,12 +43,13 @@ import {
 } from "@/lib/utils/dialogNotifications";
 import { campaignEditSchema, type CampaignEditData } from '@/lib/validation/campaignEdit.schema';
 import { useCategories } from '@/hooks/useCategories';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 
 interface EditCampaignDialogProps {
   campaign: any;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (campaignId: string, changes: Record<string, any>) => Promise<void>;
+  onSave: (campaignId: string, changes: Record<string, any>, imageOperations?: any) => Promise<void>;
 }
 
 export function EditCampaignDialog({ 
@@ -60,6 +62,10 @@ export function EditCampaignDialog({
   const [submitError, setSubmitError] = useState<any>(null);
   const { toast } = useToast();
   const { categories } = useCategories();
+  
+  // Image tracking state
+  const [uploadedCoverImageId, setUploadedCoverImageId] = useState<string | null>(null);
+  const [uploadedCoverImagePath, setUploadedCoverImagePath] = useState<string | null>(null);
   
   const form = useForm<CampaignEditData>({
     resolver: zodResolver(campaignEditSchema),
@@ -76,8 +82,11 @@ export function EditCampaignDialog({
       visibility: campaign?.visibility || 'public',
       status: campaign?.status || 'draft',
       cover_image: campaign?.cover_image || '',
+      coverImageId: null,
+      coverImagePath: null,
       video_url: campaign?.video_url || '',
       images: campaign?.images || [],
+      galleryImageIds: [],
       end_date: campaign?.end_date || null,
       beneficiary_name: campaign?.beneficiary_name || '',
       beneficiary_contact: campaign?.beneficiary_contact || '',
@@ -100,8 +109,11 @@ export function EditCampaignDialog({
         visibility: campaign.visibility || 'public',
         status: campaign.status || 'draft',
         cover_image: campaign.cover_image || '',
+        coverImageId: null,
+        coverImagePath: null,
         video_url: campaign.video_url || '',
         images: campaign.images || [],
+        galleryImageIds: [],
         end_date: campaign.end_date || null,
         beneficiary_name: campaign.beneficiary_name || '',
         beneficiary_contact: campaign.beneficiary_contact || '',
@@ -167,10 +179,33 @@ export function EditCampaignDialog({
   const onSubmit = async (data: CampaignEditData) => {
     if (!campaign) return;
     
-    // Detect changes
+    // Detect regular changes
     const changes = detectChanges(data, campaign);
     
-    if (Object.keys(changes).length === 0) {
+    // Prepare image operations
+    const imageOperations: any = {};
+    
+    if (uploadedCoverImageId) {
+      imageOperations.coverImageId = uploadedCoverImageId;
+      imageOperations.coverImagePath = uploadedCoverImagePath;
+      
+      // Track previous cover image for cleanup
+      const previousImageQuery = await supabase
+        .from('fundraiser_images')
+        .select('id')
+        .eq('fundraiser_id', campaign.id)
+        .eq('image_type', 'cover')
+        .maybeSingle();
+      
+      if (previousImageQuery.data) {
+        imageOperations.previousCoverImageId = previousImageQuery.data.id;
+      }
+      
+      // Add cover_image URL to changes if new upload
+      changes.cover_image = data.cover_image;
+    }
+    
+    if (Object.keys(changes).length === 0 && !imageOperations.coverImageId) {
       onOpenChange(false);
       return;
     }
@@ -178,12 +213,14 @@ export function EditCampaignDialog({
     setIsSubmitting(true);
     
     try {
-      await onSave(campaign.id, changes);
+      await onSave(campaign.id, changes, imageOperations);
       setSubmitError(null);
       
       toast({
         title: "Campaign Updated",
-        description: "Campaign has been successfully updated.",
+        description: imageOperations.coverImageId 
+          ? "Campaign and images have been successfully updated."
+          : "Campaign has been successfully updated.",
       });
       
       onOpenChange(false);
@@ -428,10 +465,63 @@ export function EditCampaignDialog({
                     name="cover_image"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Cover Image URL</FormLabel>
+                        <FormLabel>Cover Image</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value || ''} type="url" />
+                          <div className="space-y-4">
+                            {/* Upload Option */}
+                            <ImageUpload
+                              value={uploadedCoverImageId ? [form.watch('cover_image')] : (field.value ? [field.value] : [])}
+                              onChange={(url) => {
+                                if (typeof url === 'string') {
+                                  field.onChange(url);
+                                }
+                              }}
+                              onImageIdChange={(ids) => {
+                                if (ids && ids.length > 0) {
+                                  setUploadedCoverImageId(ids[0]);
+                                  form.setValue('coverImageId', ids[0]);
+                                }
+                              }}
+                              maxFiles={1}
+                              bucket="fundraiser-images"
+                              isDraft={false}
+                              label="Upload New Cover Image"
+                              description="Upload a new image or enter a URL below"
+                              showPreview={true}
+                            />
+                            
+                            {/* OR URL Input (for backward compatibility) */}
+                            <div className="relative">
+                              <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t" />
+                              </div>
+                              <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-background px-2 text-muted-foreground">
+                                  Or use URL
+                                </span>
+                              </div>
+                            </div>
+                            
+                            <Input 
+                              {...field} 
+                              value={field.value || ''} 
+                              type="url" 
+                              placeholder="https://example.com/image.jpg"
+                              disabled={!!uploadedCoverImageId}
+                            />
+                            
+                            {uploadedCoverImageId && (
+                              <Alert>
+                                <AlertDescription>
+                                  Uploaded image will replace any existing cover image when you save.
+                                </AlertDescription>
+                              </Alert>
+                            )}
+                          </div>
                         </FormControl>
+                        <FormDescription>
+                          Upload a file or paste an image URL
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}

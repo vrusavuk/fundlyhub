@@ -59,6 +59,9 @@ export const campaignEditSchema = z.object({
     (val) => (val === '' ? null : val),
     z.string().url('Must be a valid URL').nullable().optional()
   ),
+  coverImageId: z.string().uuid().optional().nullable(),
+  coverImagePath: z.string().optional().nullable(),
+  
   video_url: z.preprocess(
     (val) => (val === '' ? null : val),
     z.string().url('Must be a valid URL').nullable().optional()
@@ -67,6 +70,7 @@ export const campaignEditSchema = z.object({
     (val) => (val === null || val === undefined || val === '' ? null : val),
     z.array(z.string()).nullable().optional()
   ),
+  galleryImageIds: z.array(z.string().uuid()).max(5).optional().nullable(),
   
   // Timeline
   end_date: z.preprocess(

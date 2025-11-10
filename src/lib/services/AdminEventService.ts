@@ -203,6 +203,12 @@ export class AdminEventService {
     options?: {
       validateTransitions?: boolean;
       reason?: string;
+      imageOperations?: {
+        coverImageId?: string;
+        coverImagePath?: string;
+        previousCoverImageId?: string;
+        galleryImageIds?: string[];
+      };
     }
   ) {
     console.log('[AdminEventService] updateCampaign called', {
@@ -328,7 +334,46 @@ export class AdminEventService {
 
     console.log('[AdminEventService] Campaign updated successfully:', updatedCampaign);
 
-    // 5. Publish event
+    // 5. Handle image operations
+    if (options?.imageOperations) {
+      const { imageUploadService } = await import('./imageUpload.service');
+      
+      try {
+        // If replacing cover image, delete old one
+        if (options.imageOperations.previousCoverImageId && 
+            options.imageOperations.coverImageId !== options.imageOperations.previousCoverImageId) {
+          await imageUploadService.deleteImage(
+            options.imageOperations.previousCoverImageId,
+            updatedBy
+          );
+        }
+
+        // Link new cover image
+        if (options.imageOperations.coverImageId) {
+          await imageUploadService.linkDraftImagesToFundraiser(
+            [options.imageOperations.coverImageId],
+            campaignId,
+            updatedBy
+          );
+        }
+
+        // Link gallery images
+        if (options.imageOperations.galleryImageIds && 
+            options.imageOperations.galleryImageIds.length > 0) {
+          await imageUploadService.linkDraftImagesToFundraiser(
+            options.imageOperations.galleryImageIds,
+            campaignId,
+            updatedBy
+          );
+        }
+      } catch (imageError) {
+        console.error('[AdminEventService] Image operation failed:', imageError);
+        // Campaign update succeeded but image linking failed - log as error
+        // The calling component will handle user notification
+      }
+    }
+
+    // 6. Publish event
     await globalEventBus.publish(
       createCampaignUpdatedEvent({
         campaignId,
@@ -338,7 +383,7 @@ export class AdminEventService {
       })
     );
 
-    // 6. Log audit trail
+    // 7. Log audit trail
     await supabase.rpc('log_audit_event', {
       _actor_id: updatedBy,
       _action: 'campaign_updated',
@@ -349,6 +394,7 @@ export class AdminEventService {
         reason: options?.reason,
         changed_fields: Object.keys(changes),
         admin_edit: updatedBy !== campaign.owner_user_id,
+        image_operations: options?.imageOperations ? true : false,
       },
     });
 
