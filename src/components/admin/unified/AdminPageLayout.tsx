@@ -6,11 +6,11 @@ import type { AdminPageLayoutProps } from '@/types/admin-layout';
 /**
  * AdminPageLayout - Stripe-Inspired Page Layout
  * 
- * A semantic, reusable layout component for admin pages that follows
- * Stripe's design principles:
- * - White header section with title, description, badge, and actions
- * - Gray content area for page content
+ * A semantic, reusable layout component for admin pages with seamless content flow.
+ * - No separate header section or borders
+ * - Title is the first content element with natural flow
  * - Consistent spacing and visual hierarchy
+ * - Single scrollable container
  * 
  * Usage:
  * <AdminPageLayout
@@ -19,8 +19,8 @@ import type { AdminPageLayoutProps } from '@/types/admin-layout';
  *   badge={{ text: "Beta", variant: "default" }}
  *   actions={<Button>Action</Button>}
  * >
- *   <ChildComponent className="mb-6" />
- *   <AnotherComponent className="mb-6" />
+ *   <ChildComponent />
+ *   <AnotherComponent />
  * </AdminPageLayout>
  */
 export function AdminPageLayout({
@@ -32,44 +32,38 @@ export function AdminPageLayout({
   className
 }: AdminPageLayoutProps) {
   return (
-    <div className={cn('flex-1 flex flex-col min-h-0 bg-white', className)}>
-      {/* Page Header - White background with bottom border */}
-      <div className="shrink-0 bg-white border-b border-border px-8 py-6">
+    <div className={cn('flex-1 overflow-auto bg-background', className)}>
+      {/* Single content container - everything flows together */}
+      <div className="p-8 space-y-8">
+        {/* Page Header - inline with content, no borders */}
         <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
+          <div className="flex-1 space-y-2">
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold text-foreground">
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
                 {title}
               </h1>
               {badge && (
-                <Badge
-                  variant={badge.variant || 'default'}
-                  className="text-xs"
-                >
+                <Badge variant={badge.variant || 'default'} className="text-xs">
                   {badge.text}
                 </Badge>
               )}
             </div>
             {description && (
-              <p className="text-sm text-muted-foreground mt-2">
+              <p className="text-sm text-muted-foreground max-w-3xl">
                 {description}
               </p>
             )}
           </div>
           
           {actions && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               {actions}
             </div>
           )}
         </div>
-      </div>
 
-      {/* Content Section - Clean white background with padding */}
-      <div className="flex-1 overflow-auto bg-white">
-        <div className="p-8 space-y-6">
-          {children}
-        </div>
+        {/* Content - flows naturally after title */}
+        {children}
       </div>
     </div>
   );
