@@ -2,6 +2,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Eye, Mail, ExternalLink, RefreshCw, Copy, MoreHorizontal } from "lucide-react";
 
 import { StripeBadgeExact } from "@/components/ui/stripe-badge-exact";
+import { PaymentMethodIcon } from "@/components/admin/PaymentMethodIcon";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
@@ -12,9 +13,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  createSelectionColumn,
-} from "./columns";
 import { formatDistanceToNow } from "date-fns";
 
 // Donation data interface
@@ -189,15 +187,17 @@ export function createDonationColumns(
     {
       accessorKey: "payment_provider",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Provider" />
+        <DataTableColumnHeader column={column} title="Payment method" />
       ),
       cell: ({ row }) => {
         const provider = row.original.payment_provider || "stripe";
+        const paymentMethod = row.original.payment_method || "card";
         
         return (
-          <div className="flex items-center space-x-2">
-            <div className="text-sm capitalize">{provider}</div>
-          </div>
+          <PaymentMethodIcon 
+            type={paymentMethod}
+            last4="3027"
+          />
         );
       },
     },

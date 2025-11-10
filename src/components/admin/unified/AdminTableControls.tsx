@@ -1,7 +1,8 @@
 import { ReactNode } from 'react';
 import { Download, RefreshCw, Plus, ChevronDown, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { StripeActionButtons, ActionButton } from '@/components/admin/StripeActionButtons';
 import { StripeBadgeExact } from '@/components/ui/stripe-badge-exact';
+import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -75,29 +76,30 @@ export function AdminTableControls({
           )}
         </div>
         
-        <div className="flex items-center gap-2">
-          {actions.map((action) => (
-            action.customRender ? (
-              <div key={action.key}>{action.customRender()}</div>
-            ) : (
-              <Button
-                key={action.key}
-                variant={action.variant || 'outline'}
-                size="sm"
-                onClick={action.onClick}
-                disabled={action.disabled || loading}
-                className="h-9"
-              >
-                {action.loading ? (
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                ) : action.icon ? (
-                  <action.icon className="h-4 w-4 mr-2" />
-                ) : null}
-                {action.label}
-              </Button>
-            )
-          ))}
-        </div>
+        {actions.length > 0 && (
+          <StripeActionButtons
+            actions={actions.filter(a => !a.customRender && a.variant !== 'default').map(a => ({
+              key: a.key,
+              label: a.label,
+              icon: a.icon as any,
+              onClick: a.onClick || (() => {}),
+              variant: (a.variant || 'outline') as ActionButton['variant'],
+              loading: a.loading,
+              disabled: a.disabled || loading
+            }))}
+            primaryAction={actions.find(a => a.variant === 'default') ? {
+              key: actions.find(a => a.variant === 'default')!.key,
+              label: actions.find(a => a.variant === 'default')!.label,
+              icon: actions.find(a => a.variant === 'default')!.icon as any,
+              onClick: actions.find(a => a.variant === 'default')!.onClick || (() => {})
+            } : undefined}
+          />
+        )}
+        
+        {/* Custom Renders */}
+        {actions.filter(a => a.customRender).map((action) => (
+          <div key={action.key}>{action.customRender!()}</div>
+        ))}
       </div>
 
       {/* Bulk Actions Bar */}

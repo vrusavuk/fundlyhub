@@ -7,7 +7,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { MoneyMath } from "@/lib/enterprise/utils/MoneyMath";
 import {
-  createSelectionColumn,
   createDateColumn,
   createActionsColumn,
 } from "./columns";
@@ -67,9 +66,6 @@ export function createCampaignColumns(
   }
 ): ColumnDef<CampaignData>[] {
   return [
-    // Selection column
-    createSelectionColumn<CampaignData>(),
-
     // Campaign column with image, title, and details
     {
       accessorKey: "title",

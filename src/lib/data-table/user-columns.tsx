@@ -5,7 +5,6 @@ import { StripeBadgeExact } from "@/components/ui/stripe-badge-exact";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import {
-  createSelectionColumn,
   createDateColumn,
   createActionsColumn,
   createCurrencyColumn,
@@ -58,9 +57,6 @@ export function createUserColumns(
   }
 ): ColumnDef<UserData>[] {
   return [
-    // Selection column
-    createSelectionColumn<UserData>(),
-
     // User column with avatar, name, and email
     {
       accessorKey: "name",
