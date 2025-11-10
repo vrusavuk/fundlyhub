@@ -75,8 +75,14 @@ export function Step3Details({ formData, errors, onChange, isProject }: Step3Det
       <div className="space-y-2">
         <ImageUpload
           value={formData.coverImage}
-          onChange={(url) => onChange({ coverImage: url })}
-          onImageIdChange={(imageId) => onChange({ coverImageId: imageId })}
+          onChange={(url) => {
+            const imageUrl = typeof url === 'string' ? url : '';
+            onChange({ coverImage: imageUrl || undefined });
+          }}
+          onImageIdChange={(imageId) => {
+            const id = typeof imageId === 'string' ? imageId : '';
+            onChange({ coverImageId: id || undefined });
+          }}
           maxFiles={1}
           bucket={formData.isProject ? 'fundraiser-images' : 'fundraiser-drafts'}
           isDraft={!formData.isProject}

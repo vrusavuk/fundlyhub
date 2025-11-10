@@ -56,11 +56,19 @@ export function ImageUpload({
   // Sync previews with value prop changes
   useEffect(() => {
     const newPreviews = Array.isArray(value) ? value : value ? [value] : [];
+    console.log('[ImageUpload] useEffect triggered', {
+      value,
+      previews,
+      newPreviews,
+      willUpdate: JSON.stringify(newPreviews) !== JSON.stringify(previews)
+    });
+    
     // Only update if previews actually changed to avoid unnecessary re-renders
     if (JSON.stringify(newPreviews) !== JSON.stringify(previews)) {
+      console.log('[ImageUpload] Updating previews', { from: previews, to: newPreviews });
       setPreviews(newPreviews);
     }
-  }, [value]);
+  }, [value, previews]);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
