@@ -23,9 +23,6 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { MobileStatsGrid } from '@/components/admin/mobile/MobileStatsGrid';
-import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
 
 interface AnalyticsData {
   totalUsers: number;
@@ -48,7 +45,6 @@ interface CategoryAnalytics {
 }
 
 export function Analytics() {
-  const isMobile = useIsMobile();
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [categories, setCategories] = useState<CategoryAnalytics[]>([]);
   const [loading, setLoading] = useState(true);
@@ -233,80 +229,63 @@ export function Analytics() {
       </div>
 
       {/* Key Metrics */}
-      {isMobile ? (
-        <MobileStatsGrid 
-          stats={[
-            {
-              title: 'Total Users',
-              value: data?.totalUsers || 0,
-              icon: Users,
-              description: 'Registered users',
-              change: data?.userGrowth ? {
-                value: `+${data.userGrowth}%`,
-                trend: data.userGrowth > 0 ? 'up' : 'neutral'
-              } : undefined
-            },
-            {
-              title: 'Active Campaigns',
-              value: data?.activeFundraisers || 0,
-              icon: Target,
-              description: 'Currently running',
-              color: 'success'
-            },
-            {
-              title: 'Total Raised',
-              value: `$${(data?.totalRaised || 0).toLocaleString()}`,
-              icon: DollarSign,
-              description: 'Platform lifetime',
-              change: data?.revenueGrowth ? {
-                value: `+${data.revenueGrowth}%`,
-                trend: data.revenueGrowth > 0 ? 'up' : 'neutral'
-              } : undefined,
-              color: 'success'
-            },
-            {
-              title: 'Conversion Rate',
-              value: `${(data?.conversionRate || 0).toFixed(1)}%`,
-              icon: TrendingUp,
-              description: 'User to donor',
-              change: {
-                value: '+2.4%',
-                trend: 'up'
-              },
-              color: 'warning'
-            }
-          ]}
-          loading={loading}
-        />
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <MetricCard
-            title="Total Users"
-            value={data?.totalUsers || 0}
-            change={data?.userGrowth}
-            icon={Users}
-          />
-          <MetricCard
-            title="Active Campaigns"
-            value={data?.activeFundraisers || 0}
-            icon={Target}
-          />
-          <MetricCard
-            title="Total Raised"
-            value={data?.totalRaised || 0}
-            change={data?.revenueGrowth}
-            icon={DollarSign}
-            format="currency"
-          />
-          <MetricCard
-            title="Conversion Rate"
-            value={data?.conversionRate || 0}
-            change={2.4}
-            icon={TrendingUp}
-            format="percentage"
-          />
-        </div>
-      )}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-700">Total Users</CardTitle>
+            <Users className="h-4 w-4 text-gray-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-900">{data?.totalUsers || 0}</div>
+            {data?.userGrowth && (
+              <p className="text-xs text-gray-500 mt-1">
+                +{data.userGrowth}% from last month
+              </p>
+            )}
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-700">Active Campaigns</CardTitle>
+            <Target className="h-4 w-4 text-gray-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-900">{data?.activeFundraisers || 0}</div>
+            <p className="text-xs text-gray-500 mt-1">Currently running</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-700">Total Raised</CardTitle>
+            <DollarSign className="h-4 w-4 text-gray-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-900">
+              ${(data?.totalRaised || 0).toLocaleString()}
+            </div>
+            {data?.revenueGrowth && (
+              <p className="text-xs text-gray-500 mt-1">
+                +{data.revenueGrowth}% from last month
+              </p>
+            )}
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-700">Conversion Rate</CardTitle>
+            <TrendingUp className="h-4 w-4 text-gray-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-900">
+              {(data?.conversionRate || 0).toFixed(1)}%
+            </div>
+            <p className="text-xs text-gray-500 mt-1">User to donor</p>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Detailed Analytics */}
       <Tabs defaultValue="overview" className="space-y-4">

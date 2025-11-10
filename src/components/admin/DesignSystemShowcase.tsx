@@ -3,11 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AdminStatsCard, AdminStatsGrid } from '@/components/admin/AdminStatsCards';
 import { EnhancedPageHeader } from '@/components/admin/EnhancedPageHeader';
 import { ContextualHelp } from '@/components/admin/ContextualHelp';
 import { OptimisticUpdateIndicator, useOptimisticUpdates } from '@/components/admin/OptimisticUpdates';
-import { DataTable } from '@/components/ui/data-table';
 import { 
   Users, 
   Building2, 
@@ -32,7 +30,7 @@ interface DesignSystemShowcaseProps {
 }
 
 export function DesignSystemShowcase({ className }: DesignSystemShowcaseProps) {
-  const [selectedComponent, setSelectedComponent] = useState<string>('stats');
+  const [selectedComponent, setSelectedComponent] = useState<string>('headers');
 
   // Demo optimistic updates
   const optimisticUpdates = useOptimisticUpdates({
@@ -40,113 +38,13 @@ export function DesignSystemShowcase({ className }: DesignSystemShowcaseProps) {
     onError: (action, error) => console.error('Demo action failed:', error)
   });
 
-  // Demo data for components
-  const demoStats = [
-    {
-      title: "Total Users",
-      value: 1247,
-      icon: Users,
-      description: "All registered users",
-      trend: { value: 12, isPositive: true }
-    },
-    {
-      title: "Organizations", 
-      value: 89,
-      icon: Building2,
-      iconClassName: "text-primary",
-      description: "Verified organizations"
-    },
-    {
-      title: "Revenue",
-      value: "$52,428",
-      icon: DollarSign,
-      iconClassName: "text-success",
-      description: "This month's total"
-    },
-    {
-      title: "Growth Rate",
-      value: "23.5%",
-      icon: TrendingUp,
-      iconClassName: "text-accent",
-      description: "Quarterly growth"
-    }
-  ];
-
-  const demoTableData = [
-    {
-      id: '1',
-      name: 'John Doe',
-      email: 'john@example.com',
-      role: 'Admin',
-      status: 'Active'
-    },
-    {
-      id: '2', 
-      name: 'Jane Smith',
-      email: 'jane@example.com', 
-      role: 'User',
-      status: 'Pending'
-    }
-  ];
-
-  const demoTableColumns = [
-    {
-      accessorKey: 'name',
-      header: 'Name',
-    },
-    {
-      accessorKey: 'email', 
-      header: 'Email',
-    },
-    {
-      accessorKey: 'role',
-      header: 'Role',
-      cell: ({ row }) => (
-        <Badge variant="outline">{row.original.role}</Badge>
-      ),
-    },
-    {
-      accessorKey: 'status',
-      header: 'Status',
-      cell: ({ row }) => {
-        const status = row.original.status;
-        return (
-          <Badge variant={status === 'Active' ? 'success' : 'secondary'}>
-            {status === 'Active' && <CheckCircle className="h-3 w-3 mr-1" />}
-            {status === 'Pending' && <Clock className="h-3 w-3 mr-1" />}
-            {status}
-          </Badge>
-        );
-      },
-    },
-    {
-      id: 'actions',
-      header: 'Actions',
-      cell: () => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem>
-              <Eye className="h-4 w-4 mr-2" />
-              View Details
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
-    },
-  ];
-
   const helpContent = {
     title: "Design System Guide",
     description: "Learn how to use the enhanced admin design system components effectively.",
     tips: [
-      "Use AdminStatsCards for displaying key metrics with consistent styling",
       "EnhancedPageHeader provides unified page headers with actions",
-      "OptimisticUpdates give instant feedback for better UX"
+      "OptimisticUpdates give instant feedback for better UX",
+      "Use consistent spacing and typography tokens"
     ],
     shortcuts: [
       { key: "Tab", description: "Navigate between interactive elements" },
@@ -213,40 +111,11 @@ export function DesignSystemShowcase({ className }: DesignSystemShowcaseProps) {
 
       {/* Component Showcase Tabs */}
       <Tabs value={selectedComponent} onValueChange={setSelectedComponent}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="stats">Stats Cards</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="headers">Page Headers</TabsTrigger>
-          <TabsTrigger value="tables">Data Tables</TabsTrigger>
+          <TabsTrigger value="optimistic">Optimistic Updates</TabsTrigger>
           <TabsTrigger value="feedback">User Feedback</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="stats" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Palette className="mr-2 h-5 w-5" />
-                Admin Stats Cards
-              </CardTitle>
-              <CardDescription>
-                Enhanced statistics cards with consistent styling, animations, and semantic design tokens.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AdminStatsGrid stats={demoStats} />
-              
-              <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-                <h4 className="font-semibold mb-2">Key Features:</h4>
-                <ul className="text-sm space-y-1 text-muted-foreground">
-                  <li>• Consistent typography using design system tokens</li>
-                  <li>• Hover animations and visual feedback</li>
-                  <li>• Trend indicators with semantic colors</li>
-                  <li>• Responsive grid layout with mobile optimization</li>
-                  <li>• High contrast support and accessibility features</li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         <TabsContent value="headers" className="space-y-6">
           <Card>
@@ -293,33 +162,32 @@ export function DesignSystemShowcase({ className }: DesignSystemShowcaseProps) {
           </Card>
         </TabsContent>
 
-        <TabsContent value="tables" className="space-y-6">
+        <TabsContent value="optimistic" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Enhanced Data Tables</CardTitle>
+              <CardTitle>Optimistic Updates</CardTitle>
               <CardDescription>
-                Improved data tables with consistent styling and better user experience.
+                Instant feedback for better user experience.
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <DataTable
-                columns={demoTableColumns}
-                data={demoTableData}
-                enableSorting={true}
-                enableFiltering={true}
-                searchPlaceholder="Search demo data..."
-                emptyStateTitle="No data found"
-                emptyStateDescription="This is how empty states look in the enhanced design system."
-              />
-              
-              <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-                <h4 className="font-semibold mb-2">Enhancements:</h4>
-                <ul className="text-sm space-y-1 text-muted-foreground">
-                  <li>• Enhanced visual hierarchy with proper typography</li>
-                  <li>• Consistent badge styling with semantic variants</li>
-                  <li>• Improved dropdown menus with high z-index and proper backgrounds</li>
-                  <li>• Better loading states and empty state messaging</li>
-                </ul>
+            <CardContent className="space-y-6">
+              <div>
+                <h4 className="font-semibold mb-3">Demo Action</h4>
+                <div className="flex items-center space-x-2 mb-4">
+                  <Button onClick={runDemoAction} variant="outline">
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Try Demo Action
+                  </Button>
+                  <span className="text-sm text-muted-foreground">
+                    Click to see optimistic updates in action
+                  </span>
+                </div>
+                <OptimisticUpdateIndicator
+                  state={optimisticUpdates.state}
+                  onRollback={optimisticUpdates.rollbackAction}
+                  onClearCompleted={optimisticUpdates.clearCompleted}
+                  onClearFailed={optimisticUpdates.clearFailed}
+                />
               </div>
             </CardContent>
           </Card>

@@ -20,9 +20,6 @@ import {
   BarChart3
 } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { MobileStatsGrid } from '@/components/admin/mobile/MobileStatsGrid';
 import { EnhancedPageHeader } from '@/components/admin/EnhancedPageHeader';
 
 interface PlatformStats {
@@ -51,7 +48,6 @@ interface SystemHealth {
 
 export function AdminDashboard() {
   const { hasPermission, isSuperAdmin } = useRBAC();
-  const isMobile = useIsMobile();
   const [stats, setStats] = useState<PlatformStats | null>(null);
   const [systemHealth, setSystemHealth] = useState<SystemHealth | null>(null);
   const [loading, setLoading] = useState(true);
@@ -150,87 +146,62 @@ export function AdminDashboard() {
         }}
       />
 
-      {/* Enhanced Key Metrics */}
-      {isMobile ? (
-        <MobileStatsGrid 
-          stats={[
-            {
-              title: 'Total Users',
-              value: stats?.totalUsers || 0,
-              icon: Users,
-              description: 'Platform users',
-              change: {
-                value: `+${stats?.monthlyGrowth || 0}%`,
-                trend: (stats?.monthlyGrowth || 0) > 0 ? 'up' : 'neutral'
-              }
-            },
-            {
-              title: 'Active Campaigns', 
-              value: stats?.activeCampaigns || 0,
-              icon: Megaphone,
-              description: `${stats?.pendingCampaigns || 0} pending`,
-              color: 'success'
-            },
-            {
-              title: 'Organizations',
-              value: stats?.totalOrganizations || 0,
-              icon: Building2,
-              description: `${stats?.verifiedOrganizations || 0} verified`
-            },
-            {
-              title: 'Total Raised',
-              value: MoneyMath.format(MoneyMath.create(stats?.totalFundsRaised || 0, 'USD')),
-              icon: DollarSign,
-              description: 'Lifetime',
-              change: {
-                value: '+15.2%',
-                trend: 'up'
-              },
-              color: 'success'
-            }
-          ]}
-          loading={loading}
-        />
-      ) : (
-        <AdminStatsGrid 
-          stats={[
-            {
-              title: 'Total Users',
-              value: stats?.totalUsers || 0,
-              icon: Users,
-              description: 'Platform registered users',
-              trend: {
-                value: stats?.monthlyGrowth || 0,
-                isPositive: (stats?.monthlyGrowth || 0) > 0
-              }
-            },
-            {
-              title: 'Active Campaigns', 
-              value: stats?.activeCampaigns || 0,
-              icon: Megaphone,
-              description: `${stats?.pendingCampaigns || 0} pending approval`
-            },
-            {
-              title: 'Organizations',
-              value: stats?.totalOrganizations || 0,
-              icon: Building2,
-              description: `${stats?.verifiedOrganizations || 0} verified`
-            },
-            {
-              title: 'Total Raised',
-              value: MoneyMath.format(MoneyMath.create(stats?.totalFundsRaised || 0, 'USD')),
-              icon: DollarSign,
-              description: 'Platform lifetime',
-              trend: {
-                value: 15.2,
-                isPositive: true
-              }
-            }
-          ]}
-        />
-      )}
-
-      {/* ... keep existing code (main content tabs) */}
+      {/* Quick Stats Summary */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-700">Total Users</CardTitle>
+            <Users className="h-4 w-4 text-gray-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-900">{stats?.totalUsers || 0}</div>
+            <p className="text-xs text-gray-500 mt-1">
+              +{stats?.monthlyGrowth || 0}% from last month
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-700">Active Campaigns</CardTitle>
+            <Megaphone className="h-4 w-4 text-gray-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-900">{stats?.activeCampaigns || 0}</div>
+            <p className="text-xs text-gray-500 mt-1">
+              {stats?.pendingCampaigns || 0} pending approval
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-700">Organizations</CardTitle>
+            <Building2 className="h-4 w-4 text-gray-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-900">{stats?.totalOrganizations || 0}</div>
+            <p className="text-xs text-gray-500 mt-1">
+              {stats?.verifiedOrganizations || 0} verified
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-700">Total Raised</CardTitle>
+            <DollarSign className="h-4 w-4 text-gray-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-900">
+              {MoneyMath.format(MoneyMath.create(stats?.totalFundsRaised || 0, 'USD'))}
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Platform lifetime
+            </p>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Main Content */}
       <Tabs defaultValue="overview" className="space-y-4">

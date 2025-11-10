@@ -24,7 +24,7 @@ export function AdminPageLayout({
   className
 }: AdminPageLayoutProps) {
   return (
-    <div className={cn('px-6 py-4 bg-[#F6F9FC] min-h-screen', className)}>
+    <div className={cn('px-6 py-4 min-h-screen', className)}>
       {/* Page Header - EXACT Stripe Style */}
       <header className="mb-4">
         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
