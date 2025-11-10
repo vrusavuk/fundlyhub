@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useRBAC } from '@/contexts/RBACContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -79,6 +80,7 @@ export function UserManagement() {
   const { hasPermission, isSuperAdmin } = useRBAC();
   const isMobile = useIsMobile();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [users, setUsers] = useState<ExtendedProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<ExtendedProfile | null>(null);
@@ -125,7 +127,7 @@ export function UserManagement() {
   const userColumns = createUserColumns(
     // onViewDetails
     (user) => {
-      viewUserDetails(user as ExtendedProfile);
+      navigate(`/admin/users/${user.id}`);
     },
     // onSuspendUser
     (userId, reason, duration) => {

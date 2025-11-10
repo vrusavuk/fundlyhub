@@ -5,3 +5,6 @@ export { DetailTimeline } from './DetailTimeline';
 export { DetailCard } from './DetailCard';
 export { DetailSidebar, DetailSidebarSection } from './DetailSidebar';
 export { DonationDetailSidebar } from './DonationDetailSidebar';
+export { CampaignDetailSidebar } from './CampaignDetailSidebar';
+export { UserDetailSidebar } from './UserDetailSidebar';
+export { OrganizationDetailSidebar } from './OrganizationDetailSidebar';

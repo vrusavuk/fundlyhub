@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { StripeBadgeExact } from '@/components/ui/stripe-badge-exact';
 import { StripeStatusTabs, StatusTab } from '@/components/admin/StripeStatusTabs';
@@ -55,6 +56,7 @@ export function CampaignManagement() {
   const { hasPermission, isSuperAdmin } = useRBAC();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   
   const [campaigns, setCampaigns] = useState<CampaignData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -354,8 +356,7 @@ export function CampaignManagement() {
   const columns = createCampaignColumns(
     // onViewDetails
     (campaign) => {
-      setSelectedCampaign(campaign);
-      setShowDetailsDialog(true);
+      navigate(`/admin/campaigns/${campaign.id}`);
     },
     // onEditCampaign
     (campaign) => {

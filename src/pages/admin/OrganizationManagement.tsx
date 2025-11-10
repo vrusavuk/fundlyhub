@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DensityToggle, Density } from '@/components/admin/DensityToggle';
@@ -39,6 +40,7 @@ interface OrganizationFilters {
 
 export function OrganizationManagement() {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const [organizations, setOrganizations] = useState<OrganizationData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrgs, setSelectedOrgs] = useState<OrganizationData[]>([]);
@@ -119,8 +121,7 @@ export function OrganizationManagement() {
   const columns = createOrganizationColumns(
     // onViewDetails
     (org) => {
-      setSelectedOrg(org);
-      setShowDetailsDialog(true);
+      navigate(`/admin/organizations/${org.id}`);
     },
     // onStatusUpdate
     (orgId, status) => {

@@ -56,6 +56,9 @@ import { DesignSystemDocs } from '@/pages/admin/DesignSystemDocs';
 import FeatureToggles from '@/pages/admin/FeatureToggles';
 import { DonationManagement } from '@/pages/admin/DonationManagement';
 import DonationDetail from '@/pages/admin/DonationDetail';
+import CampaignDetail from '@/pages/admin/CampaignDetail';
+import UserDetail from '@/pages/admin/UserDetail';
+import OrganizationDetail from '@/pages/admin/OrganizationDetail';
 
 const App = () => (
   <AppErrorBoundary>
@@ -129,12 +132,15 @@ const App = () => (
           <Route index element={<AdminDashboard />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="users" element={<UserManagement />} />
+          <Route path="users/:id" element={<UserDetail />} />
           <Route path="roles" element={<RoleManagement />} />
           <Route path="audit-logs" element={<AuditLogs />} />
           <Route path="campaigns" element={<CampaignManagement />} />
+          <Route path="campaigns/:id" element={<CampaignDetail />} />
           <Route path="donations" element={<DonationManagement />} />
           <Route path="donations/:id" element={<DonationDetail />} />
           <Route path="organizations" element={<OrganizationManagement />} />
+          <Route path="organizations/:id" element={<OrganizationDetail />} />
           <Route path="notifications" element={<NotificationCenter />} />
           <Route path="system" element={<SystemHealth />} />
           <Route path="settings" element={<SystemSettings />} />
