@@ -12,27 +12,25 @@ export function AdminLayout() {
 
   return (
     <SidebarProvider>
-      <div className="grid grid-cols-[auto_1fr] h-screen w-full bg-background">
-        <AdminSidebar />
-        
-        <SidebarInset className="flex flex-col h-screen">
-          {/* Sticky header - naturally adapts to sidebar width */}
-          <header className="sticky top-0 z-50 shrink-0 h-16 bg-background border-b border-border flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <AdminBreadcrumb items={breadcrumbs} />
-            
-            <div className="ml-auto">
-              <AdminHeader />
-            </div>
-          </header>
+      <AdminSidebar />
+      
+      <SidebarInset>
+        {/* Sticky header */}
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 sticky top-0 z-50 bg-background">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-2 h-4" />
+          <AdminBreadcrumb items={breadcrumbs} />
           
-          {/* Main content - scrolls independently */}
-          <main className="flex-1 flex flex-col bg-background overflow-auto">
-            <Outlet />
-          </main>
-        </SidebarInset>
-      </div>
+          <div className="ml-auto">
+            <AdminHeader />
+          </div>
+        </header>
+        
+        {/* Main content */}
+        <main className="flex flex-1 flex-col gap-4 p-4 pt-0">
+          <Outlet />
+        </main>
+      </SidebarInset>
       
       <SessionTimeoutWarning />
     </SidebarProvider>

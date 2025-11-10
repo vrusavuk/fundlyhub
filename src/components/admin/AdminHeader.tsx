@@ -50,9 +50,9 @@ export function AdminHeader() {
   };
 
   return (
-    <div className="flex items-center space-x-4">
+    <div className="flex items-center gap-4">
       {/* Search */}
-      <div className="flex-1 max-w-lg">
+      <div className="max-w-lg">
         <HeaderSearch isOpen={false} onClose={() => {}} />
       </div>
       

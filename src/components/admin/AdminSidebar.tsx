@@ -185,7 +185,7 @@ export function AdminSidebar() {
     <Sidebar
       variant="sidebar"
       collapsible="icon"
-      className="border-r border-[#E3E8EE] bg-white"
+      className="border-r"
     >
       <SidebarHeader className="border-b border-[#E3E8EE]">
         <SidebarMenu>
