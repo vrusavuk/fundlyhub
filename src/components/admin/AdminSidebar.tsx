@@ -182,8 +182,8 @@ export function AdminSidebar() {
   const isManagementActive = managementItems.some(item => isActive(item.url));
 
   return (
-    <Sidebar 
-      variant="inset" 
+    <Sidebar
+      variant="sidebar"
       collapsible="icon"
       className="border-r border-[#E3E8EE] bg-white"
     >

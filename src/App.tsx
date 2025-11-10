@@ -6,7 +6,7 @@ import { PerformanceMonitor } from '@/components/performance/PerformanceMonitor'
 import { AppErrorBoundary } from '@/components/common/AppErrorBoundary';
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminProtectedRoute } from "@/components/admin/AdminProtectedRoute";
-import { ResponsiveAdminLayout } from "@/components/admin/mobile";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 import { CreateSampleAdmin } from '@/components/admin/CreateSampleAdmin';
 import { NavigationProgress } from '@/components/navigation/NavigationProgress';
 import Index from "./pages/Index";
@@ -122,7 +122,7 @@ const App = () => (
         {/* Admin Routes - lazy loaded with admin skeleton */}
         <Route path="/admin/*" element={
           <AdminProtectedRoute>
-            <ResponsiveAdminLayout />
+            <AdminLayout />
           </AdminProtectedRoute>
         }>
           <Route index element={
