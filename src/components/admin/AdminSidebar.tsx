@@ -36,6 +36,7 @@ import { useRBAC } from '@/contexts/RBACContext';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 interface AdminNavItem {
@@ -148,9 +149,30 @@ const settingsItems: AdminNavItem[] = [
 
 export function AdminSidebar() {
   const location = useLocation();
-  const { hasPermission, getHighestRole } = useRBAC();
+  const rbac = useRBAC();
   const { state } = useSidebar();
   
+  // Wait for RBAC to initialize before rendering
+  if (rbac.loading) {
+    return (
+      <Sidebar variant="sidebar" collapsible="icon" className="border-r z-50">
+        <SidebarHeader className="border-b border-[#E3E8EE]">
+          <div className="p-4">
+            <Skeleton className="h-12 w-full" />
+          </div>
+        </SidebarHeader>
+        <SidebarContent className="bg-white p-4 space-y-3">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </SidebarContent>
+      </Sidebar>
+    );
+  }
+  
+  const { hasPermission, getHighestRole } = rbac;
   const currentPath = location.pathname;
   const highestRole = getHighestRole();
 

@@ -21,14 +21,12 @@ export function AdminProtectedRoute({
   const location = useLocation();
 
   // CRITICAL: Wait for both auth AND RBAC data before performing any checks
-  // This prevents the "Access denied" flash when navigating between pages
+  // This prevents race conditions and "Access denied" flashes
   const loading = authLoading || rbacLoading;
 
-  // Only show full-page skeleton on absolute first load when RBAC data doesn't exist yet
-  // After first load, RBAC data is cached and we render children immediately
-  // (children will show their own skeletons for page-specific data)
-  if (loading && !user) {
-    // User not authenticated yet - show skeleton
+  // Always show skeleton when loading to prevent race conditions
+  // This ensures RBAC is fully initialized before rendering protected content
+  if (loading) {
     return <AdminPageLoadingSkeleton />;
   }
 

@@ -6,6 +6,11 @@
  * - React Query integration for automatic caching
  * - Single source of truth for RBAC state
  * - Eliminates redundant permission checks across pages
+ * 
+ * Security enhancements:
+ * - Proper loading state management to prevent race conditions
+ * - Enhanced error handling with debug context
+ * - Safe defaults during initialization
  */
 
 import { createContext, useContext, ReactNode } from 'react';
@@ -250,7 +255,14 @@ export function useRBAC(): RBACContextValue {
   const context = useContext(RBACContext);
   
   if (!context) {
-    throw new Error('useRBAC must be used within RBACProvider');
+    console.error('[RBAC] Context is undefined. Check provider hierarchy:', {
+      location: window.location.pathname,
+      timestamp: new Date().toISOString(),
+    });
+    throw new Error(
+      'useRBAC must be used within RBACProvider. ' +
+      'Ensure AppProviders wraps your component tree correctly.'
+    );
   }
   
   return context;
