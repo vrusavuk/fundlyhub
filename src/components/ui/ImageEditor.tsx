@@ -8,7 +8,14 @@ import Cropper, { Area } from 'react-easy-crop';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './dialog';
 import { Button } from './button';
 import { Slider } from './slider';
-import { ZoomIn, ZoomOut, RotateCw, Check, X } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCw, Check, X, Square, RectangleHorizontal, Maximize } from 'lucide-react';
+
+const ASPECT_RATIOS = [
+  { label: '1:1', value: 1, icon: Square },
+  { label: '4:3', value: 4 / 3, icon: RectangleHorizontal },
+  { label: '16:9', value: 16 / 9, icon: RectangleHorizontal },
+  { label: 'Free', value: undefined, icon: Maximize },
+] as const;
 
 interface ImageEditorProps {
   imageUrl: string;
@@ -21,6 +28,7 @@ export function ImageEditor({ imageUrl, onComplete, onCancel, open }: ImageEdito
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
+  const [aspectRatio, setAspectRatio] = useState<number | undefined>(16 / 9);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -132,7 +140,7 @@ export function ImageEditor({ imageUrl, onComplete, onCancel, open }: ImageEdito
             crop={crop}
             zoom={zoom}
             rotation={rotation}
-            aspect={16 / 9}
+            aspect={aspectRatio}
             onCropChange={setCrop}
             onZoomChange={setZoom}
             onRotationChange={setRotation}
@@ -141,6 +149,29 @@ export function ImageEditor({ imageUrl, onComplete, onCancel, open }: ImageEdito
         </div>
 
         <div className="space-y-4 pt-4">
+          {/* Aspect Ratio Control */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Aspect Ratio</label>
+            <div className="flex gap-2">
+              {ASPECT_RATIOS.map((ratio) => {
+                const Icon = ratio.icon;
+                return (
+                  <Button
+                    key={ratio.label}
+                    type="button"
+                    variant={aspectRatio === ratio.value ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setAspectRatio(ratio.value)}
+                    className="flex-1"
+                  >
+                    <Icon className="h-4 w-4 mr-2" />
+                    {ratio.label}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Zoom Control */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
