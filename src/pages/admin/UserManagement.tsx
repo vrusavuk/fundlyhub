@@ -28,12 +28,9 @@ import {
   Plus
 } from 'lucide-react';
 import { createUserColumns, UserData as UserColumnData } from '@/lib/data-table/user-columns';
-import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
 import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { MobileDataTable } from '@/components/admin/mobile/MobileDataTable';
-import { MobileStatsGrid } from '@/components/admin/mobile/MobileStatsGrid';
-import { 
+import {
   AdminPageLayout, 
   AdminFilters, 
   AdminDataTable, 
@@ -483,37 +480,6 @@ export function UserManagement() {
     }
   ];
 
-  // Calculate user stats
-  const userStats = [
-    {
-      title: "Total Users",
-      value: users.length,
-      icon: Users,
-      description: "All registered users"
-    },
-    {
-      title: "Active Users",
-      value: users.filter(u => u.account_status === 'active').length,
-      icon: UserCheck,
-      iconClassName: "text-success",
-      description: "Currently active accounts"
-    },
-    {
-      title: "Suspended Users", 
-      value: users.filter(u => u.account_status === 'suspended').length,
-      icon: UserX,
-      iconClassName: "text-destructive",
-      description: "Temporarily suspended"
-    },
-    {
-      title: "Platform Admins",
-      value: users.filter(u => u.role === 'platform_admin' || u.role === 'super_admin').length,
-      icon: Shield,
-      iconClassName: "text-warning",
-      description: "Administrators"
-    },
-  ];
-
   // Handle bulk operations with confirmation
   const handleBulkAction = async (actionKey: string, selectedRows: ExtendedProfile[]) => {
     if (selectedRows.length === 0) return;
@@ -608,11 +574,6 @@ export function UserManagement() {
         onAction={() => window.open('https://docs.lovable.dev', '_blank')}
         className="mb-6"
       />
-
-      {/* Stats */}
-      <div className="mb-6">
-        <AdminStatsGrid stats={userStats} />
-      </div>
 
       {/* Filters */}
       <div className="mb-6">

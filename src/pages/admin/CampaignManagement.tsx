@@ -31,9 +31,7 @@ import { CampaignDetailsDialog } from '@/components/admin/ViewDetailsDialog';
 import { EditCampaignDialog } from '@/components/admin/EditCampaignDialog';
 import { createCampaignColumns, CampaignData } from '@/lib/data-table/campaign-columns';
 import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
-import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
-import { MobileStatsGrid } from '@/components/admin/mobile/MobileStatsGrid';
-import { 
+import {
   AdminPageLayout, 
   AdminFilters, 
   AdminDataTable,
@@ -472,37 +470,6 @@ export function CampaignManagement() {
     }
   ];
 
-  // Calculate stats from database-level data (not page-level)
-  const stats = [
-    {
-      title: "Total Campaigns",
-      value: dbStats.total,
-      icon: Flag,
-      description: "All fundraising campaigns"
-    },
-    {
-      title: "Active Campaigns",
-      value: dbStats.active,
-      icon: CheckCircle,
-      iconClassName: "text-success",
-      description: "Currently fundraising"
-    },
-    {
-      title: "Pending Review",
-      value: dbStats.pending,
-      icon: Clock,
-      iconClassName: "text-warning",
-      description: "Awaiting approval"
-    },
-    {
-      title: "Total Raised",
-      value: `$${dbStats.totalRaised.toLocaleString()}`,
-      icon: DollarSign,
-      iconClassName: "text-success",
-      description: "Across all campaigns"
-    },
-  ];
-
   // Handle bulk operations
   const handleBulkActionClick = async (actionKey: string, selectedRows: CampaignData[]) => {
     if (selectedRows.length === 0) {
@@ -566,15 +533,6 @@ export function CampaignManagement() {
         onAction={() => window.open('https://docs.lovable.dev', '_blank')}
         className="mb-6"
       />
-
-      {/* Stats */}
-      <div className="mb-6">
-        {isMobile ? (
-          <MobileStatsGrid stats={stats} loading={loading} />
-        ) : (
-          <AdminStatsGrid stats={stats} />
-        )}
-      </div>
 
       {/* Filters */}
       <div className="mb-6">

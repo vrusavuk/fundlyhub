@@ -51,7 +51,7 @@ export function AdminLayout() {
               </div>
             )}
             
-            <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min">
+            <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
               <div className="h-full p-6">
                 <Outlet />
               </div>

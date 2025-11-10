@@ -1,7 +1,5 @@
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import { StripeCardExact } from '@/components/ui/stripe-card-exact';
-import { SmartBreadcrumb } from '@/components/navigation/SmartBreadcrumb';
 
 interface AdminPageLayoutProps {
   title: string;
@@ -11,11 +9,9 @@ interface AdminPageLayoutProps {
     variant?: 'default' | 'secondary' | 'destructive' | 'outline';
   };
   actions?: ReactNode;
-  stats?: ReactNode;
   filters?: ReactNode;
   children: ReactNode;
   className?: string;
-  breadcrumbs?: boolean;
 }
 
 export function AdminPageLayout({
@@ -23,23 +19,14 @@ export function AdminPageLayout({
   description,
   badge,
   actions,
-  stats,
   filters,
   children,
-  className,
-  breadcrumbs = true
+  className
 }: AdminPageLayoutProps) {
   return (
     <div className={cn('px-6 py-4 bg-[#F6F9FC] min-h-screen', className)}>
-      {/* Breadcrumbs - Stripe puts these above header */}
-      {breadcrumbs && (
-        <div className="mb-2">
-          <SmartBreadcrumb />
-        </div>
-      )}
-
       {/* Page Header - EXACT Stripe Style */}
-      <header className="mb-6">
+      <header className="mb-4">
         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-1">
@@ -73,16 +60,9 @@ export function AdminPageLayout({
         </div>
       </header>
 
-      {/* Stats Section */}
-      {stats && (
-        <section className="mb-6">
-          {stats}
-        </section>
-      )}
-
       {/* Filters Section */}
       {filters && (
-        <section className="mb-6">
+        <section className="mb-4">
           {filters}
         </section>
       )}

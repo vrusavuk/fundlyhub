@@ -24,8 +24,6 @@ import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { DonationDetailsDialog } from '@/components/admin/DonationDetailsDialog';
 import { createDonationColumns, DonationData } from '@/lib/data-table/donation-columns';
 import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
-import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
-import { MobileStatsGrid } from '@/components/admin/mobile/MobileStatsGrid';
 import { exportDonationsCSV } from '@/lib/utils/exportDonations';
 import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
 import { DensityToggle, Density } from '@/components/admin/DensityToggle';
@@ -436,54 +434,6 @@ export function DonationManagement() {
     }] : [])
   ];
 
-  // Statistics
-  const successRate = dbStats.total > 0 
-    ? ((dbStats.byStatus.paid / dbStats.total) * 100).toFixed(1) 
-    : '0.0';
-
-  const stats = [
-    {
-      title: "Total Donations",
-      value: dbStats.total.toLocaleString(),
-      icon: DollarSign,
-      description: "All-time donations"
-    },
-    {
-      title: "Total Amount",
-      value: MoneyMath.format(MoneyMath.create(dbStats.totalAmount, 'USD')),
-      icon: TrendingUp,
-      iconClassName: "text-success",
-      description: "Gross amount raised"
-    },
-    {
-      title: "Average Donation",
-      value: MoneyMath.format(MoneyMath.create(dbStats.averageAmount, 'USD')),
-      icon: PieChart,
-      description: "Per donation average"
-    },
-    {
-      title: "Success Rate",
-      value: `${successRate}%`,
-      icon: CheckCircle,
-      iconClassName: "text-success",
-      description: "Payment success rate"
-    },
-    {
-      title: "Failed Payments",
-      value: dbStats.byStatus.failed.toLocaleString(),
-      icon: XCircle,
-      iconClassName: "text-destructive",
-      description: "Requires attention"
-    },
-    {
-      title: "Refunded",
-      value: dbStats.byStatus.refunded.toLocaleString(),
-      icon: RefreshCw,
-      iconClassName: "text-warning",
-      description: "Total refunds"
-    }
-  ];
-
   // Status tabs configuration
   const statusTabs: StatusTab[] = [
     { key: 'all', label: 'All', count: dbStats.total },
@@ -515,14 +465,6 @@ export function DonationManagement() {
         onAction={() => window.open('https://docs.lovable.dev', '_blank')}
         className="mb-6"
       />
-
-      {/* Stats */}
-      <div className="mb-6">
-        {isMobile 
-          ? <MobileStatsGrid stats={stats} /> 
-          : <AdminStatsGrid stats={stats} />
-        }
-      </div>
 
       {/* Filters */}
       <div className="mb-6">

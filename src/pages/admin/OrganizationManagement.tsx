@@ -21,10 +21,8 @@ import { AdminEventService } from '@/lib/services/AdminEventService';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { OrganizationDetailsDialog } from '@/components/admin/ViewDetailsDialog';
 import { createOrganizationColumns, OrganizationData } from '@/lib/data-table/organization-columns';
-import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
-import { MobileStatsGrid } from '@/components/admin/mobile/MobileStatsGrid';
 import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
-import { 
+import {
   AdminPageLayout, 
   AdminFilters, 
   AdminDataTable, 
@@ -330,66 +328,6 @@ export function OrganizationManagement() {
     }
   ];
 
-  const stats = [
-    {
-      title: "Total Organizations",
-      value: organizations.length,
-      icon: Building2,
-      description: "All registered organizations"
-    },
-    {
-      title: "Approved",
-      value: organizations.filter(o => o.verification_status === 'approved').length,
-      icon: CheckCircle,
-      description: "Verified organizations",
-      color: 'success' as const
-    },
-    {
-      title: "Pending Review",
-      value: organizations.filter(o => o.verification_status === 'pending').length,
-      icon: Clock,
-      description: "Awaiting verification",
-      color: 'warning' as const
-    },
-    {
-      title: "Rejected",
-      value: organizations.filter(o => o.verification_status === 'rejected').length,
-      icon: XCircle,
-      description: "Verification failed",
-      color: 'destructive' as const
-    },
-  ];
-
-  const desktopStats = [
-    {
-      title: "Total Organizations",
-      value: organizations.length,
-      icon: Building2,
-      description: "All registered organizations"
-    },
-    {
-      title: "Approved",
-      value: organizations.filter(o => o.verification_status === 'approved').length,
-      icon: CheckCircle,
-      iconClassName: "text-success",
-      description: "Verified organizations"
-    },
-    {
-      title: "Pending Review",
-      value: organizations.filter(o => o.verification_status === 'pending').length,
-      icon: Clock,
-      iconClassName: "text-warning",
-      description: "Awaiting verification"
-    },
-    {
-      title: "Rejected",
-      value: organizations.filter(o => o.verification_status === 'rejected').length,
-      icon: XCircle,
-      iconClassName: "text-destructive",
-      description: "Verification failed"
-    },
-  ];
-
   const handleBulkActionClick = async (actionKey: string, selectedRows: OrganizationData[]) => {
     await handleBulkAction(actionKey);
   };
@@ -398,13 +336,6 @@ export function OrganizationManagement() {
     <AdminPageLayout
       title="Organization Management"
       description="Manage and verify organization accounts"
-      stats={
-        isMobile ? (
-          <MobileStatsGrid stats={stats} loading={loading} />
-        ) : (
-          <AdminStatsGrid stats={desktopStats} />
-        )
-      }
       filters={
         <AdminFilters
           filters={filterConfig}
