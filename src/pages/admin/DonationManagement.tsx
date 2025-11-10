@@ -250,19 +250,26 @@ export function DonationManagement() {
   };
 
   const handleRefund = (donationId: string) => {
-    setConfirmAction({
-      open: true,
-      title: 'Refund Donation',
-      description: 'Are you sure you want to refund this donation? This action cannot be undone.',
-      variant: 'destructive',
-      action: async () => {
-        toast({
-          title: "Refund Not Implemented",
-          description: "Refund functionality requires Stripe API integration via Edge Function.",
-          variant: "default",
-        });
-        setConfirmAction({ ...confirmAction, open: false });
-      }
+    // Find the donation to get receipt_id
+    const donation = donations.find(d => d.id === donationId);
+    
+    if (!donation?.receipt_id) {
+      toast({
+        variant: "destructive",
+        title: "Cannot Open Stripe",
+        description: "No Stripe payment ID found for this donation",
+      });
+      return;
+    }
+
+    // Open Stripe Dashboard for this payment
+    const stripeUrl = `https://dashboard.stripe.com/payments/${donation.receipt_id}`;
+    window.open(stripeUrl, '_blank');
+    
+    toast({
+      title: "Opening Stripe Dashboard",
+      description: "Process the refund in Stripe. Changes will sync automatically via webhook.",
+      duration: 5000,
     });
   };
 

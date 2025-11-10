@@ -286,10 +286,9 @@ export function createDonationColumns(
           (donation.payment_status === 'paid' || donation.payment_status === 'completed')
         ) {
           actions.push({
-            label: "Refund Payment",
-            icon: RefreshCw,
+            label: "Refund in Stripe",
+            icon: ExternalLink,
             onClick: () => onRefund(donation.id),
-            variant: "destructive" as const,
           });
         }
 

@@ -117,6 +117,23 @@ globalEventBus.subscribe('user.profile_updated', userSearchProjectionProcessor);
 
 console.log('[EventBus] Search processors registered');
 
+// Register donation event processors
+import { DonationWriteProcessor } from './processors/DonationWriteProcessor';
+import { DonationProjectionProcessor } from './processors/DonationProjectionProcessor';
+
+const donationWriteProcessor = new DonationWriteProcessor();
+const donationProjectionProcessor = new DonationProjectionProcessor();
+
+globalEventBus.subscribe('donation.completed', donationWriteProcessor);
+globalEventBus.subscribe('donation.refunded', donationWriteProcessor);
+globalEventBus.subscribe('donation.failed', donationWriteProcessor);
+
+globalEventBus.subscribe('donation.completed', donationProjectionProcessor);
+globalEventBus.subscribe('donation.refunded', donationProjectionProcessor);
+globalEventBus.subscribe('donation.failed', donationProjectionProcessor);
+
+console.log('[EventBus] Donation processors registered');
+
 // Initialize subscription event subscribers
 import { initializeSubscriptionSubscribers } from './subscribers/SubscriptionEventSubscriber';
 initializeSubscriptionSubscribers(globalEventBus);
