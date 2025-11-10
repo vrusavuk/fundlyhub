@@ -10,6 +10,7 @@ interface DetailSectionProps {
   children: React.ReactNode;
   actions?: React.ReactNode;
   className?: string;
+  noPadding?: boolean;
 }
 
 export function DetailSection({
@@ -17,6 +18,7 @@ export function DetailSection({
   children,
   actions,
   className,
+  noPadding,
 }: DetailSectionProps) {
   return (
     <div className={cn("bg-card border border-border rounded-lg", className)}>
@@ -26,9 +28,13 @@ export function DetailSection({
         </h2>
         {actions && <div className="flex items-center gap-2">{actions}</div>}
       </div>
-      <div className="px-6 py-5">
-        {children}
-      </div>
+      {noPadding ? (
+        children
+      ) : (
+        <div className="px-6 py-5">
+          {children}
+        </div>
+      )}
     </div>
   );
 }

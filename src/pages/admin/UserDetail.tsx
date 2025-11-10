@@ -310,7 +310,8 @@ export default function UserDetail() {
 
           {/* Donation History */}
           <DetailSection 
-            title="Donation History" 
+            title="Donation History"
+            noPadding
             actions={
               donations.length > 0 && (
                 <span className="text-[12px] text-muted-foreground">
@@ -326,64 +327,62 @@ export default function UserDetail() {
                 <Skeleton className="h-10 w-full" />
               </div>
             ) : donations.length === 0 ? (
-              <div className="text-center py-8">
+              <div className="px-6 py-8 text-center">
                 <p className="text-[14px] text-muted-foreground">
                   No donations yet
                 </p>
               </div>
             ) : (
-              <div className="bg-card border border-border rounded-lg overflow-hidden">
-                <StripeTable>
-                  <StripeTableHeader>
-                    <StripeTableRow density="comfortable">
-                      <StripeTableHead>Amount</StripeTableHead>
-                      <StripeTableHead>Campaign</StripeTableHead>
-                      <StripeTableHead>Status</StripeTableHead>
-                      <StripeTableHead>Date</StripeTableHead>
-                      <StripeTableHead className="text-right">Actions</StripeTableHead>
+              <StripeTable>
+                <StripeTableHeader>
+                  <StripeTableRow density="comfortable">
+                    <StripeTableHead>Amount</StripeTableHead>
+                    <StripeTableHead>Campaign</StripeTableHead>
+                    <StripeTableHead>Status</StripeTableHead>
+                    <StripeTableHead>Date</StripeTableHead>
+                    <StripeTableHead className="text-right">Actions</StripeTableHead>
+                  </StripeTableRow>
+                </StripeTableHeader>
+                <StripeTableBody>
+                  {donations.map((donation) => (
+                    <StripeTableRow 
+                      key={donation.id}
+                      density="comfortable"
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => navigate(`/admin/donations/${donation.id}`)}
+                    >
+                      <StripeTableCell>
+                        <span className="font-medium">
+                          {MoneyMath.format(MoneyMath.create(donation.amount, donation.currency))}
+                        </span>
+                      </StripeTableCell>
+                      <StripeTableCell>
+                        {donation.fundraisers?.title || 'Unknown Campaign'}
+                      </StripeTableCell>
+                      <StripeTableCell>
+                        <Badge variant={getStatusVariant(donation.payment_status) as any}>
+                          {getStatusLabel(donation.payment_status)}
+                        </Badge>
+                      </StripeTableCell>
+                      <StripeTableCell>
+                        {formatDistanceToNow(new Date(donation.created_at), { addSuffix: true })}
+                      </StripeTableCell>
+                      <StripeTableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/admin/donations/${donation.id}`);
+                          }}
+                        >
+                          View
+                        </Button>
+                      </StripeTableCell>
                     </StripeTableRow>
-                  </StripeTableHeader>
-                  <StripeTableBody>
-                    {donations.map((donation) => (
-                      <StripeTableRow 
-                        key={donation.id}
-                        density="comfortable"
-                        className="cursor-pointer hover:bg-muted/50"
-                        onClick={() => navigate(`/admin/donations/${donation.id}`)}
-                      >
-                        <StripeTableCell>
-                          <span className="font-medium">
-                            {MoneyMath.format(MoneyMath.create(donation.amount, donation.currency))}
-                          </span>
-                        </StripeTableCell>
-                        <StripeTableCell>
-                          {donation.fundraisers?.title || 'Unknown Campaign'}
-                        </StripeTableCell>
-                        <StripeTableCell>
-                          <Badge variant={getStatusVariant(donation.payment_status) as any}>
-                            {getStatusLabel(donation.payment_status)}
-                          </Badge>
-                        </StripeTableCell>
-                        <StripeTableCell>
-                          {formatDistanceToNow(new Date(donation.created_at), { addSuffix: true })}
-                        </StripeTableCell>
-                        <StripeTableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/admin/donations/${donation.id}`);
-                            }}
-                          >
-                            View
-                          </Button>
-                        </StripeTableCell>
-                      </StripeTableRow>
-                    ))}
-                  </StripeTableBody>
-                </StripeTable>
-              </div>
+                  ))}
+                </StripeTableBody>
+              </StripeTable>
             )}
           </DetailSection>
         </>
