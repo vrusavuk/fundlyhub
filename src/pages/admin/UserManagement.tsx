@@ -565,6 +565,9 @@ export function UserManagement() {
         enableFiltering={false}
         enableColumnVisibility={true}
         enablePagination={true}
+        paginationState={pagination.state}
+        onPageChange={pagination.goToPage}
+        onPageSizeChange={pagination.setPageSize}
       />
 
       {/* Optimistic Update Indicator */}

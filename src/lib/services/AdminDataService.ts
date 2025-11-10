@@ -718,6 +718,59 @@ class AdminDataService {
   }
 
   /**
+   * Fetch donations for a specific user with pagination
+   */
+  async fetchUserDonationsPaginated(
+    userId: string,
+    pagination: { page: number; pageSize: number }
+  ) {
+    const cacheKey = `user-donations-paginated:${userId}:${pagination.page}:${pagination.pageSize}`;
+    
+    return this.cache.getOrSet(cacheKey, async () => {
+      const from = (pagination.page - 1) * pagination.pageSize;
+      const to = from + pagination.pageSize - 1;
+
+      // Get total count
+      const { count } = await supabase
+        .from('donations')
+        .select('*', { count: 'exact', head: true })
+        .eq('donor_user_id', userId);
+
+      // Get paginated data
+      const { data, error } = await supabase
+        .from('donations')
+        .select(`
+          id,
+          amount,
+          currency,
+          payment_status,
+          created_at,
+          is_anonymous,
+          donor_name,
+          receipt_id,
+          fundraisers!fundraiser_id(
+            id,
+            title,
+            slug,
+            status
+          )
+        `)
+        .eq('donor_user_id', userId)
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      if (error) throw error;
+      
+      return {
+        data: data || [],
+        total: count || 0,
+        page: pagination.page,
+        pageSize: pagination.pageSize
+      };
+    }, { ttl: 10000 });
+  }
+
+  /**
    * Clear cache for specific resource type
    */
   invalidateCache(resource: 'users' | 'organizations' | 'campaigns' | 'roles' | 'dashboard' | 'donations' | 'all') {

@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
+import { usePagination } from '@/hooks/usePagination';
+import { PaginationControls } from '@/components/ui/PaginationControls';
 import { formatDistanceToNow } from 'date-fns';
 import {
   StripeTable,
@@ -38,6 +40,12 @@ export default function UserDetail() {
   const [loading, setLoading] = useState(true);
   const [donations, setDonations] = useState<any[]>([]);
   const [donationsLoading, setDonationsLoading] = useState(true);
+  const [totalDonations, setTotalDonations] = useState(0);
+  
+  const donationPagination = usePagination({
+    initialPageSize: 10,
+    syncWithURL: false
+  });
 
   // Set dynamic breadcrumbs
   useDetailPageBreadcrumbs(
@@ -77,8 +85,16 @@ export default function UserDetail() {
       
       try {
         setDonationsLoading(true);
-        const donationData = await adminDataService.fetchUserDonations(id);
-        setDonations(donationData);
+        const result = await adminDataService.fetchUserDonationsPaginated(
+          id,
+          {
+            page: donationPagination.state.page,
+            pageSize: donationPagination.state.pageSize
+          }
+        );
+        setDonations(result.data);
+        setTotalDonations(result.total);
+        donationPagination.setTotal(result.total);
       } catch (error) {
         console.error('Error fetching user donations:', error);
       } finally {
@@ -89,7 +105,7 @@ export default function UserDetail() {
     if (user) {
       fetchDonations();
     }
-  }, [id, user]);
+  }, [id, user, donationPagination.state.page, donationPagination.state.pageSize]);
 
   if (loading) {
     return (
@@ -313,15 +329,15 @@ export default function UserDetail() {
             title="Donation History"
             noPadding
             actions={
-              donations.length > 0 && (
+              totalDonations > 0 && (
                 <span className="text-[12px] text-muted-foreground">
-                  {donations.length} total donation{donations.length !== 1 ? 's' : ''}
+                  {totalDonations} total donation{totalDonations !== 1 ? 's' : ''}
                 </span>
               )
             }
           >
             {donationsLoading ? (
-              <div className="space-y-2">
+              <div className="px-6 py-4 space-y-2">
                 <Skeleton className="h-10 w-full" />
                 <Skeleton className="h-10 w-full" />
                 <Skeleton className="h-10 w-full" />
@@ -333,56 +349,71 @@ export default function UserDetail() {
                 </p>
               </div>
             ) : (
-              <StripeTable>
-                <StripeTableHeader>
-                  <StripeTableRow density="comfortable">
-                    <StripeTableHead>Amount</StripeTableHead>
-                    <StripeTableHead>Campaign</StripeTableHead>
-                    <StripeTableHead>Status</StripeTableHead>
-                    <StripeTableHead>Date</StripeTableHead>
-                    <StripeTableHead className="text-right">Actions</StripeTableHead>
-                  </StripeTableRow>
-                </StripeTableHeader>
-                <StripeTableBody>
-                  {donations.map((donation) => (
-                    <StripeTableRow 
-                      key={donation.id}
-                      density="comfortable"
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => navigate(`/admin/donations/${donation.id}`)}
-                    >
-                      <StripeTableCell>
-                        <span className="font-medium">
-                          {MoneyMath.format(MoneyMath.create(donation.amount, donation.currency))}
-                        </span>
-                      </StripeTableCell>
-                      <StripeTableCell>
-                        {donation.fundraisers?.title || 'Unknown Campaign'}
-                      </StripeTableCell>
-                      <StripeTableCell>
-                        <Badge variant={getStatusVariant(donation.payment_status) as any}>
-                          {getStatusLabel(donation.payment_status)}
-                        </Badge>
-                      </StripeTableCell>
-                      <StripeTableCell>
-                        {formatDistanceToNow(new Date(donation.created_at), { addSuffix: true })}
-                      </StripeTableCell>
-                      <StripeTableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/admin/donations/${donation.id}`);
-                          }}
-                        >
-                          View
-                        </Button>
-                      </StripeTableCell>
+              <>
+                <StripeTable>
+                  <StripeTableHeader>
+                    <StripeTableRow density="comfortable">
+                      <StripeTableHead>Amount</StripeTableHead>
+                      <StripeTableHead>Campaign</StripeTableHead>
+                      <StripeTableHead>Status</StripeTableHead>
+                      <StripeTableHead>Date</StripeTableHead>
+                      <StripeTableHead className="text-right">Actions</StripeTableHead>
                     </StripeTableRow>
-                  ))}
-                </StripeTableBody>
-              </StripeTable>
+                  </StripeTableHeader>
+                  <StripeTableBody>
+                    {donations.map((donation) => (
+                      <StripeTableRow 
+                        key={donation.id}
+                        density="comfortable"
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => navigate(`/admin/donations/${donation.id}`)}
+                      >
+                        <StripeTableCell>
+                          <span className="font-medium">
+                            {MoneyMath.format(MoneyMath.create(donation.amount, donation.currency))}
+                          </span>
+                        </StripeTableCell>
+                        <StripeTableCell>
+                          {donation.fundraisers?.title || 'Unknown Campaign'}
+                        </StripeTableCell>
+                        <StripeTableCell>
+                          <Badge variant={getStatusVariant(donation.payment_status) as any}>
+                            {getStatusLabel(donation.payment_status)}
+                          </Badge>
+                        </StripeTableCell>
+                        <StripeTableCell>
+                          {formatDistanceToNow(new Date(donation.created_at), { addSuffix: true })}
+                        </StripeTableCell>
+                        <StripeTableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/admin/donations/${donation.id}`);
+                            }}
+                          >
+                            View
+                          </Button>
+                        </StripeTableCell>
+                      </StripeTableRow>
+                    ))}
+                  </StripeTableBody>
+                </StripeTable>
+                
+                {donationPagination.state.totalPages > 1 && (
+                  <div className="px-6 py-4 border-t border-border">
+                    <PaginationControls
+                      pageIndex={donationPagination.state.page - 1}
+                      pageSize={donationPagination.state.pageSize}
+                      pageCount={donationPagination.state.totalPages}
+                      total={totalDonations}
+                      onPageChange={(newPage) => donationPagination.goToPage(newPage + 1)}
+                      onPageSizeChange={donationPagination.setPageSize}
+                    />
+                  </div>
+                )}
+              </>
             )}
           </DetailSection>
         </>

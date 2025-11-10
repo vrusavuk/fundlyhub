@@ -369,6 +369,9 @@ export function OrganizationManagement() {
         enableFiltering={false}
         enableColumnVisibility={true}
         enablePagination={true}
+        paginationState={pagination.state}
+        onPageChange={pagination.goToPage}
+        onPageSizeChange={pagination.setPageSize}
       />
 
       <OptimisticUpdateIndicator
