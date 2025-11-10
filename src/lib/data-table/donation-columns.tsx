@@ -1,7 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Eye, Mail, ExternalLink, RefreshCw, Copy, MoreHorizontal } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
+import { StripeBadgeExact } from "@/components/ui/stripe-badge-exact";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
@@ -50,13 +50,13 @@ export interface DonationData {
   };
 }
 
-// Payment status configuration
+// Payment status configuration with exact Stripe colors
 const statusConfig = {
-  pending: { label: "Pending", variant: "secondary" as const },
-  paid: { label: "Paid", variant: "default" as const },
-  completed: { label: "Completed", variant: "default" as const },
-  failed: { label: "Failed", variant: "destructive" as const },
-  refunded: { label: "Refunded", variant: "outline" as const },
+  pending: { label: "Pending", variant: "warning" as const },     // Stripe amber #FFC043
+  paid: { label: "Paid", variant: "success" as const },           // Stripe green #00D924
+  completed: { label: "Completed", variant: "success" as const }, // Stripe green #00D924
+  failed: { label: "Failed", variant: "error" as const },         // Stripe red #DF1B41
+  refunded: { label: "Refunded", variant: "neutral" as const },   // Stripe gray #E3E8EE
 };
 
 const getInitials = (name?: string): string => {
@@ -80,9 +80,6 @@ export function createDonationColumns(
   }
 ): ColumnDef<DonationData>[] {
   return [
-    // Selection column
-    createSelectionColumn<DonationData>(),
-
     // Donor column with avatar
     {
       accessorKey: "donor_name",
@@ -137,9 +134,9 @@ export function createDonationColumns(
               {MoneyMath.format(MoneyMath.create(donation.amount, donation.currency))}
             </div>
             {hasTip && (
-              <Badge variant="secondary" className="text-xs">
+              <StripeBadgeExact variant="neutral" className="text-xs">
                 +{MoneyMath.format(MoneyMath.create(donation.tip_amount!, donation.currency))} tip
-              </Badge>
+              </StripeBadgeExact>
             )}
           </div>
         );
@@ -178,9 +175,9 @@ export function createDonationColumns(
         const config = statusConfig[status] || statusConfig.pending;
         
         return (
-          <Badge variant={config.variant}>
+          <StripeBadgeExact variant={config.variant}>
             {config.label}
-          </Badge>
+          </StripeBadgeExact>
         );
       },
       filterFn: (row, id, value) => {

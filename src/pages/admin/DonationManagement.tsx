@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { StripeBadgeExact } from '@/components/ui/stripe-badge-exact';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   DollarSign,

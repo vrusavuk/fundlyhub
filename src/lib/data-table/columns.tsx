@@ -4,7 +4,7 @@ import { MoreHorizontal, Check, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
+import { StripeBadgeExact } from "@/components/ui/stripe-badge-exact";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -139,16 +139,16 @@ export function createStatusColumn<TData>(
       const config = statusConfig[status];
       
       if (!config) {
-        return <Badge variant="outline">{status}</Badge>;
+        return <StripeBadgeExact variant="neutral">{status}</StripeBadgeExact>;
       }
 
       return (
-        <Badge 
+        <StripeBadgeExact 
           variant={config.variant} 
           className={config.className}
         >
           {config.label}
-        </Badge>
+        </StripeBadgeExact>
       );
     },
     enableSorting: sortable,

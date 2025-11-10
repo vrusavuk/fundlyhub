@@ -83,9 +83,7 @@ export function AdminPageLayout({
       {/* Filters Section */}
       {filters && (
         <section className="mb-6">
-          <StripeCardExact>
-            {filters}
-          </StripeCardExact>
+          {filters}
         </section>
       )}
 
