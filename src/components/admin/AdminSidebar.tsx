@@ -8,14 +8,13 @@ import {
   Shield,
   Activity,
   Database,
-  AlertTriangle,
-  Crown,
+  ChevronDown,
   PieChart,
   Bell,
-  ChevronDown,
   Home,
-  ArrowLeft,
-  DollarSign
+  DollarSign,
+  Search,
+  Palette
 } from 'lucide-react';
 import {
   Sidebar,
@@ -28,11 +27,15 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   useSidebar
 } from '@/components/ui/sidebar';
 import { useRBAC } from '@/hooks/useRBAC';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
 interface AdminNavItem {
@@ -43,17 +46,12 @@ interface AdminNavItem {
   badge?: string;
 }
 
-const navigationItems: AdminNavItem[] = [
+// Main navigation items
+const mainNavItems: AdminNavItem[] = [
   {
-    title: 'Dashboard',
+    title: 'Home',
     url: '/admin',
-    icon: BarChart3
-  },
-  {
-    title: 'Analytics',
-    url: '/admin/analytics',
-    icon: PieChart,
-    permission: 'view_platform_analytics'
+    icon: Home
   },
   {
     title: 'Users',
@@ -79,17 +77,31 @@ const navigationItems: AdminNavItem[] = [
     icon: Building2,
     permission: 'view_all_organizations'
   },
+];
+
+// Analytics section
+const analyticsItems: AdminNavItem[] = [
   {
-    title: 'Notifications',
-    url: '/admin/notifications',
-    icon: Bell,
-    permission: 'manage_communications'
+    title: 'Platform Analytics',
+    url: '/admin/analytics',
+    icon: PieChart,
+    permission: 'view_platform_analytics'
   },
+];
+
+// Management section (collapsible)
+const managementItems: AdminNavItem[] = [
   {
     title: 'Roles & Permissions',
     url: '/admin/roles',
     icon: Shield,
     permission: 'manage_roles'
+  },
+  {
+    title: 'Notifications',
+    url: '/admin/notifications',
+    icon: Bell,
+    permission: 'manage_communications'
   },
   {
     title: 'Audit Logs',
@@ -104,35 +116,39 @@ const navigationItems: AdminNavItem[] = [
     permission: 'manage_system_settings'
   },
   {
-    title: 'Settings',
-    url: '/admin/settings',
-    icon: Settings,
-    permission: 'manage_system_settings' as const,
-  },
-  {
     title: 'Event Monitoring',
     url: '/admin/events',
     icon: Activity,
-    permission: 'manage_system_settings' as const,
+    permission: 'manage_system_settings',
     badge: 'New',
   },
+];
+
+// Settings section
+const settingsItems: AdminNavItem[] = [
   {
-    title: 'Design System',
-    url: '/admin/design-system',
+    title: 'System Settings',
+    url: '/admin/settings',
     icon: Settings,
-    permission: 'manage_system_settings' as const,
+    permission: 'manage_system_settings',
   },
   {
     title: 'Feature Toggles',
     url: '/admin/feature-toggles',
     icon: Shield,
-    permission: 'manage_system_settings' as const,
+    permission: 'manage_system_settings',
+  },
+  {
+    title: 'Design System',
+    url: '/admin/design-system',
+    icon: Palette,
+    permission: 'manage_system_settings',
   },
 ];
 
 export function AdminSidebar() {
   const location = useLocation();
-  const { hasPermission, isSuperAdmin, getHighestRole } = useRBAC();
+  const { hasPermission, getHighestRole } = useRBAC();
   const { state } = useSidebar();
   
   const currentPath = location.pathname;
@@ -146,64 +162,71 @@ export function AdminSidebar() {
   };
 
   // Filter navigation items based on permissions
-  const visibleItems = navigationItems.filter(item => 
+  const visibleMainItems = mainNavItems.filter(item => 
     !item.permission || hasPermission(item.permission)
   );
+  
+  const visibleAnalyticsItems = analyticsItems.filter(item => 
+    !item.permission || hasPermission(item.permission)
+  );
+  
+  const visibleManagementItems = managementItems.filter(item => 
+    !item.permission || hasPermission(item.permission)
+  );
+  
+  const visibleSettingsItems = settingsItems.filter(item => 
+    !item.permission || hasPermission(item.permission)
+  );
+
+  // Check if any management item is active
+  const isManagementActive = managementItems.some(item => isActive(item.url));
 
   return (
     <Sidebar 
       variant="inset" 
       collapsible="icon"
-      className="border-r border-[#E3E8EE] bg-[#0A2540]"
+      className="border-r border-[#E3E8EE] bg-white"
     >
-      <SidebarHeader className="border-b border-[#1A3A5A]">
+      <SidebarHeader className="border-b border-[#E3E8EE]">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" className="hover:bg-[#1A3A5A]">
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-[#635BFF]">
-                <Crown className="size-4 text-white" />
+            <SidebarMenuButton size="lg" className="hover:bg-gray-50">
+              <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-gray-100 text-gray-700 font-semibold text-sm">
+                A
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold text-white">Admin Panel</span>
+                <span className="truncate font-semibold text-gray-900">Admin Panel</span>
                 {highestRole && (
-                  <span className="truncate text-xs text-gray-400">
+                  <span className="truncate text-xs text-gray-500 capitalize">
                     {highestRole.role_name.replace('_', ' ')}
                   </span>
                 )}
               </div>
+              <ChevronDown className="size-4 text-gray-500" />
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent className="bg-[#0A2540]">
-        {/* Return to Site */}
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  asChild
-                  tooltip={state === "collapsed" ? "Return to Site" : undefined}
-                  className="text-white hover:bg-[#1A3A5A] mx-2"
-                >
-                  <NavLink to="/">
-                    <ArrowLeft className="size-4" />
-                    <span>Return to Site</span>
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+      {/* Search Bar */}
+      {state === "expanded" && (
+        <div className="px-3 py-2 border-b border-[#E3E8EE]">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search..."
+              className="pl-9 h-9 bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:border-blue-500 focus-visible:ring-1 focus-visible:ring-blue-500"
+            />
+          </div>
+        </div>
+      )}
 
+      <SidebarContent className="bg-white">
+        {/* Main Navigation */}
         <SidebarGroup>
-          <SidebarGroupLabel className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-            Navigation
-          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {visibleItems.map((item) => {
+              {visibleMainItems.map((item) => {
                 const isActiveRoute = isActive(item.url);
                 
                 return (
@@ -213,19 +236,19 @@ export function AdminSidebar() {
                       isActive={isActiveRoute}
                       tooltip={state === "collapsed" ? item.title : undefined}
                       className={cn(
-                        "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md mx-2",
-                        "transition-colors text-white hover:bg-[#1A3A5A]",
-                        isActiveRoute && "bg-[#635BFF] text-white font-semibold"
+                        "relative flex items-center gap-3 px-3 py-2 text-sm font-medium",
+                        "transition-colors hover:bg-gray-50",
+                        isActiveRoute 
+                          ? "text-blue-600 font-semibold before:absolute before:left-0 before:top-0 before:bottom-0 before:w-0.5 before:bg-blue-600" 
+                          : "text-gray-700"
                       )}
                     >
                       <NavLink to={item.url} end={item.url === '/admin'}>
-                        <item.icon className="size-4" />
+                        <item.icon className={cn(
+                          "size-4",
+                          isActiveRoute ? "text-blue-600" : "text-gray-500"
+                        )} />
                         <span>{item.title}</span>
-                        {item.badge && state === "expanded" && (
-                          <Badge className="ml-auto text-xs bg-[#DF1B41] text-white border-0">
-                            {item.badge}
-                          </Badge>
-                        )}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -235,52 +258,157 @@ export function AdminSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* System Status Section - Only show when expanded */}
-        {state === "expanded" && (
+        {/* Analytics Section */}
+        {visibleAnalyticsItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-gray-400">System</SidebarGroupLabel>
+            <SidebarGroupLabel className="px-3 text-xs font-normal text-gray-500">
+              Analytics
+            </SidebarGroupLabel>
             <SidebarGroupContent>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs px-2">
-                  <span className="text-gray-400">Health</span>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-2 h-2 bg-[#00D924] rounded-full"></div>
-                    <span className="text-[#00D924] font-medium">Good</span>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between text-xs px-2">
-                  <span className="text-gray-400">Active Users</span>
-                  <span className="text-white font-medium">1,247</span>
-                </div>
-                
-                <div className="flex items-center justify-between text-xs px-2">
-                  <span className="text-gray-400">Pending Reviews</span>
-                  <Badge className="text-xs bg-[#E3E8EE] text-[#0A2540] border-0">
-                    23
-                  </Badge>
-                </div>
-              </div>
+              <SidebarMenu>
+                {visibleAnalyticsItems.map((item) => {
+                  const isActiveRoute = isActive(item.url);
+                  
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton 
+                        asChild
+                        isActive={isActiveRoute}
+                        tooltip={state === "collapsed" ? item.title : undefined}
+                        className={cn(
+                          "relative flex items-center gap-3 px-3 py-2 text-sm font-medium",
+                          "transition-colors hover:bg-gray-50",
+                          isActiveRoute 
+                            ? "text-blue-600 font-semibold before:absolute before:left-0 before:top-0 before:bottom-0 before:w-0.5 before:bg-blue-600" 
+                            : "text-gray-700"
+                        )}
+                      >
+                        <NavLink to={item.url}>
+                          <item.icon className={cn(
+                            "size-4",
+                            isActiveRoute ? "text-blue-600" : "text-gray-500"
+                          )} />
+                          <span>{item.title}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {/* Management Section (Collapsible) */}
+        {visibleManagementItems.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="px-3 text-xs font-normal text-gray-500">
+              Management
+            </SidebarGroupLabel>
+            <Collapsible defaultOpen={isManagementActive} className="group/collapsible">
+              <SidebarMenuItem>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton className="hover:bg-gray-50">
+                    <Shield className="size-4 text-gray-500" />
+                    <span className="text-gray-700">Administration</span>
+                    <ChevronDown className="ml-auto size-4 text-gray-500 transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    {visibleManagementItems.map((item) => {
+                      const isActiveRoute = isActive(item.url);
+                      
+                      return (
+                        <SidebarMenuSubItem key={item.title}>
+                          <SidebarMenuSubButton 
+                            asChild
+                            isActive={isActiveRoute}
+                            className={cn(
+                              "relative",
+                              isActiveRoute && "text-blue-600 font-semibold"
+                            )}
+                          >
+                            <NavLink to={item.url}>
+                              <item.icon className={cn(
+                                "size-4",
+                                isActiveRoute ? "text-blue-600" : "text-gray-500"
+                              )} />
+                              <span>{item.title}</span>
+                              {item.badge && (
+                                <Badge className="ml-auto text-xs bg-blue-100 text-blue-600 border-0">
+                                  {item.badge}
+                                </Badge>
+                              )}
+                            </NavLink>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      );
+                    })}
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              </SidebarMenuItem>
+            </Collapsible>
+          </SidebarGroup>
+        )}
+
+        {/* Settings Section */}
+        {visibleSettingsItems.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="px-3 text-xs font-normal text-gray-500">
+              Configuration
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {visibleSettingsItems.map((item) => {
+                  const isActiveRoute = isActive(item.url);
+                  
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton 
+                        asChild
+                        isActive={isActiveRoute}
+                        tooltip={state === "collapsed" ? item.title : undefined}
+                        className={cn(
+                          "relative flex items-center gap-3 px-3 py-2 text-sm font-medium",
+                          "transition-colors hover:bg-gray-50",
+                          isActiveRoute 
+                            ? "text-blue-600 font-semibold before:absolute before:left-0 before:top-0 before:bottom-0 before:w-0.5 before:bg-blue-600" 
+                            : "text-gray-700"
+                        )}
+                      >
+                        <NavLink to={item.url}>
+                          <item.icon className={cn(
+                            "size-4",
+                            isActiveRoute ? "text-blue-600" : "text-gray-500"
+                          )} />
+                          <span>{item.title}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         )}
       </SidebarContent>
 
-      <SidebarFooter className="bg-[#0A2540] border-t border-[#1A3A5A]">
-        {/* Super Admin Warning */}
-        {isSuperAdmin() && state === "expanded" && (
-          <div className="p-3 bg-[#FFC043]/10 border border-[#FFC043]/20 rounded-lg mx-2">
-            <div className="flex items-start space-x-2">
-              <AlertTriangle className="w-4 h-4 text-[#FFC043] flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-medium text-[#FFC043]">Super Admin</p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Full platform access. Use with caution.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+      <SidebarFooter className="bg-white border-t border-[#E3E8EE]">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              asChild 
+              className="hover:bg-gray-50"
+              tooltip={state === "collapsed" ? "Settings" : undefined}
+            >
+              <NavLink to="/admin/settings">
+                <Settings className="size-4 text-gray-500" />
+                <span className="text-gray-700">Settings</span>
+              </NavLink>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   );
