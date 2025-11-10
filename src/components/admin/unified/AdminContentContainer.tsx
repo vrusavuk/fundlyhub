@@ -59,22 +59,10 @@ export function AdminContentContainer({
     );
   }
 
-  // Loading State
+  // Loading state - parent components now handle skeletons
+  // This component just manages error and empty states
   if (loading) {
-    return (
-      <div className={cn(
-        'flex flex-col items-center justify-center py-12',
-        getSpacingClasses('content', 'lg'),
-        className
-      )}>
-        <div className="text-center space-y-4">
-          <LoadingSpinner size="lg" />
-          <p className={getTypographyClasses('body', 'md', 'text-muted-foreground')}>
-            {loadingText}
-          </p>
-        </div>
-      </div>
-    );
+    return null; // Parent renders skeleton
   }
 
   // Empty State

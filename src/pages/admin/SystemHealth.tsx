@@ -28,6 +28,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AdminPageLayout, PageSection, PageGrid } from '@/components/admin/unified';
+import { StatsGridSkeleton } from '@/components/admin/StatsCardSkeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface SystemStatus {
   status: 'healthy' | 'warning' | 'critical';
@@ -213,18 +215,17 @@ export function SystemHealth() {
 
   if (loading) {
     return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-20 bg-muted rounded-lg" />
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-32 bg-muted rounded-lg" />
-          ))}
+      <AdminPageLayout
+        title="System Health"
+        description="Monitor platform performance and system metrics"
+      >
+        <Skeleton className="h-20 w-full mb-6" />
+        <StatsGridSkeleton count={4} />
+        <div className="grid gap-4 md:grid-cols-2 mt-6">
+          <Skeleton className="h-[300px] w-full" />
+          <Skeleton className="h-[300px] w-full" />
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="h-64 bg-muted rounded-lg" />
-          <div className="h-64 bg-muted rounded-lg" />
-        </div>
-      </div>
+      </AdminPageLayout>
     );
   }
 

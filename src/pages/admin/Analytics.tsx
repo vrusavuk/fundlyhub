@@ -23,6 +23,8 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { StatsGridSkeleton } from '@/components/admin/StatsCardSkeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface AnalyticsData {
   totalUsers: number;
@@ -179,17 +181,16 @@ export function Analytics() {
 
   if (loading) {
     return (
-      <div className="space-y-6 animate-pulse">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-32 bg-muted rounded-lg" />
-          ))}
+      <AdminPageLayout
+        title="Analytics"
+        description="Platform performance metrics and insights"
+      >
+        <StatsGridSkeleton count={4} />
+        <div className="grid gap-4 md:grid-cols-2 mt-6">
+          <Skeleton className="h-[300px] w-full" />
+          <Skeleton className="h-[300px] w-full" />
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="h-64 bg-muted rounded-lg" />
-          <div className="h-64 bg-muted rounded-lg" />
-        </div>
-      </div>
+      </AdminPageLayout>
     );
   }
 

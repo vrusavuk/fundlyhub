@@ -19,8 +19,9 @@ import {
   Activity,
   BarChart3
 } from 'lucide-react';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { AdminPageLayout, PageSection, PageGrid } from '@/components/admin/unified';
+import { StatsGridSkeleton } from '@/components/admin/StatsCardSkeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface PlatformStats {
   totalUsers: number;
@@ -95,9 +96,16 @@ export function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <LoadingSpinner size="lg" />
-      </div>
+      <AdminPageLayout
+        title="Admin Dashboard"
+        description="Platform overview and key performance indicators"
+      >
+        <StatsGridSkeleton count={4} />
+        <div className="grid gap-4 md:grid-cols-2 mt-6">
+          <Skeleton className="h-[300px] w-full" />
+          <Skeleton className="h-[300px] w-full" />
+        </div>
+      </AdminPageLayout>
     );
   }
 

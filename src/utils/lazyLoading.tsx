@@ -35,21 +35,8 @@ export const LazyApiDocs = lazy(() => import('@/pages/ApiDocs'));
 export const LazyNotFound = lazy(() => import('@/pages/NotFound'));
 export const LazyErrorRecovery = lazy(() => import('@/pages/ErrorRecovery'));
 
-// Lazy load admin pages - heavy components that benefit from code splitting
-export const LazyAdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
-export const LazyAnalytics = lazy(() => import('@/pages/admin/Analytics').then(m => ({ default: m.Analytics })));
-export const LazyUserManagement = lazy(() => import('@/pages/admin/UserManagement').then(m => ({ default: m.UserManagement })));
-export const LazyCampaignManagement = lazy(() => import('@/pages/admin/CampaignManagement').then(m => ({ default: m.CampaignManagement })));
-export const LazyOrganizationManagement = lazy(() => import('@/pages/admin/OrganizationManagement').then(m => ({ default: m.OrganizationManagement })));
-export const LazyRoleManagement = lazy(() => import('@/pages/admin/RoleManagement').then(m => ({ default: m.RoleManagement })));
-export const LazyAuditLogs = lazy(() => import('@/pages/admin/AuditLogs').then(m => ({ default: m.AuditLogs })));
-export const LazySystemHealth = lazy(() => import('@/pages/admin/SystemHealth').then(m => ({ default: m.SystemHealth })));
-export const LazySystemSettings = lazy(() => import('@/pages/admin/SystemSettings').then(m => ({ default: m.SystemSettings })));
-export const LazyAdminNotificationCenter = lazy(() => import('@/pages/admin/NotificationCenter'));
-export const LazyEventMonitoring = lazy(() => import('@/pages/admin/EventMonitoring'));
-export const LazyDesignSystemDocs = lazy(() => import('@/pages/admin/DesignSystemDocs').then(m => ({ default: m.DesignSystemDocs })));
-export const LazyFeatureToggles = lazy(() => import('@/pages/admin/FeatureToggles'));
-export const LazyDonationManagement = lazy(() => import('@/pages/admin/DonationManagement').then(m => ({ default: m.DonationManagement })));
+// Admin pages - direct imports for instant navigation (no lazy loading)
+// Admin bundle loads once on first admin access, then all navigation is instant
 
 // Lazy load heavy components - Skip for now due to export issues
 // export const LazyFundraiserGrid = lazy(() => import('@/components/fundraisers/FundraiserGrid'));

@@ -24,7 +24,11 @@ export function AdminProtectedRoute({
   // This prevents the "Access denied" flash when navigating between pages
   const loading = authLoading || rbacLoading;
 
-  if (loading) {
+  // Only show full-page skeleton on absolute first load when RBAC data doesn't exist yet
+  // After first load, RBAC data is cached and we render children immediately
+  // (children will show their own skeletons for page-specific data)
+  if (loading && !user) {
+    // User not authenticated yet - show skeleton
     return <AdminPageLoadingSkeleton />;
   }
 

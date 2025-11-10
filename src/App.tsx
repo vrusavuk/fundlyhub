@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AppProviders } from '@/components/providers/AppProviders';
@@ -29,10 +29,8 @@ import {
   ApiDocsPageSkeleton,
   CreateFundraiserPageSkeleton,
 } from '@/components/skeletons/RouteSkeletons';
-import { CampaignPageSkeleton } from '@/components/skeletons/CampaignPageSkeleton';
-import { AdminPageSkeleton } from '@/components/skeletons/AdminPageSkeleton';
 
-// Lazy-loaded pages for code splitting
+// Lazy-loaded pages for code splitting (non-admin only)
 import { 
   LazyCreateFundraiser,
   LazyUserProfile,
@@ -40,21 +38,23 @@ import {
   LazyApiDocs,
   LazyNotFound,
   LazyErrorRecovery,
-  LazyAdminDashboard,
-  LazyAnalytics,
-  LazyUserManagement,
-  LazyCampaignManagement,
-  LazyOrganizationManagement,
-  LazyRoleManagement,
-  LazyAuditLogs,
-  LazySystemHealth,
-  LazySystemSettings,
-  LazyAdminNotificationCenter,
-  LazyEventMonitoring,
-  LazyDesignSystemDocs,
-  LazyFeatureToggles,
-  LazyDonationManagement,
 } from '@/utils/lazyLoading';
+
+// Admin pages - direct imports for instant navigation
+import { AdminDashboard } from '@/pages/admin/AdminDashboard';
+import { Analytics } from '@/pages/admin/Analytics';
+import { UserManagement } from '@/pages/admin/UserManagement';
+import { CampaignManagement } from '@/pages/admin/CampaignManagement';
+import { OrganizationManagement } from '@/pages/admin/OrganizationManagement';
+import { RoleManagement } from '@/pages/admin/RoleManagement';
+import { AuditLogs } from '@/pages/admin/AuditLogs';
+import { SystemHealth } from '@/pages/admin/SystemHealth';
+import { SystemSettings } from '@/pages/admin/SystemSettings';
+import NotificationCenter from '@/pages/admin/NotificationCenter';
+import EventMonitoring from '@/pages/admin/EventMonitoring';
+import { DesignSystemDocs } from '@/pages/admin/DesignSystemDocs';
+import FeatureToggles from '@/pages/admin/FeatureToggles';
+import { DonationManagement } from '@/pages/admin/DonationManagement';
 
 const App = () => (
   <AppErrorBoundary>
@@ -119,89 +119,33 @@ const App = () => (
           </Suspense>
         } />
         
-        {/* Admin Routes - lazy loaded with admin skeleton */}
+        {/* Admin Routes - direct imports for instant navigation */}
         <Route path="/admin/*" element={
           <AdminProtectedRoute>
             <AdminLayout />
           </AdminProtectedRoute>
         }>
-          <Route index element={
-            <Suspense fallback={<AdminPageSkeleton />}>
-              <LazyAdminDashboard />
-            </Suspense>
-          } />
-          <Route path="analytics" element={
-            <Suspense fallback={<AdminPageSkeleton />}>
-              <LazyAnalytics />
-            </Suspense>
-          } />
-          <Route path="users" element={
-            <Suspense fallback={<AdminPageSkeleton />}>
-              <LazyUserManagement />
-            </Suspense>
-          } />
-          <Route path="roles" element={
-            <Suspense fallback={<AdminPageSkeleton />}>
-              <LazyRoleManagement />
-            </Suspense>
-          } />
-          <Route path="audit-logs" element={
-            <Suspense fallback={<AdminPageSkeleton />}>
-              <LazyAuditLogs />
-            </Suspense>
-          } />
-          <Route path="campaigns" element={
-            <Suspense fallback={<AdminPageSkeleton />}>
-              <LazyCampaignManagement />
-            </Suspense>
-          } />
-          <Route path="donations" element={
-            <Suspense fallback={<AdminPageSkeleton />}>
-              <LazyDonationManagement />
-            </Suspense>
-          } />
-          <Route path="organizations" element={
-            <Suspense fallback={<AdminPageSkeleton />}>
-              <LazyOrganizationManagement />
-            </Suspense>
-          } />
-          <Route path="notifications" element={
-            <Suspense fallback={<AdminPageSkeleton />}>
-              <LazyAdminNotificationCenter />
-            </Suspense>
-          } />
-          <Route path="system" element={
-            <Suspense fallback={<AdminPageSkeleton />}>
-              <LazySystemHealth />
-            </Suspense>
-          } />
-          <Route path="settings" element={
-            <Suspense fallback={<AdminPageSkeleton />}>
-              <LazySystemSettings />
-            </Suspense>
-          } />
-          <Route path="events" element={
-            <Suspense fallback={<AdminPageSkeleton />}>
-              <LazyEventMonitoring />
-            </Suspense>
-          } />
-          <Route path="design-system" element={
-            <Suspense fallback={<AdminPageSkeleton />}>
-              <LazyDesignSystemDocs />
-            </Suspense>
-          } />
-          <Route path="feature-toggles" element={
-            <Suspense fallback={<AdminPageSkeleton />}>
-              <LazyFeatureToggles />
-            </Suspense>
-          } />
+          <Route index element={<AdminDashboard />} />
+          <Route path="analytics" element={<Analytics />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="roles" element={<RoleManagement />} />
+          <Route path="audit-logs" element={<AuditLogs />} />
+          <Route path="campaigns" element={<CampaignManagement />} />
+          <Route path="donations" element={<DonationManagement />} />
+          <Route path="organizations" element={<OrganizationManagement />} />
+          <Route path="notifications" element={<NotificationCenter />} />
+          <Route path="system" element={<SystemHealth />} />
+          <Route path="settings" element={<SystemSettings />} />
+          <Route path="events" element={<EventMonitoring />} />
+          <Route path="design-system" element={<DesignSystemDocs />} />
+          <Route path="feature-toggles" element={<FeatureToggles />} />
         </Route>
         
         {/* User Notification Center (outside admin) */}
         <Route path="/notifications" element={
           <ProtectedRoute>
             <Suspense fallback={<div className="min-h-screen" />}>
-              <LazyAdminNotificationCenter />
+              <NotificationCenter />
             </Suspense>
           </ProtectedRoute>
         } />

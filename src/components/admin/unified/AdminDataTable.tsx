@@ -10,6 +10,7 @@ import { DataTableExact } from '@/components/admin/data-table-exact';
 import { StripeCardExact } from '@/components/ui/stripe-card-exact';
 import { AdminTableControls, BulkAction, TableAction } from './AdminTableControls';
 import { AdminContentContainer } from './AdminContentContainer';
+import { TableSkeleton } from '@/components/admin/TableSkeleton';
 import { UserMobileCard, CampaignMobileCard, OrganizationMobileCard } from '@/components/ui/mobile-card';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
@@ -130,9 +131,24 @@ export function AdminDataTable<TData, TValue>({
     handleSelectionChange(selectedData);
   };
   
+  
+  // Show loading skeleton
+  if (loading) {
+    return (
+      <div className={cn('space-y-4 w-full max-w-full', className)}>
+        {title && (
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">{title}</h2>
+          </div>
+        )}
+        <TableSkeleton rows={5} columns={6} />
+      </div>
+    );
+  }
+  
   return (
     <AdminContentContainer
-      loading={loading}
+      loading={false}
       error={error}
       empty={!loading && !error && data.length === 0}
       emptyTitle={emptyStateTitle}
