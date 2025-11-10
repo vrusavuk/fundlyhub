@@ -32,6 +32,12 @@ export function ImageEditor({ imageUrl, onComplete, onCancel, open }: ImageEdito
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const handleAspectRatioChange = (newAspect: number | undefined) => {
+    setAspectRatio(newAspect);
+    // Reset crop position when changing aspect ratio
+    setCrop({ x: 0, y: 0 });
+  };
+
   const onCropComplete = useCallback((croppedArea: Area, croppedAreaPixels: Area) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
@@ -145,6 +151,7 @@ export function ImageEditor({ imageUrl, onComplete, onCancel, open }: ImageEdito
             onZoomChange={setZoom}
             onRotationChange={setRotation}
             onCropComplete={onCropComplete}
+            restrictPosition={false}
           />
         </div>
 
@@ -161,7 +168,7 @@ export function ImageEditor({ imageUrl, onComplete, onCancel, open }: ImageEdito
                     type="button"
                     variant={aspectRatio === ratio.value ? 'default' : 'outline'}
                     size="sm"
-                    onClick={() => setAspectRatio(ratio.value)}
+                    onClick={() => handleAspectRatioChange(ratio.value)}
                     className="flex-1"
                   >
                     <Icon className="h-4 w-4 mr-2" />
