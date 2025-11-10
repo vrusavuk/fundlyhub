@@ -71,8 +71,8 @@ export function AdminPageLayout({
         </div>
       </div>
 
-      {/* Content Section - Scrollable area with consistent padding */}
-      <div className="flex-1 overflow-auto px-6 py-6">
+      {/* Content Section - Gray background with scrollable content */}
+      <div className="flex-1 overflow-auto bg-[#F6F9FC] px-6 py-6">
         <div className="space-y-6">
           {children}
         </div>

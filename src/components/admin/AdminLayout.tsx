@@ -19,7 +19,7 @@ export function AdminLayout() {
       <div className="min-h-screen flex w-full">
         <AdminSidebar />
         
-        <SidebarInset className="flex flex-col flex-1 bg-[#F6F9FC]">
+        <SidebarInset className="flex flex-col flex-1">
           {/* Sticky white header with navigation */}
           <header className="flex h-16 shrink-0 items-center gap-2 bg-white border-b border-[#E3E8EE] sticky top-0 z-10">
             <div className="flex items-center gap-2 px-4">
@@ -33,8 +33,8 @@ export function AdminLayout() {
             </div>
           </header>
           
-          {/* Main content wrapper with proper flex and background */}
-          <main className="flex-1 flex flex-col min-h-0">
+          {/* Main content - Fallback gray background for pages without AdminPageLayout */}
+          <main className="flex-1 flex flex-col min-h-0 bg-[#F6F9FC]">
             <Outlet />
           </main>
         </SidebarInset>
