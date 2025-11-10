@@ -9,10 +9,8 @@ export type { StripeBadgeExactProps } from './stripe-badge-exact';
 
 // Admin dashboard components
 export { StripeStatusTabs } from '../admin/StripeStatusTabs';
-export { StripeFilterPills } from '../admin/StripeFilterPills';
 export { StripeInfoBanner } from '../admin/StripeInfoBanner';
 export { StripeActionButtons } from '../admin/StripeActionButtons';
 export { PaymentMethodIcon } from '../admin/PaymentMethodIcon';
 export type { StatusTab } from '../admin/StripeStatusTabs';
-export type { FilterPill } from '../admin/StripeFilterPills';
 export type { ActionButton } from '../admin/StripeActionButtons';
