@@ -138,9 +138,9 @@ export function AdminDataTable<TData, TValue>({
       emptyTitle={emptyStateTitle}
       emptyDescription={emptyStateDescription}
       retry={retry}
-      className={className}
+      className={cn('w-full max-w-full', className)}
     >
-      <div className="space-y-4">
+      <div className="space-y-4 w-full max-w-full overflow-x-hidden">
         {/* Table Controls */}
         <AdminTableControls
           title={title}
@@ -153,17 +153,19 @@ export function AdminDataTable<TData, TValue>({
           loading={loading}
         />
         
-        {/* Data Table with Exact Stripe Styling */}
-        <StripeCardExact noPadding>
-          <DataTableExact
-            columns={columns}
-            data={data}
-            onRowClick={onRowClick}
-            enableSelection={enableSelection}
-            selectedRows={convertSelectionToRowIds(currentSelection)}
-            onSelectionChange={handleDataTableSelectionChange}
-          />
-        </StripeCardExact>
+        {/* Data Table with responsive wrapper */}
+        <div className="w-full overflow-x-auto">
+          <StripeCardExact noPadding>
+            <DataTableExact
+              columns={columns}
+              data={data}
+              onRowClick={onRowClick}
+              enableSelection={enableSelection}
+              selectedRows={convertSelectionToRowIds(currentSelection)}
+              onSelectionChange={handleDataTableSelectionChange}
+            />
+          </StripeCardExact>
+        </div>
       </div>
     </AdminContentContainer>
   );

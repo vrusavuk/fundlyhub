@@ -32,14 +32,14 @@ export function AdminPageLayout({
   className
 }: AdminPageLayoutProps) {
   return (
-    <div className={cn('bg-background', className)}>
-      {/* Single content container - everything flows together */}
-      <div className="p-8 space-y-8">
-        {/* Page Header - inline with content, no borders */}
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 space-y-2">
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+    <div className={cn('bg-background w-full max-w-full overflow-x-hidden', className)}>
+      {/* Content container with responsive padding */}
+      <div className="p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8">
+        {/* Page Header - responsive layout */}
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div className="flex-1 space-y-2 min-w-0">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
                 {title}
               </h1>
               {badge && (
@@ -56,14 +56,16 @@ export function AdminPageLayout({
           </div>
           
           {actions && (
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-2 shrink-0 flex-wrap">
               {actions}
             </div>
           )}
         </div>
 
-        {/* Content - flows naturally after title */}
-        {children}
+        {/* Content - with overflow protection */}
+        <div className="w-full max-w-full overflow-x-hidden">
+          {children}
+        </div>
       </div>
     </div>
   );

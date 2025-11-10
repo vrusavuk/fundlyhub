@@ -50,32 +50,34 @@ export function AdminHeader() {
   };
 
   return (
-    <div className="flex items-center gap-4">
-      {/* Search */}
+    <div className="flex items-center gap-2">
+      {/* Search - visible on all sizes */}
       <SearchTrigger variant="icon" />
       
-      {/* Keyboard Shortcuts */}
-      <KeyboardShortcutHelp />
+      {/* Keyboard Help - hidden on mobile/tablet */}
+      <div className="hidden lg:block">
+        <KeyboardShortcutHelp />
+      </div>
       
-      {/* Notifications */}
+      {/* Notifications - always visible */}
       <NotificationDropdown />
       
-      {/* Back to Site */}
+      {/* Back to Site - hidden on small/medium, visible on large */}
       <Button 
         variant="outline" 
         size="sm" 
         onClick={handleBackToSite}
-        className="hidden sm:flex"
+        className="hidden lg:flex"
         aria-label="Return to main site"
       >
         <ArrowLeft className="h-4 w-4 mr-2" />
         Back to Site
       </Button>
       
-      {/* User Menu */}
+      {/* User Menu - always visible */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+          <Button variant="ghost" className="relative h-10 w-10 rounded-full shrink-0">
             <Avatar className="h-10 w-10">
               <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.email} />
               <AvatarFallback>
