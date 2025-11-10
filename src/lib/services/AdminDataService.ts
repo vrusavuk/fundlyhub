@@ -685,6 +685,39 @@ class AdminDataService {
   }
 
   /**
+   * Fetch donations for a specific user
+   */
+  async fetchUserDonations(userId: string) {
+    const cacheKey = `user-donations:${userId}`;
+    
+    return this.cache.getOrSet(cacheKey, async () => {
+      const { data, error } = await supabase
+        .from('donations')
+        .select(`
+          id,
+          amount,
+          currency,
+          payment_status,
+          created_at,
+          is_anonymous,
+          donor_name,
+          receipt_id,
+          fundraisers!fundraiser_id(
+            id,
+            title,
+            slug,
+            status
+          )
+        `)
+        .eq('donor_user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    }, { ttl: 10000 });
+  }
+
+  /**
    * Clear cache for specific resource type
    */
   invalidateCache(resource: 'users' | 'organizations' | 'campaigns' | 'roles' | 'dashboard' | 'donations' | 'all') {

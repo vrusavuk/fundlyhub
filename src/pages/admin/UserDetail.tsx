@@ -11,6 +11,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import {
+  StripeTable,
+  StripeTableHeader,
+  StripeTableBody,
+  StripeTableHead,
+  StripeTableRow,
+  StripeTableCell,
+} from '@/components/ui/stripe-table';
+import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
+import {
   DetailPageLayout,
   DetailSection,
   DetailKeyValue,
@@ -27,6 +36,8 @@ export default function UserDetail() {
   const { toast } = useToast();
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [donations, setDonations] = useState<any[]>([]);
+  const [donationsLoading, setDonationsLoading] = useState(true);
 
   // Set dynamic breadcrumbs
   useDetailPageBreadcrumbs(
@@ -59,6 +70,26 @@ export default function UserDetail() {
 
     fetchUser();
   }, [id, navigate, toast]);
+
+  useEffect(() => {
+    const fetchDonations = async () => {
+      if (!id) return;
+      
+      try {
+        setDonationsLoading(true);
+        const donationData = await adminDataService.fetchUserDonations(id);
+        setDonations(donationData);
+      } catch (error) {
+        console.error('Error fetching user donations:', error);
+      } finally {
+        setDonationsLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchDonations();
+    }
+  }, [id, user]);
 
   if (loading) {
     return (
@@ -109,6 +140,39 @@ export default function UserDetail() {
       .join('')
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case 'paid':
+      case 'completed':
+        return 'stripe-success';
+      case 'pending':
+        return 'stripe-warning';
+      case 'failed':
+        return 'destructive';
+      case 'refunded':
+        return 'stripe-neutral';
+      default:
+        return 'secondary';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'paid':
+        return 'Succeeded';
+      case 'completed':
+        return 'Completed';
+      case 'pending':
+        return 'Pending';
+      case 'failed':
+        return 'Failed';
+      case 'refunded':
+        return 'Refunded';
+      default:
+        return status.charAt(0).toUpperCase() + status.slice(1);
+    }
   };
 
   return (
@@ -242,6 +306,85 @@ export default function UserDetail() {
                 />
               )}
             </div>
+          </DetailSection>
+
+          {/* Donation History */}
+          <DetailSection 
+            title="Donation History" 
+            actions={
+              donations.length > 0 && (
+                <span className="text-[12px] text-muted-foreground">
+                  {donations.length} total donation{donations.length !== 1 ? 's' : ''}
+                </span>
+              )
+            }
+          >
+            {donationsLoading ? (
+              <div className="space-y-2">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            ) : donations.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-[14px] text-muted-foreground">
+                  No donations yet
+                </p>
+              </div>
+            ) : (
+              <div className="bg-card border border-border rounded-lg overflow-hidden">
+                <StripeTable>
+                  <StripeTableHeader>
+                    <StripeTableRow density="comfortable">
+                      <StripeTableHead>Amount</StripeTableHead>
+                      <StripeTableHead>Campaign</StripeTableHead>
+                      <StripeTableHead>Status</StripeTableHead>
+                      <StripeTableHead>Date</StripeTableHead>
+                      <StripeTableHead className="text-right">Actions</StripeTableHead>
+                    </StripeTableRow>
+                  </StripeTableHeader>
+                  <StripeTableBody>
+                    {donations.map((donation) => (
+                      <StripeTableRow 
+                        key={donation.id}
+                        density="comfortable"
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => navigate(`/admin/donations/${donation.id}`)}
+                      >
+                        <StripeTableCell>
+                          <span className="font-medium">
+                            {MoneyMath.format(MoneyMath.create(donation.amount, donation.currency))}
+                          </span>
+                        </StripeTableCell>
+                        <StripeTableCell>
+                          {donation.fundraisers?.title || 'Unknown Campaign'}
+                        </StripeTableCell>
+                        <StripeTableCell>
+                          <Badge variant={getStatusVariant(donation.payment_status) as any}>
+                            {getStatusLabel(donation.payment_status)}
+                          </Badge>
+                        </StripeTableCell>
+                        <StripeTableCell>
+                          {formatDistanceToNow(new Date(donation.created_at), { addSuffix: true })}
+                        </StripeTableCell>
+                        <StripeTableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/admin/donations/${donation.id}`);
+                            }}
+                          >
+                            View
+                          </Button>
+                        </StripeTableCell>
+                      </StripeTableRow>
+                    ))}
+                  </StripeTableBody>
+                </StripeTable>
+              </div>
+            )}
           </DetailSection>
         </>
       }
