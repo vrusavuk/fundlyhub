@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { DensityToggle, Density } from '@/components/admin/DensityToggle';
 import { 
   Building2, 
   CheckCircle,
@@ -55,6 +56,7 @@ export function OrganizationManagement() {
     search: '',
     status: 'all'
   });
+  const [density, setDensity] = useState<Density>('comfortable');
   const { toast } = useToast();
   const { hasPermission } = useRBAC();
   
@@ -303,6 +305,13 @@ export function OrganizationManagement() {
           description: 'Organization data export will begin shortly'
         });
       }
+    },
+    {
+      key: 'density',
+      label: 'Density',
+      customRender: () => (
+        <DensityToggle value={density} onChange={setDensity} />
+      )
     }
   ];
 
@@ -353,6 +362,7 @@ export function OrganizationManagement() {
         actions={tableActions}
         bulkActions={bulkActions}
         onBulkAction={handleBulkActionClick}
+        density={density}
         
         emptyStateTitle="No organizations found"
         emptyStateDescription="No organizations match your current filters."
@@ -361,7 +371,6 @@ export function OrganizationManagement() {
         enableFiltering={false}
         enableColumnVisibility={true}
         enablePagination={true}
-        density="comfortable"
       />
 
       <OptimisticUpdateIndicator

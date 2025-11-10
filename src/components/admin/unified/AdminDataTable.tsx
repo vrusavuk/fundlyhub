@@ -179,6 +179,7 @@ export function AdminDataTable<TData, TValue>({
               enableSelection={enableSelection}
               selectedRows={convertSelectionToRowIds(currentSelection)}
               onSelectionChange={handleDataTableSelectionChange}
+              density={density}
             />
           </StripeCardExact>
         </div>

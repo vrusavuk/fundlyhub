@@ -32,6 +32,7 @@ interface DataTableProps<TData, TValue> {
   onSelectionChange?: (selection: Record<string, boolean>) => void;
   enableSelection?: boolean;
   className?: string;
+  density?: 'compact' | 'comfortable' | 'spacious';
 }
 
 export function DataTableExact<TData, TValue>({
@@ -42,6 +43,7 @@ export function DataTableExact<TData, TValue>({
   onSelectionChange,
   enableSelection = false,
   className,
+  density = 'comfortable',
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [rowSelection, setRowSelection] = React.useState(selectedRows || {});
@@ -115,9 +117,9 @@ export function DataTableExact<TData, TValue>({
       <StripeTable>
         <StripeTableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <StripeTableRow key={headerGroup.id}>
+            <StripeTableRow key={headerGroup.id} density={density}>
               {headerGroup.headers.map((header) => (
-                <StripeTableHead key={header.id}>
+                <StripeTableHead key={header.id} density={density}>
                   {header.isPlaceholder
                     ? null
                     : flexRender(
@@ -134,6 +136,7 @@ export function DataTableExact<TData, TValue>({
             table.getRowModel().rows.map((row) => (
               <StripeTableRow
                 key={row.id}
+                density={density}
                 data-state={row.getIsSelected() && "selected"}
                 onClick={() => onRowClick?.(row)}
                 className={cn(
@@ -142,15 +145,16 @@ export function DataTableExact<TData, TValue>({
                 )}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <StripeTableCell key={cell.id}>
+                  <StripeTableCell key={cell.id} density={density}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </StripeTableCell>
                 ))}
               </StripeTableRow>
             ))
           ) : (
-            <StripeTableRow>
+            <StripeTableRow density={density}>
               <StripeTableCell
+                density={density}
                 colSpan={tableColumns.length}
                 className="h-24 text-center text-[#425466]"
               >

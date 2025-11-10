@@ -17,6 +17,7 @@ import { AdminEventService } from '@/lib/services/AdminEventService';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { CreateUserDialog } from '@/components/admin/CreateUserDialog';
 import { UserDetailsDialog } from '@/components/admin/ViewDetailsDialog';
+import { DensityToggle, Density } from '@/components/admin/DensityToggle';
 import { 
   Users, 
   UserCheck, 
@@ -97,6 +98,7 @@ export function UserManagement() {
     role: 'all'
   });
   const [selectedUsers, setSelectedUsers] = useState<ExtendedProfile[]>([]);
+  const [density, setDensity] = useState<Density>('comfortable');
   
   // Pagination
   const pagination = usePagination({
@@ -448,6 +450,13 @@ export function UserManagement() {
       variant: 'outline',
       onClick: exportUsers
     },
+    {
+      key: 'density',
+      label: 'Density',
+      customRender: () => (
+        <DensityToggle value={density} onChange={setDensity} />
+      )
+    },
     ...(hasPermission('create_users') ? [{
       key: 'add',
       label: 'Add User',
@@ -590,6 +599,7 @@ export function UserManagement() {
         actions={tableActions}
         bulkActions={bulkActions}
         onBulkAction={handleBulkAction}
+        density={density}
         
         emptyStateTitle="No users found"
         emptyStateDescription="No users match your current filters. Try adjusting your search criteria."
@@ -600,7 +610,6 @@ export function UserManagement() {
         enableFiltering={false}
         enableColumnVisibility={true}
         enablePagination={true}
-        density="comfortable"
       />
 
       {/* Optimistic Update Indicator */}

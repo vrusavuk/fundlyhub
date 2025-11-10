@@ -5,6 +5,7 @@ import { StripeStatusTabs, StatusTab } from '@/components/admin/StripeStatusTabs
 import { StripeInfoBanner } from '@/components/admin/StripeInfoBanner';
 import { StripeActionButtons } from '@/components/admin/StripeActionButtons';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { DensityToggle, Density } from '@/components/admin/DensityToggle';
 import { 
   CheckCircle, 
   XCircle, 
@@ -90,6 +91,7 @@ export function CampaignManagement() {
     dateRange: 'all',
     amountRange: 'all'
   });
+  const [density, setDensity] = useState<Density>('comfortable');
   
   const debouncedSearch = useDebounce(filters.search, 500);
   
@@ -443,6 +445,13 @@ export function CampaignManagement() {
           description: 'Campaign data export will begin shortly'
         });
       }
+    },
+    {
+      key: 'density',
+      label: 'Density',
+      customRender: () => (
+        <DensityToggle value={density} onChange={setDensity} />
+      )
     }
   ];
 
@@ -555,6 +564,7 @@ export function CampaignManagement() {
         actions={tableActions}
         bulkActions={bulkActions}
         onBulkAction={handleBulkActionClick}
+        density={density}
         
         emptyStateTitle="No campaigns found"
         emptyStateDescription="No campaigns match your current filters."
@@ -563,7 +573,6 @@ export function CampaignManagement() {
         enableFiltering={false}
         enableColumnVisibility={true}
         enablePagination={true}
-        density="comfortable"
         paginationState={pagination.state}
         onPageChange={pagination.goToPage}
         onPageSizeChange={pagination.setPageSize}
