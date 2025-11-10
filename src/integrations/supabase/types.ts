@@ -821,6 +821,68 @@ export type Database = {
           },
         ]
       }
+      fundraiser_images: {
+        Row: {
+          bucket: string
+          created_at: string | null
+          deleted_at: string | null
+          file_name: string
+          file_size: number
+          fundraiser_id: string | null
+          height: number | null
+          id: string
+          image_type: string
+          is_optimized: boolean | null
+          mime_type: string
+          public_url: string
+          storage_path: string
+          user_id: string
+          width: number | null
+        }
+        Insert: {
+          bucket: string
+          created_at?: string | null
+          deleted_at?: string | null
+          file_name: string
+          file_size: number
+          fundraiser_id?: string | null
+          height?: number | null
+          id?: string
+          image_type: string
+          is_optimized?: boolean | null
+          mime_type: string
+          public_url: string
+          storage_path: string
+          user_id: string
+          width?: number | null
+        }
+        Update: {
+          bucket?: string
+          created_at?: string | null
+          deleted_at?: string | null
+          file_name?: string
+          file_size?: number
+          fundraiser_id?: string | null
+          height?: number | null
+          id?: string
+          image_type?: string
+          is_optimized?: boolean | null
+          mime_type?: string
+          public_url?: string
+          storage_path?: string
+          user_id?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fundraiser_images_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "fundraisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fundraisers: {
         Row: {
           beneficiary_contact: string | null
@@ -1950,6 +2012,39 @@ export type Database = {
         }
         Relationships: []
       }
+      storage_analytics: {
+        Row: {
+          bucket: string | null
+          event_type: string
+          file_size: number
+          id: string
+          image_type: string | null
+          mime_type: string | null
+          timestamp: string | null
+          user_id: string
+        }
+        Insert: {
+          bucket?: string | null
+          event_type: string
+          file_size: number
+          id?: string
+          image_type?: string | null
+          mime_type?: string | null
+          timestamp?: string | null
+          user_id: string
+        }
+        Update: {
+          bucket?: string | null
+          event_type?: string
+          file_size?: number
+          id?: string
+          image_type?: string | null
+          mime_type?: string | null
+          timestamp?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           created_at: string
@@ -2586,6 +2681,7 @@ export type Database = {
         Args: { text1: string; text2: string }
         Returns: number
       }
+      cleanup_abandoned_draft_images: { Args: never; Returns: number }
       enhanced_fuzzy_search_users: {
         Args: {
           include_suggestions?: boolean

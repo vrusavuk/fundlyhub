@@ -17,6 +17,7 @@ export * from './domain/OrganizationEvents';
 export * from './domain/AdminEvents';
 export * from './domain/SearchEvents';
 export * from './domain/ProjectEvents';
+export * from './domain/StorageEvents';
 
 // Publishers
 export * from './publishers/ServiceEventPublisher';
@@ -133,6 +134,27 @@ globalEventBus.subscribe('donation.refunded', donationProjectionProcessor);
 globalEventBus.subscribe('donation.failed', donationProjectionProcessor);
 
 console.log('[EventBus] Donation processors registered');
+
+// Register image/storage event processors
+import { ImageWriteProcessor } from './processors/ImageWriteProcessor';
+import { ImageAnalyticsProcessor } from './processors/ImageAnalyticsProcessor';
+import { ImageCleanupProcessor } from './processors/ImageCleanupProcessor';
+
+const imageWriteProcessor = new ImageWriteProcessor();
+const imageAnalyticsProcessor = new ImageAnalyticsProcessor();
+const imageCleanupProcessor = new ImageCleanupProcessor();
+
+globalEventBus.subscribe('storage.image.uploaded', imageWriteProcessor);
+globalEventBus.subscribe('storage.image.deleted', imageWriteProcessor);
+globalEventBus.subscribe('storage.image.linked', imageWriteProcessor);
+
+globalEventBus.subscribe('storage.image.uploaded', imageAnalyticsProcessor);
+globalEventBus.subscribe('storage.image.deleted', imageAnalyticsProcessor);
+globalEventBus.subscribe('storage.image.optimized', imageAnalyticsProcessor);
+
+globalEventBus.subscribe('storage.draft.cleanup_requested', imageCleanupProcessor);
+
+console.log('[EventBus] Image/Storage processors registered');
 
 // Initialize subscription event subscribers
 import { initializeSubscriptionSubscribers } from './subscribers/SubscriptionEventSubscriber';

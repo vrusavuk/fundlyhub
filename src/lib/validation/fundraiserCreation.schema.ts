@@ -55,6 +55,7 @@ export const fundraiserDetailsSchema = z.object({
     .optional(),
   
   coverImage: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+  coverImageId: z.string().uuid().optional(), // Track image ID for storage
   
   endDate: z.string().optional(),
   

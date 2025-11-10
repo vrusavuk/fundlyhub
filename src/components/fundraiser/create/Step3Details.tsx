@@ -11,13 +11,16 @@ import { Button } from '@/components/ui/button';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 
 interface Step3DetailsProps {
   formData: {
     beneficiaryName?: string;
     location?: string;
     coverImage?: string;
+    coverImageId?: string;
     endDate?: string;
+    isProject?: boolean;
   };
   errors: Record<string, string>;
   onChange: (updates: any) => void;
@@ -70,23 +73,20 @@ export function Step3Details({ formData, errors, onChange, isProject }: Step3Det
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="coverImage" className="label-small">
-          Cover Image URL
-        </Label>
-        <Input
-          id="coverImage"
-          type="url"
-          placeholder="https://example.com/image.jpg"
-          value={formData.coverImage || ''}
-          onChange={(e) => onChange({ coverImage: e.target.value })}
-          className={errors.coverImage ? 'border-destructive' : ''}
+        <ImageUpload
+          value={formData.coverImage}
+          onChange={(url) => onChange({ coverImage: url })}
+          onImageIdChange={(imageId) => onChange({ coverImageId: imageId })}
+          maxFiles={1}
+          bucket={formData.isProject ? 'fundraiser-images' : 'fundraiser-drafts'}
+          isDraft={!formData.isProject}
+          label="Cover Image"
+          description="Upload a compelling image for your campaign (JPG, PNG, WebP, or GIF, max 5MB)"
+          showPreview={true}
         />
         {errors.coverImage && (
           <p className="text-sm text-destructive">{errors.coverImage}</p>
         )}
-        <p className="text-xs text-muted-foreground">
-          Optional: Add a compelling image URL for your campaign
-        </p>
       </div>
 
       <div className="space-y-2">

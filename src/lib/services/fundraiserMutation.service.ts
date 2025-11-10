@@ -16,6 +16,7 @@ import { campaignAccessApi } from '@/lib/api/campaignAccessApi';
 export interface CreateFundraiserInput extends CompleteFundraiser {
   userId: string;
   status?: 'draft' | 'pending' | 'active';
+  coverImageId?: string;
 }
 
 export interface UpdateFundraiserInput {
@@ -84,6 +85,16 @@ export class FundraiserMutationService {
           milestones: input.milestones,
           createdBy: input.userId,
         });
+      }
+
+      // Link cover image to fundraiser (if uploaded)
+      if (input.coverImageId) {
+        const { imageUploadService } = await import('./imageUpload.service');
+        await imageUploadService.linkDraftImagesToFundraiser(
+          [input.coverImageId],
+          data.id,
+          input.userId
+        );
       }
 
       if (error) throw error;
