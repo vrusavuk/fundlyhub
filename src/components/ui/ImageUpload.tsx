@@ -9,6 +9,7 @@ import { Button } from './button';
 import { Progress } from './progress';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { ImageEditor } from './ImageEditor';
 
 export interface ImageUploadProps {
   value?: string | string[];
@@ -50,6 +51,7 @@ export function ImageUpload({
     Array.isArray(value) ? value : value ? [value] : []
   );
   const [imageIds, setImageIds] = useState<string[]>([]);
+  const [editingImage, setEditingImage] = useState<{ url: string; file: File } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -152,28 +154,31 @@ export function ImageUpload({
       }
     }
 
+    // Open editor for the first file
+    const file = fileArray[0];
+    const imageUrl = URL.createObjectURL(file);
+    setEditingImage({ url: imageUrl, file });
+  };
+
+  const handleEditorComplete = useCallback(async (croppedBlob: Blob, croppedUrl: string) => {
+    setEditingImage(null);
     setUploading(true);
     setUploadProgress(0);
 
     try {
-      const uploadedResults: { url: string; imageId: string }[] = [];
+      // Create a new File from the cropped blob
+      const croppedFile = new File([croppedBlob], editingImage?.file.name || 'cropped-image.jpg', {
+        type: 'image/jpeg',
+      });
 
-      for (let i = 0; i < fileArray.length; i++) {
-        const file = fileArray[i];
-        console.log('[ImageUpload] Uploading file:', file.name);
-        const result = await uploadFile(file);
-        console.log('[ImageUpload] Upload result:', result);
-        if (result) {
-          uploadedResults.push(result);
-        }
-      }
+      console.log('[ImageUpload] Uploading cropped file:', croppedFile.name);
+      const result = await uploadFile(croppedFile);
+      console.log('[ImageUpload] Upload result:', result);
 
-      const newUrls = uploadedResults.map(r => r.url);
-      const newImageIds = uploadedResults.map(r => r.imageId);
-      console.log('[ImageUpload] All uploads complete:', newUrls);
+      if (!result) throw new Error('Upload failed');
 
-      const updatedPreviews = [...previews, ...newUrls];
-      const updatedImageIds = [...imageIds, ...newImageIds];
+      const updatedPreviews = [...previews, result.url];
+      const updatedImageIds = [...imageIds, result.imageId];
 
       // ✅ Notify parent FIRST (source of truth)
       if (maxFiles === 1) {
@@ -184,25 +189,37 @@ export function ImageUpload({
         onImageIdChange?.(updatedImageIds);
       }
 
-      // Then update internal state (will be overwritten by useEffect anyway)
+      // Then update internal state
       setPreviews(updatedPreviews);
       setImageIds(updatedImageIds);
 
       toast({
         title: 'Upload successful',
-        description: `${uploadedResults.length} file${uploadedResults.length > 1 ? 's' : ''} uploaded successfully`,
+        description: 'Image uploaded successfully',
       });
     } catch (error) {
+      console.error('Upload error:', error);
       toast({
         title: 'Upload failed',
-        description: error instanceof Error ? error.message : 'An error occurred during upload',
+        description: error instanceof Error ? error.message : 'Failed to upload image',
         variant: 'destructive',
       });
     } finally {
       setUploading(false);
       setUploadProgress(0);
+      // Clean up object URL
+      if (editingImage) {
+        URL.revokeObjectURL(editingImage.url);
+      }
     }
-  };
+  }, [editingImage, previews, imageIds, maxFiles, onChange, onImageIdChange, toast, uploadFile]);
+
+  const handleEditorCancel = useCallback(() => {
+    if (editingImage) {
+      URL.revokeObjectURL(editingImage.url);
+    }
+    setEditingImage(null);
+  }, [editingImage]);
 
   const handleDrop = useCallback(
     async (e: React.DragEvent) => {
@@ -356,6 +373,16 @@ export function ImageUpload({
           <Upload className="h-4 w-4 mr-2" />
           Add More Images ({validPreviews.length}/{maxFiles})
         </Button>
+      )}
+
+      {/* Image Editor Modal */}
+      {editingImage && (
+        <ImageEditor
+          imageUrl={editingImage.url}
+          onComplete={handleEditorComplete}
+          onCancel={handleEditorCancel}
+          open={!!editingImage}
+        />
       )}
     </div>
   );
