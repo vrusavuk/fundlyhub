@@ -21,7 +21,7 @@ import {
 import { useRBAC } from '@/hooks/useRBAC';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
 import { SettingsCategory } from '@/components/admin/settings/SettingsCategory';
-import { AdminPageLayout } from '@/components/admin/unified/AdminPageLayout';
+import { AdminPageLayout, PageSection } from '@/components/admin/unified';
 
 export function SystemSettings() {
   const { 

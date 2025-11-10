@@ -20,7 +20,7 @@ import {
   BarChart3
 } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { AdminPageLayout } from '@/components/admin/unified/AdminPageLayout';
+import { AdminPageLayout, PageSection, PageGrid } from '@/components/admin/unified';
 
 interface PlatformStats {
   totalUsers: number;
@@ -144,7 +144,7 @@ export function AdminDashboard() {
       }}
     >
       {/* Quick Stats Summary */}
-      <div className="grid gap-4 md:grid-cols-4 mb-6">
+      <PageGrid columns={4} gap="normal">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-700">Total Users</CardTitle>
@@ -198,10 +198,11 @@ export function AdminDashboard() {
             </p>
           </CardContent>
         </Card>
-      </div>
+      </PageGrid>
 
       {/* Main Content */}
-      <Tabs defaultValue="overview" className="space-y-4 mb-6">
+      <PageSection spacing="normal">
+        <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="activity">Recent Activity</TabsTrigger>
@@ -392,6 +393,7 @@ export function AdminDashboard() {
           </TabsContent>
         )}
       </Tabs>
+      </PageSection>
     </AdminPageLayout>
   );
 }

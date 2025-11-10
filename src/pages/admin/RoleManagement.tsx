@@ -32,7 +32,7 @@ import {
 } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { AdminPageLayout } from '@/components/admin/unified/AdminPageLayout';
+import { AdminPageLayout, PageSection } from '@/components/admin/unified';
 
 interface Role {
   id: string;

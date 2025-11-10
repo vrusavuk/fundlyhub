@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { AdminPageLayout } from '@/components/admin/unified/AdminPageLayout';
+import { AdminPageLayout, PageSection, PageGrid } from '@/components/admin/unified';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

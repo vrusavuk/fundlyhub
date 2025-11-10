@@ -8,6 +8,8 @@ export { BulkOperations } from './BulkOperations';
 export { QuickActions } from './QuickActions';
 export { RealTimeIndicator, MultipleRealTimeIndicator } from './RealTimeIndicator';
 export { PerformanceMonitor } from './PerformanceMonitor';
+export { PageSection } from './PageSection';
+export { PageGrid } from './PageGrid';
 export type { FilterConfig } from './AdminFilters';
 export type { BulkAction, TableAction } from './AdminTableControls';
 export type { SearchFilter, ActiveFilter } from './AdvancedSearch';

@@ -32,10 +32,10 @@ export function AdminPageLayout({
   className
 }: AdminPageLayoutProps) {
   return (
-    <div className={cn('flex-1 flex flex-col', className)}>
-      {/* Page Header - White background, tight to navigation header */}
-      <div className="bg-white border-b border-[#E3E8EE] px-6 py-4">
-        <div className="flex items-start justify-between gap-4">
+    <div className={cn('flex-1 flex flex-col min-h-0', className)}>
+      {/* Page Header - White background, fixed height */}
+      <div className="shrink-0 bg-white border-b border-[#E3E8EE] px-6 py-4 min-h-[80px] flex items-center">
+        <div className="flex items-start justify-between gap-4 w-full">
           <div className="flex-1">
             <div className="flex items-center gap-3">
               <h1 className="text-[24px] font-semibold text-[#0A2540]">
@@ -71,9 +71,11 @@ export function AdminPageLayout({
         </div>
       </div>
 
-      {/* Content Section - Gray background, consistent padding */}
-      <div className="flex-1 bg-[#F6F9FC] px-6 py-6">
-        {children}
+      {/* Content Section - Scrollable area with consistent padding */}
+      <div className="flex-1 overflow-auto px-6 py-6">
+        <div className="space-y-6">
+          {children}
+        </div>
       </div>
     </div>
   );
