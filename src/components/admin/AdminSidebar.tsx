@@ -151,8 +151,12 @@ export function AdminSidebar() {
   );
 
   return (
-    <Sidebar variant="inset" collapsible="icon">
-      <SidebarHeader>
+    <Sidebar 
+      variant="inset" 
+      collapsible="icon"
+      className="border-r border-border bg-card"
+    >
+      <SidebarHeader className="border-b border-border">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
@@ -193,7 +197,9 @@ export function AdminSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Navigation
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {visibleItems.map((item) => {
@@ -205,12 +211,17 @@ export function AdminSidebar() {
                       asChild
                       isActive={isActiveRoute}
                       tooltip={state === "collapsed" ? item.title : undefined}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md mx-2",
+                        "transition-colors hover:bg-muted/50",
+                        isActiveRoute && "bg-primary/10 text-primary font-semibold"
+                      )}
                     >
                       <NavLink to={item.url} end={item.url === '/admin'}>
                         <item.icon className="size-4" />
                         <span>{item.title}</span>
                         {item.badge && state === "expanded" && (
-                          <Badge variant="destructive" className="ml-auto text-xs">
+                          <Badge variant="stripe-error" className="ml-auto text-xs">
                             {item.badge}
                           </Badge>
                         )}

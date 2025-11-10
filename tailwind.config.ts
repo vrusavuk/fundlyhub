@@ -28,6 +28,14 @@ export default {
         'touch': '44px', // Mobile touch target width
       },
       colors: {
+        // Stripe-inspired neutral palette
+        'stripe-neutral': {
+          50: 'hsl(248, 250, 252)',
+          100: 'hsl(241, 245, 249)',
+          200: 'hsl(226, 232, 240)',
+          700: 'hsl(51, 65, 85)',
+          900: 'hsl(15, 23, 42)',
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

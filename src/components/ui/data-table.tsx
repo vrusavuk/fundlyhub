@@ -137,9 +137,15 @@ export function DataTable<TData, TValue>({
   };
 
   const cellPadding = {
-    compact: "px-2 py-1",
+    compact: "px-3 py-2",      // Stripe-like: 12px horizontal, 8px vertical
     comfortable: "px-4 py-3",
     spacious: "px-6 py-4",
+  };
+
+  const rowHeight = {
+    compact: "h-10",           // Stripe standard: 40px
+    comfortable: "h-12",
+    spacious: "h-14",
   };
 
   if (loading) {
@@ -152,10 +158,10 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className={cn(getSpacingClasses('section', 'md'), className)}>
-      {/* Enhanced Table Controls */}
+      {/* Stripe-inspired Table Controls */}
       {(enableFiltering || enableSelection || enableColumnVisibility) && (
-        <div className="card-enhanced p-4 mb-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="bg-card border border-border rounded-lg p-3 mb-4 shadow-sm">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex flex-1 items-center space-x-3">
               {enableFiltering && (
                 <div className="relative">
@@ -164,7 +170,7 @@ export function DataTable<TData, TValue>({
                     placeholder={searchPlaceholder}
                     value={globalFilter ?? ""}
                     onChange={(event) => setGlobalFilter(event.target.value)}
-                    className="pl-10 h-9 w-[200px] lg:w-[300px] mobile-input-padding shadow-soft border-primary/10 focus:border-primary/20"
+                    className="pl-10 h-9 w-[200px] lg:w-[300px] text-sm"
                   />
                 </div>
               )}
@@ -229,21 +235,21 @@ export function DataTable<TData, TValue>({
         </div>
       )}
 
-      {/* Enhanced Table */}
-      <div className="card-enhanced border border-primary/10 shadow-soft overflow-hidden">
+      {/* Stripe-inspired Table */}
+      <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="border-b border-primary/10 bg-muted/30">
+              <TableRow key={headerGroup.id} className="border-b-2 border-border bg-muted/30">
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead 
                       key={header.id}
                       className={cn(
                         cellPadding[density],
-                        getTypographyClasses('caption', 'md', 'text-foreground'),
-                        "font-semibold bg-muted/50",
-                        header.column.getCanSort() && "cursor-pointer select-none hover:bg-primary/5 transition-colors"
+                        "text-xs font-semibold text-muted-foreground uppercase tracking-wider",
+                        "sticky top-0 z-10 bg-muted/50 backdrop-blur-sm",
+                        header.column.getCanSort() && "cursor-pointer select-none hover:bg-muted/70 transition-colors"
                       )}
                       onClick={header.column.getToggleSortingHandler()}
                     >
@@ -278,10 +284,10 @@ export function DataTable<TData, TValue>({
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   className={cn(
-                    "border-b border-muted/50 transition-colors duration-200",
-                    onRowClick && "cursor-pointer hover:bg-primary/5",
+                    rowHeight[density],
+                    "border-b border-border transition-colors duration-200",
+                    onRowClick && "cursor-pointer hover:bg-muted/30",
                     row.getIsSelected() && "bg-primary/10 hover:bg-primary/15",
-                    index % 2 === 0 && "bg-background",
                     index % 2 === 1 && "bg-muted/20"
                   )}
                   onClick={() => onRowClick?.(row)}
@@ -291,7 +297,7 @@ export function DataTable<TData, TValue>({
                       key={cell.id}
                       className={cn(
                         cellPadding[density],
-                        getTypographyClasses('body', 'md', 'text-foreground')
+                        "text-sm text-foreground"
                       )}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -331,9 +337,9 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
 
-      {/* Enhanced Pagination */}
+      {/* Stripe-inspired Pagination */}
       {enablePagination && (
-        <div className="card-enhanced p-4 mt-4">
+        <div className="bg-card border border-border rounded-lg p-3 mt-4 shadow-sm">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className={cn(
               "flex-1",

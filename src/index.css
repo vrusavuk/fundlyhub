@@ -6,9 +6,16 @@
 
 @layer base {
   :root {
-    /* Base colors - Clean, trustworthy foundation */
+    /* Stripe-inspired professional color palette */
     --background: 0 0% 100%;
-    --foreground: 215 25% 27%;
+    --foreground: 222 47% 11%;
+    
+    /* Stripe-like neutral grays */
+    --neutral-50: 210 40% 98%;
+    --neutral-100: 210 40% 96%;
+    --neutral-200: 214 32% 91%;
+    --neutral-700: 215 25% 27%;
+    --neutral-900: 222 47% 11%;
 
     /* Card & Surface colors */
     --card: 0 0% 100%;
@@ -396,6 +403,62 @@
         .no-default-padding {
           @apply p-0;
         }
+}
+
+/* Stripe-inspired utility classes */
+@layer utilities {
+  /* Stripe spacing */
+  .stripe-space-xs { @apply space-y-1; }
+  .stripe-space-sm { @apply space-y-2; }
+  .stripe-space-md { @apply space-y-3; }
+  .stripe-space-lg { @apply space-y-4; }
+  .stripe-space-xl { @apply space-y-6; }
+  
+  /* Stripe borders */
+  .stripe-border { @apply border border-border; }
+  .stripe-border-subtle { @apply border border-border/50; }
+  
+  /* Stripe shadows */
+  .stripe-shadow-sm { 
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  }
+  .stripe-shadow-md { 
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  }
+  
+  /* Stripe table utilities */
+  .stripe-table {
+    @apply w-full border-collapse text-sm;
+  }
+  
+  .stripe-table thead {
+    @apply bg-muted/30 border-b-2 border-border;
+  }
+  
+  .stripe-table th {
+    @apply px-3 py-2 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider;
+  }
+  
+  .stripe-table tbody tr {
+    @apply border-b border-border h-10 transition-colors hover:bg-muted/20;
+  }
+  
+  .stripe-table td {
+    @apply px-3 py-2 text-sm text-foreground;
+  }
+  
+  .stripe-table tbody tr.selected {
+    @apply bg-primary/10;
+  }
+  
+  /* Stripe card utilities */
+  .stripe-card {
+    @apply bg-card border border-border rounded-lg transition-all duration-200;
+  }
+  
+  .stripe-card-hover {
+    @apply hover:shadow-sm hover:border-border/80;
+  }
 }
 
 /* Float animation for hero circles */
