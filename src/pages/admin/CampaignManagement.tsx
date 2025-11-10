@@ -29,7 +29,6 @@ import { adminDataService } from '@/lib/services/AdminDataService';
 import { useEventSubscriber } from '@/hooks/useEventBus';
 import { AdminEventService } from '@/lib/services/AdminEventService';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
-import { CampaignDetailsDialog } from '@/components/admin/ViewDetailsDialog';
 import { EditCampaignDialog } from '@/components/admin/EditCampaignDialog';
 import { createCampaignColumns, CampaignData } from '@/lib/data-table/campaign-columns';
 import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
@@ -61,8 +60,6 @@ export function CampaignManagement() {
   const [campaigns, setCampaigns] = useState<CampaignData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCampaigns, setSelectedCampaigns] = useState<CampaignData[]>([]);
-  const [selectedCampaign, setSelectedCampaign] = useState<CampaignData | null>(null);
-  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<CampaignData | null>(null);
   const [confirmAction, setConfirmAction] = useState<{
@@ -584,12 +581,6 @@ export function CampaignManagement() {
         onRollback={optimisticUpdates.rollbackAction}
         onClearCompleted={optimisticUpdates.clearCompleted}
         onClearFailed={optimisticUpdates.clearFailed}
-      />
-
-      <CampaignDetailsDialog
-        campaign={selectedCampaign}
-        open={showDetailsDialog}
-        onOpenChange={setShowDetailsDialog}
       />
 
       <EditCampaignDialog

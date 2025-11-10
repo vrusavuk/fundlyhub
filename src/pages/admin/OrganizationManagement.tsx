@@ -21,7 +21,6 @@ import { usePagination } from '@/hooks/usePagination';
 import { adminDataService } from '@/lib/services/AdminDataService';
 import { AdminEventService } from '@/lib/services/AdminEventService';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
-import { OrganizationDetailsDialog } from '@/components/admin/ViewDetailsDialog';
 import { createOrganizationColumns, OrganizationData } from '@/lib/data-table/organization-columns';
 import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
 import {
@@ -44,8 +43,6 @@ export function OrganizationManagement() {
   const [organizations, setOrganizations] = useState<OrganizationData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrgs, setSelectedOrgs] = useState<OrganizationData[]>([]);
-  const [selectedOrg, setSelectedOrg] = useState<OrganizationData | null>(null);
-  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{
     open: boolean;
     title: string;
@@ -379,12 +376,6 @@ export function OrganizationManagement() {
         onRollback={optimisticUpdates.rollbackAction}
         onClearCompleted={optimisticUpdates.clearCompleted}
         onClearFailed={optimisticUpdates.clearFailed}
-      />
-
-      <OrganizationDetailsDialog
-        organization={selectedOrg}
-        open={showDetailsDialog}
-        onOpenChange={setShowDetailsDialog}
       />
 
       <ConfirmDialog

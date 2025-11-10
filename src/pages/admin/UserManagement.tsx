@@ -17,7 +17,6 @@ import { useEventSubscriber } from '@/hooks/useEventBus';
 import { AdminEventService } from '@/lib/services/AdminEventService';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { CreateUserDialog } from '@/components/admin/CreateUserDialog';
-import { UserDetailsDialog } from '@/components/admin/ViewDetailsDialog';
 import { DensityToggle, Density } from '@/components/admin/DensityToggle';
 import { 
   Users, 
@@ -83,8 +82,6 @@ export function UserManagement() {
   const navigate = useNavigate();
   const [users, setUsers] = useState<ExtendedProfile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedUser, setSelectedUser] = useState<ExtendedProfile | null>(null);
-  const [showUserDialog, setShowUserDialog] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{
     open: boolean;
@@ -293,25 +290,6 @@ export function UserManagement() {
     console.log('[UserManagement] User profile updated event:', event);
     fetchUsers();
   });
-
-  const viewUserDetails = async (user: ExtendedProfile) => {
-    try {
-      // Fetch user roles
-      const { data: userRoles } = await supabase
-        .rpc('get_user_roles', {
-          _user_id: user.id,
-          _context_type: 'all'
-        });
-
-      setSelectedUser({
-        ...user,
-        user_roles: userRoles || []
-      });
-      setShowUserDialog(true);
-    } catch (error) {
-      console.error('Error fetching user details:', error);
-    }
-  };
 
   const exportUsers = async () => {
     if (!hasPermission('export_user_data')) {
@@ -597,7 +575,7 @@ export function UserManagement() {
         loading={loading}
         selectedRows={selectedUsers}
         onSelectionChange={setSelectedUsers}
-        onRowClick={(row) => viewUserDetails(row.original as ExtendedProfile)}
+        onRowClick={(row) => navigate(`/admin/users/${row.original.id}`)}
         actions={tableActions}
         bulkActions={bulkActions}
         onBulkAction={handleBulkAction}
@@ -620,13 +598,6 @@ export function UserManagement() {
         onRollback={optimisticUpdates.rollbackAction}
         onClearCompleted={optimisticUpdates.clearCompleted}
         onClearFailed={optimisticUpdates.clearFailed}
-      />
-
-      {/* User Details Dialog */}
-      <UserDetailsDialog
-        user={selectedUser}
-        open={showUserDialog}
-        onOpenChange={setShowUserDialog}
       />
 
       {/* Create User Dialog */}
