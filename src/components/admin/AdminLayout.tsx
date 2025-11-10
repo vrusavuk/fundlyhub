@@ -4,37 +4,33 @@ import { AdminHeader } from './AdminHeader';
 import { useRBAC } from '@/hooks/useRBAC';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
-import { SmartBreadcrumb } from '@/components/navigation/SmartBreadcrumb';
+import { AdminBreadcrumb } from './AdminBreadcrumb';
 import { SessionTimeoutWarning } from './SessionTimeoutWarning';
 import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
 
 export function AdminLayout() {
   const { activeContext } = useRBAC();
-  
-  // Initialize breadcrumbs for admin pages
-  useBreadcrumbs();
+  const breadcrumbs = useBreadcrumbs();
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full bg-white">
         <AdminSidebar />
         
-        <SidebarInset className="flex flex-col flex-1 bg-white">
-          {/* Sticky white header with navigation */}
-          <header className="flex h-16 shrink-0 items-center gap-2 bg-white border-b border-border sticky top-0 z-10">
-            <div className="flex items-center gap-2 px-4">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="mr-2 h-4" />
-              <SmartBreadcrumb />
-            </div>
+        <SidebarInset className="flex flex-col flex-1">
+          {/* Fixed header - always at top of viewport */}
+          <header className="fixed top-0 right-0 left-[var(--sidebar-width)] h-16 bg-white border-b border-border z-50 flex items-center gap-2 px-4 transition-[left] duration-200">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            <AdminBreadcrumb items={breadcrumbs} />
             
-            <div className="ml-auto px-4">
+            <div className="ml-auto">
               <AdminHeader />
             </div>
           </header>
           
-          {/* Main content - Clean white background like Stripe */}
-          <main className="flex-1 flex flex-col min-h-0 bg-white">
+          {/* Main content with top padding for fixed header */}
+          <main className="flex-1 flex flex-col pt-16 bg-white overflow-auto">
             <Outlet />
           </main>
         </SidebarInset>

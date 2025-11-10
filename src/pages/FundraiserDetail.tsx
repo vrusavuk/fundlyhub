@@ -24,7 +24,6 @@ import { Share2, Calendar, MapPin, Verified, Facebook, Twitter, Copy, Heart } fr
 import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
 import { sanitizeHTML } from '@/lib/utils/sanitize';
 import { FollowButton } from '@/components/profile/FollowButton';
-import { SmartBreadcrumb } from '@/components/navigation/SmartBreadcrumb';
 import { SmartBackButton } from '@/components/navigation/SmartBackButton';
 import { FollowOrganizationButton } from '@/components/profile/FollowOrganizationButton';
 import { fundraiserService } from '@/lib/services/fundraiser.service';
@@ -318,10 +317,9 @@ export default function FundraiserDetail() {
   return (
     <AppLayout>
       <PageContainer>
-        {/* Smart Navigation */}
+        {/* Navigation */}
         <div className="mb-4 sm:mb-6">
           <SmartBackButton />
-          <SmartBreadcrumb />
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">

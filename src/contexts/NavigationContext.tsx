@@ -1,19 +1,11 @@
 /**
- * Navigation context for tracking user journey and generating smart breadcrumbs
+ * Simplified navigation context - breadcrumbs removed (now local to components)
+ * Only handles back button navigation
  */
 import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-export interface BreadcrumbItem {
-  label: string;
-  href: string;
-  isLoading?: boolean;
-}
-
 interface NavigationContextType {
-  breadcrumbs: BreadcrumbItem[];
-  setBreadcrumbs: (items: BreadcrumbItem[]) => void;
-  addBreadcrumb: (item: BreadcrumbItem) => void;
   shouldShowBackButton: boolean;
   setShouldShowBackButton: (show: boolean) => void;
   navigateBack: () => void;
@@ -27,7 +19,6 @@ interface NavigationProviderProps {
 }
 
 export function NavigationProvider({ children }: NavigationProviderProps) {
-  const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
   const [shouldShowBackButton, setShouldShowBackButton] = useState(false);
   const [referrer, setReferrer] = useState<string | null>(null);
   const location = useLocation();
@@ -41,10 +32,6 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
     }
   }, [location]);
 
-  const addBreadcrumb = useCallback((item: BreadcrumbItem) => {
-    setBreadcrumbs(prev => [...prev, item]);
-  }, []);
-
   const navigateBack = useCallback(() => {
     if (referrer) {
       navigate(referrer);
@@ -56,17 +43,11 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
   }, [referrer, navigate]);
 
   const value = useMemo(() => ({
-    breadcrumbs,
-    setBreadcrumbs,
-    addBreadcrumb,
     shouldShowBackButton,
     setShouldShowBackButton,
     navigateBack,
     referrer,
   }), [
-    breadcrumbs,
-    setBreadcrumbs,
-    addBreadcrumb,
     shouldShowBackButton,
     setShouldShowBackButton,
     navigateBack,

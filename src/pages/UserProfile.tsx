@@ -12,7 +12,6 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SmartBreadcrumb } from '@/components/navigation/SmartBreadcrumb';
 import { ScreenReaderOnly } from '@/components/accessibility/ScreenReaderOnly';
 
 export function UserProfile() {
@@ -70,11 +69,6 @@ export function UserProfile() {
         <ScreenReaderOnly>
           <h1>Profile for {profile.name || 'User'}</h1>
         </ScreenReaderOnly>
-        
-        {/* Smart Navigation */}
-        <div className="mb-6">
-          <SmartBreadcrumb />
-        </div>
         
         <div className="space-y-6">
           {/* Profile Header */}

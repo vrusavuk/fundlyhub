@@ -1,28 +1,28 @@
 /**
- * Smart back button component for linear navigation flows
+ * Simple back button component for navigation
  */
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigation } from '@/contexts/NavigationContext';
-import { useSmartNavigation } from '@/hooks/useSmartNavigation';
 
 interface SmartBackButtonProps {
   className?: string;
   label?: string;
   variant?: 'default' | 'ghost' | 'outline';
   size?: 'sm' | 'default' | 'lg';
+  show?: boolean;
 }
 
 export function SmartBackButton({ 
   className, 
   label = 'Back', 
   variant = 'ghost',
-  size = 'sm' 
+  size = 'sm',
+  show = true
 }: SmartBackButtonProps) {
-  const { navigateBack } = useNavigation();
-  const { shouldShowBackButton } = useSmartNavigation();
+  const { navigateBack, shouldShowBackButton } = useNavigation();
 
-  if (!shouldShowBackButton) {
+  if (!show && !shouldShowBackButton) {
     return null;
   }
 

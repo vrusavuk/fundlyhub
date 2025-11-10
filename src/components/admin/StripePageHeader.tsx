@@ -1,13 +1,13 @@
 /**
  * Stripe-inspired Page Headers
  * Clean, minimal headers with consistent spacing
+ * Note: Breadcrumbs are now handled by AdminLayout fixed header
  */
 
 import { ReactNode } from "react";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { SmartBreadcrumb } from "@/components/navigation/SmartBreadcrumb";
 
 export interface HeaderAction {
   label: string;
@@ -34,12 +34,6 @@ export function StripePageHeader({
 }: StripePageHeaderProps) {
   return (
     <div className={cn("mb-6", className)}>
-      {breadcrumbs && (
-        <div className="mb-2">
-          <SmartBreadcrumb />
-        </div>
-      )}
-      
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <h1 className="text-2xl font-semibold text-foreground tracking-tight">
