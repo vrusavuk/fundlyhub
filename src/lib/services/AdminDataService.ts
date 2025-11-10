@@ -430,6 +430,125 @@ class AdminDataService {
   }
 
   /**
+   * Fetch all donations with pagination and filtering
+   */
+  async fetchDonations(pagination: PaginationOptions, filters: FilterOptions) {
+    const cacheKey = `donations:${JSON.stringify({ pagination, filters })}`;
+    
+    return this.cache.getOrSet(cacheKey, async () => {
+      let query = supabase
+        .from('donations')
+        .select(`
+          *,
+          fundraisers!fundraiser_id(
+            id,
+            title,
+            slug,
+            status
+          ),
+          profiles:donor_user_id(
+            name,
+            email,
+            avatar
+          )
+        `, { count: 'exact' });
+
+      // Apply filters
+      if (filters.search) {
+        query = query.or(`donor_name.ilike.%${filters.search}%,donor_email.ilike.%${filters.search}%,receipt_id.ilike.%${filters.search}%`);
+      }
+      if (filters.status) {
+        query = query.eq('payment_status', filters.status as any);
+      }
+
+      // Apply pagination
+      const { page, pageSize, sortBy = 'created_at', sortOrder = 'desc' } = pagination;
+      const offset = (page - 1) * pageSize;
+      
+      query = query
+        .order(sortBy, { ascending: sortOrder === 'asc' })
+        .range(offset, offset + pageSize - 1);
+
+      const { data, error, count } = await query;
+      
+      if (error) throw error;
+
+      const enrichedData = data?.map((donation: any) => ({
+        ...donation,
+        fundraiser: donation.fundraisers,
+        donor: donation.profiles,
+        fundraisers: undefined,
+        profiles: undefined,
+      }));
+
+      return {
+        data: enrichedData || [],
+        total: count || 0,
+        page,
+        pageSize,
+        totalPages: Math.ceil((count || 0) / pageSize)
+      };
+    }, { ttl: 5000 }); // 5 second cache for real-time nature
+  }
+
+  /**
+   * Fetch donation statistics
+   */
+  async fetchDonationStats(filters: FilterOptions) {
+    const cacheKey = `donation-stats:${JSON.stringify(filters)}`;
+    
+    return this.cache.getOrSet(cacheKey, async () => {
+      let query = supabase
+        .from('donations')
+        .select('*');
+
+      // Apply filters
+      if (filters.search) {
+        query = query.or(`donor_name.ilike.%${filters.search}%,donor_email.ilike.%${filters.search}%,receipt_id.ilike.%${filters.search}%`);
+      }
+      if (filters.status) {
+        query = query.eq('payment_status', filters.status as any);
+      }
+
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error('Error fetching donation stats:', error);
+        throw error;
+      }
+
+      const total = data?.length || 0;
+      const totalAmount = data?.reduce((sum, d) => sum + Number(d.amount), 0) || 0;
+      const totalTips = data?.reduce((sum, d) => sum + Number(d.tip_amount || 0), 0) || 0;
+      const totalFees = data?.reduce((sum, d) => sum + Number(d.fee_amount || 0), 0) || 0;
+
+      const byStatus = {
+        pending: data?.filter((d: any) => d.payment_status === 'pending').length || 0,
+        paid: data?.filter((d: any) => d.payment_status === 'paid' || d.payment_status === 'completed').length || 0,
+        failed: data?.filter((d: any) => d.payment_status === 'failed').length || 0,
+        refunded: data?.filter((d: any) => d.payment_status === 'refunded').length || 0,
+      };
+
+      // Get recent donations (last 24h)
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const recentDonations = data?.filter((d: any) => d.created_at > oneDayAgo).length || 0;
+
+      return {
+        total,
+        totalAmount,
+        averageAmount: total > 0 ? totalAmount / total : 0,
+        totalTips,
+        totalFees,
+        byStatus,
+        byProvider: {
+          stripe: total, // Assuming all are stripe for now
+        },
+        recentDonations,
+      };
+    }, { ttl: 5000 }); // 5 second cache
+  }
+
+  /**
    * Clear cache for specific resource type
    */
   invalidateCache(resource: 'users' | 'organizations' | 'campaigns' | 'roles' | 'dashboard' | 'donations' | 'all') {

@@ -98,7 +98,8 @@ export function useBreadcrumbs() {
         if (secondSegment) {
           const adminRoutes: Record<string, string> = {
             'users': 'User Management',
-            'campaigns': 'Campaign Management', 
+            'campaigns': 'Campaign Management',
+            'donations': 'Donation Management',
             'organizations': 'Organization Management',
             'roles': 'Role Management',
             'analytics': 'Analytics',

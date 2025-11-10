@@ -54,6 +54,12 @@ const navigationItems: AdminNavItem[] = [
     permission: 'manage_campaigns'
   },
   {
+    title: 'Donations',
+    url: '/admin/donations',
+    icon: Megaphone,
+    permission: 'manage_campaigns'
+  },
+  {
     title: 'Organizations',
     url: '/admin/organizations',
     icon: Building2,

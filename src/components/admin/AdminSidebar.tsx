@@ -14,7 +14,8 @@ import {
   Bell,
   ChevronDown,
   Home,
-  ArrowLeft
+  ArrowLeft,
+  DollarSign
 } from 'lucide-react';
 import {
   Sidebar,
@@ -64,6 +65,12 @@ const navigationItems: AdminNavItem[] = [
     title: 'Campaigns',
     url: '/admin/campaigns',
     icon: FileText,
+    permission: 'manage_campaigns'
+  },
+  {
+    title: 'Donations',
+    url: '/admin/donations',
+    icon: DollarSign,
     permission: 'manage_campaigns'
   },
   {

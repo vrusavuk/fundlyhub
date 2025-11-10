@@ -53,6 +53,7 @@ import {
   LazyEventMonitoring,
   LazyDesignSystemDocs,
   LazyFeatureToggles,
+  LazyDonationManagement,
 } from '@/utils/lazyLoading';
 
 const App = () => (
@@ -152,6 +153,11 @@ const App = () => (
           <Route path="campaigns" element={
             <Suspense fallback={<AdminPageSkeleton />}>
               <LazyCampaignManagement />
+            </Suspense>
+          } />
+          <Route path="donations" element={
+            <Suspense fallback={<AdminPageSkeleton />}>
+              <LazyDonationManagement />
             </Suspense>
           } />
           <Route path="organizations" element={
