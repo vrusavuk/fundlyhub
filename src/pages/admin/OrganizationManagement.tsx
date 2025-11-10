@@ -336,15 +336,14 @@ export function OrganizationManagement() {
     <AdminPageLayout
       title="Organization Management"
       description="Manage and verify organization accounts"
-      filters={
-        <AdminFilters
-          filters={filterConfig}
-          values={filters}
-          onChange={(key, value) => setFilters(prev => ({ ...prev, [key]: value }))}
-          onClear={() => setFilters({ search: '', status: 'all' })}
-        />
-      }
     >
+      <AdminFilters
+        filters={filterConfig}
+        values={filters}
+        onChange={(key, value) => setFilters(prev => ({ ...prev, [key]: value }))}
+        onClear={() => setFilters({ search: '', status: 'all' })}
+        className="mb-6"
+      />
       <AdminDataTable
         columns={columns}
         data={organizations}

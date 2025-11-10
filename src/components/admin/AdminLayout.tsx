@@ -16,11 +16,12 @@ export function AdminLayout() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-[#F6F9FC]">
+      <div className="min-h-screen flex w-full">
         <AdminSidebar />
         
-        <SidebarInset className="bg-[#F6F9FC]">
-          <header className="flex h-16 shrink-0 items-center gap-2 bg-white border-b border-[#E3E8EE]">
+        <SidebarInset className="flex flex-col flex-1">
+          {/* Sticky white header with navigation */}
+          <header className="flex h-16 shrink-0 items-center gap-2 bg-white border-b border-[#E3E8EE] sticky top-0 z-10">
             <div className="flex items-center gap-2 px-4">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="mr-2 h-4" />
@@ -32,16 +33,7 @@ export function AdminLayout() {
             </div>
           </header>
           
-          {/* Context indicator */}
-          {activeContext.type !== 'global' && (
-            <div className="mx-6 mt-4 px-3 py-2 bg-blue-50 border border-blue-200 rounded-md">
-              <p className="text-sm text-blue-900 font-medium">
-                Context: {activeContext.type === 'organization' ? 'Organization' : 'Campaign'} 
-                {activeContext.id && ` (${activeContext.id})`}
-              </p>
-            </div>
-          )}
-          
+          {/* Main content outlet - No extra padding or background here */}
           <Outlet />
         </SidebarInset>
       </div>

@@ -516,16 +516,13 @@ export function CampaignManagement() {
       title="Campaign Management"
       description="Manage and moderate fundraising campaigns"
     >
-      {/* Status Tabs */}
-      <div className="mb-6">
-        <StripeStatusTabs
-          tabs={statusTabs}
-          activeTab={filters.status}
-          onTabChange={(key) => setFilters(prev => ({ ...prev, status: key }))}
-        />
-      </div>
+      <StripeStatusTabs
+        tabs={statusTabs}
+        activeTab={filters.status}
+        onTabChange={(key) => setFilters(prev => ({ ...prev, status: key }))}
+        className="mb-6"
+      />
 
-      {/* Info Banner */}
       <StripeInfoBanner
         variant="recommendation"
         message="Approve pending campaigns faster with bulk approval workflows"
@@ -534,22 +531,20 @@ export function CampaignManagement() {
         className="mb-6"
       />
 
-      {/* Filters */}
-      <div className="mb-6">
-        <AdminFilters
-          filters={filterConfig}
-          values={filters}
-          onChange={(key, value) => setFilters(prev => ({ ...prev, [key]: value }))}
-          onClear={() => setFilters({ 
-            search: '', 
-            status: 'all', 
-            category: 'all', 
-            visibility: 'all', 
-            dateRange: 'all', 
-            amountRange: 'all' 
-          })}
-        />
-      </div>
+      <AdminFilters
+        filters={filterConfig}
+        values={filters}
+        onChange={(key, value) => setFilters(prev => ({ ...prev, [key]: value }))}
+        onClear={() => setFilters({ 
+          search: '', 
+          status: 'all', 
+          category: 'all', 
+          visibility: 'all', 
+          dateRange: 'all', 
+          amountRange: 'all' 
+        })}
+        className="mb-6"
+      />
     
       <AdminDataTable
         columns={columns}

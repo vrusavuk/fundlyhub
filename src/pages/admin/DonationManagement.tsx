@@ -448,16 +448,13 @@ export function DonationManagement() {
       title="Donation Management"
       description="Monitor and manage all donations across the platform"
     >
-      {/* Status Tabs */}
-      <div className="mb-6">
-        <StripeStatusTabs
-          tabs={statusTabs}
-          activeTab={filters.paymentStatus}
-          onTabChange={(key) => setFilters(prev => ({ ...prev, paymentStatus: key }))}
-        />
-      </div>
+      <StripeStatusTabs
+        tabs={statusTabs}
+        activeTab={filters.paymentStatus}
+        onTabChange={(key) => setFilters(prev => ({ ...prev, paymentStatus: key }))}
+        className="mb-6"
+      />
 
-      {/* Info Banner */}
       <StripeInfoBanner
         variant="recommendation"
         message="Enable automated payment reconciliation to track donations more efficiently"
@@ -466,14 +463,12 @@ export function DonationManagement() {
         className="mb-6"
       />
 
-      {/* Filters */}
-      <div className="mb-6">
-        <AdminFilters 
-          filters={filterConfig} 
-          values={filters} 
-          onChange={(key, value) => setFilters(prev => ({ ...prev, [key]: value }))} 
-        />
-      </div>
+      <AdminFilters 
+        filters={filterConfig} 
+        values={filters} 
+        onChange={(key, value) => setFilters(prev => ({ ...prev, [key]: value }))} 
+        className="mb-6"
+      />
     
       <AdminDataTable
         columns={columns}

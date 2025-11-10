@@ -557,16 +557,13 @@ export function UserManagement() {
       title="User Management"
       description="Manage platform users, roles, and permissions"
     >
-      {/* Status Tabs */}
-      <div className="mb-6">
-        <StripeStatusTabs
-          tabs={statusTabs}
-          activeTab={filters.status}
-          onTabChange={(key) => setFilters(prev => ({ ...prev, status: key }))}
-        />
-      </div>
+      <StripeStatusTabs
+        tabs={statusTabs}
+        activeTab={filters.status}
+        onTabChange={(key) => setFilters(prev => ({ ...prev, status: key }))}
+        className="mb-6"
+      />
 
-      {/* Info Banner */}
       <StripeInfoBanner
         variant="info"
         message="New role management features available! Granular permissions for better access control"
@@ -575,15 +572,13 @@ export function UserManagement() {
         className="mb-6"
       />
 
-      {/* Filters */}
-      <div className="mb-6">
-        <AdminFilters
-          filters={filterConfig}
-          values={filters}
-          onChange={(key, value) => setFilters(prev => ({ ...prev, [key]: value }))}
-          onClear={() => setFilters({ search: '', status: 'all', role: 'all' })}
-        />
-      </div>
+      <AdminFilters
+        filters={filterConfig}
+        values={filters}
+        onChange={(key, value) => setFilters(prev => ({ ...prev, [key]: value }))}
+        onClear={() => setFilters({ search: '', status: 'all', role: 'all' })}
+        className="mb-6"
+      />
     
       <AdminDataTable
         columns={columns}

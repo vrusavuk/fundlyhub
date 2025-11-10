@@ -1,48 +1,59 @@
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import type { AdminPageLayoutProps } from '@/types/admin-layout';
 
-interface AdminPageLayoutProps {
-  title: string;
-  description?: string;
-  badge?: {
-    text: string;
-    variant?: 'default' | 'secondary' | 'destructive' | 'outline';
-  };
-  actions?: ReactNode;
-  filters?: ReactNode;
-  children: ReactNode;
-  className?: string;
-}
-
+/**
+ * AdminPageLayout - Stripe-Inspired Page Layout
+ * 
+ * A semantic, reusable layout component for admin pages that follows
+ * Stripe's design principles:
+ * - White header section with title, description, badge, and actions
+ * - Gray content area for page content
+ * - Consistent spacing and visual hierarchy
+ * 
+ * Usage:
+ * <AdminPageLayout
+ *   title="Page Title"
+ *   description="Optional description"
+ *   badge={{ text: "Beta", variant: "default" }}
+ *   actions={<Button>Action</Button>}
+ * >
+ *   <ChildComponent className="mb-6" />
+ *   <AnotherComponent className="mb-6" />
+ * </AdminPageLayout>
+ */
 export function AdminPageLayout({
   title,
   description,
   badge,
   actions,
-  filters,
   children,
   className
 }: AdminPageLayoutProps) {
   return (
-    <div className={cn('px-6 py-4 min-h-screen', className)}>
-      {/* Page Header - EXACT Stripe Style */}
-      <header className="mb-4">
-        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+    <div className={cn('flex-1 flex flex-col', className)}>
+      {/* Page Header - White background, tight to navigation header */}
+      <div className="bg-white border-b border-[#E3E8EE] px-6 py-4">
+        <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-1">
+            <div className="flex items-center gap-3">
               <h1 className="text-[24px] font-semibold text-[#0A2540]">
                 {title}
               </h1>
               {badge && (
-                <span className={cn(
-                  'inline-flex items-center px-2 py-1 rounded-md text-xs font-medium',
-                  badge.variant === 'destructive' && 'bg-[#DF1B41] text-white',
-                  badge.variant === 'secondary' && 'bg-[#E3E8EE] text-[#0A2540]',
-                  badge.variant === 'outline' && 'border border-[#E3E8EE] bg-white text-[#0A2540]',
-                  (!badge.variant || badge.variant === 'default') && 'bg-[#635BFF] text-white'
-                )}>
+                <Badge
+                  variant={badge.variant || 'default'}
+                  className={cn(
+                    'text-xs font-medium',
+                    badge.variant === 'destructive' && 'bg-[#DF1B41] text-white',
+                    badge.variant === 'secondary' && 'bg-[#E3E8EE] text-[#0A2540]',
+                    badge.variant === 'outline' && 'border-[#E3E8EE] bg-white text-[#0A2540]',
+                    (!badge.variant || badge.variant === 'default') && 'bg-[#635BFF] text-white'
+                  )}
+                >
                   {badge.text}
-                </span>
+                </Badge>
               )}
             </div>
             {description && (
@@ -58,19 +69,12 @@ export function AdminPageLayout({
             </div>
           )}
         </div>
-      </header>
+      </div>
 
-      {/* Filters Section */}
-      {filters && (
-        <section className="mb-4">
-          {filters}
-        </section>
-      )}
-
-      {/* Main Content */}
-      <main>
+      {/* Content Section - Gray background, consistent padding */}
+      <div className="flex-1 bg-[#F6F9FC] px-6 py-6">
         {children}
-      </main>
+      </div>
     </div>
   );
 }
