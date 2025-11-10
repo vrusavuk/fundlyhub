@@ -32,7 +32,7 @@ export function AdminPageLayout({
   className
 }: AdminPageLayoutProps) {
   return (
-    <div className={cn('flex-1 overflow-auto bg-background', className)}>
+    <div className={cn('bg-background', className)}>
       {/* Single content container - everything flows together */}
       <div className="p-8 space-y-8">
         {/* Page Header - inline with content, no borders */}

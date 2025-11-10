@@ -15,7 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { HeaderSearch } from '@/components/search/HeaderSearch';
+import { SearchTrigger } from '@/components/navigation/SearchTrigger';
 import { KeyboardShortcutHelp } from '@/components/admin/KeyboardShortcutHelp';
 
 export function AdminHeader() {
@@ -52,9 +52,7 @@ export function AdminHeader() {
   return (
     <div className="flex items-center gap-4">
       {/* Search */}
-      <div className="max-w-lg">
-        <HeaderSearch isOpen={false} onClose={() => {}} />
-      </div>
+      <SearchTrigger variant="icon" />
       
       {/* Keyboard Shortcuts */}
       <KeyboardShortcutHelp />
