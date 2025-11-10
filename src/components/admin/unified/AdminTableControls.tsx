@@ -63,18 +63,20 @@ export function AdminTableControls({
     <div className={cn('space-y-4', className)}>
       {/* Main Actions Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          {title && (
-            <h2 className="text-[16px] font-semibold text-[#0A2540]">
-              {title}
-            </h2>
-          )}
-          {totalCount > 0 && (
-            <StripeBadgeExact variant="neutral">
-              {totalCount.toLocaleString()} total
-            </StripeBadgeExact>
-          )}
-        </div>
+        {(title || totalCount > 0) && (
+          <div className="flex items-center gap-3">
+            {title && (
+              <h2 className="text-[16px] font-semibold text-[#0A2540]">
+                {title}
+              </h2>
+            )}
+            {totalCount > 0 && (
+              <StripeBadgeExact variant="neutral">
+                {totalCount.toLocaleString()} total
+              </StripeBadgeExact>
+            )}
+          </div>
+        )}
         
         {actions.length > 0 && (
           <StripeActionButtons

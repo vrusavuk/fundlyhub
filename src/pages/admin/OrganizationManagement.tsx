@@ -348,7 +348,6 @@ export function OrganizationManagement() {
         columns={columns}
         data={organizations}
         loading={loading}
-        title="Organizations"
         selectedRows={selectedOrgs}
         onSelectionChange={setSelectedOrgs}
         actions={tableActions}

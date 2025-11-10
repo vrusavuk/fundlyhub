@@ -550,7 +550,6 @@ export function CampaignManagement() {
         columns={columns}
         data={campaigns}
         loading={loading}
-        title="Campaigns"
         selectedRows={selectedCampaigns}
         onSelectionChange={setSelectedCampaigns}
         actions={tableActions}

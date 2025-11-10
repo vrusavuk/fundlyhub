@@ -584,7 +584,6 @@ export function UserManagement() {
         columns={columns}
         data={users}
         loading={loading}
-        title="Users"
         selectedRows={selectedUsers}
         onSelectionChange={setSelectedUsers}
         onRowClick={(row) => viewUserDetails(row.original as ExtendedProfile)}

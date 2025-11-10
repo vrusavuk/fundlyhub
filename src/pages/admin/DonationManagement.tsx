@@ -461,7 +461,6 @@ export function DonationManagement() {
         columns={columns}
         data={donations}
         loading={loading}
-        title="Donations"
         selectedRows={selectedDonations}
         onSelectionChange={setSelectedDonations}
         actions={tableActions}
