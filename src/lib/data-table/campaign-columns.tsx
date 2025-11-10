@@ -1,7 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Eye, Edit, CheckCircle, XCircle, Flag, Trash2 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
+import { StripeBadgeExact } from "@/components/ui/stripe-badge-exact";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
@@ -37,14 +37,14 @@ export interface CampaignData {
   };
 }
 
-// Status configuration
+// Status configuration with exact Stripe colors
 const statusConfig = {
-  draft: { label: "Draft", variant: "secondary" as const },
-  pending: { label: "Pending", variant: "outline" as const },
-  active: { label: "Active", variant: "default" as const },
-  paused: { label: "Paused", variant: "secondary" as const },
-  ended: { label: "Ended", variant: "outline" as const },
-  closed: { label: "Closed", variant: "destructive" as const },
+  draft: { label: "Draft", variant: "neutral" as const },
+  pending: { label: "Pending", variant: "warning" as const },
+  active: { label: "Active", variant: "success" as const },
+  paused: { label: "Paused", variant: "neutral" as const },
+  ended: { label: "Ended", variant: "neutral" as const },
+  closed: { label: "Closed", variant: "error" as const },
 };
 
 const getProgressPercentage = (raised: number, goal: number) => {
@@ -101,10 +101,10 @@ export function createCampaignColumns(
                 </div>
               )}
               <div className="flex items-center space-x-2 mt-1">
-                {campaign.category && (
-                  <Badge variant="outline" className="text-xs">
+              {campaign.category && (
+                  <StripeBadgeExact variant="neutral" className="text-xs">
                     {campaign.category}
-                  </Badge>
+                  </StripeBadgeExact>
                 )}
                 {campaign.location && (
                   <span className="text-xs text-muted-foreground">
@@ -166,13 +166,13 @@ export function createCampaignColumns(
         const config = statusConfig[status as keyof typeof statusConfig];
         
         if (!config) {
-          return <Badge variant="outline">{status}</Badge>;
+          return <StripeBadgeExact variant="neutral">{status}</StripeBadgeExact>;
         }
 
         return (
-          <Badge variant={config.variant}>
+          <StripeBadgeExact variant={config.variant}>
             {config.label}
-          </Badge>
+          </StripeBadgeExact>
         );
       },
       enableSorting: true,

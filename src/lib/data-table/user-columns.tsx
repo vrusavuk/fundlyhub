@@ -1,7 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Eye, UserX, UserCheck, Shield, Trash2, Edit } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
+import { StripeBadgeExact } from "@/components/ui/stripe-badge-exact";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import {
@@ -29,21 +29,21 @@ export interface UserData {
   follower_count: number;
 }
 
-// Status configuration
+// Status configuration with exact Stripe colors
 const statusConfig = {
-  active: { label: "Active", variant: "default" as const },
-  inactive: { label: "Inactive", variant: "secondary" as const },
-  suspended: { label: "Suspended", variant: "destructive" as const },
-  banned: { label: "Banned", variant: "destructive" as const },
+  active: { label: "Active", variant: "success" as const },
+  inactive: { label: "Inactive", variant: "neutral" as const },
+  suspended: { label: "Suspended", variant: "error" as const },
+  banned: { label: "Banned", variant: "error" as const },
 };
 
-// Role configuration
+// Role configuration with exact Stripe colors
 const roleConfig = {
-  super_admin: { label: "Super Admin", variant: "destructive" as const },
-  platform_admin: { label: "Platform Admin", variant: "destructive" as const },
-  moderator: { label: "Moderator", variant: "default" as const },
-  creator: { label: "Creator", variant: "secondary" as const },
-  visitor: { label: "Visitor", variant: "outline" as const },
+  super_admin: { label: "Super Admin", variant: "error" as const },
+  platform_admin: { label: "Platform Admin", variant: "warning" as const },
+  moderator: { label: "Moderator", variant: "info" as const },
+  creator: { label: "Creator", variant: "success" as const },
+  visitor: { label: "Visitor", variant: "neutral" as const },
 };
 
 // Create user columns
@@ -100,13 +100,13 @@ export function createUserColumns(
         const config = roleConfig[role as keyof typeof roleConfig];
         
         if (!config) {
-          return <Badge variant="outline">{role.replace('_', ' ')}</Badge>;
+          return <StripeBadgeExact variant="neutral">{role.replace('_', ' ')}</StripeBadgeExact>;
         }
 
         return (
-          <Badge variant={config.variant}>
+          <StripeBadgeExact variant={config.variant}>
             {config.label}
-          </Badge>
+          </StripeBadgeExact>
         );
       },
       enableSorting: true,
@@ -125,13 +125,13 @@ export function createUserColumns(
         const config = statusConfig[status as keyof typeof statusConfig];
         
         if (!config) {
-          return <Badge variant="outline">{status}</Badge>;
+          return <StripeBadgeExact variant="neutral">{status}</StripeBadgeExact>;
         }
 
         return (
-          <Badge variant={config.variant}>
+          <StripeBadgeExact variant={config.variant}>
             {config.label}
-          </Badge>
+          </StripeBadgeExact>
         );
       },
       enableSorting: true,

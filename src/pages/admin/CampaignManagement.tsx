@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { StripeBadgeExact } from '@/components/ui/stripe-badge-exact';
+import { StripeStatusTabs, StatusTab } from '@/components/admin/StripeStatusTabs';
+import { StripeInfoBanner } from '@/components/admin/StripeInfoBanner';
+import { StripeActionButtons } from '@/components/admin/StripeActionButtons';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   CheckCircle, 
@@ -532,18 +535,49 @@ export function CampaignManagement() {
     setSelectedCampaigns([]);
   };
 
+  // Status tabs configuration
+  const statusTabs: StatusTab[] = [
+    { key: 'all', label: 'All', count: dbStats.total },
+    { key: 'active', label: 'Active', count: dbStats.active, icon: CheckCircle },
+    { key: 'pending', label: 'Pending Review', count: dbStats.pending, icon: Clock },
+    { key: 'paused', label: 'Paused', count: dbStats.paused },
+    { key: 'closed', label: 'Closed', count: dbStats.closed, icon: XCircle },
+  ];
+
   return (
     <AdminPageLayout
       title="Campaign Management"
       description="Manage and moderate fundraising campaigns"
-      stats={
-        isMobile ? (
+    >
+      {/* Status Tabs */}
+      <div className="mb-6">
+        <StripeStatusTabs
+          tabs={statusTabs}
+          activeTab={filters.status}
+          onTabChange={(key) => setFilters(prev => ({ ...prev, status: key }))}
+        />
+      </div>
+
+      {/* Info Banner */}
+      <StripeInfoBanner
+        variant="recommendation"
+        message="Approve pending campaigns faster with bulk approval workflows"
+        actionLabel="Learn more"
+        onAction={() => window.open('https://docs.lovable.dev', '_blank')}
+        className="mb-6"
+      />
+
+      {/* Stats */}
+      <div className="mb-6">
+        {isMobile ? (
           <MobileStatsGrid stats={stats} loading={loading} />
         ) : (
           <AdminStatsGrid stats={stats} />
-        )
-      }
-      filters={
+        )}
+      </div>
+
+      {/* Filters */}
+      <div className="mb-6">
         <AdminFilters
           filters={filterConfig}
           values={filters}
@@ -557,8 +591,8 @@ export function CampaignManagement() {
             amountRange: 'all' 
           })}
         />
-      }
-    >
+      </div>
+    
       <AdminDataTable
         columns={columns}
         data={campaigns}

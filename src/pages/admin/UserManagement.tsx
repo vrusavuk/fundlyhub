@@ -5,7 +5,10 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { usePagination } from '@/hooks/usePagination';
 import { adminDataService } from '@/lib/services/AdminDataService';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { StripeBadgeExact } from '@/components/ui/stripe-badge-exact';
+import { StripeStatusTabs, StatusTab } from '@/components/admin/StripeStatusTabs';
+import { StripeInfoBanner } from '@/components/admin/StripeInfoBanner';
+import { StripeActionButtons } from '@/components/admin/StripeActionButtons';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
@@ -369,23 +372,23 @@ export function UserManagement() {
 
   const getStatusBadge = (user: ExtendedProfile) => {
     if (user.account_status === 'suspended') {
-      return <Badge variant="destructive">Suspended</Badge>;
+      return <StripeBadgeExact variant="error">Suspended</StripeBadgeExact>;
     }
     if (user.account_status === 'inactive') {
-      return <Badge variant="secondary">Inactive</Badge>;
+      return <StripeBadgeExact variant="neutral">Inactive</StripeBadgeExact>;
     }
-    return <Badge variant="default">Active</Badge>;
+    return <StripeBadgeExact variant="success">Active</StripeBadgeExact>;
   };
 
   const getRoleBadge = (role: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-      'super_admin': 'destructive',
-      'platform_admin': 'destructive',
-      'moderator': 'default',
-      'creator': 'secondary',
-      'visitor': 'outline'
+    const variants: Record<string, "success" | "neutral" | "error" | "warning" | "info"> = {
+      'super_admin': 'error',
+      'platform_admin': 'warning',
+      'moderator': 'info',
+      'creator': 'success',
+      'visitor': 'neutral'
     };
-    return <Badge variant={variants[role] || 'outline'}>{role.replace('_', ' ')}</Badge>;
+    return <StripeBadgeExact variant={variants[role] || 'neutral'}>{role.replace('_', ' ')}</StripeBadgeExact>;
   };
 
   if (!hasPermission('view_all_users')) {
@@ -575,20 +578,52 @@ export function UserManagement() {
     }
   };
 
+  // Status tabs configuration
+  const statusTabs: StatusTab[] = [
+    { key: 'all', label: 'All', count: users.length },
+    { key: 'active', label: 'Active', count: users.filter(u => u.account_status === 'active').length, icon: UserCheck },
+    { key: 'inactive', label: 'Inactive', count: users.filter(u => u.account_status === 'inactive').length },
+    { key: 'suspended', label: 'Suspended', count: users.filter(u => u.account_status === 'suspended').length, icon: UserX },
+  ];
+
   return (
     <AdminPageLayout
       title="User Management"
       description="Manage platform users, roles, and permissions"
-      stats={<AdminStatsGrid stats={userStats} />}
-      filters={
+    >
+      {/* Status Tabs */}
+      <div className="mb-6">
+        <StripeStatusTabs
+          tabs={statusTabs}
+          activeTab={filters.status}
+          onTabChange={(key) => setFilters(prev => ({ ...prev, status: key }))}
+        />
+      </div>
+
+      {/* Info Banner */}
+      <StripeInfoBanner
+        variant="info"
+        message="New role management features available! Granular permissions for better access control"
+        actionLabel="Explore features"
+        onAction={() => window.open('https://docs.lovable.dev', '_blank')}
+        className="mb-6"
+      />
+
+      {/* Stats */}
+      <div className="mb-6">
+        <AdminStatsGrid stats={userStats} />
+      </div>
+
+      {/* Filters */}
+      <div className="mb-6">
         <AdminFilters
           filters={filterConfig}
           values={filters}
           onChange={(key, value) => setFilters(prev => ({ ...prev, [key]: value }))}
           onClear={() => setFilters({ search: '', status: 'all', role: 'all' })}
         />
-      }
-    >
+      </div>
+    
       <AdminDataTable
         columns={columns}
         data={users}

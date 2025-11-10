@@ -37,6 +37,9 @@ import {
   BulkAction,
   TableAction
 } from '@/components/admin/unified';
+import { StripeStatusTabs, StatusTab } from '@/components/admin/StripeStatusTabs';
+import { StripeInfoBanner } from '@/components/admin/StripeInfoBanner';
+import { StripeActionButtons } from '@/components/admin/StripeActionButtons';
 
 interface DonationFilters {
   search: string;
@@ -481,21 +484,55 @@ export function DonationManagement() {
     }
   ];
 
+  // Status tabs configuration
+  const statusTabs: StatusTab[] = [
+    { key: 'all', label: 'All', count: dbStats.total },
+    { key: 'paid', label: 'Succeeded', count: dbStats.byStatus.paid, icon: CheckCircle },
+    { key: 'failed', label: 'Failed', count: dbStats.byStatus.failed, icon: XCircle },
+    { key: 'pending', label: 'Pending', count: dbStats.byStatus.pending },
+    { key: 'refunded', label: 'Refunded', count: dbStats.byStatus.refunded, icon: RefreshCw },
+  ];
+
   return (
     <AdminPageLayout
       title="Donation Management"
       description="Monitor and manage all donations across the platform"
-      badge={{ 
-        text: `${dbStats.recentDonations} new today`, 
-        variant: 'default' 
-      }}
-      stats={
-        isMobile 
+    >
+      {/* Status Tabs */}
+      <div className="mb-6">
+        <StripeStatusTabs
+          tabs={statusTabs}
+          activeTab={filters.paymentStatus}
+          onTabChange={(key) => setFilters(prev => ({ ...prev, paymentStatus: key }))}
+        />
+      </div>
+
+      {/* Info Banner */}
+      <StripeInfoBanner
+        variant="recommendation"
+        message="Enable automated payment reconciliation to track donations more efficiently"
+        actionLabel="Learn more"
+        onAction={() => window.open('https://docs.lovable.dev', '_blank')}
+        className="mb-6"
+      />
+
+      {/* Stats */}
+      <div className="mb-6">
+        {isMobile 
           ? <MobileStatsGrid stats={stats} /> 
           : <AdminStatsGrid stats={stats} />
-      }
-      filters={<AdminFilters filters={filterConfig} values={filters} onChange={(key, value) => setFilters(prev => ({ ...prev, [key]: value }))} />}
-    >
+        }
+      </div>
+
+      {/* Filters */}
+      <div className="mb-6">
+        <AdminFilters 
+          filters={filterConfig} 
+          values={filters} 
+          onChange={(key, value) => setFilters(prev => ({ ...prev, [key]: value }))} 
+        />
+      </div>
+    
       <AdminDataTable
         columns={columns}
         data={donations}

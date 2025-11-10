@@ -1,5 +1,5 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
+import { StripeBadgeExact } from "@/components/ui/stripe-badge-exact";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -39,9 +39,9 @@ export interface OrganizationData {
 }
 
 const statusConfig = {
-  approved: { label: "Approved", variant: "default" as const, icon: CheckCircle, className: "bg-success text-success-foreground hover:bg-success/80" },
-  rejected: { label: "Rejected", variant: "destructive" as const, icon: XCircle, className: "" },
-  pending: { label: "Pending", variant: "secondary" as const, icon: Clock, className: "" },
+  approved: { label: "Approved", variant: "success" as const, icon: CheckCircle },
+  rejected: { label: "Rejected", variant: "error" as const, icon: XCircle },
+  pending: { label: "Pending", variant: "warning" as const, icon: Clock },
 };
 
 export function createOrganizationColumns(
@@ -111,10 +111,10 @@ export function createOrganizationColumns(
         const Icon = config.icon;
         
         return (
-          <Badge variant={config.variant} className={config.className}>
+          <StripeBadgeExact variant={config.variant}>
             <Icon className="w-3 h-3 mr-1.5" />
             {config.label}
-          </Badge>
+          </StripeBadgeExact>
         );
       },
       filterFn: (row, id, value) => {
@@ -127,10 +127,10 @@ export function createOrganizationColumns(
       cell: ({ row }) => {
         const count = row.original.member_count || 0;
         return (
-          <Badge variant="outline" className="font-medium">
+          <StripeBadgeExact variant="neutral" className="font-medium">
             <Users className="w-3 h-3 mr-1.5" />
             {count}
-          </Badge>
+          </StripeBadgeExact>
         );
       },
     },
@@ -140,10 +140,10 @@ export function createOrganizationColumns(
       cell: ({ row }) => {
         const count = row.original.campaign_count || 0;
         return (
-          <Badge variant="outline" className="font-medium">
+          <StripeBadgeExact variant="neutral" className="font-medium">
             <Target className="w-3 h-3 mr-1.5" />
             {count}
-          </Badge>
+          </StripeBadgeExact>
         );
       },
     },
@@ -153,10 +153,10 @@ export function createOrganizationColumns(
       cell: ({ row }) => {
         const amount = row.original.total_raised || 0;
         return (
-          <Badge variant="outline" className="font-medium">
+          <StripeBadgeExact variant="neutral" className="font-medium">
             <DollarSign className="w-3 h-3 mr-1.5" />
             ${amount.toLocaleString()}
-          </Badge>
+          </StripeBadgeExact>
         );
       },
     },
