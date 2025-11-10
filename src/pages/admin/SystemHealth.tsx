@@ -27,6 +27,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { AdminPageLayout } from '@/components/admin/unified/AdminPageLayout';
 
 interface SystemStatus {
   status: 'healthy' | 'warning' | 'critical';
@@ -230,24 +231,19 @@ export function SystemHealth() {
   const StatusIcon = getStatusIcon(systemStatus.status);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">System Health</h1>
-          <p className="text-muted-foreground">
-            Monitor platform performance and system metrics
-          </p>
-        </div>
+    <AdminPageLayout
+      title="System Health"
+      description="Monitor platform performance and system metrics"
+      actions={
         <Button variant="outline" size="sm" onClick={fetchSystemHealth}>
           <RefreshCw className="w-4 h-4 mr-2" />
           Refresh
         </Button>
-      </div>
-
+      }
+    >
       {/* System Status Alert */}
-      <Alert className={systemStatus.status === 'healthy' ? 'border-success' : 
-                      systemStatus.status === 'warning' ? 'border-warning' : 'border-destructive'}>
+      <Alert className={`mb-6 ${systemStatus.status === 'healthy' ? 'border-success' : 
+                      systemStatus.status === 'warning' ? 'border-warning' : 'border-destructive'}`}>
         <StatusIcon className={`h-4 w-4 ${getStatusColor(systemStatus.status)}`} />
         <AlertTitle className={getStatusColor(systemStatus.status)}>
           System Status: {systemStatus.status.charAt(0).toUpperCase() + systemStatus.status.slice(1)}
@@ -260,7 +256,7 @@ export function SystemHealth() {
         </AlertDescription>
       </Alert>
 
-      <Tabs defaultValue="overview" className="space-y-4">
+      <Tabs defaultValue="overview" className="space-y-4 mb-6">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="database">Database</TabsTrigger>
@@ -496,6 +492,6 @@ export function SystemHealth() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </AdminPageLayout>
   );
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DisplayHeading, Text } from '@/components/ui/typography';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AdminPageLayout } from '@/components/admin/unified/AdminPageLayout';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -194,15 +194,10 @@ export function Analytics() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <DisplayHeading level="sm" as="h1" responsive>Analytics</DisplayHeading>
-          <Text size="md" emphasis="low">
-            Platform performance metrics and insights
-          </Text>
-        </div>
+    <AdminPageLayout
+      title="Analytics"
+      description="Platform performance metrics and insights"
+      actions={
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <Select value={timeRange} onValueChange={setTimeRange}>
             <SelectTrigger className="w-full sm:w-32">
@@ -226,10 +221,10 @@ export function Analytics() {
             </Button>
           </div>
         </div>
-      </div>
-
+      }
+    >
       {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-700">Total Users</CardTitle>
@@ -288,7 +283,7 @@ export function Analytics() {
       </div>
 
       {/* Detailed Analytics */}
-      <Tabs defaultValue="overview" className="space-y-4">
+      <Tabs defaultValue="overview" className="space-y-4 mb-6">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
@@ -434,6 +429,6 @@ export function Analytics() {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+    </AdminPageLayout>
   );
 }

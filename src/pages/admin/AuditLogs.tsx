@@ -27,6 +27,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { AdminPageLayout } from '@/components/admin/unified/AdminPageLayout';
 
 interface AuditLog {
   id: string;
@@ -324,25 +325,18 @@ export function AuditLogs() {
   const totalPages = Math.ceil(totalCount / filters.limit);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Audit Logs</h1>
-          <p className="text-muted-foreground">
-            Track all administrative actions and system events
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button onClick={exportLogs} variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            Export
-          </Button>
-        </div>
-      </div>
-
+    <AdminPageLayout
+      title="Audit Logs"
+      description="Track all administrative actions and system events"
+      actions={
+        <Button onClick={exportLogs} variant="outline">
+          <Download className="mr-2 h-4 w-4" />
+          Export
+        </Button>
+      }
+    >
       {/* Filters */}
-      <Card>
+      <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center">
             <Filter className="mr-2 h-4 w-4" />
@@ -444,7 +438,7 @@ export function AuditLogs() {
       </Card>
 
       {/* Logs Table */}
-      <Card>
+      <Card className="mb-6">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center">
@@ -545,6 +539,6 @@ export function AuditLogs() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </AdminPageLayout>
   );
 }

@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { AdminPageLayout } from '@/components/admin/unified/AdminPageLayout';
 
 interface Role {
   id: string;
@@ -329,16 +330,11 @@ export function RoleManagement() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Role Management</h1>
-          <p className="text-muted-foreground">
-            Manage platform roles and permissions
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
+    <AdminPageLayout
+      title="Role Management"
+      description="Manage platform roles and permissions"
+      actions={
+        <>
           <Dialog open={showPermissionDialog} onOpenChange={setShowPermissionDialog}>
             <DialogTrigger asChild>
               <Button variant="outline">
@@ -484,11 +480,11 @@ export function RoleManagement() {
               </div>
             </DialogContent>
           </Dialog>
-        </div>
-      </div>
-
+        </>
+      }
+    >
       {/* Roles Table */}
-      <Card>
+      <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center">
             <Shield className="mr-2 h-4 w-4" />
@@ -569,7 +565,7 @@ export function RoleManagement() {
           </Table>
         </CardContent>
       </Card>
-    </div>
+    </AdminPageLayout>
   );
 }
 

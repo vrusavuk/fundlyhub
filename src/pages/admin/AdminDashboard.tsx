@@ -20,7 +20,7 @@ import {
   BarChart3
 } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { EnhancedPageHeader } from '@/components/admin/EnhancedPageHeader';
+import { AdminPageLayout } from '@/components/admin/unified/AdminPageLayout';
 
 interface PlatformStats {
   totalUsers: number;
@@ -135,19 +135,16 @@ export function AdminDashboard() {
   };
 
   return (
-    <div className="section-hierarchy">
-      {/* Enhanced Page Header */}
-      <EnhancedPageHeader
-        title="Admin Dashboard"
-        description="Platform overview and key performance indicators"
-        badge={{
-          label: isSuperAdmin() ? 'Super Admin Access' : 'Admin Access',
-          variant: isSuperAdmin() ? 'destructive' : 'default'
-        }}
-      />
-
+    <AdminPageLayout
+      title="Admin Dashboard"
+      description="Platform overview and key performance indicators"
+      badge={{
+        text: isSuperAdmin() ? 'Super Admin Access' : 'Admin Access',
+        variant: isSuperAdmin() ? 'destructive' : 'default'
+      }}
+    >
       {/* Quick Stats Summary */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-4 mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-700">Total Users</CardTitle>
@@ -204,7 +201,7 @@ export function AdminDashboard() {
       </div>
 
       {/* Main Content */}
-      <Tabs defaultValue="overview" className="space-y-4">
+      <Tabs defaultValue="overview" className="space-y-4 mb-6">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="activity">Recent Activity</TabsTrigger>
@@ -395,6 +392,6 @@ export function AdminDashboard() {
           </TabsContent>
         )}
       </Tabs>
-    </div>
+    </AdminPageLayout>
   );
 }

@@ -21,6 +21,7 @@ import {
 import { useRBAC } from '@/hooks/useRBAC';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
 import { SettingsCategory } from '@/components/admin/settings/SettingsCategory';
+import { AdminPageLayout } from '@/components/admin/unified/AdminPageLayout';
 
 export function SystemSettings() {
   const { 
@@ -76,28 +77,17 @@ export function SystemSettings() {
   const categories = ['general', 'security', 'email', 'api', 'user_management', 'content_moderation', 'notifications', 'system'];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">System Settings</h1>
-          <p className="text-muted-foreground">
-            Configure platform-wide settings and security policies
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Badge variant={isSuperAdmin() ? "default" : "secondary"}>
-            {isSuperAdmin() ? "Super Admin" : "Platform Admin"}
-          </Badge>
-          <Badge variant="outline">
-            {settings.length} total settings
-          </Badge>
-        </div>
-      </div>
-
+    <AdminPageLayout
+      title="System Settings"
+      description="Configure platform-wide settings and security policies"
+      badge={{
+        text: `${isSuperAdmin() ? "Super Admin" : "Platform Admin"} • ${settings.length} settings`,
+        variant: isSuperAdmin() ? "default" : "secondary"
+      }}
+    >
       {/* Maintenance Mode Alert */}
       {maintenanceModeEnabled && (
-        <Alert className="border-warning">
+        <Alert className="border-warning mb-6">
           <AlertTriangle className="h-4 w-4 text-warning" />
           <AlertTitle className="text-warning">Maintenance Mode Active</AlertTitle>
           <AlertDescription>
@@ -108,7 +98,7 @@ export function SystemSettings() {
 
       {/* Permission Info */}
       {!isSuperAdmin() && (
-        <Alert>
+        <Alert className="mb-6">
           <Lock className="h-4 w-4" />
           <AlertTitle>Limited Access</AlertTitle>
           <AlertDescription>
@@ -166,6 +156,6 @@ export function SystemSettings() {
           </TabsContent>
         ))}
       </Tabs>
-    </div>
+    </AdminPageLayout>
   );
 }

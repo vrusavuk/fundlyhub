@@ -19,7 +19,6 @@ export * from './settings/AuditTrail';
 export { CreateSampleAdmin } from './CreateSampleAdmin';
 export { ContextualHelp } from './ContextualHelp';
 export { DesignSystemShowcase } from './DesignSystemShowcase';
-export { EnhancedPageHeader } from './EnhancedPageHeader';
 
 // Typography components
 export * from '../ui/typography';

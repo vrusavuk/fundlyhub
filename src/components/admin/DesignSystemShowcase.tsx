@@ -3,7 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { EnhancedPageHeader } from '@/components/admin/EnhancedPageHeader';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AdminPageLayout } from './unified/AdminPageLayout';
 import { ContextualHelp } from '@/components/admin/ContextualHelp';
 import { OptimisticUpdateIndicator, useOptimisticUpdates } from '@/components/admin/OptimisticUpdates';
 import { 
@@ -21,9 +22,9 @@ import {
   Palette,
   Code,
   Eye,
-  MoreHorizontal
+  MoreHorizontal,
+  FileText
 } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 interface DesignSystemShowcaseProps {
   className?: string;
@@ -77,40 +78,29 @@ export function DesignSystemShowcase({ className }: DesignSystemShowcaseProps) {
   };
 
   return (
-    <div className={`section-hierarchy ${className}`}>
-      {/* Enhanced Page Header Demo */}
-      <EnhancedPageHeader
-        title="Admin Design System"
-        description="Showcase of enhanced admin panel components and patterns"
-        actions={[
-          {
-            label: 'Demo Action',
-            onClick: runDemoAction,
-            icon: RefreshCw,
-            variant: 'outline'
-          },
-          {
-            label: 'View Docs',
-            onClick: () => console.log('Opening documentation'),
-            icon: Code,
-            variant: 'default'
-          }
-        ]}
-      >
-        <div className="flex items-center space-x-2 mt-2">
-          <ContextualHelp
-            content={helpContent}
-            variant="popover"
-            placement="bottom"
-          />
-          <span className="text-sm text-muted-foreground">
-            Explore the enhanced design system components below.
-          </span>
-        </div>
-      </EnhancedPageHeader>
+    <AdminPageLayout
+      title="Design System"
+      description="Comprehensive showcase of enhanced admin panel components and patterns"
+      badge={{ text: 'v2.0', variant: 'default' }}
+      actions={
+        <>
+          <Button variant="outline" onClick={() => console.log('View docs')}>
+            <Code className="mr-2 h-4 w-4" />
+            View Docs
+          </Button>
+          <Button onClick={runDemoAction}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Try Demo
+          </Button>
+        </>
+      }
+    >
+      <div className="mb-6">
+        <ContextualHelp content={helpContent} variant="popover" placement="bottom" />
+      </div>
 
       {/* Component Showcase Tabs */}
-      <Tabs value={selectedComponent} onValueChange={setSelectedComponent}>
+      <Tabs value={selectedComponent} onValueChange={setSelectedComponent} className="mb-6">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="headers">Page Headers</TabsTrigger>
           <TabsTrigger value="optimistic">Optimistic Updates</TabsTrigger>
@@ -127,25 +117,30 @@ export function DesignSystemShowcase({ className }: DesignSystemShowcaseProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="p-4 border rounded-lg">
-                  <EnhancedPageHeader
-                    title="Sample Page Title"
-                    description="This is how page headers look with the enhanced design system"
-                    actions={[
-                      {
-                        label: 'Primary Action',
-                        onClick: () => console.log('Primary clicked'),
-                        icon: Plus,
-                        variant: 'default'
-                      },
-                      {
-                        label: 'Secondary',
-                        onClick: () => console.log('Secondary clicked'),
-                        icon: Download,
-                        variant: 'outline'
-                      }
-                    ]}
-                  />
+                <div className="p-4 border rounded-lg bg-muted/30">
+                  <h3 className="text-lg font-semibold mb-2">AdminPageLayout Component</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    The AdminPageLayout component provides a consistent structure for all admin pages
+                    with a white header section and gray content area.
+                  </p>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline">title</Badge>
+                      <span className="text-muted-foreground">Page title</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline">description</Badge>
+                      <span className="text-muted-foreground">Optional subtitle</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline">badge</Badge>
+                      <span className="text-muted-foreground">Optional badge configuration</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline">actions</Badge>
+                      <span className="text-muted-foreground">Action buttons or components</span>
+                    </div>
+                  </div>
                 </div>
                 
                 <div className="mt-6 p-4 bg-muted/50 rounded-lg">
@@ -248,6 +243,6 @@ export function DesignSystemShowcase({ className }: DesignSystemShowcaseProps) {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </AdminPageLayout>
   );
 }
