@@ -200,13 +200,7 @@ export function CampaignDetailsDialog({ campaign, open, onOpenChange }: Campaign
   const [loadingDonations, setLoadingDonations] = useState(false);
   const [showAllDonors, setShowAllDonors] = useState(false);
 
-  // Early return with error handling
-  if (!campaign) {
-    console.warn('[CampaignDetailsDialog] No campaign provided');
-    return null;
-  }
-
-  const progress = campaign.stats?.total_raised && campaign.goal_amount
+  const progress = campaign?.stats?.total_raised && campaign?.goal_amount
     ? (campaign.stats.total_raised / campaign.goal_amount) * 100
     : 0;
 
@@ -233,14 +227,14 @@ export function CampaignDetailsDialog({ campaign, open, onOpenChange }: Campaign
 
   // Real-time updates for donations
   useEventSubscriber('donation.completed', (event) => {
-    if ((event.payload as any)?.fundraiserId === campaign?.id) {
+    if (campaign?.id && (event.payload as any)?.fundraiserId === campaign.id) {
       console.log('[CampaignDetailsDialog] Donation completed, refreshing donors');
       fetchDonations();
     }
   });
 
   useEventSubscriber('donation.refunded', (event) => {
-    if ((event.payload as any)?.fundraiserId === campaign?.id) {
+    if (campaign?.id && (event.payload as any)?.fundraiserId === campaign.id) {
       console.log('[CampaignDetailsDialog] Donation refunded, refreshing donors');
       fetchDonations();
     }
@@ -249,6 +243,12 @@ export function CampaignDetailsDialog({ campaign, open, onOpenChange }: Campaign
   const totalDonated = donations.reduce((sum, d) => sum + d.amount, 0);
   const averageDonation = donations.length > 0 ? totalDonated / donations.length : 0;
   const displayedDonations = donations.slice(0, 10);
+
+  // Early return AFTER all hooks
+  if (!campaign) {
+    console.warn('[CampaignDetailsDialog] No campaign provided');
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
