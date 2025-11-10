@@ -1,6 +1,6 @@
 import { User, LogOut, Settings, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useRBAC } from '@/hooks/useRBAC';
+import { useRBAC } from '@/contexts/RBACContext';
 import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
 import {
   DropdownMenu,

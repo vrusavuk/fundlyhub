@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useRBAC } from '@/hooks/useRBAC';
+import { useRBAC } from '@/contexts/RBACContext';
 import { supabase } from '@/integrations/supabase/client';
 import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

@@ -18,7 +18,7 @@ import {
   CheckCircle,
   Database
 } from 'lucide-react';
-import { useRBAC } from '@/hooks/useRBAC';
+import { useRBAC } from '@/contexts/RBACContext';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
 import { SettingsCategory } from '@/components/admin/settings/SettingsCategory';
 import { AdminPageLayout, PageSection } from '@/components/admin/unified';

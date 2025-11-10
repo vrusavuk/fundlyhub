@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
-import { useRBAC } from '@/hooks/useRBAC';
+import { useRBAC } from '@/contexts/RBACContext';
 import { useOnboarding } from '@/components/onboarding/OnboardingProvider';
 
 interface UserMenuProps {

@@ -14,7 +14,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useRBAC } from '@/hooks/useRBAC';
+import { useRBAC } from '@/contexts/RBACContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useDebounce } from '@/hooks/useDebounce';
 import { usePagination } from '@/hooks/usePagination';
@@ -225,22 +225,9 @@ export function DonationManagement() {
     };
   }, [abortController]);
 
-  // Permission check
-  const canViewDonations = hasPermission('view_donations') || hasPermission('manage_campaigns');
+  // Permission check - Trust AdminProtectedRoute for basic access
+  // Only check feature-specific permissions here
   const canRefund = isSuperAdmin();
-
-  if (!canViewDonations) {
-    return (
-      <AdminPageLayout title="Donation Management">
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            You don't have permission to view donations. Please contact your administrator.
-          </AlertDescription>
-        </Alert>
-      </AdminPageLayout>
-    );
-  }
 
   // Event handlers
   const handleViewDetails = (donation: DonationData) => {

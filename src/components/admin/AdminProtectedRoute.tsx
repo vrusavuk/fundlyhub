@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { useRBAC } from '@/hooks/useRBAC';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { useRBAC } from '@/contexts/RBACContext';
+import { AdminPageLoadingSkeleton } from './AdminPageLoadingSkeleton';
 
 interface AdminProtectedRouteProps {
   children: React.ReactNode;
@@ -20,19 +20,12 @@ export function AdminProtectedRoute({
   const { canAccessAdmin, hasPermission, hasRole, loading: rbacLoading } = useRBAC();
   const location = useLocation();
 
+  // CRITICAL: Wait for both auth AND RBAC data before performing any checks
+  // This prevents the "Access denied" flash when navigating between pages
   const loading = authLoading || rbacLoading;
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          <LoadingSpinner size="lg" />
-          <p className="text-sm text-muted-foreground">
-            Verifying admin access...
-          </p>
-        </div>
-      </div>
-    );
+    return <AdminPageLoadingSkeleton />;
   }
 
   // Redirect to auth if not authenticated

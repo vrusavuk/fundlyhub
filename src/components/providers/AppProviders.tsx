@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
+import { RBACProvider } from "@/contexts/RBACContext";
 import { UnifiedSearchProvider } from "@/contexts/UnifiedSearchContext";
 import { NavigationProvider } from '@/contexts/NavigationContext';
 import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider';
@@ -38,15 +39,17 @@ export function AppProviders({ children }: AppProvidersProps) {
           }}
         >
           <AuthProvider>
-            <UnifiedSearchProvider>
-              <NavigationProvider>
-                <OnboardingProvider>
-                  <OnboardingDemoProvider>
-                    {children}
-                  </OnboardingDemoProvider>
-                </OnboardingProvider>
-              </NavigationProvider>
-            </UnifiedSearchProvider>
+            <RBACProvider>
+              <UnifiedSearchProvider>
+                <NavigationProvider>
+                  <OnboardingProvider>
+                    <OnboardingDemoProvider>
+                      {children}
+                    </OnboardingDemoProvider>
+                  </OnboardingProvider>
+                </NavigationProvider>
+              </UnifiedSearchProvider>
+            </RBACProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

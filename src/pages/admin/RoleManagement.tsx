@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useRBAC } from '@/hooks/useRBAC';
+import { useRBAC } from '@/contexts/RBACContext';
 import { useEventPublisher } from '@/hooks/useEventBus';
 import { supabase } from '@/integrations/supabase/client';
 import { 
