@@ -169,6 +169,26 @@ export class FundraiserMutationService {
 
       if (updateError) throw updateError;
 
+      // If project, create milestones
+      if (input.isProject && input.milestones && input.milestones.length > 0) {
+        const { projectMutationService } = await import('./project.mutation.service');
+        await projectMutationService.createProjectMilestones({
+          fundraiserId: response.campaign_id,
+          milestones: input.milestones,
+          createdBy: input.userId,
+        });
+      }
+
+      // Link cover image to fundraiser (if uploaded)
+      if (input.coverImageId) {
+        const { imageUploadService } = await import('./imageUpload.service');
+        await imageUploadService.linkDraftImagesToFundraiser(
+          [input.coverImageId],
+          response.campaign_id,
+          input.userId
+        );
+      }
+
       await cacheService.invalidateByPattern('fundraisers:*');
       await cacheService.invalidateByPattern('categories:*');
 
