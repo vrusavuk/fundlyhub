@@ -18,6 +18,7 @@ import {
 } from '@/components/admin/detail';
 import { adminDataService } from '@/lib/services/AdminDataService';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useDetailPageBreadcrumbs } from '@/hooks/useDetailPageBreadcrumbs';
 
 export default function OrganizationDetail() {
   const { id } = useParams<{ id: string }>();
@@ -25,6 +26,14 @@ export default function OrganizationDetail() {
   const { toast } = useToast();
   const [organization, setOrganization] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Set dynamic breadcrumbs
+  useDetailPageBreadcrumbs(
+    'Organization Management',
+    '/admin/organizations',
+    organization?.legal_name,
+    loading
+  );
 
   useEffect(() => {
     const fetchOrganization = async () => {

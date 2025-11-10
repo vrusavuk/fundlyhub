@@ -6,9 +6,12 @@ import { Separator } from '@/components/ui/separator';
 import { AdminBreadcrumb } from './AdminBreadcrumb';
 import { SessionTimeoutWarning } from './SessionTimeoutWarning';
 import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
+import { BreadcrumbProvider, useBreadcrumbContext } from '@/contexts/BreadcrumbContext';
 
-export function AdminLayout() {
-  const breadcrumbs = useBreadcrumbs();
+function AdminLayoutContent() {
+  const defaultBreadcrumbs = useBreadcrumbs();
+  const { customBreadcrumbs } = useBreadcrumbContext();
+  const breadcrumbs = customBreadcrumbs || defaultBreadcrumbs;
 
   return (
     <SidebarProvider>
@@ -44,5 +47,13 @@ export function AdminLayout() {
       
       <SessionTimeoutWarning />
     </SidebarProvider>
+  );
+}
+
+export function AdminLayout() {
+  return (
+    <BreadcrumbProvider>
+      <AdminLayoutContent />
+    </BreadcrumbProvider>
   );
 }

@@ -19,6 +19,7 @@ import {
 } from '@/components/admin/detail';
 import { adminDataService } from '@/lib/services/AdminDataService';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useDetailPageBreadcrumbs } from '@/hooks/useDetailPageBreadcrumbs';
 
 export default function UserDetail() {
   const { id } = useParams<{ id: string }>();
@@ -26,6 +27,14 @@ export default function UserDetail() {
   const { toast } = useToast();
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Set dynamic breadcrumbs
+  useDetailPageBreadcrumbs(
+    'User Management',
+    '/admin/users',
+    user?.name,
+    loading
+  );
 
   useEffect(() => {
     const fetchUser = async () => {

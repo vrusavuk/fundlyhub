@@ -20,6 +20,7 @@ import {
 import { adminDataService } from '@/lib/services/AdminDataService';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
+import { useDetailPageBreadcrumbs } from '@/hooks/useDetailPageBreadcrumbs';
 
 export default function CampaignDetail() {
   const { id } = useParams<{ id: string }>();
@@ -27,6 +28,14 @@ export default function CampaignDetail() {
   const { toast } = useToast();
   const [campaign, setCampaign] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Set dynamic breadcrumbs
+  useDetailPageBreadcrumbs(
+    'Campaign Management',
+    '/admin/campaigns',
+    campaign?.title,
+    loading
+  );
 
   useEffect(() => {
     const fetchCampaign = async () => {

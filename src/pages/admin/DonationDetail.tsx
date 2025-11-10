@@ -21,6 +21,7 @@ import {
 import { adminDataService } from '@/lib/services/AdminDataService';
 import { DonationData } from '@/lib/data-table/donation-columns';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useDetailPageBreadcrumbs } from '@/hooks/useDetailPageBreadcrumbs';
 
 export default function DonationDetail() {
   const { id } = useParams<{ id: string }>();
@@ -28,6 +29,14 @@ export default function DonationDetail() {
   const { toast } = useToast();
   const [donation, setDonation] = useState<DonationData | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Set dynamic breadcrumbs
+  useDetailPageBreadcrumbs(
+    'Donation Management',
+    '/admin/donations',
+    donation ? `${MoneyMath.format(MoneyMath.create(donation.amount, donation.currency))} from ${donation.donor_name || 'Anonymous'}` : undefined,
+    loading
+  );
 
   useEffect(() => {
     const fetchDonation = async () => {
