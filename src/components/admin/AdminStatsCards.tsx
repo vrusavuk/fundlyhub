@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { LucideIcon, TrendingUp, TrendingDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getTypographyClasses, getSpacingClasses } from '@/lib/design/typography';
+import { StripeStatsCard, StatsChange } from './StripeStatsCard';
 
 interface AdminStatsCardProps {
   title: string;
@@ -100,24 +101,34 @@ interface AdminStatsGridProps {
 export function AdminStatsGrid({ stats, className }: AdminStatsGridProps) {
   return (
     <div className={cn(
-      "mobile-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
-      getSpacingClasses('component', 'lg'),
+      "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4",
       className
     )}>
-      {stats.map((stat, index) => (
-        <AdminStatsCard 
-          key={`stat-${index}-${stat.title}`} 
-          {...stat} 
-          className={cn(
-            "animate-fade-in",
-            // Stagger animation delays for smooth entrance
-            index === 0 && "animation-delay-0",
-            index === 1 && "animation-delay-100",
-            index === 2 && "animation-delay-200",
-            index === 3 && "animation-delay-300"
-          )}
-        />
-      ))}
+      {stats.map((stat, index) => {
+        // Convert trend to StatsChange format if exists
+        const change: StatsChange | undefined = stat.trend ? {
+          value: Math.abs(stat.trend.value).toString(),
+          isPositive: stat.trend.isPositive,
+          label: 'vs last month'
+        } : undefined;
+
+        return (
+          <StripeStatsCard
+            key={`stat-${index}-${stat.title}`}
+            title={stat.title}
+            value={stat.value}
+            icon={stat.icon}
+            change={change}
+            className={cn(
+              "animate-fade-in",
+              index === 0 && "animation-delay-0",
+              index === 1 && "animation-delay-100",
+              index === 2 && "animation-delay-200",
+              index === 3 && "animation-delay-300"
+            )}
+          />
+        );
+      })}
     </div>
   );
 }

@@ -27,9 +27,10 @@ export interface TableAction {
   label: string;
   icon?: React.ComponentType<{ className?: string }>;
   variant?: 'default' | 'destructive' | 'outline' | 'secondary';
-  onClick: () => void;
+  onClick?: () => void;
   loading?: boolean;
   disabled?: boolean;
+  customRender?: () => ReactNode;
 }
 
 interface AdminTableControlsProps {
@@ -78,24 +79,28 @@ export function AdminTableControls({
         
         <div className="flex items-center gap-2">
           {actions.map((action) => (
-            <Button
-              key={action.key}
-              variant={action.variant || 'outline'}
-              size="sm"
-              onClick={action.onClick}
-              disabled={action.disabled || loading}
-              className={cn(
-                'shadow-soft border-primary/10',
-                action.variant === 'outline' && 'hover:bg-primary/5 hover:border-primary/20'
-              )}
-            >
-              {action.loading ? (
-                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-              ) : action.icon ? (
-                <action.icon className="h-4 w-4 mr-2" />
-              ) : null}
-              {action.label}
-            </Button>
+            action.customRender ? (
+              <div key={action.key}>{action.customRender()}</div>
+            ) : (
+              <Button
+                key={action.key}
+                variant={action.variant || 'outline'}
+                size="sm"
+                onClick={action.onClick}
+                disabled={action.disabled || loading}
+                className={cn(
+                  'h-9 shadow-sm',
+                  action.variant === 'outline' && 'hover:bg-slate-50'
+                )}
+              >
+                {action.loading ? (
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                ) : action.icon ? (
+                  <action.icon className="h-4 w-4 mr-2" />
+                ) : null}
+                {action.label}
+              </Button>
+            )
           ))}
         </div>
       </div>

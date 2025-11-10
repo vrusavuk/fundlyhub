@@ -28,6 +28,7 @@ import { AdminStatsGrid } from '@/components/admin/AdminStatsCards';
 import { MobileStatsGrid } from '@/components/admin/mobile/MobileStatsGrid';
 import { exportDonationsCSV } from '@/lib/utils/exportDonations';
 import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
+import { DensityToggle, Density } from '@/components/admin/DensityToggle';
 import { 
   AdminPageLayout, 
   AdminFilters, 
@@ -56,6 +57,7 @@ export function DonationManagement() {
   const [selectedDonations, setSelectedDonations] = useState<DonationData[]>([]);
   const [selectedDonation, setSelectedDonation] = useState<DonationData | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [density, setDensity] = useState<Density>('comfortable');
   const [confirmAction, setConfirmAction] = useState<{
     open: boolean;
     title: string;
@@ -404,6 +406,13 @@ export function DonationManagement() {
       icon: ExternalLink,
       variant: 'outline',
       onClick: () => window.open('https://dashboard.stripe.com/payments', '_blank')
+    },
+    {
+      key: 'density',
+      label: 'Density',
+      customRender: () => (
+        <DensityToggle value={density} onChange={setDensity} />
+      )
     }
   ];
 
@@ -501,6 +510,7 @@ export function DonationManagement() {
         enableSorting={true}
         enableColumnVisibility={true}
         enablePagination={true}
+        density={density}
         paginationState={pagination.state}
         onPageChange={pagination.goToPage}
         onPageSizeChange={pagination.setPageSize}

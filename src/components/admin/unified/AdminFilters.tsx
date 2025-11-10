@@ -41,14 +41,10 @@ export function AdminFilters({
   const hasActiveFilters = activeFilters.length > 0 || Object.values(values).some(v => v && v !== 'all' && v !== '');
 
   return (
-    <Card className={cn('shadow-soft border-primary/10', className)}>
-      <CardContent className="p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <h3 className={cn(
-            getTypographyClasses('heading', 'sm', 'text-foreground'),
-            'flex items-center gap-2'
-          )}>
+    <div className={className}>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
             <Filter className="h-4 w-4" />
             {title}
             {hasActiveFilters && (
@@ -63,7 +59,7 @@ export function AdminFilters({
               variant="ghost"
               size="sm"
               onClick={onClear}
-              className="text-muted-foreground hover:text-foreground h-8 px-2"
+              className="text-slate-600 hover:text-slate-900 h-8 px-2"
             >
               <X className="h-3 w-3 mr-1" />
               Clear all
@@ -93,24 +89,17 @@ export function AdminFilters({
         )}
 
         {/* Filter Controls */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="flex flex-wrap items-center gap-3">
           {filters.map((filter) => (
-            <div key={filter.key} className="space-y-2">
-              <label className={cn(
-                getTypographyClasses('caption', 'md', 'text-foreground'),
-                'font-medium'
-              )}>
-                {filter.label}
-              </label>
-              
+            <div key={filter.key} className="flex-1 min-w-[200px]">
               {filter.type === 'search' && (
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <Input
                     placeholder={filter.placeholder || `Search ${filter.label.toLowerCase()}...`}
                     value={values[filter.key] || ''}
                     onChange={(e) => onChange(filter.key, e.target.value)}
-                    className="pl-10 shadow-soft border-primary/10 focus:border-primary/20"
+                    className="pl-10 h-9 text-sm border-slate-200"
                   />
                 </div>
               )}
@@ -120,18 +109,15 @@ export function AdminFilters({
                   value={values[filter.key] || 'all'}
                   onValueChange={(value) => onChange(filter.key, value)}
                 >
-                  <SelectTrigger className="shadow-soft border-primary/10 focus:border-primary/20">
+                  <SelectTrigger className="h-9 text-sm border-slate-200">
                     <SelectValue placeholder={filter.placeholder || `All ${filter.label.toLowerCase()}`} />
                   </SelectTrigger>
-                  <SelectContent className="shadow-medium bg-background/95 backdrop-blur-sm">
-                    <SelectItem value="all" className="hover:bg-primary/5">
-                      All {filter.label}
-                    </SelectItem>
+                  <SelectContent className="bg-white border-slate-200">
                     {filter.options.map((option) => (
                       <SelectItem 
                         key={option.value} 
                         value={option.value}
-                        className="hover:bg-primary/5"
+                        className="text-sm"
                       >
                         {option.label}
                       </SelectItem>
@@ -144,7 +130,6 @@ export function AdminFilters({
             </div>
           ))}
         </div>
-      </CardContent>
-    </Card>
+    </div>
   );
 }
