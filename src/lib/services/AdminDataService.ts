@@ -549,6 +549,142 @@ class AdminDataService {
   }
 
   /**
+   * Fetch a single user by ID (optimized)
+   */
+  async fetchUserById(userId: string) {
+    const cacheKey = `user:${userId}`;
+    
+    return this.cache.getOrSet(cacheKey, async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(`
+          *,
+          user_role_assignments!left(
+            role_id,
+            roles!inner(name, display_name, hierarchy_level)
+          )
+        `)
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) throw new Error('User not found');
+      
+      return data;
+    }, { ttl: 30000 });
+  }
+
+  /**
+   * Fetch a single campaign by ID (optimized)
+   */
+  async fetchCampaignById(campaignId: string) {
+    const cacheKey = `campaign:${campaignId}`;
+    
+    return this.cache.getOrSet(cacheKey, async () => {
+      const { data, error } = await supabase
+        .from('fundraisers')
+        .select(`
+          *,
+          profiles!fundraisers_owner_user_id_fkey(id, name, email, avatar),
+          categories(name, emoji, color_class)
+        `)
+        .eq('id', campaignId)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) throw new Error('Campaign not found');
+      
+      // Fetch stats for this campaign
+      const statsMap = await this.fetchCampaignStatsBatch([campaignId]);
+      
+      return {
+        ...data,
+        owner_profile: data.profiles,
+        profiles: undefined,
+        stats: statsMap.get(campaignId) || {
+          total_raised: 0,
+          donor_count: 0,
+          unique_donors: 0
+        }
+      };
+    }, { ttl: 10000 });
+  }
+
+  /**
+   * Fetch a single organization by ID (optimized)
+   */
+  async fetchOrganizationById(orgId: string) {
+    const cacheKey = `organization:${orgId}`;
+    
+    return this.cache.getOrSet(cacheKey, async () => {
+      const { data, error } = await supabase
+        .from('organizations')
+        .select(`
+          *,
+          org_members(count),
+          fundraisers!org_id(id, status, goal_amount)
+        `)
+        .eq('id', orgId)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) throw new Error('Organization not found');
+      
+      // Calculate member count and campaign count
+      const memberCount = data.org_members?.[0]?.count || 0;
+      const campaigns = data.fundraisers || [];
+      const totalRaised = campaigns.reduce((sum: number, c: any) => 
+        sum + Number(c.goal_amount || 0), 0);
+      
+      return {
+        ...data,
+        member_count: memberCount,
+        campaign_count: campaigns.length,
+        total_raised: totalRaised,
+      };
+    }, { ttl: 30000 });
+  }
+
+  /**
+   * Fetch a single donation by ID (optimized)
+   */
+  async fetchDonationById(donationId: string) {
+    const cacheKey = `donation:${donationId}`;
+    
+    return this.cache.getOrSet(cacheKey, async () => {
+      const { data, error } = await supabase
+        .from('donations')
+        .select(`
+          *,
+          fundraisers!fundraiser_id(
+            id,
+            title,
+            slug,
+            status
+          ),
+          profiles:donor_user_id(
+            name,
+            email,
+            avatar
+          )
+        `)
+        .eq('id', donationId)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) throw new Error('Donation not found');
+      
+      return {
+        ...data,
+        fundraiser: data.fundraisers,
+        donor: data.profiles,
+        fundraisers: undefined,
+        profiles: undefined,
+      };
+    }, { ttl: 5000 });
+  }
+
+  /**
    * Clear cache for specific resource type
    */
   invalidateCache(resource: 'users' | 'organizations' | 'campaigns' | 'roles' | 'dashboard' | 'donations' | 'all') {

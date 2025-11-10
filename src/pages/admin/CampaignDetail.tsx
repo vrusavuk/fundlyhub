@@ -34,24 +34,13 @@ export default function CampaignDetail() {
       
       try {
         setLoading(true);
-        const result = await adminDataService.fetchCampaigns(
-          { page: 1, pageSize: 1000 },
-          {}
-        );
-        const found = result.data.find((c: any) => c.id === id);
-        
-        if (found) {
-          setCampaign(found);
-        } else {
-          toast({
-            title: 'Campaign not found',
-            variant: 'destructive',
-          });
-          navigate('/admin/campaigns');
-        }
+        const campaignData = await adminDataService.fetchCampaignById(id);
+        setCampaign(campaignData);
       } catch (error) {
+        console.error('Error fetching campaign:', error);
         toast({
           title: 'Failed to load campaign',
+          description: error instanceof Error ? error.message : 'Campaign not found',
           variant: 'destructive',
         });
         navigate('/admin/campaigns');

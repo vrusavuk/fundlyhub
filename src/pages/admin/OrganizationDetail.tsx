@@ -32,24 +32,13 @@ export default function OrganizationDetail() {
       
       try {
         setLoading(true);
-        const result = await adminDataService.fetchOrganizations(
-          { page: 1, pageSize: 1000 },
-          {}
-        );
-        const found = result.data.find((o: any) => o.id === id);
-        
-        if (found) {
-          setOrganization(found);
-        } else {
-          toast({
-            title: 'Organization not found',
-            variant: 'destructive',
-          });
-          navigate('/admin/organizations');
-        }
+        const orgData = await adminDataService.fetchOrganizationById(id);
+        setOrganization(orgData);
       } catch (error) {
+        console.error('Error fetching organization:', error);
         toast({
           title: 'Failed to load organization',
+          description: error instanceof Error ? error.message : 'Organization not found',
           variant: 'destructive',
         });
         navigate('/admin/organizations');

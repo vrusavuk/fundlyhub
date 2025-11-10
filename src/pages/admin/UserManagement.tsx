@@ -146,52 +146,27 @@ export function UserManagement() {
     try {
       setLoading(true);
 
-      // Build query with filters
-      let query = supabase
-        .from('profiles')
-        .select(`
-          id,
-          name,
-          email,
-          avatar,
-          role,
-          account_status,
-          created_at,
-          last_login_at,
-          suspended_until,
-          suspension_reason,
-          failed_login_attempts,
-          campaign_count,
-          total_funds_raised,
-          follower_count
-        `, { count: 'exact' });
+      // Use AdminDataService with proper pagination
+      const result = await adminDataService.fetchUsers(
+        {
+          page: pagination.state.page,
+          pageSize: pagination.state.pageSize,
+          sortBy: 'created_at',
+          sortOrder: 'desc',
+        },
+        {
+          search: debouncedSearch,
+          status: filters.status !== 'all' ? filters.status : undefined,
+          role: filters.role !== 'all' ? filters.role : undefined,
+        }
+      );
 
-      // Apply search filter
-      if (debouncedSearch.trim()) {
-        query = query.or(`name.ilike.%${debouncedSearch}%,email.ilike.%${debouncedSearch}%`);
-      }
-
-      // Apply status filter
-      if (filters.status !== 'all') {
-        query = query.eq('account_status', filters.status);
-      }
-
-      // Apply role filter
-      if (filters.role !== 'all') {
-        query = query.eq('role', filters.role as any);
-      }
-
-      // Apply sorting and pagination
-      query = query
-        .order('created_at', { ascending: false })
-        .range(0, 99); // Limit to 100 for now, will add pagination later
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-
-      setUsers(data || []);
+      console.log('[UserManagement] Fetched users:', result.data.length, result);
+      
+      setUsers(result.data || []);
+      pagination.setTotal(result.total);
     } catch (error: any) {
+      console.error('[UserManagement] Error fetching users:', error);
       toast({
         title: 'Error',
         description: error.message || 'Failed to load users',
@@ -200,7 +175,7 @@ export function UserManagement() {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, filters.status, filters.role, toast]);
+  }, [debouncedSearch, filters.status, filters.role, pagination.state.page, pagination.state.pageSize, toast]);
 
   // Create columns for the data table
   const columns = userColumns;

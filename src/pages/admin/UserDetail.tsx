@@ -33,24 +33,13 @@ export default function UserDetail() {
       
       try {
         setLoading(true);
-        const result = await adminDataService.fetchUsers(
-          { page: 1, pageSize: 1000 },
-          {}
-        );
-        const found = result.data.find((u: any) => u.id === id);
-        
-        if (found) {
-          setUser(found);
-        } else {
-          toast({
-            title: 'User not found',
-            variant: 'destructive',
-          });
-          navigate('/admin/users');
-        }
+        const userData = await adminDataService.fetchUserById(id);
+        setUser(userData);
       } catch (error) {
+        console.error('Error fetching user:', error);
         toast({
           title: 'Failed to load user',
+          description: error instanceof Error ? error.message : 'User not found',
           variant: 'destructive',
         });
         navigate('/admin/users');

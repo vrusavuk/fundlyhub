@@ -35,25 +35,13 @@ export default function DonationDetail() {
       
       try {
         setLoading(true);
-        // Fetch from existing data - in real app, would be a dedicated API call
-        const result = await adminDataService.fetchDonations(
-          { page: 1, pageSize: 1000 },
-          {}
-        );
-        const found = result.data.find((d: DonationData) => d.id === id);
-        
-        if (found) {
-          setDonation(found);
-        } else {
-          toast({
-            title: 'Donation not found',
-            variant: 'destructive',
-          });
-          navigate('/admin/donations');
-        }
+        const donationData = await adminDataService.fetchDonationById(id);
+        setDonation(donationData);
       } catch (error) {
+        console.error('Error fetching donation:', error);
         toast({
           title: 'Failed to load donation',
+          description: error instanceof Error ? error.message : 'Donation not found',
           variant: 'destructive',
         });
         navigate('/admin/donations');
