@@ -43,7 +43,7 @@ class AdminDataService {
         .from('profiles')
         .select(`
           *,
-          user_role_assignments!left(
+          user_role_assignments!user_id(
             role_id,
             roles!inner(name, display_name, hierarchy_level)
           )
@@ -559,7 +559,7 @@ class AdminDataService {
         .from('profiles')
         .select(`
           *,
-          user_role_assignments!left(
+          user_role_assignments!user_id(
             role_id,
             roles!inner(name, display_name, hierarchy_level)
           )
