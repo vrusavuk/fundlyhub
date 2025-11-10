@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { usePagination } from '@/hooks/usePagination';
-import { PaginationControls } from '@/components/ui/PaginationControls';
+import { StripePagination } from '@/components/ui/StripePagination';
 import { formatDistanceToNow } from 'date-fns';
 import {
   StripeTable,
@@ -402,16 +402,14 @@ export default function UserDetail() {
                 </StripeTable>
                 
                 {donationPagination.state.totalPages > 1 && (
-                  <div className="px-6 py-4 border-t border-border">
-                    <PaginationControls
-                      pageIndex={donationPagination.state.page - 1}
-                      pageSize={donationPagination.state.pageSize}
-                      pageCount={donationPagination.state.totalPages}
-                      total={totalDonations}
-                      onPageChange={(newPage) => donationPagination.goToPage(newPage + 1)}
-                      onPageSizeChange={donationPagination.setPageSize}
-                    />
-                  </div>
+                  <StripePagination
+                    page={donationPagination.state.page}
+                    pageSize={donationPagination.state.pageSize}
+                    totalItems={totalDonations}
+                    totalPages={donationPagination.state.totalPages}
+                    onPageChange={donationPagination.goToPage}
+                    onPageSizeChange={donationPagination.setPageSize}
+                  />
                 )}
               </>
             )}
