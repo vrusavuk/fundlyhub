@@ -3,7 +3,7 @@
  * Reusable drag-and-drop upload component with previews and progress
  */
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { Button } from './button';
 import { Progress } from './progress';
@@ -52,6 +52,15 @@ export function ImageUpload({
   const [imageIds, setImageIds] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  // Sync previews with value prop changes
+  useEffect(() => {
+    const newPreviews = Array.isArray(value) ? value : value ? [value] : [];
+    // Only update if previews actually changed to avoid unnecessary re-renders
+    if (JSON.stringify(newPreviews) !== JSON.stringify(previews)) {
+      setPreviews(newPreviews);
+    }
+  }, [value]);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
