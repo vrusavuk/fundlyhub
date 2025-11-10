@@ -55,6 +55,7 @@ import EventMonitoring from '@/pages/admin/EventMonitoring';
 import { DesignSystemDocs } from '@/pages/admin/DesignSystemDocs';
 import FeatureToggles from '@/pages/admin/FeatureToggles';
 import { DonationManagement } from '@/pages/admin/DonationManagement';
+import DonationDetail from '@/pages/admin/DonationDetail';
 
 const App = () => (
   <AppErrorBoundary>
@@ -132,6 +133,7 @@ const App = () => (
           <Route path="audit-logs" element={<AuditLogs />} />
           <Route path="campaigns" element={<CampaignManagement />} />
           <Route path="donations" element={<DonationManagement />} />
+          <Route path="donations/:id" element={<DonationDetail />} />
           <Route path="organizations" element={<OrganizationManagement />} />
           <Route path="notifications" element={<NotificationCenter />} />
           <Route path="system" element={<SystemHealth />} />

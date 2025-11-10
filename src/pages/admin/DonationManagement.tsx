@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { StripeBadgeExact } from '@/components/ui/stripe-badge-exact';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -52,6 +53,7 @@ export function DonationManagement() {
   const { hasPermission, isSuperAdmin } = useRBAC();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   
   const [donations, setDonations] = useState<DonationData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -231,8 +233,7 @@ export function DonationManagement() {
 
   // Event handlers
   const handleViewDetails = (donation: DonationData) => {
-    setSelectedDonation(donation);
-    setShowDetailsDialog(true);
+    navigate(`/admin/donations/${donation.id}`);
   };
 
   const handleViewCampaign = (fundraiserId: string) => {
