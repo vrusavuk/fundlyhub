@@ -9,12 +9,12 @@ export const stripeSpacing = {
   // Page-level spacing
   page: {
     header: {
-      padding: 'px-6 py-4',           // Header padding (white section)
-      height: 'min-h-[80px]',         // Minimum header height
+      padding: 'px-8 py-6',           // Header padding (Stripe-style)
+      background: 'bg-white',         // Clean white background
     },
     content: {
-      padding: 'px-6 py-6',           // Content area padding (gray section)
-      background: 'bg-[#F6F9FC]',     // Stripe gray background
+      padding: 'p-8',                 // Content area padding
+      background: 'bg-white',         // Clean white background
     },
     section: {
       marginBottom: 'mb-6',           // Space between major sections

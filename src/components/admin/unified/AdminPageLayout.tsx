@@ -32,32 +32,26 @@ export function AdminPageLayout({
   className
 }: AdminPageLayoutProps) {
   return (
-    <div className={cn('flex-1 flex flex-col min-h-0', className)}>
-      {/* Page Header - White background, fixed height */}
-      <div className="shrink-0 bg-white border-b border-[#E3E8EE] px-6 py-4 min-h-[80px] flex items-center">
-        <div className="flex items-start justify-between gap-4 w-full">
+    <div className={cn('flex-1 flex flex-col min-h-0 bg-white', className)}>
+      {/* Page Header - White background with bottom border */}
+      <div className="shrink-0 bg-white border-b border-border px-8 py-6">
+        <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-3">
-              <h1 className="text-[24px] font-semibold text-[#0A2540]">
+              <h1 className="text-2xl font-semibold text-foreground">
                 {title}
               </h1>
               {badge && (
                 <Badge
                   variant={badge.variant || 'default'}
-                  className={cn(
-                    'text-xs font-medium',
-                    badge.variant === 'destructive' && 'bg-[#DF1B41] text-white',
-                    badge.variant === 'secondary' && 'bg-[#E3E8EE] text-[#0A2540]',
-                    badge.variant === 'outline' && 'border-[#E3E8EE] bg-white text-[#0A2540]',
-                    (!badge.variant || badge.variant === 'default') && 'bg-[#635BFF] text-white'
-                  )}
+                  className="text-xs"
                 >
                   {badge.text}
                 </Badge>
               )}
             </div>
             {description && (
-              <p className="text-[14px] text-[#425466] mt-1">
+              <p className="text-sm text-muted-foreground mt-2">
                 {description}
               </p>
             )}
@@ -71,9 +65,9 @@ export function AdminPageLayout({
         </div>
       </div>
 
-      {/* Content Section - Gray background with scrollable content */}
-      <div className="flex-1 overflow-auto bg-[#F6F9FC] px-6 py-6">
-        <div className="space-y-6">
+      {/* Content Section - Clean white background with padding */}
+      <div className="flex-1 overflow-auto bg-white">
+        <div className="p-8 space-y-6">
           {children}
         </div>
       </div>

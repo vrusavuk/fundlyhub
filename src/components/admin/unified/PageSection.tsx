@@ -30,8 +30,8 @@ export function PageSection({
   };
 
   const backgroundClasses = {
-    white: 'bg-white border border-[#E3E8EE] rounded-lg p-6',
-    gray: 'bg-[#F6F9FC] rounded-lg p-6',
+    white: 'bg-card border border-border rounded-lg p-6 shadow-sm',
+    gray: 'bg-muted/30 rounded-lg p-6',
     transparent: ''
   };
 
