@@ -9,6 +9,7 @@ import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { ProfileFollowerItemSkeleton } from '@/components/skeletons/ProfilePageSkeleton';
 import { FollowButton } from './FollowButton';
 import { FollowOrganizationButton } from './FollowOrganizationButton';
+import { logger } from '@/lib/services/logger.service';
 
 interface Follower {
   id: string;
@@ -51,7 +52,12 @@ export function FollowersList({ userId, type, maxItems }: FollowersListProps) {
           });
 
         if (fetchError) {
-          console.error('Error fetching followers:', fetchError);
+          logger.error('Error fetching followers', fetchError instanceof Error ? fetchError : new Error(String(fetchError)), {
+            componentName: 'FollowersList',
+            operationName: 'fetchFollowers',
+            userId,
+            type: 'followers'
+          });
           throw fetchError;
         }
 
@@ -76,7 +82,12 @@ export function FollowersList({ userId, type, maxItems }: FollowersListProps) {
           });
 
         if (fetchError) {
-          console.error('Error fetching following:', fetchError);
+          logger.error('Error fetching following', fetchError instanceof Error ? fetchError : new Error(String(fetchError)), {
+            componentName: 'FollowersList',
+            operationName: 'fetchFollowers',
+            userId,
+            type: 'following'
+          });
           throw fetchError;
         }
 
@@ -96,7 +107,12 @@ export function FollowersList({ userId, type, maxItems }: FollowersListProps) {
 
       setFollowers(transformedData);
     } catch (error) {
-      console.error('Error fetching followers:', error);
+      logger.error('Error fetching followers', error instanceof Error ? error : new Error(String(error)), {
+        componentName: 'FollowersList',
+        operationName: 'fetchFollowers',
+        userId,
+        type
+      });
       
       // Provide more helpful error messages
       const errorMessage = error instanceof Error ? error.message : 'Failed to load data';

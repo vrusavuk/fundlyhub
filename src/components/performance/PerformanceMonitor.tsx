@@ -3,6 +3,7 @@
  */
 import { useEffect } from 'react';
 import { usePerformanceStore } from '@/store/globalState';
+import { logger } from '@/lib/services/logger.service';
 
 export function PerformanceMonitor() {
   const { setLoadTime, setInteractionTime } = usePerformanceStore();
@@ -27,7 +28,10 @@ export function PerformanceMonitor() {
       } catch (error) {
         // Fallback for browsers that don't support paint timing
         if (process.env.NODE_ENV === 'development') {
-          console.warn('Paint timing not supported');
+          logger.warn('Paint timing not supported', {
+            componentName: 'PerformanceMonitor',
+            operationName: 'observePaintTiming'
+          });
         }
       }
 

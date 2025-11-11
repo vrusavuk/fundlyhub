@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/services/logger.service';
 import {
   Dialog,
   DialogContent,
@@ -552,14 +553,15 @@ export function EditCampaignDialog({
                         <FormLabel>Status *</FormLabel>
                         <Select 
                           onValueChange={(value) => {
-                            // Step 2: Log status changes
-                            console.log('[DEBUG] Status field changed:', { 
-                              oldValue: field.value, 
-                              newValue: value,
-                              campaignId: campaign?.id
+                            logger.debug('Status field changed', {
+                              componentName: 'EditCampaignDialog',
+                              operationName: 'statusChange',
+                              campaignId: campaign?.id,
+                              oldValue: field.value,
+                              newValue: value
                             });
                             field.onChange(value);
-                          }} 
+                          }}
                           value={field.value}
                         >
                           <FormControl>
@@ -640,12 +642,12 @@ export function EditCampaignDialog({
                 type="submit" 
                 disabled={isSubmitting}
                 onClick={() => {
-                  // Step 5: Log button click
-                  console.log('[DEBUG] Save button clicked!', {
+                  logger.debug('Save button clicked', {
+                    componentName: 'EditCampaignDialog',
+                    operationName: 'saveButtonClick',
                     isSubmitting,
                     hasErrors: Object.keys(form.formState.errors).length > 0,
-                    isDirty: form.formState.isDirty,
-                    formValues: form.getValues()
+                    isDirty: form.formState.isDirty
                   });
                 }}
               >

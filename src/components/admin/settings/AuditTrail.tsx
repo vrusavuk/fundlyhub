@@ -19,6 +19,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useRBAC } from '@/contexts/RBACContext';
+import { logger } from '@/lib/services/logger.service';
 
 interface AuditLogEntry {
   id: string;
@@ -96,7 +97,11 @@ export function AuditTrail({ settingKey }: AuditTrailProps) {
       }));
       setLogs(processedData);
     } catch (error) {
-      console.error('Error fetching audit logs:', error);
+      logger.error('Error fetching audit logs', error instanceof Error ? error : new Error(String(error)), {
+        componentName: 'AuditTrail',
+        operationName: 'fetchAuditLogs',
+        settingKey
+      });
       toast({
         title: "Error",
         description: "Failed to load audit logs",

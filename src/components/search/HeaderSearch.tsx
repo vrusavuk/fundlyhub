@@ -14,6 +14,7 @@ import { useGlobalSearch } from "@/contexts/UnifiedSearchContext";
 import { SearchSuggestion } from "@/lib/services/searchSuggestions.service";
 import { hapticFeedback } from "@/lib/utils/mobile";
 import { Search, X, Delete } from "lucide-react";
+import { logger } from '@/lib/services/logger.service';
 
 interface HeaderSearchProps {
   isOpen: boolean;
@@ -105,7 +106,11 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
       addRecentSearch(selectedQuery, suggestion.category);
       trackSearch(selectedQuery, 0, suggestion.category);
     } catch (error) {
-      console.error('Error in search tracking:', error);
+      logger.error('Error in search tracking', error instanceof Error ? error : new Error(String(error)), {
+        componentName: 'HeaderSearch',
+        operationName: 'handleSuggestionSelect',
+        selectedQuery
+      });
     }
     
     // ALWAYS navigate to search page for suggestions, regardless of current page
@@ -116,7 +121,11 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
       // Force navigation to search page
       navigate(`/search?q=${encodeURIComponent(selectedQuery)}`, { replace: false });
     } catch (error) {
-      console.error('Navigation failed:', error);
+      logger.error('Navigation failed', error instanceof Error ? error : new Error(String(error)), {
+        componentName: 'HeaderSearch',
+        operationName: 'handleSuggestionSelect',
+        query: selectedQuery
+      });
     }
     
     hapticFeedback.light();
@@ -148,7 +157,11 @@ export function HeaderSearch({ isOpen, onClose }: HeaderSearchProps) {
         
         hapticFeedback.medium();
       } catch (error) {
-        console.error('Error in handleViewAllResults:', error);
+        logger.error('Error in handleViewAllResults', error instanceof Error ? error : new Error(String(error)), {
+          componentName: 'HeaderSearch',
+          operationName: 'handleViewAllResults',
+          query
+        });
       }
     }
   };

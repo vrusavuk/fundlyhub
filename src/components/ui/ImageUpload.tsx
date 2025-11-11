@@ -10,6 +10,7 @@ import { Progress } from './progress';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { ImageEditor } from './ImageEditor';
+import { logger } from '@/lib/services/logger.service';
 
 export interface ImageUploadProps {
   value?: string | string[];
@@ -59,10 +60,11 @@ export function ImageUpload({
   useEffect(() => {
     const newPreviews = Array.isArray(value) ? value : value ? [value] : [];
     
-    console.log('[ImageUpload] Syncing from parent value', {
-      value,
+    logger.debug('Syncing from parent value', {
+      componentName: 'ImageUpload',
+      operationName: 'syncPreviews',
       currentPreviews: previews,
-      newPreviews,
+      newPreviews
     });
     
     // Always update to match parent's value (it's the source of truth)
@@ -75,7 +77,11 @@ export function ImageUpload({
       new URL(url);
       return true;
     } catch {
-      console.warn('[ImageUpload] Invalid preview URL:', url);
+      logger.warn('Invalid preview URL', {
+        componentName: 'ImageUpload',
+        operationName: 'validatePreviews',
+        url
+      });
       return false;
     }
   });
@@ -121,7 +127,12 @@ export function ImageUpload({
       );
       return { url: result.url, imageId: result.imageId };
     } catch (error) {
-      console.error('Upload error:', error);
+      logger.error('Upload error', error instanceof Error ? error : new Error(String(error)), {
+        componentName: 'ImageUpload',
+        operationName: 'uploadFile',
+        bucket,
+        fundraiserId
+      });
       throw error;
     }
   };
@@ -171,9 +182,17 @@ export function ImageUpload({
         type: 'image/jpeg',
       });
 
-      console.log('[ImageUpload] Uploading cropped file:', croppedFile.name);
+      logger.debug('Uploading cropped file', {
+        componentName: 'ImageUpload',
+        operationName: 'handleEditorComplete',
+        fileName: croppedFile.name
+      });
       const result = await uploadFile(croppedFile);
-      console.log('[ImageUpload] Upload result:', result);
+      logger.debug('Upload result', {
+        componentName: 'ImageUpload',
+        operationName: 'handleEditorComplete',
+        result
+      });
 
       if (!result) throw new Error('Upload failed');
 
@@ -198,7 +217,10 @@ export function ImageUpload({
         description: 'Image uploaded successfully',
       });
     } catch (error) {
-      console.error('Upload error:', error);
+      logger.error('Upload error', error instanceof Error ? error : new Error(String(error)), {
+        componentName: 'ImageUpload',
+        operationName: 'handleEditorComplete'
+      });
       toast({
         title: 'Upload failed',
         description: error instanceof Error ? error.message : 'Failed to upload image',
@@ -332,11 +354,19 @@ export function ImageUpload({
                 alt={`Preview ${index + 1}`}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  console.error('[ImageUpload] Image failed to load:', preview);
+                  logger.error('Image failed to load', undefined, {
+                    componentName: 'ImageUpload',
+                    operationName: 'imageOnError',
+                    preview
+                  });
                   e.currentTarget.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="%23999">Failed to load</text></svg>';
                 }}
                 onLoad={() => {
-                  console.log('[ImageUpload] Image loaded successfully:', preview);
+                  logger.debug('Image loaded successfully', {
+                    componentName: 'ImageUpload',
+                    operationName: 'imageOnLoad',
+                    preview
+                  });
                 }}
               />
               <button

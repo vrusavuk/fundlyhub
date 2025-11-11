@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Crown, Shield, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/services/logger.service';
 
 export function CreateSampleAdmin() {
   // SECURITY: This component should only be available in development
@@ -58,7 +59,12 @@ export function CreateSampleAdmin() {
       });
 
     } catch (error) {
-      console.error('Error assigning admin role:', error);
+      logger.error('Error assigning admin role', error instanceof Error ? error : new Error(String(error)), {
+        componentName: 'CreateSampleAdmin',
+        operationName: 'assignAdminRole',
+        userId: user?.id,
+        roleName
+      });
       toast({
         title: 'Failed to assign role',
         description: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -90,7 +96,11 @@ export function CreateSampleAdmin() {
         setAdminRole('platform_admin');
       }
     } catch (error) {
-      console.error('Error checking current role:', error);
+      logger.error('Error checking current role', error instanceof Error ? error : new Error(String(error)), {
+        componentName: 'CreateSampleAdmin',
+        operationName: 'checkCurrentRole',
+        userId: user?.id
+      });
     }
   };
 

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { campaignAccessApi } from '@/lib/api/campaignAccessApi';
 import { Lock, AlertCircle } from 'lucide-react';
+import { logger } from '@/lib/services/logger.service';
 
 interface AccessGateProps {
   campaignId: string;
@@ -37,7 +38,11 @@ export function AccessGate({ campaignId, linkToken, onGranted }: AccessGateProps
         setError('Access denied. Check your link, passcode, or contact the organizer.');
       }
     } catch (err: any) {
-      console.error('Access check error:', err);
+      logger.error('Access check error', err instanceof Error ? err : new Error(String(err)), {
+        componentName: 'AccessGate',
+        operationName: 'handleTryEnter',
+        campaignId
+      });
       setError(err.message || 'Failed to check access');
     } finally {
       setLoading(false);

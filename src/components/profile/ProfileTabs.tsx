@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
 import type { Fundraiser } from '@/types';
+import { logger } from '@/lib/services/logger.service';
 
 interface ProfileTabsProps {
   userId: string;
@@ -71,7 +72,12 @@ export function ProfileTabs({ userId }: ProfileTabsProps) {
         setClosedLoading(false);
 
       } catch (error) {
-        console.error('Error fetching user campaigns:', error);
+        logger.error('Error fetching user campaigns', error instanceof Error ? error : new Error(String(error)), {
+          componentName: 'ProfileTabs',
+          operationName: 'fetchCampaigns',
+          userId,
+          isOwnProfile
+        });
         setAllLoading(false);
         setClosedLoading(false);
       }

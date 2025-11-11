@@ -12,10 +12,14 @@ import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { StripePaymentForm } from '@/components/payments/StripePaymentForm';
 import { useStripePayment } from '@/hooks/useStripePayment';
+import { logger } from '@/lib/services/logger.service';
 
 const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 if (!stripePublishableKey) {
-  console.error('VITE_STRIPE_PUBLISHABLE_KEY is not defined in environment variables');
+  logger.error('VITE_STRIPE_PUBLISHABLE_KEY is not defined in environment variables', undefined, {
+    componentName: 'DonationWidget',
+    operationName: 'initialization'
+  });
 }
 const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
 

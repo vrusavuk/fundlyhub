@@ -5,6 +5,7 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, RefreshCw, Home, Bug } from 'lucide-react';
+import { logger } from '@/lib/services/logger.service';
 
 interface Props {
   children: ReactNode;
@@ -42,10 +43,11 @@ export class AppErrorBoundary extends Component<Props, State> {
 
     // Log error for debugging
     if (process.env.NODE_ENV === 'development') {
-      console.group('🚨 Error Boundary Caught Error');
-      console.error('Error:', error);
-      console.error('Error Info:', errorInfo);
-      console.groupEnd();
+      logger.error('Error boundary caught error', error, {
+        componentName: 'AppErrorBoundary',
+        operationName: 'componentDidCatch',
+        errorInfo: errorInfo.componentStack
+      });
     }
   }
 

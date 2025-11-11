@@ -9,6 +9,7 @@ import {
   extractSupabaseError, 
   getErrorTitle 
 } from "@/lib/utils/dialogNotifications";
+import { logger } from '@/lib/services/logger.service';
 import {
   Dialog,
   DialogContent,
@@ -96,7 +97,11 @@ export function CreateUserDialog({ open, onOpenChange, onSuccess }: CreateUserDi
       onOpenChange(false);
       onSuccess();
     } catch (error: any) {
-      console.error('Error creating user:', error);
+      logger.error('Error creating user', error instanceof Error ? error : new Error(String(error)), {
+        componentName: 'CreateUserDialog',
+        operationName: 'onSubmit',
+        email: data.email
+      });
       setSubmitError(error);
     } finally {
       setIsSubmitting(false);

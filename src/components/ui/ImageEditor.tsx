@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from './button';
 import { Slider } from './slider';
 import { ZoomIn, ZoomOut, RotateCw, Check, X, Square, RectangleHorizontal, Maximize } from 'lucide-react';
+import { logger } from '@/lib/services/logger.service';
 
 const ASPECT_RATIOS = [
   { label: '1:1', value: 1, icon: Square },
@@ -104,7 +105,10 @@ export function ImageEditor({ imageUrl, onComplete, onCancel, open }: ImageEdito
 
       return canvas;
     } catch (error) {
-      console.error('Error creating cropped image:', error);
+      logger.error('Error creating cropped image', error instanceof Error ? error : new Error(String(error)), {
+        componentName: 'ImageEditor',
+        operationName: 'createCroppedImage'
+      });
       throw error;
     } finally {
       setIsProcessing(false);
@@ -119,7 +123,10 @@ export function ImageEditor({ imageUrl, onComplete, onCancel, open }: ImageEdito
       canvas.toBlob(
         (blob) => {
           if (!blob) {
-            console.error('Failed to create blob');
+            logger.error('Failed to create blob', undefined, {
+              componentName: 'ImageEditor',
+              operationName: 'handleComplete'
+            });
             return;
           }
           const croppedUrl = URL.createObjectURL(blob);
@@ -129,7 +136,10 @@ export function ImageEditor({ imageUrl, onComplete, onCancel, open }: ImageEdito
         0.9
       );
     } catch (error) {
-      console.error('Failed to crop image:', error);
+      logger.error('Failed to crop image', error instanceof Error ? error : new Error(String(error)), {
+        componentName: 'ImageEditor',
+        operationName: 'handleComplete'
+      });
     }
   };
 

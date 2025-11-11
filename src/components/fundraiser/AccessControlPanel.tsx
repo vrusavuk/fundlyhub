@@ -9,6 +9,7 @@ import { campaignAccessApi } from '@/lib/api/campaignAccessApi';
 import { CampaignAccessRule } from '@/types/domain/access';
 import { useToast } from '@/hooks/use-toast';
 import { Copy, RotateCw, Trash2, Plus, Link as LinkIcon } from 'lucide-react';
+import { logger } from '@/lib/services/logger.service';
 
 interface AccessControlPanelProps {
   campaignId: string;
@@ -40,7 +41,11 @@ export function AccessControlPanel({
       const data = await campaignAccessApi.getAccessRules(campaignId);
       setRules(data);
     } catch (error: any) {
-      console.error('Failed to load access rules:', error);
+      logger.error('Failed to load access rules', error instanceof Error ? error : new Error(String(error)), {
+        componentName: 'AccessControlPanel',
+        operationName: 'loadAccessRules',
+        campaignId
+      });
     }
   };
 

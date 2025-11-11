@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { campaignAccessApi } from '@/lib/api/campaignAccessApi';
 import { useToast } from '@/hooks/use-toast';
 import { Copy, QrCode } from 'lucide-react';
+import { logger } from '@/lib/services/logger.service';
 
 interface QuickFundLinkModalProps {
   open: boolean;
@@ -58,7 +59,11 @@ export function QuickFundLinkModal({ open, onOpenChange, onCreated }: QuickFundL
         onCreated(res);
       }
     } catch (error: any) {
-      console.error('Create campaign error:', error);
+      logger.error('Create campaign error', error instanceof Error ? error : new Error(String(error)), {
+        componentName: 'QuickFundLinkModal',
+        operationName: 'handleSubmit',
+        campaignName: name
+      });
       toast({
         title: 'Error',
         description: error.message || 'Failed to create campaign',

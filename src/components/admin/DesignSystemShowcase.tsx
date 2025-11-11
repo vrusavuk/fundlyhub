@@ -7,6 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { AdminPageLayout, PageSection, PageGrid } from './unified';
 import { ContextualHelp } from '@/components/admin/ContextualHelp';
 import { OptimisticUpdateIndicator, useOptimisticUpdates } from '@/components/admin/OptimisticUpdates';
+import { logger } from '@/lib/services/logger.service';
 import { 
   Users, 
   Building2, 
@@ -35,8 +36,12 @@ export function DesignSystemShowcase({ className }: DesignSystemShowcaseProps) {
 
   // Demo optimistic updates
   const optimisticUpdates = useOptimisticUpdates({
-    onSuccess: () => console.log('Demo action completed'),
-    onError: (action, error) => console.error('Demo action failed:', error)
+    onSuccess: () => logger.info('Demo action completed', { componentName: 'DesignSystemShowcase', operationName: 'demoAction' }),
+    onError: (action, error) => logger.error('Demo action failed', error instanceof Error ? error : new Error(String(error)), {
+      componentName: 'DesignSystemShowcase',
+      operationName: 'demoAction',
+      action: action.type
+    })
   });
 
   const helpContent = {
@@ -60,7 +65,7 @@ export function DesignSystemShowcase({ className }: DesignSystemShowcaseProps) {
         description: 'Demo optimistic update action',
         originalData: {},
         rollbackFn: async () => {
-          console.log('Demo rollback executed');
+          logger.debug('Demo rollback executed', { componentName: 'DesignSystemShowcase', operationName: 'demoRollback' });
         }
       },
       async () => {
@@ -84,7 +89,7 @@ export function DesignSystemShowcase({ className }: DesignSystemShowcaseProps) {
       badge={{ text: 'v2.0', variant: 'default' }}
       actions={
         <>
-          <Button variant="outline" onClick={() => console.log('View docs')}>
+          <Button variant="outline" onClick={() => logger.debug('View docs clicked', { componentName: 'DesignSystemShowcase' })}>
             <Code className="mr-2 h-4 w-4" />
             View Docs
           </Button>
