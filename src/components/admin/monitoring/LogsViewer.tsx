@@ -1,12 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Server, Search, Filter, Download, RefreshCw, AlertCircle, Info, AlertTriangle, Bug } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Server, Search, Filter, Download, RefreshCw, AlertCircle, Info, AlertTriangle, Bug, Play, Pause } from 'lucide-react';
 import { structuredLogger, LogLevel, LogEntry } from '@/lib/monitoring/StructuredLogger';
+import { cn } from '@/lib/utils';
 
 export function LogsViewer() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -14,17 +17,40 @@ export function LogsViewer() {
   const [searchQuery, setSearchQuery] = useState('');
   const [levelFilter, setLevelFilter] = useState<string>('all');
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [newLogsCount, setNewLogsCount] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const previousLogsLengthRef = useRef(0);
 
   useEffect(() => {
     const updateLogs = async () => {
       const allLogs = await structuredLogger.getLogs();
+      const newCount = allLogs.length - previousLogsLengthRef.current;
+      
+      if (newCount > 0 && previousLogsLengthRef.current > 0) {
+        setNewLogsCount(prev => prev + newCount);
+      }
+      
+      previousLogsLengthRef.current = allLogs.length;
       setLogs(allLogs);
+      
+      // Auto-scroll to bottom if auto-refresh is on
+      if (autoRefresh && scrollRef.current) {
+        setTimeout(() => {
+          const scrollElement = scrollRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+          if (scrollElement) {
+            scrollElement.scrollTop = scrollElement.scrollHeight;
+          }
+        }, 100);
+      }
     };
 
     updateLogs();
 
     if (autoRefresh) {
-      const interval = setInterval(updateLogs, 3000); // Refresh every 3 seconds
+      const interval = setInterval(updateLogs, 2000); // Refresh every 2 seconds when live
+      return () => clearInterval(interval);
+    } else {
+      const interval = setInterval(updateLogs, 10000); // Refresh every 10 seconds when paused
       return () => clearInterval(interval);
     }
   }, [autoRefresh]);
@@ -99,6 +125,12 @@ export function LogsViewer() {
     // Since there's no clearLogs method, just clear the local state
     setLogs([]);
     setFilteredLogs([]);
+    setNewLogsCount(0);
+    previousLogsLengthRef.current = 0;
+  };
+
+  const clearNewLogsIndicator = () => {
+    setNewLogsCount(0);
   };
 
   return (
@@ -107,29 +139,46 @@ export function LogsViewer() {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Server className="h-5 w-5" />
+              <Server className={cn("h-5 w-5", autoRefresh && "animate-pulse")} />
               System Logs
               <Badge variant="secondary">{filteredLogs.length}</Badge>
+              {newLogsCount > 0 && (
+                <Badge variant="default" className="ml-2 animate-pulse">
+                  +{newLogsCount} new
+                </Badge>
+              )}
             </CardTitle>
             <CardDescription>
-              Structured application logs with filtering and search
+              Real-time structured application logs with filtering
             </CardDescription>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setAutoRefresh(!autoRefresh)}
-              className={autoRefresh ? 'bg-primary/10' : ''}
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${autoRefresh ? 'animate-spin' : ''}`} />
-              {autoRefresh ? 'Auto' : 'Manual'}
-            </Button>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Switch
+                id="logs-auto-refresh"
+                checked={autoRefresh}
+                onCheckedChange={setAutoRefresh}
+              />
+              <Label htmlFor="logs-auto-refresh" className="text-sm cursor-pointer">
+                {autoRefresh ? (
+                  <span className="flex items-center gap-1">
+                    <Play className="h-3 w-3" />
+                    Live
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    <Pause className="h-3 w-3" />
+                    Paused
+                  </span>
+                )}
+              </Label>
+            </div>
             <Button variant="outline" size="sm" onClick={handleExport}>
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
             <Button variant="ghost" size="sm" onClick={clearLogs}>
+              <RefreshCw className="h-4 w-4 mr-2" />
               Clear
             </Button>
           </div>
@@ -164,7 +213,7 @@ export function LogsViewer() {
         </div>
 
         {/* Log Entries */}
-        <ScrollArea className="h-[600px] rounded-lg border">
+        <ScrollArea className="h-[600px] rounded-lg border" ref={scrollRef} onClick={clearNewLogsIndicator}>
           <div className="p-4 space-y-2">
             {filteredLogs.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
@@ -175,7 +224,10 @@ export function LogsViewer() {
               filteredLogs.map((log, idx) => (
                 <div
                   key={`${log.timestamp}-${idx}`}
-                  className="p-3 border rounded-lg hover:bg-accent/5 transition-colors font-mono text-xs"
+                  className={cn(
+                    "p-3 border rounded-lg hover:bg-accent/5 transition-all font-mono text-xs",
+                    idx < newLogsCount && "animate-in fade-in-50 slide-in-from-top-2 border-primary/50"
+                  )}
                 >
                   <div className="flex items-start gap-3">
                     {getLevelIcon(log.level)}

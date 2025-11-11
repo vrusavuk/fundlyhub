@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, AlertTriangle, XCircle, Clock, Activity } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { CheckCircle, AlertTriangle, XCircle, Clock, Activity, Play, Pause } from 'lucide-react';
 import { performanceMonitor } from '@/lib/monitoring/PerformanceMonitor';
 import { MetricCard } from './MetricCard';
+import { cn } from '@/lib/utils';
 
 interface HealthStatus {
   status: 'healthy' | 'warning' | 'error';
@@ -33,8 +36,12 @@ export function SystemHealthPanel() {
     requestRate: 0,
   });
 
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [isChecking, setIsChecking] = useState(false);
+
   useEffect(() => {
     const checkHealth = () => {
+      setIsChecking(true);
       const perfMetrics = performanceMonitor.getMetrics();
       
       // Update system metrics
@@ -61,13 +68,15 @@ export function SystemHealthPanel() {
           lastCheck: new Date(),
         },
       }));
+      
+      setTimeout(() => setIsChecking(false), 500);
     };
 
     checkHealth();
-    const interval = setInterval(checkHealth, 10000); // Check every 10 seconds
+    const interval = setInterval(checkHealth, autoRefresh ? 5000 : 15000); // 5s when active, 15s when paused
 
     return () => clearInterval(interval);
-  }, []);
+  }, [autoRefresh]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -105,14 +114,41 @@ export function SystemHealthPanel() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
+                <Activity className={cn("h-5 w-5", isChecking && "animate-pulse")} />
                 System Health Overview
+                {isChecking && (
+                  <Badge variant="outline" className="ml-2">
+                    Checking...
+                  </Badge>
+                )}
               </CardTitle>
               <CardDescription>Real-time monitoring of all system components</CardDescription>
             </div>
-            <Badge variant={getStatusBadge(overallHealth)} className="text-lg px-4 py-2">
-              {overallHealth === 'healthy' ? '✓ All Systems Operational' : overallHealth === 'warning' ? '⚠ Warning' : '✗ Critical'}
-            </Badge>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="health-auto-refresh"
+                  checked={autoRefresh}
+                  onCheckedChange={setAutoRefresh}
+                />
+                <Label htmlFor="health-auto-refresh" className="text-sm cursor-pointer">
+                  {autoRefresh ? (
+                    <span className="flex items-center gap-1">
+                      <Play className="h-3 w-3" />
+                      Live
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1">
+                      <Pause className="h-3 w-3" />
+                      Paused
+                    </span>
+                  )}
+                </Label>
+              </div>
+              <Badge variant={getStatusBadge(overallHealth)} className="text-lg px-4 py-2">
+                {overallHealth === 'healthy' ? '✓ All Systems Operational' : overallHealth === 'warning' ? '⚠ Warning' : '✗ Critical'}
+              </Badge>
+            </div>
           </div>
         </CardHeader>
         <CardContent>

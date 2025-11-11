@@ -1,9 +1,13 @@
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Bell, CheckCircle, AlertTriangle, XCircle, Trash2, X } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Bell, CheckCircle, AlertTriangle, XCircle, Trash2, X, Play, Pause } from 'lucide-react';
 import { useAlertMonitoring } from '@/hooks/useAlertMonitoring';
+import { cn } from '@/lib/utils';
 
 interface AlertsPanelProps {
   limit?: number;
@@ -12,6 +16,16 @@ interface AlertsPanelProps {
 export function AlertsPanel({ limit }: AlertsPanelProps) {
   const { alerts, clearAlerts, getStatistics } = useAlertMonitoring();
   const stats = getStatistics();
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [hasNewAlerts, setHasNewAlerts] = useState(false);
+
+  useEffect(() => {
+    if (alerts.length > 0) {
+      setHasNewAlerts(true);
+      const timer = setTimeout(() => setHasNewAlerts(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [alerts.length]);
 
   const displayedAlerts = limit ? alerts.slice(0, limit) : alerts;
 
@@ -50,10 +64,10 @@ export function AlertsPanel({ limit }: AlertsPanelProps) {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5" />
+              <Bell className={cn("h-5 w-5", hasNewAlerts && "animate-pulse text-destructive")} />
               System Alerts
               {alerts.length > 0 && (
-                <Badge variant="destructive" className="ml-2">
+                <Badge variant="destructive" className={cn("ml-2", hasNewAlerts && "animate-pulse")}>
                   {alerts.length}
                 </Badge>
               )}
@@ -62,17 +76,39 @@ export function AlertsPanel({ limit }: AlertsPanelProps) {
               Active alerts and notifications
             </CardDescription>
           </div>
-          {alerts.length > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => clearAlerts()}
-              className="text-muted-foreground hover:text-destructive"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Clear All
-            </Button>
-          )}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Switch
+                id="alerts-auto-refresh"
+                checked={autoRefresh}
+                onCheckedChange={setAutoRefresh}
+              />
+              <Label htmlFor="alerts-auto-refresh" className="text-sm cursor-pointer">
+                {autoRefresh ? (
+                  <span className="flex items-center gap-1">
+                    <Play className="h-3 w-3" />
+                    Live
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    <Pause className="h-3 w-3" />
+                    Paused
+                  </span>
+                )}
+              </Label>
+            </div>
+            {alerts.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => clearAlerts()}
+                className="text-muted-foreground hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Clear All
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -109,7 +145,10 @@ export function AlertsPanel({ limit }: AlertsPanelProps) {
             displayedAlerts.map((alert) => (
               <div
                 key={alert.id}
-                className="flex items-start gap-3 p-4 border rounded-lg hover:bg-accent/5 transition-colors"
+                className={cn(
+                  "flex items-start gap-3 p-4 border rounded-lg hover:bg-accent/5 transition-all",
+                  hasNewAlerts && "animate-in fade-in-50 slide-in-from-top-2"
+                )}
               >
                 {getSeverityIcon(alert.severity)}
                 <div className="flex-1 min-w-0">

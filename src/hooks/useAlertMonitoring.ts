@@ -24,11 +24,11 @@ export function useAlertMonitoring() {
 
     window.addEventListener('show-alert-toast', handleAlertToast as EventListener);
 
-    // Poll for alerts (in production, use WebSocket or Server-Sent Events)
+    // Poll for alerts with faster refresh
     const pollInterval = setInterval(() => {
       const recentAlerts = alertManager.getAlerts({ since: Date.now() - 300000 }); // Last 5 minutes
       setAlerts(recentAlerts);
-    }, 10000); // Every 10 seconds
+    }, 3000); // Every 3 seconds for real-time feel
 
     return () => {
       window.removeEventListener('show-alert-toast', handleAlertToast as EventListener);

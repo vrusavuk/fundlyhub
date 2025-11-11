@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { performanceMonitor, PerformanceMetrics as PerfMetrics } from '@/lib/monitoring/PerformanceMonitor';
 import { MetricCard } from './MetricCard';
-import { TrendingUp, Activity, Clock, Zap, AlertTriangle, BarChart } from 'lucide-react';
+import { TrendingUp, Activity, Clock, Zap, AlertTriangle, BarChart, Play, Pause } from 'lucide-react';
 import { usePerformanceTracking } from '@/hooks/usePerformanceTracking';
+import { cn } from '@/lib/utils';
 
 interface PerformanceMetricsProps {
   compact?: boolean;
@@ -12,28 +15,73 @@ interface PerformanceMetricsProps {
 
 export function PerformanceMetrics({ compact = false }: PerformanceMetricsProps) {
   const [metrics, setMetrics] = useState<PerfMetrics>(performanceMonitor.getMetrics());
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
   const { renderCount } = usePerformanceTracking('PerformanceMetrics');
+  const previousMetricsRef = useRef<PerfMetrics>(metrics);
 
   useEffect(() => {
     const updateMetrics = () => {
-      setMetrics(performanceMonitor.getMetrics());
+      const newMetrics = performanceMonitor.getMetrics();
+      
+      // Check if metrics have changed significantly
+      const hasChanged = 
+        Math.abs(newMetrics.averageResponseTime - previousMetricsRef.current.averageResponseTime) > 10 ||
+        Math.abs(newMetrics.errorRate - previousMetricsRef.current.errorRate) > 0.5;
+      
+      if (hasChanged) {
+        setIsUpdating(true);
+        setTimeout(() => setIsUpdating(false), 1000);
+      }
+      
+      previousMetricsRef.current = newMetrics;
+      setMetrics(newMetrics);
     };
 
     updateMetrics();
-    const interval = setInterval(updateMetrics, 5000); // Update every 5 seconds
+    const interval = setInterval(updateMetrics, autoRefresh ? 2000 : 10000); // 2s when active, 10s when paused
 
     return () => clearInterval(interval);
-  }, []);
+  }, [autoRefresh]);
 
   if (compact) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Performance Snapshot
-          </CardTitle>
-          <CardDescription>Real-time performance indicators</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Performance Snapshot
+                {isUpdating && (
+                  <Badge variant="outline" className="ml-2 animate-pulse">
+                    Updating
+                  </Badge>
+                )}
+              </CardTitle>
+              <CardDescription>Real-time performance indicators</CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch
+                id="perf-auto-refresh"
+                checked={autoRefresh}
+                onCheckedChange={setAutoRefresh}
+              />
+              <Label htmlFor="perf-auto-refresh" className="text-sm cursor-pointer">
+                {autoRefresh ? (
+                  <span className="flex items-center gap-1">
+                    <Play className="h-3 w-3" />
+                    Live
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    <Pause className="h-3 w-3" />
+                    Paused
+                  </span>
+                )}
+              </Label>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3">
@@ -74,8 +122,37 @@ export function PerformanceMetrics({ compact = false }: PerformanceMetricsProps)
 
   return (
     <div className="space-y-6">
+      {/* Auto-refresh control for full view */}
+      {!compact && (
+        <div className="flex items-center justify-end gap-2 p-4 bg-muted/30 rounded-lg">
+          <Switch
+            id="perf-full-auto-refresh"
+            checked={autoRefresh}
+            onCheckedChange={setAutoRefresh}
+          />
+          <Label htmlFor="perf-full-auto-refresh" className="text-sm cursor-pointer">
+            {autoRefresh ? (
+              <span className="flex items-center gap-1">
+                <Play className="h-3 w-3" />
+                Live Updates (2s)
+              </span>
+            ) : (
+              <span className="flex items-center gap-1">
+                <Pause className="h-3 w-3" />
+                Paused (10s)
+              </span>
+            )}
+          </Label>
+          {isUpdating && (
+            <Badge variant="outline" className="ml-2 animate-pulse">
+              Updating...
+            </Badge>
+          )}
+        </div>
+      )}
+      
       {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className={cn("grid gap-4 md:grid-cols-2 lg:grid-cols-4", isUpdating && "opacity-90 transition-opacity")}>
         <MetricCard
           title="Avg Response Time"
           value={`${metrics.averageResponseTime.toFixed(0)}ms`}
