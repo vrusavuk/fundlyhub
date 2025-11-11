@@ -12,6 +12,7 @@ import { createCampaignCreatedEvent, createCampaignUpdatedEvent, createCampaignS
 import { FundraiserCreationRules } from '@/lib/business-rules/fundraiser-creation.rules';
 import { CompleteFundraiser } from '@/lib/validation/fundraiserCreation.schema';
 import { campaignAccessApi } from '@/lib/api/campaignAccessApi';
+import { logger } from './logger.service';
 
 export interface CreateFundraiserInput extends CompleteFundraiser {
   userId: string;
@@ -27,22 +28,24 @@ export interface UpdateFundraiserInput {
 
 export class FundraiserMutationService {
   /**
-   * Create a new fundraiser
+   * Create a new fundraiser (Event-Driven - Pure Command)
+   * Publishes event and delegates all DB operations to CampaignWriteProcessor
    */
   async createFundraiser(input: CreateFundraiserInput) {
     try {
       const visibility = input.visibility || 'public';
       const type = input.type || 'personal';
 
-      // For private/unlisted fundraisers, use the Edge Function
+      // For private/unlisted fundraisers, use the Edge Function flow
       if (visibility === 'private' || visibility === 'unlisted') {
         return await this.createPrivateFundraiser(input);
       }
 
-      // For public fundraisers, use direct DB insert (existing flow)
+      // Generate unique slug
       const baseSlug = FundraiserCreationRules.generateSlug(input.title);
       const slug = await FundraiserCreationRules.ensureUniqueSlug(baseSlug);
 
+      // Get user role to determine initial status
       const { data: profile } = await supabase
         .from('profiles')
         .select('role')
@@ -51,65 +54,19 @@ export class FundraiserMutationService {
 
       const status = input.status || FundraiserCreationRules.determineInitialStatus(profile?.role || 'visitor');
 
-      const { data, error } = await supabase
-        .from('fundraisers')
-        .insert({
-          title: input.title,
-          slug,
-          summary: input.summary,
-          story_html: input.story.replace(/\n/g, '<br>'),
-          goal_amount: input.goalAmount,
-          category_id: input.categoryId,
-          beneficiary_name: input.beneficiaryName || null,
-          location: input.location || null,
-          cover_image: input.coverImage || '/placeholder.svg',
-          end_date: input.endDate || null,
-          owner_user_id: input.userId,
-          status,
-          visibility: 'public',
-          type,
-          is_discoverable: true,
-          is_project: input.isProject || false,
-          currency: 'USD',
-        })
-        .select()
-        .single();
+      // Generate temporary campaign ID for event
+      const campaignId = crypto.randomUUID();
 
-      if (error) throw error;
-
-      // If project, create milestones
-      if (input.isProject && input.milestones && input.milestones.length > 0) {
-        const { projectMutationService } = await import('./project.mutation.service');
-        await projectMutationService.createProjectMilestones({
-          fundraiserId: data.id,
-          milestones: input.milestones,
-          createdBy: input.userId,
-        });
-      }
-
-      // Link cover image to fundraiser (if uploaded)
-      if (input.coverImageId) {
-        const { imageUploadService } = await import('./imageUpload.service');
-        await imageUploadService.linkDraftImagesToFundraiser(
-          [input.coverImageId],
-          data.id,
-          input.userId
-        );
-      }
-
-      if (error) throw error;
-
-      await cacheService.invalidateByPattern('fundraisers:*');
-      await cacheService.invalidateByPattern('categories:*');
-
+      // Publish event with complete payload - CampaignWriteProcessor handles DB operations
       const event = createCampaignCreatedEvent({
-        campaignId: data.id,
+        campaignId,
         userId: input.userId,
         title: input.title,
         slug,
         summary: input.summary,
         story: input.story,
         goalAmount: input.goalAmount,
+        currency: 'USD',
         categoryId: input.categoryId,
         beneficiaryName: input.beneficiaryName,
         location: input.location,
@@ -124,17 +81,39 @@ export class FundraiserMutationService {
         milestones: input.milestones,
       });
       
+      // Wait for event processing (DB write happens in processor)
       await globalEventBus.publish(event);
 
-      return { success: true, data, error: null };
+      // Query the created fundraiser from DB (read model)
+      const { data: createdFundraiser, error: fetchError } = await supabase
+        .from('fundraisers')
+        .select('*')
+        .eq('slug', slug)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      logger.info('Fundraiser created successfully', {
+        campaignId: createdFundraiser.id,
+        slug,
+        userId: input.userId,
+        type,
+        visibility,
+      });
+
+      return { success: true, data: createdFundraiser, error: null };
     } catch (error: any) {
-      console.error('Error creating fundraiser:', error);
+      logger.error('Error creating fundraiser', error, {
+        userId: input.userId,
+        title: input.title,
+      });
       return { success: false, data: null, error: error.message };
     }
   }
 
   /**
-   * Create a private or unlisted fundraiser via Edge Function
+   * Create a private or unlisted fundraiser (Event-Driven - Pure Command)
+   * Uses Edge Function for initial creation, then publishes event for additional data
    */
   private async createPrivateFundraiser(input: CreateFundraiserInput) {
     try {
@@ -142,6 +121,7 @@ export class FundraiserMutationService {
         ? input.allowlistEmails.split(',').map(e => e.trim()).filter(Boolean)
         : [];
 
+      // Use edge function to create base campaign with access rules
       const response = await campaignAccessApi.createCampaign({
         name: input.title,
         type: input.type || 'personal',
@@ -154,56 +134,16 @@ export class FundraiserMutationService {
         },
       });
 
-      // Get the created campaign to update additional fields
+      // Get the created campaign's basic data
       const { data: campaign, error: fetchError } = await supabase
         .from('fundraisers')
-        .select()
+        .select('slug, status')
         .eq('id', response.campaign_id)
         .single();
 
       if (fetchError) throw fetchError;
 
-      // Update with additional fields
-      const { data: updatedCampaign, error: updateError } = await supabase
-        .from('fundraisers')
-        .update({
-          summary: input.summary,
-          story_html: input.story.replace(/\n/g, '<br>'),
-          category_id: input.categoryId,
-          beneficiary_name: input.beneficiaryName || null,
-          location: input.location || null,
-          cover_image: input.coverImage || '/placeholder.svg',
-          end_date: input.endDate || null,
-        })
-        .eq('id', response.campaign_id)
-        .select()
-        .single();
-
-      if (updateError) throw updateError;
-
-      // If project, create milestones
-      if (input.isProject && input.milestones && input.milestones.length > 0) {
-        const { projectMutationService } = await import('./project.mutation.service');
-        await projectMutationService.createProjectMilestones({
-          fundraiserId: response.campaign_id,
-          milestones: input.milestones,
-          createdBy: input.userId,
-        });
-      }
-
-      // Link cover image to fundraiser (if uploaded)
-      if (input.coverImageId) {
-        const { imageUploadService } = await import('./imageUpload.service');
-        await imageUploadService.linkDraftImagesToFundraiser(
-          [input.coverImageId],
-          response.campaign_id,
-          input.userId
-        );
-      }
-
-      await cacheService.invalidateByPattern('fundraisers:*');
-      await cacheService.invalidateByPattern('categories:*');
-
+      // Publish event with complete payload - CampaignWriteProcessor handles updates
       const event = createCampaignCreatedEvent({
         campaignId: response.campaign_id,
         userId: input.userId,
@@ -212,6 +152,7 @@ export class FundraiserMutationService {
         summary: input.summary,
         story: input.story,
         goalAmount: input.goalAmount,
+        currency: 'USD',
         categoryId: input.categoryId,
         beneficiaryName: input.beneficiaryName,
         location: input.location,
@@ -229,9 +170,10 @@ export class FundraiserMutationService {
         linkToken: response.link_token,
       });
       
+      // Wait for event processing (DB updates, milestones, image linking happens in processor)
       await globalEventBus.publish(event);
 
-      // For personal private/unlisted campaigns, publish status change event to activate them
+      // For personal private/unlisted campaigns, publish status change event
       const shouldAutoActivate = (input.type === 'personal' || !input.type) && 
                                   (input.visibility === 'private' || input.visibility === 'unlisted');
       
@@ -246,6 +188,24 @@ export class FundraiserMutationService {
         await globalEventBus.publish(statusEvent);
       }
 
+      // Query the updated fundraiser from DB (read model)
+      const { data: updatedCampaign, error: updateFetchError } = await supabase
+        .from('fundraisers')
+        .select('*')
+        .eq('id', response.campaign_id)
+        .single();
+
+      if (updateFetchError) throw updateFetchError;
+
+      logger.info('Private/unlisted fundraiser created successfully', {
+        campaignId: response.campaign_id,
+        slug: campaign?.slug,
+        userId: input.userId,
+        visibility: input.visibility,
+        hasPasscode: !!input.passcode,
+        allowlistCount: allowlistEmails.length,
+      });
+
       // Return with link_token for navigation
       return { 
         success: true, 
@@ -256,45 +216,72 @@ export class FundraiserMutationService {
         error: null 
       };
     } catch (error: any) {
-      console.error('Error creating private fundraiser:', error);
+      logger.error('Error creating private fundraiser', error, {
+        userId: input.userId,
+        title: input.title,
+        visibility: input.visibility,
+      });
       return { success: false, data: null, error: error.message };
     }
   }
 
   /**
-   * Update an existing fundraiser
+   * Update an existing fundraiser (Event-Driven - Pure Command)
+   * Publishes event and delegates DB operations to CampaignWriteProcessor
    */
   async updateFundraiser(input: UpdateFundraiserInput) {
     try {
-      const { data, error } = await supabase
+      // Get current fundraiser data for previousValues
+      const { data: currentFundraiser } = await supabase
         .from('fundraisers')
-        .update({
-          ...input.updates,
-          updated_at: new Date().toISOString(),
-        })
+        .select('*')
         .eq('id', input.id)
         .eq('owner_user_id', input.userId)
-        .select()
         .single();
 
-      if (error) throw error;
+      if (!currentFundraiser) {
+        throw new Error('Fundraiser not found or access denied');
+      }
 
-      // Invalidate caches
-      await cacheService.invalidateByPattern('fundraisers:*');
-      await cacheService.invalidateByPattern(`fundraiser:${input.id}:*`);
+      // Extract previous values for changed fields
+      const previousValues: Record<string, any> = {};
+      Object.keys(input.updates).forEach(key => {
+        if (key in currentFundraiser) {
+          previousValues[key] = currentFundraiser[key as keyof typeof currentFundraiser];
+        }
+      });
 
-      // Publish event
+      // Publish event - CampaignWriteProcessor handles DB update
       const event = createCampaignUpdatedEvent({
         campaignId: input.id,
         userId: input.userId,
         changes: input.updates,
+        previousValues,
       });
       
       await globalEventBus.publish(event);
 
-      return { success: true, data, error: null };
+      // Query updated fundraiser (read model)
+      const { data: updatedFundraiser, error: fetchError } = await supabase
+        .from('fundraisers')
+        .select('*')
+        .eq('id', input.id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      logger.info('Fundraiser updated successfully', {
+        campaignId: input.id,
+        userId: input.userId,
+        changedFields: Object.keys(input.updates),
+      });
+
+      return { success: true, data: updatedFundraiser, error: null };
     } catch (error: any) {
-      console.error('Error updating fundraiser:', error);
+      logger.error('Error updating fundraiser', error, {
+        campaignId: input.id,
+        userId: input.userId,
+      });
       return { success: false, data: null, error: error.message };
     }
   }
@@ -312,9 +299,10 @@ export class FundraiserMutationService {
       };
       
       localStorage.setItem(key, JSON.stringify(draftData));
+      logger.debug('Draft saved to localStorage', { userId, draftFields: Object.keys(draft) });
       return { success: true };
     } catch (error: any) {
-      console.error('Error saving draft:', error);
+      logger.error('Error saving draft to localStorage', error, { userId });
       return { success: false, error: error.message };
     }
   }
@@ -334,12 +322,14 @@ export class FundraiserMutationService {
       // Check if expired
       if (new Date(draft.expiresAt) < new Date()) {
         localStorage.removeItem(key);
+        logger.debug('Draft expired and removed', { userId });
         return null;
       }
       
+      logger.debug('Draft loaded from localStorage', { userId, draftFields: Object.keys(draft) });
       return draft;
     } catch (error) {
-      console.error('Error loading draft:', error);
+      logger.error('Error loading draft from localStorage', error as Error, { userId });
       return null;
     }
   }

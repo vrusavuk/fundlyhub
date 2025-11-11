@@ -12,6 +12,7 @@ export type LogContext = {
   componentName?: string;
   operationName?: string;
   metadata?: Record<string, any>;
+  [key: string]: any; // Allow any additional properties
 };
 
 /**
