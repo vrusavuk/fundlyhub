@@ -14,6 +14,13 @@ export interface PerformanceMetrics {
   slowQueries: number;
 }
 
+export interface PerformanceThresholds {
+  apiCall: number;
+  componentRender: number;
+  imageLoad: number;
+  queryExecution: number;
+}
+
 export interface RequestTracker {
   startTime: number;
   endTime?: number;
@@ -28,6 +35,14 @@ class PerformanceMonitor {
   private completedRequests: RequestTracker[] = [];
   private maxHistorySize = 1000;
   private performanceObserver?: PerformanceObserver;
+  private flushTimer: NodeJS.Timeout | null = null;
+
+  private readonly thresholds: PerformanceThresholds = {
+    apiCall: 3000,
+    componentRender: 16,
+    imageLoad: 2000,
+    queryExecution: 1000,
+  };
 
   constructor() {
     this.initializePerformanceObserver();
@@ -407,6 +422,50 @@ class PerformanceMonitor {
 
   private generateRequestId(): string {
     return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * Track component render performance
+   */
+  trackComponentRender(
+    componentName: string,
+    duration: number,
+    renderCount: number = 1
+  ): void {
+    if (duration > this.thresholds.componentRender) {
+      structuredLogger.warn('Slow component render detected', {
+        componentName: 'PerformanceMonitor',
+        metadata: { componentName, duration, renderCount, threshold: this.thresholds.componentRender },
+      });
+    }
+  }
+
+  /**
+   * Track custom metric
+   */
+  trackCustomMetric(
+    name: string,
+    value: number,
+    unit: 'ms' | 'bytes' | 'count' | 'percent',
+    tags?: Record<string, string>
+  ): void {
+    structuredLogger.info(`Custom metric: ${name}`, {
+      componentName: 'PerformanceMonitor',
+      metadata: { name, value, unit, tags },
+    });
+  }
+
+  /**
+   * Cleanup on service destruction
+   */
+  destroy(): void {
+    if (this.flushTimer) {
+      clearInterval(this.flushTimer);
+      this.flushTimer = null;
+    }
+    if (this.performanceObserver) {
+      this.performanceObserver.disconnect();
+    }
   }
 }
 
