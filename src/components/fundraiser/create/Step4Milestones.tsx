@@ -72,18 +72,18 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
   const totalMilestoneGoals = value.reduce((sum, m) => sum + (m.target_amount || 0), 0);
 
   return (
-    <div className="space-y-4">
+    <div className="component-hierarchy">
       <div>
-        <h3 className="text-base sm:text-lg font-semibold mb-1">Project Milestones</h3>
-        <p className="text-xs sm:text-sm text-muted-foreground">
+        <h3 className="text-lg font-semibold mb-2">Project Milestones</h3>
+        <p className="text-sm text-muted-foreground">
           Define key milestones with clear goals
         </p>
       </div>
 
       {value.length > 0 && (
-        <Alert className="p-3">
-          <Sparkles className="h-3.5 w-3.5" />
-          <AlertDescription className="text-xs sm:text-sm">
+        <Alert className="p-4">
+          <Sparkles className="h-4 w-4" />
+          <AlertDescription className="text-sm">
             Click any milestone to edit. Use AI to enhance descriptions.
           </AlertDescription>
         </Alert>
@@ -91,7 +91,7 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
 
       {/* Milestones List */}
       {value.length > 0 && (
-        <div className="space-y-3">
+        <div className="stripe-space-lg">
           {value.map((milestone, index) => {
             const isEditing = editingIndex === index;
             const isValid = isValidMilestone(milestone);
@@ -139,10 +139,10 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="stripe-space-lg">
                   {isEditing ? (
                     <>
-                      <div className="space-y-1.5">
+                      <div className="stripe-space-sm">
                         <Label htmlFor={`title-${index}`}>
                           Milestone Title <span className="text-destructive">*</span>
                         </Label>
@@ -155,7 +155,7 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
                         />
                       </div>
 
-                      <div className="space-y-1.5">
+                      <div className="stripe-space-sm">
                         <div className="flex items-center justify-between">
                           <Label htmlFor={`description-${index}`}>Description</Label>
                           <AITextEnhancer
@@ -191,8 +191,8 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
                         />
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="stripe-space-sm">
                           <Label htmlFor={`amount-${index}`}>
                             Target Amount ({currency}) <span className="text-destructive">*</span>
                           </Label>
@@ -207,7 +207,7 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
                           />
                         </div>
 
-                        <div className="space-y-1.5">
+                        <div className="stripe-space-sm">
                           <Label htmlFor={`date-${index}`}>Due Date (Optional)</Label>
                           <Input
                             id={`date-${index}`}
@@ -274,10 +274,10 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
           })}
 
           {value.length > 0 && (
-            <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
-              <p className="text-xs sm:text-sm font-medium flex items-center justify-between">
+            <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
+              <p className="text-sm font-medium flex items-center justify-between">
                 <span>Total Goals:</span>
-                <span className="text-primary text-base sm:text-lg">
+                <span className="text-primary text-lg">
                   {new Intl.NumberFormat('en-US', {
                     style: 'currency',
                     currency: currency,
@@ -290,24 +290,24 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
       )}
 
       <Card className="border-dashed border-2 hover:border-primary/50 transition-colors">
-        <CardContent className="flex items-center justify-center py-6">
+        <CardContent className="flex items-center justify-center py-8">
           <Button
             type="button"
             variant="ghost"
-            size="default"
+            size="lg"
             onClick={handleAddNew}
             className="text-primary"
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-5 w-5 mr-2" />
             Add New Milestone
           </Button>
         </CardContent>
       </Card>
 
       {value.length === 0 && (
-        <Alert className="p-3">
-          <AlertCircle className="h-3.5 w-3.5" />
-          <AlertDescription className="text-xs sm:text-sm">
+        <Alert className="p-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="text-sm">
             Add at least one milestone to continue
           </AlertDescription>
         </Alert>

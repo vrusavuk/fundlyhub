@@ -104,7 +104,7 @@ export function CreateFundraiserWizard() {
   };
 
   return (
-    <div className="w-full space-y-4 sm:space-y-6">
+    <div className="w-full component-hierarchy">
       <ProgressIndicator
         currentStep={currentStep}
         steps={visibleSteps}
@@ -113,7 +113,7 @@ export function CreateFundraiserWizard() {
       />
 
       <Card className="card-enhanced shadow-glow">
-        <CardContent className="p-3 sm:p-4 md:p-6">
+        <CardContent className="mobile-card-spacing">
           {currentStep === 0 && (
             <Step0ProjectType
               value={formData.isProject}
@@ -165,7 +165,7 @@ export function CreateFundraiserWizard() {
         </CardContent>
       </Card>
 
-      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 sm:gap-3 sticky bottom-0 bg-background/95 backdrop-blur-sm p-3 sm:p-0 -mx-3 sm:mx-0 border-t sm:border-t-0">
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 sticky bottom-0 bg-background/95 backdrop-blur-sm p-4 sm:p-0 -mx-4 sm:mx-0 border-t sm:border-t-0">
         {currentStep > 0 && (
           <Button
             type="button"
@@ -173,15 +173,15 @@ export function CreateFundraiserWizard() {
             onClick={goToPreviousStep}
             disabled={isSubmitting}
             size="lg"
-            className="w-full sm:w-auto min-h-[40px]"
+            className="w-full sm:w-auto touch-button"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Previous
           </Button>
         )}
 
-        <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-muted-foreground">
-          <Save className="h-3.5 w-3.5" />
+        <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
+          <Save className="h-4 w-4" />
           <span>Auto-saving</span>
         </div>
 
@@ -191,7 +191,7 @@ export function CreateFundraiserWizard() {
             onClick={handleNext}
             disabled={isSubmitting || (currentStep === 0 && formData.isProject === undefined)}
             size="lg"
-            className="w-full sm:w-auto min-h-[40px]"
+            className="w-full sm:w-auto touch-button"
           >
             Next
             <ArrowRight className="h-4 w-4 ml-2" />
@@ -202,7 +202,7 @@ export function CreateFundraiserWizard() {
             onClick={handlePublish}
             disabled={isSubmitting}
             size="lg"
-            className="w-full sm:w-auto min-h-[40px]"
+            className="w-full sm:w-auto touch-button"
           >
             {isSubmitting ? (
               <>

@@ -31,16 +31,16 @@ export function Step2Story({ formData, errors, onChange, categoryName }: Step2St
   const [storySuggestion, setStorySuggestion] = useState<string | null>(null);
 
   return (
-    <div className="space-y-4">
-      <Alert className="p-3">
-        <Lightbulb className="h-3.5 w-3.5" />
-        <AlertDescription className="text-xs sm:text-sm">
+    <div className="component-hierarchy">
+      <Alert className="p-4">
+        <Lightbulb className="h-4 w-4" />
+        <AlertDescription className="text-sm">
           Click the AI button to generate or improve your text
         </AlertDescription>
       </Alert>
 
       {/* Summary Section */}
-      <div className="space-y-2">
+      <div className="stripe-space-md">
         <div className="flex items-center justify-between">
           <Label htmlFor="summary" className="label-small">
             Short Summary <span className="text-destructive">*</span>
@@ -86,7 +86,7 @@ export function Step2Story({ formData, errors, onChange, categoryName }: Step2St
       </div>
 
       {/* Story Section */}
-      <div className="space-y-2">
+      <div className="stripe-space-md">
         <div className="flex items-center justify-between">
           <Label htmlFor="story" className="label-small">
             Full Story <span className="text-destructive">*</span>
