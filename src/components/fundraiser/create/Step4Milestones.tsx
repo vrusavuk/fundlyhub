@@ -9,10 +9,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Plus, Trash2, CheckCircle2, AlertCircle, Edit2, Check, Sparkles } from 'lucide-react';
 import { Milestone } from '@/lib/validation/fundraiserCreation.schema';
 import { AITextEnhancer } from './AITextEnhancer';
+import { InfoAlert } from './InfoAlert';
+import { WIZARD_SPACING, WIZARD_TYPOGRAPHY, WIZARD_ICONS, WIZARD_GAPS } from './designConstants';
 
 interface Step4MilestonesProps {
   value: Milestone[];
@@ -26,11 +27,8 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
 
   const getTextareaHeight = (text: string | null | undefined, hasAISuggestion: boolean): string => {
     if (!hasAISuggestion || !text) return 'auto';
-    // Calculate approximate rows needed (80 chars per row accounting for wrapping)
     const estimatedRows = Math.ceil(text.length / 80);
     const rows = Math.min(10, Math.max(3, estimatedRows));
-    // Each row is approximately 24px (1.5rem line height)
-    // Add padding: 12px top + 12px bottom = 24px
     const height = (rows * 24) + 24;
     return `${height}px`;
   };
@@ -59,7 +57,6 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
     if (editingIndex === index) {
       setEditingIndex(null);
     }
-    // Clear suggestion for removed milestone
     const newSuggestions = { ...descriptionSuggestions };
     delete newSuggestions[index];
     setDescriptionSuggestions(newSuggestions);
@@ -72,26 +69,23 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
   const totalMilestoneGoals = value.reduce((sum, m) => sum + (m.target_amount || 0), 0);
 
   return (
-    <div className="component-hierarchy">
+    <div className={WIZARD_SPACING.stepContainer}>
       <div>
-        <h3 className="text-lg font-semibold mb-2">Project Milestones</h3>
-        <p className="text-sm text-muted-foreground">
+        <h3 className={WIZARD_TYPOGRAPHY.sectionTitle}>Project Milestones</h3>
+        <p className={`${WIZARD_TYPOGRAPHY.bodyText} text-muted-foreground mt-1`}>
           Define key milestones with clear goals
         </p>
       </div>
 
       {value.length > 0 && (
-        <Alert className="p-4">
-          <Sparkles className="h-4 w-4" />
-          <AlertDescription className="text-sm">
-            Click any milestone to edit. Use AI to enhance descriptions.
-          </AlertDescription>
-        </Alert>
+        <InfoAlert icon={Sparkles}>
+          Click any milestone to edit. Use AI to enhance descriptions.
+        </InfoAlert>
       )}
 
       {/* Milestones List */}
       {value.length > 0 && (
-        <div className="stripe-space-lg">
+        <div className={WIZARD_SPACING.cardSection}>
           {value.map((milestone, index) => {
             const isEditing = editingIndex === index;
             const isValid = isValidMilestone(milestone);
@@ -104,19 +98,19 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
                 }`}
               >
                 <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-1.5 flex-1">
+                  <div className={`flex items-start justify-between ${WIZARD_GAPS.standard}`}>
+                    <div className={`flex items-center ${WIZARD_GAPS.tight} flex-1`}>
                       {isValid ? (
-                        <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0" />
+                        <CheckCircle2 className={`${WIZARD_ICONS.standard} text-success flex-shrink-0`} />
                       ) : (
-                        <AlertCircle className="h-4 w-4 text-warning flex-shrink-0" />
+                        <AlertCircle className={`${WIZARD_ICONS.standard} text-warning flex-shrink-0`} />
                       )}
-                      <CardTitle className="text-sm sm:text-base">
+                      <CardTitle className={`${WIZARD_TYPOGRAPHY.subsectionTitle} sm:text-base`}>
                         Milestone {index + 1}
-                        {!isValid && <span className="text-warning text-xs ml-1.5">(Incomplete)</span>}
+                        {!isValid && <span className={`text-warning ${WIZARD_TYPOGRAPHY.helperText} ml-1.5`}>(Incomplete)</span>}
                       </CardTitle>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className={`flex items-center ${WIZARD_GAPS.inline}`}>
                       {!isEditing && (
                         <Button
                           type="button"
@@ -124,7 +118,7 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
                           size="sm"
                           onClick={() => setEditingIndex(index)}
                         >
-                          <Edit2 className="h-4 w-4" />
+                          <Edit2 className={WIZARD_ICONS.standard} />
                         </Button>
                       )}
                       <Button
@@ -134,17 +128,17 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
                         onClick={() => handleRemove(index)}
                         className="text-destructive hover:text-destructive"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className={WIZARD_ICONS.standard} />
                       </Button>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="stripe-space-lg">
+                <CardContent className={WIZARD_SPACING.cardSection}>
                   {isEditing ? (
                     <>
-                      <div className="stripe-space-sm">
-                        <Label htmlFor={`title-${index}`}>
-                          Milestone Title <span className="text-destructive">*</span>
+                      <div className={WIZARD_SPACING.fieldGroup}>
+                        <Label htmlFor={`title-${index}`} className={WIZARD_TYPOGRAPHY.fieldLabel}>
+                          Milestone Title <span className={WIZARD_TYPOGRAPHY.requiredMark}>*</span>
                         </Label>
                         <Input
                           id={`title-${index}`}
@@ -155,9 +149,9 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
                         />
                       </div>
 
-                      <div className="stripe-space-sm">
+                      <div className={WIZARD_SPACING.fieldGroup}>
                         <div className="flex items-center justify-between">
-                          <Label htmlFor={`description-${index}`}>Description</Label>
+                          <Label htmlFor={`description-${index}`} className={WIZARD_TYPOGRAPHY.fieldLabel}>Description</Label>
                           <AITextEnhancer
                             field="milestone"
                             currentText={milestone.description || ''}
@@ -191,10 +185,10 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
                         />
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="stripe-space-sm">
-                          <Label htmlFor={`amount-${index}`}>
-                            Target Amount ({currency}) <span className="text-destructive">*</span>
+                      <div className={`grid grid-cols-1 md:grid-cols-2 ${WIZARD_GAPS.standard}`}>
+                        <div className={WIZARD_SPACING.fieldGroup}>
+                          <Label htmlFor={`amount-${index}`} className={WIZARD_TYPOGRAPHY.fieldLabel}>
+                            Target Amount ({currency}) <span className={WIZARD_TYPOGRAPHY.requiredMark}>*</span>
                           </Label>
                           <Input
                             id={`amount-${index}`}
@@ -207,8 +201,8 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
                           />
                         </div>
 
-                        <div className="stripe-space-sm">
-                          <Label htmlFor={`date-${index}`}>Due Date (Optional)</Label>
+                        <div className={WIZARD_SPACING.fieldGroup}>
+                          <Label htmlFor={`date-${index}`} className={WIZARD_TYPOGRAPHY.fieldLabel}>Due Date (Optional)</Label>
                           <Input
                             id={`date-${index}`}
                             type="date"
@@ -225,25 +219,25 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
                           size="sm"
                           onClick={() => setEditingIndex(null)}
                         >
-                          <Check className="h-4 w-4 mr-2" />
+                          <Check className={`${WIZARD_ICONS.standard} mr-2`} />
                           Done Editing
                         </Button>
                       </div>
                     </>
                   ) : (
-                    <div className="space-y-3">
+                    <div className={WIZARD_SPACING.cardSubsection}>
                       <div>
-                        <h4 className="font-semibold text-base mb-1">
+                        <h4 className={`${WIZARD_TYPOGRAPHY.subsectionTitle} mb-1`}>
                           {milestone.title || <span className="text-muted-foreground italic">No title</span>}
                         </h4>
                         {milestone.description && (
-                          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                          <p className={`${WIZARD_TYPOGRAPHY.bodyText} text-muted-foreground whitespace-pre-wrap`}>
                             {milestone.description}
                           </p>
                         )}
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-4 text-sm">
+                      <div className={`flex flex-wrap items-center ${WIZARD_GAPS.standard} ${WIZARD_TYPOGRAPHY.bodyText}`}>
                         <div>
                           <span className="text-muted-foreground">Target: </span>
                           <span className="font-semibold text-primary">
@@ -275,7 +269,7 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
 
           {value.length > 0 && (
             <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
-              <p className="text-sm font-medium flex items-center justify-between">
+              <p className={`${WIZARD_TYPOGRAPHY.bodyText} font-medium flex items-center justify-between`}>
                 <span>Total Goals:</span>
                 <span className="text-primary text-lg">
                   {new Intl.NumberFormat('en-US', {
@@ -298,19 +292,16 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
             onClick={handleAddNew}
             className="text-primary"
           >
-            <Plus className="h-5 w-5 mr-2" />
+            <Plus className={`h-5 w-5 mr-2`} />
             Add New Milestone
           </Button>
         </CardContent>
       </Card>
 
       {value.length === 0 && (
-        <Alert className="p-4">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription className="text-sm">
-            Add at least one milestone to continue
-          </AlertDescription>
-        </Alert>
+        <InfoAlert icon={AlertCircle} variant="warning">
+          Add at least one milestone to continue
+        </InfoAlert>
       )}
     </div>
   );

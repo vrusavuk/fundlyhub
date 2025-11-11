@@ -8,9 +8,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { AITextEnhancer } from './AITextEnhancer';
 import { CharacterCounter } from './CharacterCounter';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Lightbulb } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { InfoAlert } from './InfoAlert';
+import { TipsBox } from './TipsBox';
+import { WIZARD_SPACING, WIZARD_TYPOGRAPHY } from './designConstants';
 
 interface Step2StoryProps {
   formData: {
@@ -31,19 +33,16 @@ export function Step2Story({ formData, errors, onChange, categoryName }: Step2St
   const [storySuggestion, setStorySuggestion] = useState<string | null>(null);
 
   return (
-    <div className="component-hierarchy">
-      <Alert className="p-4">
-        <Lightbulb className="h-4 w-4" />
-        <AlertDescription className="text-sm">
-          Click the AI button to generate or improve your text
-        </AlertDescription>
-      </Alert>
+    <div className={WIZARD_SPACING.stepContainer}>
+      <InfoAlert icon={Lightbulb}>
+        Click the AI button to generate or improve your text
+      </InfoAlert>
 
       {/* Summary Section */}
-      <div className="stripe-space-md">
+      <div className={WIZARD_SPACING.cardSection}>
         <div className="flex items-center justify-between">
-          <Label htmlFor="summary" className="label-small">
-            Short Summary <span className="text-destructive">*</span>
+          <Label htmlFor="summary" className={WIZARD_TYPOGRAPHY.fieldLabel}>
+            Short Summary <span className={WIZARD_TYPOGRAPHY.requiredMark}>*</span>
           </Label>
           <AITextEnhancer
             field="summary"
@@ -81,15 +80,15 @@ export function Step2Story({ formData, errors, onChange, categoryName }: Step2St
           showMinimum
         />
         {errors.summary && (
-          <p className="text-sm text-destructive">{errors.summary}</p>
+          <p className={`${WIZARD_TYPOGRAPHY.bodyText} text-destructive`}>{errors.summary}</p>
         )}
       </div>
 
       {/* Story Section */}
-      <div className="stripe-space-md">
+      <div className={WIZARD_SPACING.cardSection}>
         <div className="flex items-center justify-between">
-          <Label htmlFor="story" className="label-small">
-            Full Story <span className="text-destructive">*</span>
+          <Label htmlFor="story" className={WIZARD_TYPOGRAPHY.fieldLabel}>
+            Full Story <span className={WIZARD_TYPOGRAPHY.requiredMark}>*</span>
           </Label>
           <AITextEnhancer
             field="story"
@@ -128,19 +127,19 @@ export function Step2Story({ formData, errors, onChange, categoryName }: Step2St
           showMinimum
         />
         {errors.story && (
-          <p className="text-sm text-destructive">{errors.story}</p>
+          <p className={`${WIZARD_TYPOGRAPHY.bodyText} text-destructive`}>{errors.story}</p>
         )}
       </div>
 
-      <div className="bg-accent/50 border border-border rounded-lg p-3">
-        <h4 className="font-medium text-xs sm:text-sm mb-1.5">Tips for a great story:</h4>
-        <ul className="text-xs text-muted-foreground space-y-0.5 list-disc list-inside">
-          <li>Start with who you are and why</li>
-          <li>Explain the specific need</li>
-          <li>Describe how funds will be used</li>
-          <li>Share the expected impact</li>
-        </ul>
-      </div>
+      <TipsBox
+        title="Tips for a great story:"
+        tips={[
+          'Start with who you are and why',
+          'Explain the specific need',
+          'Describe how funds will be used',
+          'Share the expected impact',
+        ]}
+      />
     </div>
   );
 }

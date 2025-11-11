@@ -20,6 +20,7 @@ import { useCategories } from '@/hooks/useCategories';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { WIZARD_BUTTONS } from './designConstants';
 
 const STEPS = [
   { number: 0, title: 'Type', description: 'Choose fundraising type' },
@@ -165,15 +166,15 @@ export function CreateFundraiserWizard() {
         </CardContent>
       </Card>
 
-      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 sticky bottom-0 bg-background/95 backdrop-blur-sm p-4 sm:p-0 -mx-4 sm:mx-0 border-t sm:border-t-0">
+      <div className={WIZARD_BUTTONS.footer}>
         {currentStep > 0 && (
           <Button
             type="button"
             variant="outline"
             onClick={goToPreviousStep}
             disabled={isSubmitting}
-            size="lg"
-            className="w-full sm:w-auto touch-button"
+            size={WIZARD_BUTTONS.size}
+            className={WIZARD_BUTTONS.className}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Previous
@@ -190,8 +191,8 @@ export function CreateFundraiserWizard() {
             type="button"
             onClick={handleNext}
             disabled={isSubmitting || (currentStep === 0 && formData.isProject === undefined)}
-            size="lg"
-            className="w-full sm:w-auto touch-button"
+            size={WIZARD_BUTTONS.size}
+            className={WIZARD_BUTTONS.className}
           >
             Next
             <ArrowRight className="h-4 w-4 ml-2" />
@@ -201,8 +202,8 @@ export function CreateFundraiserWizard() {
             type="button"
             onClick={handlePublish}
             disabled={isSubmitting}
-            size="lg"
-            className="w-full sm:w-auto touch-button"
+            size={WIZARD_BUTTONS.size}
+            className={WIZARD_BUTTONS.className}
           >
             {isSubmitting ? (
               <>

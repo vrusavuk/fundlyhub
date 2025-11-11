@@ -9,6 +9,8 @@ import { Separator } from '@/components/ui/separator';
 import { CheckCircle2, AlertCircle, Calendar, MapPin, User, Shield, Lock, Mail, Target } from 'lucide-react';
 import { format } from 'date-fns';
 import { VisibilityBadge } from '@/components/fundraiser/VisibilityBadge';
+import { TipsBox } from './TipsBox';
+import { WIZARD_SPACING, WIZARD_TYPOGRAPHY, WIZARD_ICONS, WIZARD_GAPS, WIZARD_CARDS } from './designConstants';
 
 interface Step4ReviewProps {
   formData: {
@@ -44,35 +46,35 @@ export function Step4Review({ formData, categoryName, categoryEmoji }: Step4Revi
                      (!formData.isProject || (formData.milestones && formData.milestones.length > 0));
 
   return (
-    <div className="component-hierarchy">
+    <div className={WIZARD_SPACING.stepContainer}>
       {isComplete ? (
-        <div className="flex items-center gap-2 text-success p-4 bg-success/10 rounded-lg border border-success/20">
+        <div className={`flex items-center ${WIZARD_GAPS.inline} text-success p-4 bg-success/10 rounded-lg border border-success/20`}>
           <CheckCircle2 className="h-5 w-5" />
           <span className="font-medium">Ready to publish!</span>
         </div>
       ) : (
-        <div className="flex items-center gap-2 text-warning p-4 bg-warning/10 rounded-lg border border-warning/20">
+        <div className={`flex items-center ${WIZARD_GAPS.inline} text-warning p-4 bg-warning/10 rounded-lg border border-warning/20`}>
           <AlertCircle className="h-5 w-5" />
           <span className="font-medium">Please complete all required fields</span>
         </div>
       )}
 
       <Card className="card-enhanced">
-        <CardHeader className="mobile-card-spacing">
-          <div className="flex items-start justify-between gap-4">
+        <CardHeader className={WIZARD_CARDS.outerCard}>
+          <div className={`flex items-start justify-between ${WIZARD_GAPS.standard}`}>
             <div className="flex-1">
               <CardTitle className="text-2xl mb-2">
                 {formData.title || 'Untitled Fundraiser'}
               </CardTitle>
-              <div className="flex flex-wrap gap-2">
+              <div className={`flex flex-wrap ${WIZARD_GAPS.inline}`}>
                 {categoryName && (
-                  <Badge variant="secondary" className="text-sm">
+                  <Badge variant="secondary" className={WIZARD_TYPOGRAPHY.bodyText}>
                     {categoryEmoji} {categoryName}
                   </Badge>
                 )}
                 {formData.type === 'charity' && (
-                  <Badge variant="default" className="text-sm">
-                    <Shield className="h-3 w-3 mr-1" />
+                  <Badge variant="default" className={WIZARD_TYPOGRAPHY.bodyText}>
+                    <Shield className={`${WIZARD_ICONS.inline} mr-1`} />
                     Tax-Deductible
                   </Badge>
                 )}
@@ -83,7 +85,7 @@ export function Step4Review({ formData, categoryName, categoryEmoji }: Step4Revi
             </div>
             {formData.goalAmount && (
               <div className="text-right">
-                <div className="text-sm text-muted-foreground">Goal</div>
+                <div className={`${WIZARD_TYPOGRAPHY.bodyText} text-muted-foreground`}>Goal</div>
                 <div className="text-2xl font-bold text-primary">
                   ${formData.goalAmount.toLocaleString()}
                 </div>
@@ -91,11 +93,11 @@ export function Step4Review({ formData, categoryName, categoryEmoji }: Step4Revi
             )}
           </div>
         </CardHeader>
-        <CardContent className="stripe-space-xl mobile-card-spacing">
+        <CardContent className={`${WIZARD_SPACING.cardSection} ${WIZARD_CARDS.outerCard}`}>
           {formData.summary && (
             <div>
-              <h4 className="text-sm font-medium mb-2 text-muted-foreground">Summary</h4>
-              <p className="text-base">{formData.summary}</p>
+              <h4 className={`${WIZARD_TYPOGRAPHY.cardTitle} mb-2`}>Summary</h4>
+              <p className={WIZARD_TYPOGRAPHY.subsectionTitle}>{formData.summary}</p>
             </div>
           )}
 
@@ -103,8 +105,8 @@ export function Step4Review({ formData, categoryName, categoryEmoji }: Step4Revi
 
           {formData.story && (
             <div>
-              <h4 className="text-sm font-medium mb-2 text-muted-foreground">Story</h4>
-              <p className="text-sm whitespace-pre-wrap">{formData.story}</p>
+              <h4 className={`${WIZARD_TYPOGRAPHY.cardTitle} mb-2`}>Story</h4>
+              <p className={`${WIZARD_TYPOGRAPHY.bodyText} whitespace-pre-wrap`}>{formData.story}</p>
             </div>
           )}
 
@@ -112,20 +114,20 @@ export function Step4Review({ formData, categoryName, categoryEmoji }: Step4Revi
             <>
               <Separator />
               <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
-                <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-                  <Lock className="h-4 w-4" />
+                <h4 className={`${WIZARD_TYPOGRAPHY.bodyText} font-medium mb-3 flex items-center ${WIZARD_GAPS.inline}`}>
+                  <Lock className={WIZARD_ICONS.standard} />
                   Access Controls
                 </h4>
-                <div className="space-y-2 text-sm">
+                <div className={`${WIZARD_SPACING.listItems} ${WIZARD_TYPOGRAPHY.bodyText}`}>
                   {formData.passcode && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <CheckCircle2 className="h-4 w-4 text-success" />
+                    <div className={`flex items-center ${WIZARD_GAPS.inline} text-muted-foreground`}>
+                      <CheckCircle2 className={`${WIZARD_ICONS.standard} text-success`} />
                       Passcode protected
                     </div>
                   )}
                   {formData.allowlistEmails && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Mail className="h-4 w-4 text-success" />
+                    <div className={`flex items-center ${WIZARD_GAPS.inline} text-muted-foreground`}>
+                      <Mail className={`${WIZARD_ICONS.standard} text-success`} />
                       Allowlist: {formData.allowlistEmails.split(',').filter(Boolean).length} email(s)
                     </div>
                   )}
@@ -137,33 +139,33 @@ export function Step4Review({ formData, categoryName, categoryEmoji }: Step4Revi
           {(formData.beneficiaryName || formData.location || formData.endDate) && (
             <>
               <Separator />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className={`grid grid-cols-1 sm:grid-cols-2 ${WIZARD_GAPS.standard}`}>
                 {formData.beneficiaryName && (
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
+                  <div className={`flex items-center ${WIZARD_GAPS.inline}`}>
+                    <User className={`${WIZARD_ICONS.standard} text-muted-foreground`} />
                     <div>
-                      <div className="text-xs text-muted-foreground">Beneficiary</div>
-                      <div className="text-sm font-medium">{formData.beneficiaryName}</div>
+                      <div className={`${WIZARD_TYPOGRAPHY.helperText}`}>Beneficiary</div>
+                      <div className={`${WIZARD_TYPOGRAPHY.bodyText} font-medium`}>{formData.beneficiaryName}</div>
                     </div>
                   </div>
                 )}
 
                 {formData.location && (
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <div className={`flex items-center ${WIZARD_GAPS.inline}`}>
+                    <MapPin className={`${WIZARD_ICONS.standard} text-muted-foreground`} />
                     <div>
-                      <div className="text-xs text-muted-foreground">Location</div>
-                      <div className="text-sm font-medium">{formData.location}</div>
+                      <div className={WIZARD_TYPOGRAPHY.helperText}>Location</div>
+                      <div className={`${WIZARD_TYPOGRAPHY.bodyText} font-medium`}>{formData.location}</div>
                     </div>
                   </div>
                 )}
 
                 {formData.endDate && (
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <div className={`flex items-center ${WIZARD_GAPS.inline}`}>
+                    <Calendar className={`${WIZARD_ICONS.standard} text-muted-foreground`} />
                     <div>
-                      <div className="text-xs text-muted-foreground">End Date</div>
-                      <div className="text-sm font-medium">
+                      <div className={WIZARD_TYPOGRAPHY.helperText}>End Date</div>
+                      <div className={`${WIZARD_TYPOGRAPHY.bodyText} font-medium`}>
                         {format(new Date(formData.endDate), 'PPP')}
                       </div>
                     </div>
@@ -177,7 +179,7 @@ export function Step4Review({ formData, categoryName, categoryEmoji }: Step4Revi
             <>
               <Separator />
               <div>
-                <h4 className="text-sm font-medium mb-2 text-muted-foreground">Cover Image</h4>
+                <h4 className={`${WIZARD_TYPOGRAPHY.cardTitle} mb-2`}>Cover Image</h4>
                 <img
                   src={formData.coverImage}
                   alt="Campaign cover"
@@ -194,18 +196,18 @@ export function Step4Review({ formData, categoryName, categoryEmoji }: Step4Revi
 
       {formData.isProject && formData.milestones && formData.milestones.length > 0 && (
         <Card className="card-enhanced">
-          <CardHeader className="mobile-card-spacing">
-            <CardTitle className="flex items-center gap-2">
+          <CardHeader className={WIZARD_CARDS.outerCard}>
+            <CardTitle className={`flex items-center ${WIZARD_GAPS.inline}`}>
               <Target className="h-5 w-5" />
               Project Milestones ({formData.milestones.length})
             </CardTitle>
           </CardHeader>
-          <CardContent className="stripe-space-lg mobile-card-spacing">
+          <CardContent className={`${WIZARD_SPACING.cardSection} ${WIZARD_CARDS.outerCard}`}>
             {formData.milestones.map((milestone, index) => (
               <Card key={index} className="border-l-4 border-l-primary/50">
-                <CardContent className="p-4">
+                <CardContent className={WIZARD_CARDS.nestedCard}>
                   <div className="flex justify-between items-start mb-2">
-                    <h5 className="font-semibold text-base">{milestone.title}</h5>
+                    <h5 className={WIZARD_TYPOGRAPHY.subsectionTitle}>{milestone.title}</h5>
                     <Badge variant="secondary" className="ml-2">
                       {new Intl.NumberFormat('en-US', {
                         style: 'currency',
@@ -214,13 +216,13 @@ export function Step4Review({ formData, categoryName, categoryEmoji }: Step4Revi
                     </Badge>
                   </div>
                   {milestone.description && (
-                    <p className="text-sm text-muted-foreground mb-2 whitespace-pre-wrap">
+                    <p className={`${WIZARD_TYPOGRAPHY.bodyText} text-muted-foreground mb-2 whitespace-pre-wrap`}>
                       {milestone.description}
                     </p>
                   )}
                   {milestone.due_date && (
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Calendar className="h-3 w-3" />
+                    <div className={`flex items-center ${WIZARD_GAPS.tight} ${WIZARD_TYPOGRAPHY.helperText} text-muted-foreground`}>
+                      <Calendar className={WIZARD_ICONS.inline} />
                       Due: {format(new Date(milestone.due_date), 'PPP')}
                     </div>
                   )}
@@ -229,7 +231,7 @@ export function Step4Review({ formData, categoryName, categoryEmoji }: Step4Revi
             ))}
             
             <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
-              <p className="text-sm font-medium flex items-center justify-between">
+              <p className={`${WIZARD_TYPOGRAPHY.bodyText} font-medium flex items-center justify-between`}>
                 <span>Total Milestone Goals:</span>
                 <span className="text-primary">
                   {new Intl.NumberFormat('en-US', {
@@ -245,17 +247,15 @@ export function Step4Review({ formData, categoryName, categoryEmoji }: Step4Revi
         </Card>
       )}
 
-      <div className="bg-accent/50 border border-border rounded-lg p-4">
-        <h4 className="font-medium text-sm mb-2">Before you publish:</h4>
-        <ul className="text-sm text-muted-foreground stripe-space-xs list-disc list-inside">
-          <li>Review all information</li>
-          <li>Check story is compelling</li>
-          <li>Verify goal amount</li>
-          {formData.isProject && (
-            <li>Ensure milestones are complete</li>
-          )}
-        </ul>
-      </div>
+      <TipsBox
+        title="Before you publish:"
+        tips={[
+          'Review all information',
+          'Check story is compelling',
+          'Verify goal amount',
+          ...(formData.isProject ? ['Ensure milestones are complete'] : []),
+        ]}
+      />
     </div>
   );
 }

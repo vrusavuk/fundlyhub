@@ -4,15 +4,17 @@
  */
 
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { CategorySelector } from './CategorySelector';
 import { CharacterCounter } from './CharacterCounter';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { Globe, Link2, Lock, Info, Shield } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { FieldLabel } from './FieldLabel';
+import { WIZARD_SPACING, WIZARD_TYPOGRAPHY, WIZARD_ICONS, WIZARD_ALERTS, WIZARD_GAPS } from './designConstants';
 
 interface Step1BasicsProps {
   formData: {
@@ -30,11 +32,11 @@ interface Step1BasicsProps {
 
 export function Step1Basics({ formData, errors, onChange }: Step1BasicsProps) {
   return (
-    <div className="component-hierarchy">
-      <div className="stripe-space-sm">
-        <Label htmlFor="title" className="label-small">
-          Fundraiser Title <span className="text-destructive">*</span>
-        </Label>
+    <div className={WIZARD_SPACING.stepContainer}>
+      <div className={WIZARD_SPACING.fieldGroup}>
+        <FieldLabel htmlFor="title" required>
+          Fundraiser Title
+        </FieldLabel>
         <Input
           id="title"
           placeholder="Give your fundraiser a compelling title"
@@ -50,9 +52,9 @@ export function Step1Basics({ formData, errors, onChange }: Step1BasicsProps) {
           showMinimum
         />
         {errors.title && (
-          <p className="text-sm text-destructive">{errors.title}</p>
+          <p className={`${WIZARD_TYPOGRAPHY.bodyText} text-destructive`}>{errors.title}</p>
         )}
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className={WIZARD_TYPOGRAPHY.helperText}>
           Choose a clear, specific title that captures attention
         </p>
       </div>
@@ -63,10 +65,10 @@ export function Step1Basics({ formData, errors, onChange }: Step1BasicsProps) {
         error={errors.categoryId}
       />
 
-      <div className="stripe-space-sm">
-        <Label htmlFor="goalAmount" className="label-small">
-          Goal Amount (USD) <span className="text-destructive">*</span>
-        </Label>
+      <div className={WIZARD_SPACING.fieldGroup}>
+        <FieldLabel htmlFor="goalAmount" required>
+          Goal Amount (USD)
+        </FieldLabel>
         <div className="relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
             $
@@ -84,49 +86,49 @@ export function Step1Basics({ formData, errors, onChange }: Step1BasicsProps) {
           />
         </div>
         {errors.goalAmount && (
-          <p className="text-sm text-destructive">{errors.goalAmount}</p>
+          <p className={`${WIZARD_TYPOGRAPHY.bodyText} text-destructive`}>{errors.goalAmount}</p>
         )}
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className={WIZARD_TYPOGRAPHY.helperText}>
           Set a realistic goal between $100 and $10,000,000
         </p>
       </div>
 
-      <div className="stripe-space-sm">
-        <Label className="label-small">
-          Fundraiser Type <span className="text-destructive">*</span>
-        </Label>
+      <div className={WIZARD_SPACING.fieldGroup}>
+        <FieldLabel htmlFor="type" required>
+          Fundraiser Type
+        </FieldLabel>
         <RadioGroup
           value={formData.type || 'personal'}
           onValueChange={(value) => onChange({ type: value as 'personal' | 'charity' })}
-          className="flex gap-4"
+          className={`flex ${WIZARD_GAPS.standard}`}
         >
-          <div className="flex items-center space-x-2 flex-1 cursor-pointer rounded-lg border p-3 hover:border-primary/50 transition-colors">
+          <div className={`flex items-center ${WIZARD_GAPS.inline} flex-1 cursor-pointer rounded-lg border p-3 hover:border-primary/50 transition-colors`}>
             <RadioGroupItem value="personal" id="type-personal" />
             <Label htmlFor="type-personal" className="cursor-pointer flex-1">
               <div className="font-medium">Personal</div>
-              <div className="text-xs text-muted-foreground">Not tax-deductible</div>
+              <div className={WIZARD_TYPOGRAPHY.helperText}>Not tax-deductible</div>
             </Label>
           </div>
-          <div className="flex items-center space-x-2 flex-1 cursor-pointer rounded-lg border p-3 hover:border-primary/50 transition-colors">
+          <div className={`flex items-center ${WIZARD_GAPS.inline} flex-1 cursor-pointer rounded-lg border p-3 hover:border-primary/50 transition-colors`}>
             <RadioGroupItem value="charity" id="type-charity" />
             <Label htmlFor="type-charity" className="cursor-pointer flex-1">
-              <div className="font-medium flex items-center gap-2">
+              <div className={`font-medium flex items-center ${WIZARD_GAPS.inline}`}>
                 Charity
-                <Badge variant="default" className="text-xs">Tax-deductible</Badge>
+                <Badge variant="default" className={WIZARD_TYPOGRAPHY.helperText}>Tax-deductible</Badge>
               </div>
-              <div className="text-xs text-muted-foreground">501(c)(3) certified</div>
+              <div className={WIZARD_TYPOGRAPHY.helperText}>501(c)(3) certified</div>
             </Label>
           </div>
         </RadioGroup>
         {errors.type && (
-          <p className="text-sm text-destructive">{errors.type}</p>
+          <p className={`${WIZARD_TYPOGRAPHY.bodyText} text-destructive`}>{errors.type}</p>
         )}
       </div>
 
-      <div className="stripe-space-sm">
-        <Label htmlFor="visibility" className="label-small">
-          Privacy & Visibility <span className="text-destructive">*</span>
-        </Label>
+      <div className={WIZARD_SPACING.fieldGroup}>
+        <FieldLabel htmlFor="visibility" required>
+          Privacy & Visibility
+        </FieldLabel>
         <Select
           value={formData.visibility || 'public'}
           onValueChange={(value) => onChange({ visibility: value as 'public' | 'unlisted' | 'private' })}
@@ -134,20 +136,20 @@ export function Step1Basics({ formData, errors, onChange }: Step1BasicsProps) {
           <SelectTrigger id="visibility" className={errors.visibility ? 'border-destructive' : ''}>
             <SelectValue placeholder="Select visibility">
               {formData.visibility === 'public' && (
-                <span className="flex items-center gap-2">
-                  <Globe className="h-4 w-4" />
+                <span className={`flex items-center ${WIZARD_GAPS.inline}`}>
+                  <Globe className={WIZARD_ICONS.standard} />
                   <span>Public</span>
                 </span>
               )}
               {formData.visibility === 'unlisted' && (
-                <span className="flex items-center gap-2">
-                  <Link2 className="h-4 w-4" />
+                <span className={`flex items-center ${WIZARD_GAPS.inline}`}>
+                  <Link2 className={WIZARD_ICONS.standard} />
                   <span>Unlisted</span>
                 </span>
               )}
               {formData.visibility === 'private' && (
-                <span className="flex items-center gap-2">
-                  <Lock className="h-4 w-4" />
+                <span className={`flex items-center ${WIZARD_GAPS.inline}`}>
+                  <Lock className={WIZARD_ICONS.standard} />
                   <span>Private</span>
                 </span>
               )}
@@ -155,29 +157,29 @@ export function Step1Basics({ formData, errors, onChange }: Step1BasicsProps) {
           </SelectTrigger>
           <SelectContent className="bg-background z-50">
             <SelectItem value="public">
-              <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4" />
+              <div className={`flex items-center ${WIZARD_GAPS.inline}`}>
+                <Globe className={WIZARD_ICONS.standard} />
                 <span>Public</span>
               </div>
             </SelectItem>
             <SelectItem value="unlisted">
-              <div className="flex items-center gap-2">
-                <Link2 className="h-4 w-4" />
+              <div className={`flex items-center ${WIZARD_GAPS.inline}`}>
+                <Link2 className={WIZARD_ICONS.standard} />
                 <span>Unlisted</span>
               </div>
             </SelectItem>
             <SelectItem value="private">
-              <div className="flex items-center gap-2">
-                <Lock className="h-4 w-4" />
+              <div className={`flex items-center ${WIZARD_GAPS.inline}`}>
+                <Lock className={WIZARD_ICONS.standard} />
                 <span>Private</span>
               </div>
             </SelectItem>
           </SelectContent>
         </Select>
         {errors.visibility && (
-          <p className="text-sm text-destructive">{errors.visibility}</p>
+          <p className={`${WIZARD_TYPOGRAPHY.bodyText} text-destructive`}>{errors.visibility}</p>
         )}
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className={WIZARD_TYPOGRAPHY.helperText}>
           {formData.visibility === 'public' && 'Visible in search and discovery'}
           {formData.visibility === 'unlisted' && 'Only accessible via link'}
           {formData.visibility === 'private' && 'Requires access code or invite'}
@@ -185,16 +187,16 @@ export function Step1Basics({ formData, errors, onChange }: Step1BasicsProps) {
       </div>
 
       {formData.visibility === 'private' && (
-        <Alert className="border-primary/20 bg-primary/5 p-4">
-          <Shield className="h-4 w-4" />
-          <AlertDescription className="stripe-space-lg">
-            <p className="text-sm">
+        <Alert className={WIZARD_ALERTS.info}>
+          <Shield className={WIZARD_ALERTS.icon} />
+          <AlertDescription className={WIZARD_SPACING.alertContent}>
+            <p className={WIZARD_TYPOGRAPHY.bodyText}>
               Configure access controls for your private fundraiser
             </p>
             
-            <div className="stripe-space-md">
-              <div className="stripe-space-sm">
-                <Label htmlFor="passcode" className="text-sm">
+            <div className={WIZARD_SPACING.cardSubsection}>
+              <div className={WIZARD_SPACING.fieldGroup}>
+                <Label htmlFor="passcode" className={WIZARD_TYPOGRAPHY.fieldLabel}>
                   Access Passcode (optional)
                 </Label>
                 <Input
@@ -207,15 +209,15 @@ export function Step1Basics({ formData, errors, onChange }: Step1BasicsProps) {
                   maxLength={50}
                 />
                 {errors.passcode && (
-                  <p className="text-sm text-destructive">{errors.passcode}</p>
+                  <p className={`${WIZARD_TYPOGRAPHY.bodyText} text-destructive`}>{errors.passcode}</p>
                 )}
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className={WIZARD_TYPOGRAPHY.helperText}>
                   Anyone with this passcode can access your fundraiser
                 </p>
               </div>
 
-              <div className="stripe-space-sm">
-                <Label htmlFor="allowlistEmails" className="text-sm">
+              <div className={WIZARD_SPACING.fieldGroup}>
+                <Label htmlFor="allowlistEmails" className={WIZARD_TYPOGRAPHY.fieldLabel}>
                   Allowlist Emails (optional)
                 </Label>
                 <Textarea
@@ -227,17 +229,17 @@ export function Step1Basics({ formData, errors, onChange }: Step1BasicsProps) {
                   rows={3}
                 />
                 {errors.allowlistEmails && (
-                  <p className="text-sm text-destructive">{errors.allowlistEmails}</p>
+                  <p className={`${WIZARD_TYPOGRAPHY.bodyText} text-destructive`}>{errors.allowlistEmails}</p>
                 )}
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className={WIZARD_TYPOGRAPHY.helperText}>
                   Only these email addresses can access your fundraiser
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-2 p-3 rounded-md bg-background">
-              <Info className="h-4 w-4 mt-0.5 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">
+            <div className={`flex items-start ${WIZARD_GAPS.inline} p-3 rounded-md bg-background`}>
+              <Info className={`${WIZARD_ICONS.standard} mt-0.5 text-muted-foreground`} />
+              <p className={WIZARD_TYPOGRAPHY.helperText}>
                 If no access controls are set, anyone with the link can access your private fundraiser.
               </p>
             </div>

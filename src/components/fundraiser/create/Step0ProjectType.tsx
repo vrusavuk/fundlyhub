@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Rocket, Target, Check, Clock, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { WIZARD_SPACING, WIZARD_TYPOGRAPHY, WIZARD_ICONS, WIZARD_GAPS } from './designConstants';
 
 interface Step0ProjectTypeProps {
   value: boolean | undefined;
@@ -14,15 +15,15 @@ interface Step0ProjectTypeProps {
 
 export function Step0ProjectType({ value, onChange }: Step0ProjectTypeProps) {
   return (
-    <div className="space-y-4 sm:space-y-5">
-      <div className="text-center space-y-2">
-        <h2 className="text-xl sm:text-2xl font-bold">Choose Your Fundraising Type</h2>
-        <p className="text-muted-foreground text-xs sm:text-sm max-w-2xl mx-auto">
+    <div className={WIZARD_SPACING.stepContainer}>
+      <div className={`text-center ${WIZARD_SPACING.fieldGroup}`}>
+        <h2 className={WIZARD_TYPOGRAPHY.stepTitle}>Choose Your Fundraising Type</h2>
+        <p className={`${WIZARD_TYPOGRAPHY.bodyText} text-muted-foreground max-w-2xl mx-auto`}>
           Select the format that best fits your needs
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-3 sm:gap-4 max-w-4xl mx-auto">
+      <div className={`grid md:grid-cols-2 ${WIZARD_GAPS.responsive} max-w-4xl mx-auto`}>
         {/* Quick Fundraiser Card */}
         <Card 
           className={cn(
@@ -45,7 +46,7 @@ export function Step0ProjectType({ value, onChange }: Step0ProjectTypeProps) {
           {value === false && (
             <div className="absolute -top-2 -right-2 z-10">
               <div className="bg-primary text-primary-foreground rounded-full p-1.5 shadow-lg">
-                <Check className="h-4 w-4" />
+                <Check className={WIZARD_ICONS.standard} />
               </div>
             </div>
           )}
@@ -55,24 +56,24 @@ export function Step0ProjectType({ value, onChange }: Step0ProjectTypeProps) {
           </Badge>
           
           <CardHeader className="pb-3">
-            <div className="flex items-start gap-3">
+            <div className={`flex items-start ${WIZARD_GAPS.standard}`}>
               <div className="p-2 rounded-lg bg-primary/10 ring-1 ring-primary/20">
-                <Rocket className="h-6 w-6 text-primary" />
+                <Rocket className={`${WIZARD_ICONS.hero} text-primary`} />
               </div>
               <div className="flex-1">
                 <CardTitle className="text-lg mb-0.5">Quick Fundraiser</CardTitle>
-                <CardDescription className="text-xs">Simple setup</CardDescription>
+                <CardDescription className={WIZARD_TYPOGRAPHY.helperText}>Simple setup</CardDescription>
               </div>
             </div>
           </CardHeader>
           
-          <CardContent className="space-y-3">
-            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <Clock className="h-3 w-3" />
+          <CardContent className={WIZARD_SPACING.cardSubsection}>
+            <div className={`flex items-center ${WIZARD_GAPS.tight} ${WIZARD_TYPOGRAPHY.helperText}`}>
+              <Clock className={WIZARD_ICONS.inline} />
               <span className="font-medium">~5 minutes</span>
             </div>
             
-            <ul className="space-y-2 text-xs sm:text-sm">
+            <ul className={`${WIZARD_SPACING.listItems} ${WIZARD_TYPOGRAPHY.bodyText}`}>
               <li className="flex items-start gap-2">
                 <div className="mt-1 h-1 w-1 rounded-full bg-primary flex-shrink-0" />
                 <span>Single goal & quick setup</span>
@@ -111,7 +112,7 @@ export function Step0ProjectType({ value, onChange }: Step0ProjectTypeProps) {
           {value === true && (
             <div className="absolute -top-2 -right-2 z-10">
               <div className="bg-accent text-accent-foreground rounded-full p-1.5 shadow-lg">
-                <Check className="h-4 w-4" />
+                <Check className={WIZARD_ICONS.standard} />
               </div>
             </div>
           )}
@@ -121,24 +122,24 @@ export function Step0ProjectType({ value, onChange }: Step0ProjectTypeProps) {
           </Badge>
           
           <CardHeader className="pb-3">
-            <div className="flex items-start gap-3">
+            <div className={`flex items-start ${WIZARD_GAPS.standard}`}>
               <div className="p-2 rounded-lg bg-accent/10 ring-1 ring-accent/20">
-                <Target className="h-6 w-6 text-accent-foreground" />
+                <Target className={`${WIZARD_ICONS.hero} text-accent-foreground`} />
               </div>
               <div className="flex-1">
                 <CardTitle className="text-lg mb-0.5">Structured Project</CardTitle>
-                <CardDescription className="text-xs">With milestones</CardDescription>
+                <CardDescription className={WIZARD_TYPOGRAPHY.helperText}>With milestones</CardDescription>
               </div>
             </div>
           </CardHeader>
           
-          <CardContent className="space-y-3">
-            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <Clock className="h-3 w-3" />
+          <CardContent className={WIZARD_SPACING.cardSubsection}>
+            <div className={`flex items-center ${WIZARD_GAPS.tight} ${WIZARD_TYPOGRAPHY.helperText}`}>
+              <Clock className={WIZARD_ICONS.inline} />
               <span className="font-medium">~15 minutes</span>
             </div>
             
-            <ul className="space-y-2 text-xs sm:text-sm">
+            <ul className={`${WIZARD_SPACING.listItems} ${WIZARD_TYPOGRAPHY.bodyText}`}>
               <li className="flex items-start gap-2">
                 <div className="mt-1 h-1 w-1 rounded-full bg-accent-foreground flex-shrink-0" />
                 <span>Multiple milestones & goals</span>
@@ -157,8 +158,8 @@ export function Step0ProjectType({ value, onChange }: Step0ProjectTypeProps) {
       </div>
 
       {value !== undefined && (
-        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <TrendingUp className="h-4 w-4 text-primary" />
+        <div className={`flex items-center justify-center ${WIZARD_GAPS.inline} ${WIZARD_TYPOGRAPHY.bodyText} text-muted-foreground animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+          <TrendingUp className={`${WIZARD_ICONS.standard} text-primary`} />
           <p>
             Great choice! Click <strong className="text-foreground">Next</strong> to continue with your {value ? 'Structured Project' : 'Quick Fundraiser'}
           </p>

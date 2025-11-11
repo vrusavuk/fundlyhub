@@ -5,6 +5,7 @@
 
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { WIZARD_ICONS } from './designConstants';
 
 interface Step {
   number: number;
