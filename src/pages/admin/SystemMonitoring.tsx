@@ -6,7 +6,8 @@ import { LogsViewer } from '@/components/admin/monitoring/LogsViewer';
 import { PerformanceMetrics } from '@/components/admin/monitoring/PerformanceMetrics';
 import { AlertsPanel } from '@/components/admin/monitoring/AlertsPanel';
 import { SystemHealthPanel } from '@/components/admin/monitoring/SystemHealthPanel';
-import { Activity, TrendingUp, Bell, Server } from 'lucide-react';
+import { DatabaseSecurityPanel } from '@/components/admin/monitoring/DatabaseSecurityPanel';
+import { Activity, TrendingUp, Bell, Server, Database } from 'lucide-react';
 
 export default function SystemMonitoring() {
   const { isSuperAdmin } = useRBAC();
@@ -22,10 +23,14 @@ export default function SystemMonitoring() {
       }}
     >
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <Activity className="h-4 w-4" />
             <span className="hidden sm:inline">Overview</span>
+          </TabsTrigger>
+          <TabsTrigger value="database" className="flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            <span className="hidden sm:inline">Database</span>
           </TabsTrigger>
           <TabsTrigger value="performance" className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
@@ -51,6 +56,12 @@ export default function SystemMonitoring() {
               <AlertsPanel limit={5} />
               <PerformanceMetrics compact />
             </div>
+          </PageSection>
+        </TabsContent>
+
+        <TabsContent value="database" className="space-y-6">
+          <PageSection spacing="normal">
+            <DatabaseSecurityPanel />
           </PageSection>
         </TabsContent>
 

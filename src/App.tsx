@@ -48,7 +48,6 @@ import { CampaignManagement } from '@/pages/admin/CampaignManagement';
 import { OrganizationManagement } from '@/pages/admin/OrganizationManagement';
 import { RoleManagement } from '@/pages/admin/RoleManagement';
 import { AuditLogs } from '@/pages/admin/AuditLogs';
-import { SystemHealth } from '@/pages/admin/SystemHealth';
 import SystemMonitoring from '@/pages/admin/SystemMonitoring';
 import { SystemSettings } from '@/pages/admin/SystemSettings';
 import NotificationCenter from '@/pages/admin/NotificationCenter';
@@ -143,7 +142,7 @@ const App = () => (
           <Route path="organizations" element={<OrganizationManagement />} />
           <Route path="organizations/:id" element={<OrganizationDetail />} />
           <Route path="notifications" element={<NotificationCenter />} />
-          <Route path="system" element={<SystemHealth />} />
+          <Route path="system" element={<Navigate to="/admin/monitoring" replace />} />
           <Route path="monitoring" element={<SystemMonitoring />} />
           <Route path="settings" element={<SystemSettings />} />
           <Route path="events" element={<EventMonitoring />} />

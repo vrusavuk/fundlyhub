@@ -111,17 +111,10 @@ const managementItems: AdminNavItem[] = [
     permission: 'view_audit_logs'
   },
   {
-    title: 'System Health',
-    url: '/admin/system',
-    icon: Database,
-    permission: 'manage_system_settings'
-  },
-  {
     title: 'System Monitoring',
     url: '/admin/monitoring',
     icon: Activity,
-    permission: 'manage_system_settings',
-    badge: 'New',
+    permission: 'manage_system_settings'
   },
   {
     title: 'Event Monitoring',
