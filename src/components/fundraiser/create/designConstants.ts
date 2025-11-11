@@ -76,8 +76,8 @@ export const WIZARD_ALERTS = {
 } as const;
 
 export const WIZARD_BUTTONS = {
-  // Footer container
-  footer: 'flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 sm:gap-3 sticky bottom-0 bg-background/95 backdrop-blur-sm p-3 border-t border-border',
+  // Footer container - fixed on desktop, natural flow on mobile
+  footer: 'flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 sm:gap-3 sm:sticky md:fixed bottom-0 left-0 right-0 md:left-auto md:right-auto md:max-w-screen-2xl md:mx-auto bg-background/95 backdrop-blur-sm p-3 border-t border-border z-50',
   
   // Button props
   size: 'lg' as const,

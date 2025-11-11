@@ -105,7 +105,7 @@ export function CreateFundraiserWizard() {
   };
 
   return (
-    <div className="w-full component-hierarchy">
+    <div className="w-full component-hierarchy pb-20 md:pb-24">
       <ProgressIndicator
         currentStep={currentStep}
         steps={visibleSteps}
