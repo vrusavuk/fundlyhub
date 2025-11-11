@@ -13,11 +13,11 @@ export default function CreateFundraiser() {
   return (
     <AppLayout>
       <ProtectedFeatureRoute featureKey="features.fundraiser_creation">
-        <PageContainer maxWidth="2xl" className="py-4 sm:py-6 md:py-8">
+        <PageContainer maxWidth="2xl" className="py-3 sm:py-4 md:py-6">
           <PageHeader
             title="Create New Fundraiser"
             description="Follow the steps below to launch your campaign with AI-powered assistance"
-            className="mb-6 sm:mb-8"
+            className="mb-4 sm:mb-5"
             showBackButton={false}
           />
           <CreateFundraiserWizard />

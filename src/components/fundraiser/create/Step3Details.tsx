@@ -31,8 +31,8 @@ export function Step3Details({ formData, errors, onChange, isProject }: Step3Det
   const selectedDate = formData.endDate ? new Date(formData.endDate) : undefined;
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
+    <div className="space-y-4">
+      <div className="space-y-1.5">
         <Label htmlFor="beneficiaryName" className="label-small">
           Beneficiary Name
         </Label>
@@ -47,12 +47,12 @@ export function Step3Details({ formData, errors, onChange, isProject }: Step3Det
         {errors.beneficiaryName && (
           <p className="text-sm text-destructive">{errors.beneficiaryName}</p>
         )}
-        <p className="text-xs text-muted-foreground">
+        <p className="text-[11px] text-muted-foreground mt-1">
           Optional: Name the person or group who will receive the funds
         </p>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <Label htmlFor="location" className="label-small">
           Location
         </Label>
@@ -67,12 +67,12 @@ export function Step3Details({ formData, errors, onChange, isProject }: Step3Det
         {errors.location && (
           <p className="text-sm text-destructive">{errors.location}</p>
         )}
-        <p className="text-xs text-muted-foreground">
+        <p className="text-[11px] text-muted-foreground mt-1">
           Optional: Where is this fundraiser located?
         </p>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <ImageUpload
           value={formData.coverImage}
           onChange={(url) => {
@@ -95,7 +95,7 @@ export function Step3Details({ formData, errors, onChange, isProject }: Step3Det
         )}
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <Label className="label-small">End Date</Label>
         <Popover>
           <PopoverTrigger asChild>
@@ -120,18 +120,17 @@ export function Step3Details({ formData, errors, onChange, isProject }: Step3Det
             />
           </PopoverContent>
         </Popover>
-        <p className="text-xs text-muted-foreground">
-          Optional: Set an end date for your campaign. Leave blank for ongoing campaigns.
+        <p className="text-[11px] text-muted-foreground mt-1">
+          Optional: Set an end date for your campaign
         </p>
       </div>
 
-      <div className="bg-accent/50 border border-border rounded-lg p-4">
-        <h4 className="font-medium text-sm mb-2">Optional fields help build trust:</h4>
-        <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-          <li>Adding a beneficiary name personalizes your campaign</li>
-          <li>Location helps donors connect with local causes</li>
-          <li>A compelling image significantly increases donations</li>
-          <li>End dates can create urgency for time-sensitive needs</li>
+      <div className="bg-accent/50 border border-border rounded-lg p-3">
+        <h4 className="font-medium text-xs sm:text-sm mb-1.5">Optional fields build trust:</h4>
+        <ul className="text-xs text-muted-foreground space-y-0.5 list-disc list-inside">
+          <li>Beneficiary name personalizes campaign</li>
+          <li>Location connects with local donors</li>
+          <li>Images increase donations</li>
         </ul>
       </div>
     </div>

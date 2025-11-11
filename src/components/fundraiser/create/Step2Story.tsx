@@ -31,16 +31,16 @@ export function Step2Story({ formData, errors, onChange, categoryName }: Step2St
   const [storySuggestion, setStorySuggestion] = useState<string | null>(null);
 
   return (
-    <div className="space-y-6">
-      <Alert>
-        <Lightbulb className="h-4 w-4" />
-        <AlertDescription>
-          Click the AI button to generate or improve your text. Review the suggestion and accept it if you like it.
+    <div className="space-y-4">
+      <Alert className="p-3">
+        <Lightbulb className="h-3.5 w-3.5" />
+        <AlertDescription className="text-xs sm:text-sm">
+          Click the AI button to generate or improve your text
         </AlertDescription>
       </Alert>
 
       {/* Summary Section */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         <div className="flex items-center justify-between">
           <Label htmlFor="summary" className="label-small">
             Short Summary <span className="text-destructive">*</span>
@@ -86,7 +86,7 @@ export function Step2Story({ formData, errors, onChange, categoryName }: Step2St
       </div>
 
       {/* Story Section */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         <div className="flex items-center justify-between">
           <Label htmlFor="story" className="label-small">
             Full Story <span className="text-destructive">*</span>
@@ -132,14 +132,13 @@ export function Step2Story({ formData, errors, onChange, categoryName }: Step2St
         )}
       </div>
 
-      <div className="bg-accent/50 border border-border rounded-lg p-4">
-        <h4 className="font-medium text-sm mb-2">Tips for a great story:</h4>
-        <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-          <li>Start with who you are and why you're fundraising</li>
-          <li>Explain the specific need or challenge</li>
-          <li>Describe how the funds will be used (be specific)</li>
-          <li>Share the expected impact and outcome</li>
-          <li>End with a clear call to action</li>
+      <div className="bg-accent/50 border border-border rounded-lg p-3">
+        <h4 className="font-medium text-xs sm:text-sm mb-1.5">Tips for a great story:</h4>
+        <ul className="text-xs text-muted-foreground space-y-0.5 list-disc list-inside">
+          <li>Start with who you are and why</li>
+          <li>Explain the specific need</li>
+          <li>Describe how funds will be used</li>
+          <li>Share the expected impact</li>
         </ul>
       </div>
     </div>

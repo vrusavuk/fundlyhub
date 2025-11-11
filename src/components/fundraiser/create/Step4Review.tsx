@@ -44,21 +44,21 @@ export function Step4Review({ formData, categoryName, categoryEmoji }: Step4Revi
                      (!formData.isProject || (formData.milestones && formData.milestones.length > 0));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {isComplete ? (
-        <div className="flex items-center gap-2 text-success p-4 bg-success/10 rounded-lg border border-success/20">
-          <CheckCircle2 className="h-5 w-5" />
-          <span className="font-medium">Ready to publish!</span>
+        <div className="flex items-center gap-2 text-success p-3 bg-success/10 rounded-lg border border-success/20">
+          <CheckCircle2 className="h-4 w-4" />
+          <span className="font-medium text-sm">Ready to publish!</span>
         </div>
       ) : (
-        <div className="flex items-center gap-2 text-warning p-4 bg-warning/10 rounded-lg border border-warning/20">
-          <AlertCircle className="h-5 w-5" />
-          <span className="font-medium">Please complete all required fields</span>
+        <div className="flex items-center gap-2 text-warning p-3 bg-warning/10 rounded-lg border border-warning/20">
+          <AlertCircle className="h-4 w-4" />
+          <span className="font-medium text-sm">Please complete all required fields</span>
         </div>
       )}
 
       <Card className="card-enhanced">
-        <CardHeader>
+        <CardHeader className="p-3 sm:p-4 md:p-6">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <CardTitle className="text-2xl mb-2">
@@ -91,11 +91,11 @@ export function Step4Review({ formData, categoryName, categoryEmoji }: Step4Revi
             )}
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4 p-3 sm:p-4 md:p-6">
           {formData.summary && (
             <div>
-              <h4 className="text-sm font-medium mb-2 text-muted-foreground">Summary</h4>
-              <p className="text-base">{formData.summary}</p>
+              <h4 className="text-xs font-medium mb-1.5 text-muted-foreground">Summary</h4>
+              <p className="text-sm">{formData.summary}</p>
             </div>
           )}
 
@@ -103,15 +103,15 @@ export function Step4Review({ formData, categoryName, categoryEmoji }: Step4Revi
 
           {formData.story && (
             <div>
-              <h4 className="text-sm font-medium mb-2 text-muted-foreground">Story</h4>
-              <p className="text-sm whitespace-pre-wrap">{formData.story}</p>
+              <h4 className="text-xs font-medium mb-1.5 text-muted-foreground">Story</h4>
+              <p className="text-xs sm:text-sm whitespace-pre-wrap">{formData.story}</p>
             </div>
           )}
 
           {formData.visibility === 'private' && (formData.passcode || formData.allowlistEmails) && (
             <>
               <Separator />
-              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
                 <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
                   <Lock className="h-4 w-4" />
                   Access Controls
@@ -137,7 +137,7 @@ export function Step4Review({ formData, categoryName, categoryEmoji }: Step4Revi
           {(formData.beneficiaryName || formData.location || formData.endDate) && (
             <>
               <Separator />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {formData.beneficiaryName && (
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-muted-foreground" />
@@ -194,16 +194,16 @@ export function Step4Review({ formData, categoryName, categoryEmoji }: Step4Revi
 
       {formData.isProject && formData.milestones && formData.milestones.length > 0 && (
         <Card className="card-enhanced">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5" />
+          <CardHeader className="p-3 sm:p-4 md:p-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Target className="h-4 w-4 sm:h-5 sm:w-5" />
               Project Milestones ({formData.milestones.length})
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 p-3 sm:p-4 md:p-6">
             {formData.milestones.map((milestone, index) => (
               <Card key={index} className="border-l-4 border-l-primary/50">
-                <CardContent className="p-4">
+                <CardContent className="p-3">
                   <div className="flex justify-between items-start mb-2">
                     <h5 className="font-semibold text-base">{milestone.title}</h5>
                     <Badge variant="secondary" className="ml-2">
@@ -245,16 +245,15 @@ export function Step4Review({ formData, categoryName, categoryEmoji }: Step4Revi
         </Card>
       )}
 
-      <div className="bg-accent/50 border border-border rounded-lg p-4">
-        <h4 className="font-medium text-sm mb-2">Before you publish:</h4>
-        <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-          <li>Review all information for accuracy</li>
-          <li>Check that your story is clear and compelling</li>
-          <li>Verify your goal amount is correct</li>
+      <div className="bg-accent/50 border border-border rounded-lg p-3">
+        <h4 className="font-medium text-xs sm:text-sm mb-1.5">Before you publish:</h4>
+        <ul className="text-xs text-muted-foreground space-y-0.5 list-disc list-inside">
+          <li>Review all information</li>
+          <li>Check story is compelling</li>
+          <li>Verify goal amount</li>
           {formData.isProject && (
-            <li>Ensure all milestones are complete and realistic</li>
+            <li>Ensure milestones are complete</li>
           )}
-          <li>Ensure all contact information is up to date</li>
         </ul>
       </div>
     </div>

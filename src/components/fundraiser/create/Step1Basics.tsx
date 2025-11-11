@@ -30,8 +30,8 @@ interface Step1BasicsProps {
 
 export function Step1Basics({ formData, errors, onChange }: Step1BasicsProps) {
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
+    <div className="space-y-4">
+      <div className="space-y-1.5">
         <Label htmlFor="title" className="label-small">
           Fundraiser Title <span className="text-destructive">*</span>
         </Label>
@@ -52,7 +52,7 @@ export function Step1Basics({ formData, errors, onChange }: Step1BasicsProps) {
         {errors.title && (
           <p className="text-sm text-destructive">{errors.title}</p>
         )}
-        <p className="text-xs text-muted-foreground">
+        <p className="text-[11px] text-muted-foreground mt-1">
           Choose a clear, specific title that captures attention
         </p>
       </div>
@@ -63,7 +63,7 @@ export function Step1Basics({ formData, errors, onChange }: Step1BasicsProps) {
         error={errors.categoryId}
       />
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <Label htmlFor="goalAmount" className="label-small">
           Goal Amount (USD) <span className="text-destructive">*</span>
         </Label>
@@ -86,12 +86,12 @@ export function Step1Basics({ formData, errors, onChange }: Step1BasicsProps) {
         {errors.goalAmount && (
           <p className="text-sm text-destructive">{errors.goalAmount}</p>
         )}
-        <p className="text-xs text-muted-foreground">
+        <p className="text-[11px] text-muted-foreground mt-1">
           Set a realistic goal between $100 and $10,000,000
         </p>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <Label className="label-small">
           Fundraiser Type <span className="text-destructive">*</span>
         </Label>
@@ -123,7 +123,7 @@ export function Step1Basics({ formData, errors, onChange }: Step1BasicsProps) {
         )}
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <Label htmlFor="visibility" className="label-small">
           Privacy & Visibility <span className="text-destructive">*</span>
         </Label>
@@ -177,7 +177,7 @@ export function Step1Basics({ formData, errors, onChange }: Step1BasicsProps) {
         {errors.visibility && (
           <p className="text-sm text-destructive">{errors.visibility}</p>
         )}
-        <p className="text-xs text-muted-foreground">
+        <p className="text-[11px] text-muted-foreground mt-1">
           {formData.visibility === 'public' && 'Visible in search and discovery'}
           {formData.visibility === 'unlisted' && 'Only accessible via link'}
           {formData.visibility === 'private' && 'Requires access code or invite'}
@@ -185,15 +185,15 @@ export function Step1Basics({ formData, errors, onChange }: Step1BasicsProps) {
       </div>
 
       {formData.visibility === 'private' && (
-        <Alert className="border-primary/20 bg-primary/5">
+        <Alert className="border-primary/20 bg-primary/5 p-3">
           <Shield className="h-4 w-4" />
-          <AlertDescription className="space-y-4">
-            <p className="text-sm">
-              Configure access controls for your private fundraiser. You can use a passcode, an allowlist of email addresses, or both.
+          <AlertDescription className="space-y-3">
+            <p className="text-xs sm:text-sm">
+              Configure access controls for your private fundraiser
             </p>
             
-            <div className="space-y-3">
-              <div className="space-y-2">
+            <div className="space-y-2.5">
+              <div className="space-y-1.5">
                 <Label htmlFor="passcode" className="text-sm">
                   Access Passcode (optional)
                 </Label>
@@ -209,12 +209,12 @@ export function Step1Basics({ formData, errors, onChange }: Step1BasicsProps) {
                 {errors.passcode && (
                   <p className="text-sm text-destructive">{errors.passcode}</p>
                 )}
-                <p className="text-xs text-muted-foreground">
+                <p className="text-[11px] text-muted-foreground mt-1">
                   Anyone with this passcode can access your fundraiser
                 </p>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="allowlistEmails" className="text-sm">
                   Allowlist Emails (optional)
                 </Label>
@@ -229,15 +229,15 @@ export function Step1Basics({ formData, errors, onChange }: Step1BasicsProps) {
                 {errors.allowlistEmails && (
                   <p className="text-sm text-destructive">{errors.allowlistEmails}</p>
                 )}
-                <p className="text-xs text-muted-foreground">
+                <p className="text-[11px] text-muted-foreground mt-1">
                   Only these email addresses can access your fundraiser
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-2 p-3 rounded-md bg-background">
-              <Info className="h-4 w-4 mt-0.5 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">
+            <div className="flex items-start gap-2 p-2 rounded-md bg-background">
+              <Info className="h-3.5 w-3.5 mt-0.5 text-muted-foreground" />
+              <p className="text-[11px] text-muted-foreground">
                 If no access controls are set, anyone with the link can access your private fundraiser.
               </p>
             </div>
