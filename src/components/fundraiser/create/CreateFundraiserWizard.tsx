@@ -166,7 +166,7 @@ export function CreateFundraiserWizard() {
         </CardContent>
       </Card>
 
-      <div className={WIZARD_BUTTONS.footer.replace('flex flex-col sm:flex-row justify-between items-stretch sm:items-center', 'grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center')}>
+      <div className={WIZARD_BUTTONS.footer}>
         {/* Left column - Previous button or empty space */}
         <div className="flex justify-start mb-2 sm:mb-0">
           {currentStep > 0 && (
