@@ -30,7 +30,7 @@ import {
   CreateFundraiserPageSkeleton,
 } from '@/components/skeletons/RouteSkeletons';
 
-// Lazy-loaded pages for code splitting (non-admin only)
+// Admin pages - lazy load remaining
 import { 
   LazyCreateFundraiser,
   LazyUserProfile,
@@ -49,6 +49,7 @@ import { OrganizationManagement } from '@/pages/admin/OrganizationManagement';
 import { RoleManagement } from '@/pages/admin/RoleManagement';
 import { AuditLogs } from '@/pages/admin/AuditLogs';
 import { SystemHealth } from '@/pages/admin/SystemHealth';
+import SystemMonitoring from '@/pages/admin/SystemMonitoring';
 import { SystemSettings } from '@/pages/admin/SystemSettings';
 import NotificationCenter from '@/pages/admin/NotificationCenter';
 import EventMonitoring from '@/pages/admin/EventMonitoring';
@@ -143,6 +144,7 @@ const App = () => (
           <Route path="organizations/:id" element={<OrganizationDetail />} />
           <Route path="notifications" element={<NotificationCenter />} />
           <Route path="system" element={<SystemHealth />} />
+          <Route path="monitoring" element={<SystemMonitoring />} />
           <Route path="settings" element={<SystemSettings />} />
           <Route path="events" element={<EventMonitoring />} />
           <Route path="design-system" element={<DesignSystemDocs />} />

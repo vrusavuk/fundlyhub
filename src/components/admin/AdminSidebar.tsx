@@ -117,11 +117,17 @@ const managementItems: AdminNavItem[] = [
     permission: 'manage_system_settings'
   },
   {
+    title: 'System Monitoring',
+    url: '/admin/monitoring',
+    icon: Activity,
+    permission: 'manage_system_settings',
+    badge: 'New',
+  },
+  {
     title: 'Event Monitoring',
     url: '/admin/events',
     icon: Activity,
     permission: 'manage_system_settings',
-    badge: 'New',
   },
 ];
 
