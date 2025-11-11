@@ -166,55 +166,62 @@ export function CreateFundraiserWizard() {
         </CardContent>
       </Card>
 
-      <div className={WIZARD_BUTTONS.footer}>
-        {currentStep > 0 && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={goToPreviousStep}
-            disabled={isSubmitting}
-            size={WIZARD_BUTTONS.size}
-            className={WIZARD_BUTTONS.className}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Previous
-          </Button>
-        )}
+      <div className={WIZARD_BUTTONS.footer.replace('flex flex-col sm:flex-row justify-between items-stretch sm:items-center', 'grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center')}>
+        {/* Left column - Previous button or empty space */}
+        <div className="flex justify-start mb-2 sm:mb-0">
+          {currentStep > 0 && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={goToPreviousStep}
+              disabled={isSubmitting}
+              size={WIZARD_BUTTONS.size}
+              className={WIZARD_BUTTONS.className}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Previous
+            </Button>
+          )}
+        </div>
 
-        <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
+        {/* Center column - Auto-saving indicator */}
+        <div className="hidden sm:flex items-center justify-center gap-2 text-xs text-muted-foreground">
           <Save className="h-4 w-4" />
           <span>Auto-saving</span>
         </div>
 
-        {currentStep < (formData.isProject ? 5 : 4) ? (
-          <Button
-            type="button"
-            onClick={handleNext}
-            disabled={isSubmitting || (currentStep === 0 && formData.isProject === undefined)}
-            size={WIZARD_BUTTONS.size}
-            className={WIZARD_BUTTONS.className}
-          >
-            Next
-            <ArrowRight className="h-4 w-4 ml-2" />
-          </Button>
-        ) : (
-          <Button
-            type="button"
-            onClick={handlePublish}
-            disabled={isSubmitting}
-            size={WIZARD_BUTTONS.size}
-            className={WIZARD_BUTTONS.className}
-          >
-            {isSubmitting ? (
-              <>
-                <LoadingSpinner size="sm" className="mr-2" />
-                Publishing...
-              </>
-            ) : (
-              'Publish Fundraiser'
-            )}
-          </Button>
-        )}
+        {/* Right column - Next/Publish button */}
+        <div className="flex justify-end">
+          {currentStep < (formData.isProject ? 5 : 4) ? (
+            <Button
+              type="button"
+              onClick={handleNext}
+              disabled={isSubmitting || (currentStep === 0 && formData.isProject === undefined)}
+              size={WIZARD_BUTTONS.size}
+              className={WIZARD_BUTTONS.className}
+            >
+              Next
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              onClick={handlePublish}
+              disabled={isSubmitting}
+              size={WIZARD_BUTTONS.size}
+              className={WIZARD_BUTTONS.className}
+            >
+              {isSubmitting ? (
+                <>
+                  <LoadingSpinner size="sm" className="mr-2" />
+                  Publishing...
+                </>
+              ) : (
+                'Publish Fundraiser'
+              )}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
