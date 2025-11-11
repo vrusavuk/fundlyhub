@@ -4,6 +4,7 @@
  */
 import React, { createContext, useContext, useReducer, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
+import { logger } from '@/lib/services/logger.service';
 
 interface SearchState {
   isHeaderSearchOpen: boolean;
@@ -118,15 +119,25 @@ export function UnifiedSearchProvider({ children }: { children: ReactNode }) {
   }, [location.pathname]);
 
   const openHeaderSearch = useCallback(() => {
-    console.log('🔍 UnifiedSearchContext: openHeaderSearch called');
+    logger.debug('UnifiedSearchContext: openHeaderSearch called', {
+      componentName: 'UnifiedSearchContext',
+      operationName: 'openHeaderSearch',
+    });
     
     try {
       // If we're on a page that uses integrated search, focus the search input instead
       const isDemoMode = document.querySelector('[data-onboarding-active]') !== null;
-      console.log('🎯 UnifiedSearchContext: Demo mode active?', isDemoMode);
+      logger.debug('UnifiedSearchContext: Demo mode check', {
+        componentName: 'UnifiedSearchContext',
+        operationName: 'openHeaderSearch',
+        metadata: { isDemoMode },
+      });
       
       if (!isDemoMode && shouldUseIntegratedSearch()) {
-        console.log('🔄 UnifiedSearchContext: Using integrated search, focusing input');
+        logger.debug('UnifiedSearchContext: Using integrated search, focusing input', {
+          componentName: 'UnifiedSearchContext',
+          operationName: 'openHeaderSearch',
+        });
         const searchInput = document.querySelector('input[placeholder*="Search"]') as HTMLInputElement;
         if (searchInput) {
           searchInput.focus();
@@ -134,10 +145,16 @@ export function UnifiedSearchProvider({ children }: { children: ReactNode }) {
         }
       }
       
-      console.log('🚀 UnifiedSearchContext: Dispatching OPEN_HEADER_SEARCH');
+      logger.debug('UnifiedSearchContext: Dispatching OPEN_HEADER_SEARCH', {
+        componentName: 'UnifiedSearchContext',
+        operationName: 'openHeaderSearch',
+      });
       dispatch({ type: 'OPEN_HEADER_SEARCH' });
     } catch (error) {
-      console.error('❌ UnifiedSearchContext: Error opening header search:', error);
+      logger.error('UnifiedSearchContext: Error opening header search', error as Error, {
+        componentName: 'UnifiedSearchContext',
+        operationName: 'openHeaderSearch',
+      });
       dispatch({ type: 'OPEN_HEADER_SEARCH' });
     }
   }, [shouldUseIntegratedSearch]);
@@ -180,7 +197,11 @@ export function UnifiedSearchProvider({ children }: { children: ReactNode }) {
           closeHeaderSearch();
         }
       } catch (error) {
-        console.warn('Error handling keyboard shortcut:', error);
+        logger.warn('Error handling keyboard shortcut', {
+          componentName: 'UnifiedSearchContext',
+          operationName: 'handleKeyDown',
+          metadata: { error: error instanceof Error ? error.message : String(error) },
+        });
       }
     };
 
@@ -233,7 +254,10 @@ export function useUnifiedSearch(): SearchContextType {
   
   if (context === undefined) {
     // Instead of throwing, return a safe fallback object
-    console.warn('useUnifiedSearch used outside of provider, returning fallback');
+    logger.warn('useUnifiedSearch used outside of provider, returning fallback', {
+      componentName: 'UnifiedSearchContext',
+      operationName: 'useUnifiedSearch',
+    });
     return {
       isHeaderSearchOpen: false,
       searchQuery: '',

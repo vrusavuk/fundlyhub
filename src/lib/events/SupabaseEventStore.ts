@@ -5,6 +5,7 @@
 
 import { SupabaseClient } from '@supabase/supabase-js';
 import { EventStore, DomainEvent } from './types';
+import { logger } from '@/lib/services/logger.service';
 
 export class SupabaseEventStore implements EventStore {
   private supabase: SupabaseClient;
@@ -27,7 +28,12 @@ export class SupabaseEventStore implements EventStore {
   private startBatchFlushing(): void {
     this.flushInterval = setInterval(() => {
       if (this.batchQueue.length > 0) {
-        this.flushBatch().catch(console.error);
+        this.flushBatch().catch((error) => {
+          logger.error('Batch flush error in interval', error as Error, {
+            componentName: 'SupabaseEventStore',
+            operationName: 'startBatchFlushing',
+          });
+        });
       }
     }, this.flushMs);
   }
@@ -43,7 +49,11 @@ export class SupabaseEventStore implements EventStore {
     } catch (error) {
       // Re-queue failed events at the front
       this.batchQueue.unshift(...batch);
-      console.error('Batch flush failed, events re-queued:', error);
+      logger.error('Batch flush failed, events re-queued', error as Error, {
+        componentName: 'SupabaseEventStore',
+        operationName: 'flushBatch',
+        metadata: { batchSize: batch.length },
+      });
       throw error;
     }
   }
@@ -64,7 +74,11 @@ export class SupabaseEventStore implements EventStore {
       });
 
     if (error) {
-      console.error('Failed to save event:', error);
+      logger.error('Failed to save event', error as Error, {
+        componentName: 'SupabaseEventStore',
+        operationName: 'save',
+        metadata: { eventType: event.type, eventId: event.id },
+      });
       throw new Error(`Failed to save event: ${error.message}`);
     }
   }
@@ -89,7 +103,11 @@ export class SupabaseEventStore implements EventStore {
       .insert(records);
 
     if (error) {
-      console.error('Failed to save event batch:', error);
+      logger.error('Failed to save event batch', error as Error, {
+        componentName: 'SupabaseEventStore',
+        operationName: 'saveBatch',
+        metadata: { batchSize: events.length },
+      });
       throw new Error(`Failed to save event batch: ${error.message}`);
     }
   }
@@ -107,7 +125,11 @@ export class SupabaseEventStore implements EventStore {
     const { data, error } = await query;
 
     if (error) {
-      console.error('Failed to get events:', error);
+      logger.error('Failed to get events', error as Error, {
+        componentName: 'SupabaseEventStore',
+        operationName: 'getEvents',
+        metadata: { fromTimestamp },
+      });
       throw new Error(`Failed to get events: ${error.message}`);
     }
 
@@ -122,7 +144,11 @@ export class SupabaseEventStore implements EventStore {
       .order('occurred_at', { ascending: true });
 
     if (error) {
-      console.error('Failed to get events by type:', error);
+      logger.error('Failed to get events by type', error as Error, {
+        componentName: 'SupabaseEventStore',
+        operationName: 'getEventsByType',
+        metadata: { eventType },
+      });
       throw new Error(`Failed to get events by type: ${error.message}`);
     }
 
@@ -137,7 +163,11 @@ export class SupabaseEventStore implements EventStore {
       .order('occurred_at', { ascending: true });
 
     if (error) {
-      console.error('Failed to get events by correlation:', error);
+      logger.error('Failed to get events by correlation', error as Error, {
+        componentName: 'SupabaseEventStore',
+        operationName: 'getEventsByCorrelation',
+        metadata: { correlationId },
+      });
       throw new Error(`Failed to get events by correlation: ${error.message}`);
     }
 
@@ -152,7 +182,11 @@ export class SupabaseEventStore implements EventStore {
       .order('occurred_at', { ascending: true });
 
     if (error) {
-      console.error('Failed to get events by aggregate:', error);
+      logger.error('Failed to get events by aggregate', error as Error, {
+        componentName: 'SupabaseEventStore',
+        operationName: 'getEventsByAggregate',
+        metadata: { aggregateId },
+      });
       throw new Error(`Failed to get events by aggregate: ${error.message}`);
     }
 
@@ -173,7 +207,10 @@ export class SupabaseEventStore implements EventStore {
             const event = this.mapToDomainEvent(payload.new);
             callback(event);
           } catch (error) {
-            console.error('Error processing streamed event:', error);
+            logger.error('Error processing streamed event', error as Error, {
+              componentName: 'SupabaseEventStore',
+              operationName: 'streamEvents',
+            });
           }
         }
       )
@@ -220,7 +257,12 @@ export class SupabaseEventStore implements EventStore {
 
     // Flush any remaining events
     if (this.batchQueue.length > 0) {
-      this.flushBatch().catch(console.error);
+      this.flushBatch().catch((error) => {
+        logger.error('Batch flush error during disconnect', error as Error, {
+          componentName: 'SupabaseEventStore',
+          operationName: 'disconnect',
+        });
+      });
     }
   }
 }

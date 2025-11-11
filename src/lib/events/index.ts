@@ -77,7 +77,13 @@ export const globalEventBus = new HybridEventBus({
 });
 
 // Initialize the event bus
-globalEventBus.connect().catch(console.error);
+import { logger } from '@/lib/services/logger.service';
+globalEventBus.connect().catch((error) => {
+  logger.error('Failed to connect global event bus', error as Error, {
+    componentName: 'EventBusInitializer',
+    operationName: 'connect',
+  });
+});
 
 // Register campaign event processors
 const campaignWriteProcessor = new CampaignWriteProcessor();
@@ -107,16 +113,24 @@ globalEventBus.subscribe('admin.role.permissions_updated', rolePermissionsProces
 const projectUpdateWriteProcessor = new ProjectUpdateWriteProcessor();
 globalEventBus.subscribe('project.update.created', projectUpdateWriteProcessor);
 
-console.log('[EventBus] Campaign processors registered');
-console.log('[EventBus] Role management processors registered');
-console.log('[EventBus] Project update processors registered');
+logger.info('EventBus processors registered', {
+  componentName: 'EventBusInitializer',
+  operationName: 'initialize',
+  metadata: { 
+    processors: ['Campaign', 'RoleManagement', 'ProjectUpdate']
+  },
+});
 
 // Register search projection processor
 const userSearchProjectionProcessor = new UserSearchProjectionProcessor();
 globalEventBus.subscribe('user.registered', userSearchProjectionProcessor);
 globalEventBus.subscribe('user.profile_updated', userSearchProjectionProcessor);
 
-console.log('[EventBus] Search processors registered');
+logger.info('EventBus search processors registered', {
+  componentName: 'EventBusInitializer',
+  operationName: 'initialize',
+  metadata: { processors: ['UserSearchProjection'] },
+});
 
 // Register donation event processors
 import { DonationWriteProcessor } from './processors/DonationWriteProcessor';
@@ -133,7 +147,11 @@ globalEventBus.subscribe('donation.completed', donationProjectionProcessor);
 globalEventBus.subscribe('donation.refunded', donationProjectionProcessor);
 globalEventBus.subscribe('donation.failed', donationProjectionProcessor);
 
-console.log('[EventBus] Donation processors registered');
+logger.info('EventBus donation processors registered', {
+  componentName: 'EventBusInitializer',
+  operationName: 'initialize',
+  metadata: { processors: ['DonationWrite', 'DonationProjection'] },
+});
 
 // Register image/storage event processors
 import { ImageWriteProcessor } from './processors/ImageWriteProcessor';
@@ -154,7 +172,11 @@ globalEventBus.subscribe('storage.image.optimized', imageAnalyticsProcessor);
 
 globalEventBus.subscribe('storage.draft.cleanup_requested', imageCleanupProcessor);
 
-console.log('[EventBus] Image/Storage processors registered');
+logger.info('EventBus image/storage processors registered', {
+  componentName: 'EventBusInitializer',
+  operationName: 'initialize',
+  metadata: { processors: ['ImageWrite', 'ImageAnalytics', 'ImageCleanup'] },
+});
 
 // Initialize subscription event subscribers
 import { initializeSubscriptionSubscribers } from './subscribers/SubscriptionEventSubscriber';

@@ -9,6 +9,7 @@ import { EventBus } from './EventBus';
 import { SupabaseEventStore } from './SupabaseEventStore';
 import { RedisEventStream } from './RedisEventStream';
 import { CircuitBreaker } from './CircuitBreaker';
+import { logger } from '@/lib/services/logger.service';
 
 export interface HybridEventBusConfig extends EventBusConfig {
   supabase: SupabaseClient;
@@ -83,9 +84,15 @@ export class HybridEventBus implements IEventBus {
       this.subscribeToRealtimeEvents();
 
       this._isConnected = true;
-      console.log('Hybrid Event Bus connected');
+      logger.info('Hybrid Event Bus connected', {
+        componentName: 'HybridEventBus',
+        operationName: 'connect',
+      });
     } catch (error) {
-      console.error('Failed to connect Hybrid Event Bus:', error);
+      logger.error('Failed to connect Hybrid Event Bus', error as Error, {
+        componentName: 'HybridEventBus',
+        operationName: 'connect',
+      });
       throw error;
     }
   }
@@ -105,9 +112,15 @@ export class HybridEventBus implements IEventBus {
       }
 
       this._isConnected = false;
-      console.log('Hybrid Event Bus disconnected');
+      logger.info('Hybrid Event Bus disconnected', {
+        componentName: 'HybridEventBus',
+        operationName: 'disconnect',
+      });
     } catch (error) {
-      console.error('Failed to disconnect Hybrid Event Bus:', error);
+      logger.error('Failed to disconnect Hybrid Event Bus', error as Error, {
+        componentName: 'HybridEventBus',
+        operationName: 'disconnect',
+      });
     }
   }
 
@@ -135,7 +148,11 @@ export class HybridEventBus implements IEventBus {
       // 3. Publish to Redis for distributed processing (if enabled, server-side only)
       if (this.enableRemotePublish && this.redisStream) {
         await this.redisStream.publishToStream(enrichedEvent).catch(error => {
-          console.warn('Failed to publish to Redis, continuing:', error);
+          logger.warn('Failed to publish to Redis, continuing', {
+            componentName: 'HybridEventBus',
+            operationName: 'publish',
+            metadata: { eventType: enrichedEvent.type, error: error instanceof Error ? error.message : String(error) },
+          });
         });
       }
 
@@ -143,11 +160,19 @@ export class HybridEventBus implements IEventBus {
       if (this.enableEdgeFunctionTrigger) {
         // Fire and forget - don't block on edge function
         this.triggerServerProcessing(enrichedEvent).catch(error => {
-          console.warn('Failed to trigger edge function, continuing:', error);
+          logger.warn('Failed to trigger edge function, continuing', {
+            componentName: 'HybridEventBus',
+            operationName: 'publish',
+            metadata: { eventType: enrichedEvent.type, error: error instanceof Error ? error.message : String(error) },
+          });
         });
       }
     } catch (error) {
-      console.error('Failed to publish event:', error);
+      logger.error('Failed to publish event', error as Error, {
+        componentName: 'HybridEventBus',
+        operationName: 'publish',
+        metadata: { eventType: event.type },
+      });
       throw error;
     }
   }
@@ -176,18 +201,30 @@ export class HybridEventBus implements IEventBus {
       // 3. Publish to Redis in batch (if enabled)
       if (this.enableRemotePublish && this.redisStream) {
         await this.redisStream.publishBatch(enrichedEvents).catch(error => {
-          console.warn('Failed to publish batch to Redis, continuing:', error);
+          logger.warn('Failed to publish batch to Redis, continuing', {
+            componentName: 'HybridEventBus',
+            operationName: 'publishBatch',
+            metadata: { eventCount: enrichedEvents.length, error: error instanceof Error ? error.message : String(error) },
+          });
         });
       }
 
       // 4. Trigger edge function for batch (if enabled)
       if (this.enableEdgeFunctionTrigger) {
         this.triggerBatchProcessing(enrichedEvents).catch(error => {
-          console.warn('Failed to trigger edge function batch, continuing:', error);
+          logger.warn('Failed to trigger edge function batch, continuing', {
+            componentName: 'HybridEventBus',
+            operationName: 'publishBatch',
+            metadata: { eventCount: enrichedEvents.length, error: error instanceof Error ? error.message : String(error) },
+          });
         });
       }
     } catch (error) {
-      console.error('Failed to publish event batch:', error);
+      logger.error('Failed to publish event batch', error as Error, {
+        componentName: 'HybridEventBus',
+        operationName: 'publishBatch',
+        metadata: { eventCount: events.length },
+      });
       throw error;
     }
   }
@@ -235,11 +272,18 @@ export class HybridEventBus implements IEventBus {
               try {
                 handler.handle(event);
               } catch (error) {
-                console.error('Handler error:', error);
+                logger.error('Handler error in realtime event', error as Error, {
+                  componentName: 'HybridEventBus',
+                  operationName: 'subscribeToRealtimeEvents',
+                  metadata: { eventType: event.type },
+                });
               }
             }
           } catch (error) {
-            console.error('Error processing realtime event:', error);
+            logger.error('Error processing realtime event', error as Error, {
+              componentName: 'HybridEventBus',
+              operationName: 'subscribeToRealtimeEvents',
+            });
           }
         }
       )
@@ -275,7 +319,11 @@ export class HybridEventBus implements IEventBus {
       });
     } catch (error) {
       const circuitState = this.edgeFunctionCircuitBreaker.getState();
-      console.error(`Failed to invoke edge function (Circuit: ${circuitState}):`, error);
+      logger.error('Failed to invoke edge function', error as Error, {
+        componentName: 'HybridEventBus',
+        operationName: 'triggerServerProcessing',
+        metadata: { circuitState, eventType: event.type },
+      });
     }
   }
 
@@ -295,7 +343,11 @@ export class HybridEventBus implements IEventBus {
       });
     } catch (error) {
       const circuitState = this.edgeFunctionCircuitBreaker.getState();
-      console.error(`Failed to invoke edge function batch (Circuit: ${circuitState}):`, error);
+      logger.error('Failed to invoke edge function batch', error as Error, {
+        componentName: 'HybridEventBus',
+        operationName: 'triggerBatchProcessing',
+        metadata: { circuitState, eventCount: events.length },
+      });
     }
   }
 

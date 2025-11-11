@@ -4,6 +4,7 @@
  */
 
 import { SupabaseClient } from '@supabase/supabase-js';
+import { logger } from '@/lib/services/logger.service';
 
 export interface ReprocessResult {
   success: number;
@@ -27,7 +28,11 @@ export class DeadLetterQueueManager {
         .single();
       
       if (error || !dlqItem) {
-        console.error('Failed to get DLQ item:', error);
+        logger.error('Failed to get DLQ item', error as Error, {
+          componentName: 'DeadLetterQueueManager',
+          operationName: 'reprocessEvent',
+          metadata: { dlqId },
+        });
         return false;
       }
       
@@ -43,7 +48,11 @@ export class DeadLetterQueueManager {
           .delete()
           .eq('id', dlqId);
         
-        console.log(`Successfully reprocessed event ${dlqId}`);
+        logger.info('Successfully reprocessed event from DLQ', {
+          componentName: 'DeadLetterQueueManager',
+          operationName: 'reprocessEvent',
+          metadata: { dlqId },
+        });
         return true;
       }
       
@@ -56,10 +65,18 @@ export class DeadLetterQueueManager {
         })
         .eq('id', dlqId);
       
-      console.error(`Reprocessing failed for event ${dlqId}:`, processError);
+      logger.error('Reprocessing failed for event', processError as Error, {
+        componentName: 'DeadLetterQueueManager',
+        operationName: 'reprocessEvent',
+        metadata: { dlqId },
+      });
       return false;
     } catch (error) {
-      console.error('Reprocessing failed:', error);
+      logger.error('Reprocessing failed', error as Error, {
+        componentName: 'DeadLetterQueueManager',
+        operationName: 'reprocessEvent',
+        metadata: { dlqId },
+      });
       return false;
     }
   }
@@ -137,7 +154,11 @@ export class DeadLetterQueueManager {
       .eq('id', dlqId);
     
     if (error) {
-      console.error('Failed to delete DLQ item:', error);
+      logger.error('Failed to delete DLQ item', error as Error, {
+        componentName: 'DeadLetterQueueManager',
+        operationName: 'deleteItem',
+        metadata: { dlqId },
+      });
       return false;
     }
     
@@ -153,7 +174,10 @@ export class DeadLetterQueueManager {
       .select('processor_name, failure_count');
     
     if (error) {
-      console.error('Failed to get DLQ stats:', error);
+      logger.error('Failed to get DLQ stats', error as Error, {
+        componentName: 'DeadLetterQueueManager',
+        operationName: 'getStats',
+      });
       return null;
     }
     

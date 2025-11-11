@@ -6,6 +6,7 @@
 
 import { Redis } from '@upstash/redis';
 import { DomainEvent } from './types';
+import { logger } from '@/lib/services/logger.service';
 
 export interface RedisStreamConfig {
   url: string;
@@ -47,7 +48,11 @@ export class RedisEventStream {
 
   private async handleReconnect(): Promise<void> {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error('[Redis] Max reconnect attempts reached');
+      logger.error('Redis max reconnect attempts reached', undefined, {
+        componentName: 'RedisEventStream',
+        operationName: 'handleReconnect',
+        metadata: { attempts: this.reconnectAttempts },
+      });
       this.isConnected = false;
       return;
     }
@@ -55,13 +60,21 @@ export class RedisEventStream {
     this.reconnectAttempts++;
     const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts);
 
-    console.log(`[Redis] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
+    logger.info('Redis reconnecting', {
+      componentName: 'RedisEventStream',
+      operationName: 'handleReconnect',
+      metadata: { delay, attempt: this.reconnectAttempts },
+    });
     await new Promise(resolve => setTimeout(resolve, delay));
     
     try {
       await this.connect();
     } catch (error) {
-      console.error('[Redis] Reconnect failed:', error);
+      logger.error('Redis reconnect failed', error as Error, {
+        componentName: 'RedisEventStream',
+        operationName: 'handleReconnect',
+        metadata: { attempt: this.reconnectAttempts },
+      });
     }
   }
 
@@ -71,16 +84,25 @@ export class RedisEventStream {
       await this.redis.ping();
       this.isConnected = true;
       this.reconnectAttempts = 0; // Reset on successful connection
-      console.log('Redis Event Stream connected');
+      logger.info('Redis Event Stream connected', {
+        componentName: 'RedisEventStream',
+        operationName: 'connect',
+      });
     } catch (error) {
-      console.error('Failed to connect to Redis:', error);
+      logger.error('Failed to connect to Redis', error as Error, {
+        componentName: 'RedisEventStream',
+        operationName: 'connect',
+      });
       await this.handleReconnect();
     }
   }
 
   async disconnect(): Promise<void> {
     this.isConnected = false;
-    console.log('Redis Event Stream disconnected');
+    logger.info('Redis Event Stream disconnected', {
+      componentName: 'RedisEventStream',
+      operationName: 'disconnect',
+    });
   }
 
   /**
@@ -88,7 +110,11 @@ export class RedisEventStream {
    */
   async publishToStream(event: DomainEvent): Promise<string | null> {
     if (!this.isConnected) {
-      console.warn('Redis not connected, attempting reconnect...');
+      logger.warn('Redis not connected, attempting reconnect', {
+        componentName: 'RedisEventStream',
+        operationName: 'publishToStream',
+        metadata: { eventType: event.type },
+      });
       await this.handleReconnect();
       if (!this.isConnected) {
         return null;
@@ -114,7 +140,11 @@ export class RedisEventStream {
       this.reconnectAttempts = 0; // Reset on success
       return streamId as string;
     } catch (error) {
-      console.error('Failed to publish event to Redis stream:', error);
+      logger.error('Failed to publish event to Redis stream', error as Error, {
+        componentName: 'RedisEventStream',
+        operationName: 'publishToStream',
+        metadata: { eventType: event.type },
+      });
       this.isConnected = false;
       await this.handleReconnect();
       throw error;
@@ -126,7 +156,11 @@ export class RedisEventStream {
    */
   async publishBatch(events: DomainEvent[]): Promise<void> {
     if (!this.isConnected) {
-      console.warn('Redis not connected, skipping batch publish');
+      logger.warn('Redis not connected, skipping batch publish', {
+        componentName: 'RedisEventStream',
+        operationName: 'publishBatch',
+        metadata: { eventCount: events.length },
+      });
       return;
     }
 
@@ -152,7 +186,11 @@ export class RedisEventStream {
     try {
       await pipeline.exec();
     } catch (error) {
-      console.error('Failed to publish batch to Redis stream:', error);
+      logger.error('Failed to publish batch to Redis stream', error as Error, {
+        componentName: 'RedisEventStream',
+        operationName: 'publishBatch',
+        metadata: { eventCount: events.length },
+      });
       throw error;
     }
   }
@@ -178,14 +216,20 @@ export class RedisEventStream {
             const event = this.parseStreamMessage(fields as Record<string, string>);
             events.push(event);
           } catch (error) {
-            console.error('Failed to parse message:', error);
+            logger.error('Failed to parse message', error as Error, {
+              componentName: 'RedisEventStream',
+              operationName: 'readEvents',
+            });
           }
         }
       }
 
       return events;
     } catch (error) {
-      console.error('Failed to read events:', error);
+      logger.error('Failed to read events', error as Error, {
+        componentName: 'RedisEventStream',
+        operationName: 'readEvents',
+      });
       return [];
     }
   }
@@ -198,7 +242,10 @@ export class RedisEventStream {
       const length = await this.redis.xlen(this.streamName);
       return length;
     } catch (error) {
-      console.error('Failed to get stream length:', error);
+      logger.error('Failed to get stream length', error as Error, {
+        componentName: 'RedisEventStream',
+        operationName: 'getStreamLength',
+      });
       return 0;
     }
   }

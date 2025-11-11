@@ -2,6 +2,8 @@
  * Utility functions for formatting data display
  */
 
+import { logger } from '@/lib/services/logger.service';
+
 /**
  * Formats currency amounts with proper localization
  * @deprecated Use MoneyMath.format() for precise financial calculations
@@ -11,7 +13,11 @@ export function formatCurrency(
   currency: string = 'USD',
   locale: string = 'en-US'
 ): string {
-  console.warn('formatCurrency is deprecated. Use MoneyMath.format() for precise financial calculations.');
+  logger.warn('formatCurrency is deprecated. Use MoneyMath.format() for precise financial calculations.', {
+    componentName: 'formatters',
+    operationName: 'formatCurrency',
+    metadata: { amount, currency, locale },
+  });
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,

@@ -4,6 +4,7 @@
  */
 
 import { EventMiddleware, DomainEvent } from '../types';
+import { logger } from '@/lib/services/logger.service';
 
 export class LoggingMiddleware implements EventMiddleware {
   constructor(
@@ -14,11 +15,15 @@ export class LoggingMiddleware implements EventMiddleware {
 
   async beforePublish<T extends DomainEvent>(event: T): Promise<T> {
     if (this.enableConsoleLogging) {
-      console.log(`[EventBus] Publishing event: ${event.type}`, {
-        id: event.id,
-        timestamp: new Date(event.timestamp).toISOString(),
-        correlationId: event.correlationId,
-        payload: event.payload,
+      logger.debug('EventBus publishing event', {
+        componentName: 'LoggingMiddleware',
+        operationName: 'beforePublish',
+        metadata: {
+          eventType: event.type,
+          eventId: event.id,
+          timestamp: new Date(event.timestamp).toISOString(),
+          correlationId: event.correlationId,
+        },
       });
     }
 
@@ -37,19 +42,27 @@ export class LoggingMiddleware implements EventMiddleware {
 
   async afterPublish<T extends DomainEvent>(event: T): Promise<void> {
     if (this.logLevel === 'debug' && this.enableConsoleLogging) {
-      console.log(`[EventBus] Event published successfully: ${event.type}`, {
-        id: event.id,
-        processingTime: Date.now() - event.timestamp,
+      logger.debug('EventBus event published successfully', {
+        componentName: 'LoggingMiddleware',
+        operationName: 'afterPublish',
+        metadata: {
+          eventType: event.type,
+          eventId: event.id,
+          processingTime: Date.now() - event.timestamp,
+        },
       });
     }
   }
 
   async onError(error: Error, event: DomainEvent): Promise<void> {
-    console.error(`[EventBus] Error processing event: ${event.type}`, {
-      eventId: event.id,
-      error: error.message,
-      stack: error.stack,
-      correlationId: event.correlationId,
+    logger.error('EventBus error processing event', error, {
+      componentName: 'LoggingMiddleware',
+      operationName: 'onError',
+      metadata: {
+        eventType: event.type,
+        eventId: event.id,
+        correlationId: event.correlationId,
+      },
     });
 
     if (this.enableStructuredLogging) {

@@ -3,6 +3,8 @@
  * Prevents cascading failures by temporarily disabling failing operations
  */
 
+import { logger } from '@/lib/services/logger.service';
+
 export enum CircuitState {
   CLOSED = 'CLOSED',
   OPEN = 'OPEN',
@@ -36,7 +38,11 @@ export class CircuitBreaker {
   async execute<T>(operation: () => Promise<T>): Promise<T> {
     if (this.state === CircuitState.OPEN) {
       if (Date.now() - this.lastFailureTime > this.timeout) {
-        console.log('[CircuitBreaker] Transitioning to HALF_OPEN');
+        logger.info('CircuitBreaker transitioning to HALF_OPEN', {
+          componentName: 'CircuitBreaker',
+          operationName: 'execute',
+          metadata: { state: CircuitState.HALF_OPEN },
+        });
         this.state = CircuitState.HALF_OPEN;
         this.successCount = 0;
       } else {
@@ -60,7 +66,11 @@ export class CircuitBreaker {
     if (this.state === CircuitState.HALF_OPEN) {
       this.successCount++;
       if (this.successCount >= this.halfOpenAttempts) {
-        console.log('[CircuitBreaker] Transitioning to CLOSED');
+        logger.info('CircuitBreaker transitioning to CLOSED', {
+          componentName: 'CircuitBreaker',
+          operationName: 'onSuccess',
+          metadata: { state: CircuitState.CLOSED, successCount: this.successCount },
+        });
         this.state = CircuitState.CLOSED;
       }
     }
@@ -71,11 +81,19 @@ export class CircuitBreaker {
     this.lastFailureTime = Date.now();
     
     if (this.state === CircuitState.HALF_OPEN) {
-      console.log('[CircuitBreaker] Transitioning to OPEN (failed during HALF_OPEN)');
+      logger.warn('CircuitBreaker transitioning to OPEN (failed during HALF_OPEN)', {
+        componentName: 'CircuitBreaker',
+        operationName: 'onFailure',
+        metadata: { state: CircuitState.OPEN, failureCount: this.failureCount },
+      });
       this.state = CircuitState.OPEN;
       this.successCount = 0;
     } else if (this.failureCount >= this.threshold) {
-      console.error(`[CircuitBreaker] Opening circuit after ${this.failureCount} failures`);
+      logger.error('CircuitBreaker opening circuit after failures', undefined, {
+        componentName: 'CircuitBreaker',
+        operationName: 'onFailure',
+        metadata: { failureCount: this.failureCount, threshold: this.threshold },
+      });
       this.state = CircuitState.OPEN;
     }
   }

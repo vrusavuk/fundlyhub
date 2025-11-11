@@ -3,6 +3,8 @@
  * Ensures events are processed exactly once per processor
  */
 
+import { logger } from '@/lib/services/logger.service';
+
 export class EventIdempotency {
   private cache: Map<string, { value: string; expires: number }>;
   private readonly ttl: number;
@@ -30,7 +32,11 @@ export class EventIdempotency {
     const entry = this.cache.get(key);
     
     if (entry && entry.expires > Date.now()) {
-      console.log(`[Idempotency] Skipping duplicate event ${eventId} for ${processorName}`);
+      logger.debug('Skipping duplicate event (idempotency)', {
+        componentName: 'EventIdempotency',
+        operationName: 'shouldProcess',
+        metadata: { eventId, processorName },
+      });
       return false;
     }
     

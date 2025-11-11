@@ -11,6 +11,7 @@ import {
   EventMiddleware,
   EventStore
 } from './types';
+import { logger } from '@/lib/services/logger.service';
 
 export class EventBus implements IEventBus {
   private handlers = new Map<string, Set<EventHandler>>();
@@ -138,7 +139,11 @@ export class EventBus implements IEventBus {
       try {
         await handler.handle(event);
       } catch (error) {
-        console.error(`Handler failed for event ${event.type}:`, error);
+        logger.error(`Handler failed for event ${event.type}`, error as Error, {
+          componentName: 'EventBus',
+          operationName: 'dispatchEvent',
+          metadata: { eventType: event.type, eventId: event.id },
+        });
         await this.handleError(error as Error, event);
       }
     });
@@ -152,7 +157,11 @@ export class EventBus implements IEventBus {
         try {
           await middleware.onError(error, event);
         } catch (middlewareError) {
-          console.error('Middleware error handler failed:', middlewareError);
+          logger.error('Middleware error handler failed', middlewareError as Error, {
+            componentName: 'EventBus',
+            operationName: 'handleError',
+            metadata: { eventType: event.type, eventId: event.id },
+          });
         }
       }
     }
