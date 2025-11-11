@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/services/logger.service';
 
 interface OrganizationProfile {
   id: string;
@@ -57,7 +58,11 @@ export function useOrganizationProfile(organizationId: string): UseOrganizationP
         .single();
 
       if (statsError) {
-        console.error('Error fetching organization stats:', statsError);
+        logger.error('Error fetching organization stats', statsError, {
+          componentName: 'useOrganizationProfile',
+          operationName: 'fetchProfile',
+          metadata: { organizationId }
+        });
         throw statsError;
       }
 
@@ -82,7 +87,11 @@ export function useOrganizationProfile(organizationId: string): UseOrganizationP
       });
 
     } catch (error) {
-      console.error('Error fetching organization profile:', error);
+      logger.error('Error fetching organization profile', error as Error, {
+        componentName: 'useOrganizationProfile',
+        operationName: 'fetchProfile',
+        metadata: { organizationId }
+      });
       setError(error instanceof Error ? error.message : 'Failed to load organization profile');
       setProfile(null);
     } finally {

@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/services/logger.service';
 
 export type AIAction = 'generate' | 'refine' | 'expand' | 'shorten';
 
@@ -61,7 +62,11 @@ export function useAITextEnhancement(): UseAITextEnhancementReturn {
 
       return data.enhancedText;
     } catch (err: any) {
-      console.error('AI enhancement error:', err);
+      logger.error('AI enhancement error', err, {
+        componentName: 'useAITextEnhancement',
+        operationName: 'enhanceText',
+        metadata: { action, field: context.field }
+      });
       const errorMessage = err.message || 'Failed to enhance text';
       setError(errorMessage);
       

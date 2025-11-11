@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { categoryService } from '@/lib/services/category.service';
 import type { Category, CategoryStats } from '@/types';
+import { logger } from '@/lib/services/logger.service';
 
 interface UseCategoriesState {
   categories: Category[];
@@ -44,7 +45,10 @@ export function useCategories(): UseCategoriesReturn {
       });
 
     } catch (error) {
-      console.error('Error loading categories:', error);
+      logger.error('Error loading categories', error as Error, {
+        componentName: 'useCategories',
+        operationName: 'loadCategories'
+      });
       setState(prev => ({
         ...prev,
         loading: false,

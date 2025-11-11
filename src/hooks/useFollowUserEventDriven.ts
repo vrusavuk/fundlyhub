@@ -8,6 +8,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useEventPublisher } from './useEventBus';
+import { logger } from '@/lib/services/logger.service';
 import {
   createUserFollowedUserEvent,
   createUserUnfollowedUserEvent,
@@ -42,13 +43,23 @@ export function useFollowUserEventDriven(targetUserId: string): UseFollowUserRet
         .maybeSingle();
 
       if (error) {
-        console.error('Error checking follow status:', error);
+        logger.error('Error checking follow status', error, {
+          componentName: 'useFollowUserEventDriven',
+          operationName: 'checkFollowStatus',
+          userId: user.id,
+          metadata: { targetUserId }
+        });
         return;
       }
 
       setIsFollowing(!!data);
     } catch (error) {
-      console.error('Error in checkFollowStatus:', error);
+      logger.error('Error in checkFollowStatus', error as Error, {
+        componentName: 'useFollowUserEventDriven',
+        operationName: 'checkFollowStatus',
+        userId: user?.id,
+        metadata: { targetUserId }
+      });
     }
   }, [user, targetUserId]);
 
@@ -107,7 +118,12 @@ export function useFollowUserEventDriven(targetUserId: string): UseFollowUserRet
       // Rollback optimistic update on error
       setIsFollowing(previousState);
       
-      console.error('Error following user:', error);
+      logger.error('Error following user', error as Error, {
+        componentName: 'useFollowUserEventDriven',
+        operationName: 'followUser',
+        userId: user.id,
+        metadata: { targetUserId }
+      });
       toast({
         title: "Error",
         description: "Failed to follow user. Please try again.",
@@ -159,7 +175,12 @@ export function useFollowUserEventDriven(targetUserId: string): UseFollowUserRet
       // Rollback optimistic update on error
       setIsFollowing(previousState);
       
-      console.error('Error unfollowing user:', error);
+      logger.error('Error unfollowing user', error as Error, {
+        componentName: 'useFollowUserEventDriven',
+        operationName: 'unfollowUser',
+        userId: user.id,
+        metadata: { targetUserId }
+      });
       toast({
         title: "Error",
         description: "Failed to unfollow user. Please try again.",

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useRBAC } from '@/contexts/RBACContext';
+import { logger } from '@/lib/services/logger.service';
 
 export interface SystemSetting {
   id: string;
@@ -48,7 +49,10 @@ export function useSystemSettings() {
 
       setSettings(settingsMap);
     } catch (err) {
-      console.error('Error fetching settings:', err);
+      logger.error('Error fetching settings', err as Error, {
+        componentName: 'useSystemSettings',
+        operationName: 'fetchSettings'
+      });
       setError(err instanceof Error ? err.message : 'Failed to load settings');
       toast({
         title: "Error",
@@ -91,7 +95,11 @@ export function useSystemSettings() {
 
       return true;
     } catch (err) {
-      console.error('Error updating setting:', err);
+      logger.error('Error updating setting', err as Error, {
+        componentName: 'useSystemSettings',
+        operationName: 'updateSetting',
+        metadata: { settingKey: update.setting_key }
+      });
       toast({
         title: "Update Failed",
         description: err instanceof Error ? err.message : 'Failed to update setting',
@@ -160,9 +168,14 @@ export function useSystemSettings() {
 
           // Log feature toggle changes
           if (updated.setting_key.startsWith('features.')) {
-            console.log(
-              `[SystemSettings] Feature updated: ${updated.setting_key} = ${updated.setting_value.enabled ? 'enabled' : 'disabled'}`
-            );
+            logger.info('Feature toggle updated', {
+              componentName: 'useSystemSettings',
+              operationName: 'realtimeUpdate',
+              metadata: { 
+                settingKey: updated.setting_key, 
+                enabled: updated.setting_value.enabled 
+              }
+            });
           }
         }
       )

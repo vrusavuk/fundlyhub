@@ -10,6 +10,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { searchApi } from '@/lib/services/searchApi.service';
 import type { SearchResult } from '@/types/ui/search';
 import { useDebounce } from './useDebounce';
+import { logger } from '@/lib/services/logger.service';
 
 export interface UseEnhancedSearchOptions {
   query: string;
@@ -111,7 +112,11 @@ export function useEnhancedSearch(options: UseEnhancedSearchOptions): UseEnhance
       setLoading(false);
     }).catch((err: any) => {
       if (err.name !== 'AbortError') {
-        console.error('Search error:', err);
+        logger.error('Search error', err, {
+          componentName: 'useEnhancedSearch',
+          operationName: 'search',
+          metadata: { query }
+        });
         setError(err.message || 'Search failed');
         setResults([]);
         setSuggestions([]);
@@ -122,12 +127,20 @@ export function useEnhancedSearch(options: UseEnhancedSearchOptions): UseEnhance
   
   const trackClick = useCallback((resultId: string, resultType: string) => {
     // TODO: Implement via Search API analytics endpoint
-    console.log('Result clicked:', { resultId, resultType, query: options.query });
+    logger.debug('Result clicked', {
+      componentName: 'useEnhancedSearch',
+      operationName: 'trackClick',
+      metadata: { resultId, resultType, query: options.query }
+    });
   }, [options.query]);
   
   const trackSuggestionClick = useCallback((suggestionQuery: string) => {
     // TODO: Implement via Search API analytics endpoint
-    console.log('Suggestion clicked:', { suggestionQuery, originalQuery: options.query });
+    logger.debug('Suggestion clicked', {
+      componentName: 'useEnhancedSearch',
+      operationName: 'trackSuggestionClick',
+      metadata: { suggestionQuery, originalQuery: options.query }
+    });
   }, [options.query]);
   
   const retry = useCallback(() => {
@@ -153,7 +166,11 @@ export function useEnhancedSearch(options: UseEnhancedSearchOptions): UseEnhance
       setCached(response.cached);
       setLoading(false);
     }).catch((err: any) => {
-      console.error('Search error:', err);
+      logger.error('Search retry error', err, {
+        componentName: 'useEnhancedSearch',
+        operationName: 'retry',
+        metadata: { query: options.query }
+      });
       setError(err.message || 'Search failed');
       setLoading(false);
     });

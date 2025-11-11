@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { fundraiserService, type FundraiserQueryOptions } from '@/lib/services/fundraiser.service';
 import { useOptimizedQuery } from '@/lib/api/optimized-queries';
 import type { Fundraiser } from '@/types';
+import { logger } from '@/lib/services/logger.service';
 
 interface UseFundraisersState {
   fundraisers: Fundraiser[];
@@ -67,7 +68,11 @@ export function useFundraisers(options: FundraiserQueryOptions = {}): UseFundrai
       }
 
     } catch (error) {
-      console.error('Error loading fundraisers:', error);
+      logger.error('Error loading fundraisers', error as Error, {
+        componentName: 'useFundraisers',
+        operationName: 'loadFundraisers',
+        metadata: { options, offset }
+      });
       setState(prev => ({
         ...prev,
         loading: false,

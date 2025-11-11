@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/services/logger.service';
 
 interface OrganizationStats {
   campaignCount: number;
@@ -80,7 +81,11 @@ export function useOrganizationStats(organizationId: string): OrganizationStats 
         });
 
       } catch (error) {
-        console.error('Error fetching organization stats:', error);
+        logger.error('Error fetching organization stats', error as Error, {
+          componentName: 'useOrganizationStats',
+          operationName: 'fetchStats',
+          metadata: { organizationId }
+        });
         setStats(prev => ({
           ...prev,
           loading: false,

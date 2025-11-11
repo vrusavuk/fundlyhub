@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/services/logger.service';
 
 interface UserProfile {
   id: string;
@@ -74,7 +75,11 @@ export function useUserProfile(userId: string): UseUserProfileReturn {
         .single();
 
       if (statsError) {
-        console.error('Error fetching user stats:', statsError);
+        logger.error('Error fetching user stats', statsError, {
+          componentName: 'useUserProfile',
+          operationName: 'fetchProfile',
+          metadata: { userId }
+        });
         throw statsError;
       }
 
@@ -103,7 +108,11 @@ export function useUserProfile(userId: string): UseUserProfileReturn {
         created_at: profileData.created_at
       });
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      logger.error('Error fetching user profile', error as Error, {
+        componentName: 'useUserProfile',
+        operationName: 'fetchProfile',
+        metadata: { userId }
+      });
       setError(error instanceof Error ? error.message : 'Failed to load profile');
       setProfile(null);
     } finally {

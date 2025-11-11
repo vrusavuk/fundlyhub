@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/services/logger.service';
 
 export type ProjectUpdateAIAction = 'generate' | 'improve' | 'shorten' | 'expand';
 
@@ -56,7 +57,11 @@ export function useProjectUpdateAI(): UseProjectUpdateAIReturn {
 
       return data.enhancedText;
     } catch (err: any) {
-      console.error('AI enhancement error:', err);
+      logger.error('AI enhancement error', err, {
+        componentName: 'useProjectUpdateAI',
+        operationName: 'enhanceText',
+        metadata: { action, fundraiserId: context.fundraiserId }
+      });
       const errorMessage = err.message || 'Failed to enhance text with AI';
       setError(errorMessage);
       

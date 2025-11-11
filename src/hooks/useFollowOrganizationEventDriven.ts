@@ -7,6 +7,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useEventPublisher } from './useEventBus';
+import { logger } from '@/lib/services/logger.service';
 import {
   createUserFollowedOrganizationEvent,
   createUserUnfollowedOrganizationEvent,
@@ -41,13 +42,23 @@ export function useFollowOrganizationEventDriven(organizationId: string): UseFol
         .maybeSingle();
 
       if (error) {
-        console.error('Error checking follow status:', error);
+        logger.error('Error checking follow status', error, {
+          componentName: 'useFollowOrganizationEventDriven',
+          operationName: 'checkFollowStatus',
+          userId: user.id,
+          metadata: { organizationId }
+        });
         return;
       }
 
       setIsFollowing(!!data);
     } catch (error) {
-      console.error('Error in checkFollowStatus:', error);
+      logger.error('Error in checkFollowStatus', error as Error, {
+        componentName: 'useFollowOrganizationEventDriven',
+        operationName: 'checkFollowStatus',
+        userId: user?.id,
+        metadata: { organizationId }
+      });
     }
   }, [user, organizationId]);
 
@@ -96,7 +107,12 @@ export function useFollowOrganizationEventDriven(organizationId: string): UseFol
       // Rollback optimistic update on error
       setIsFollowing(previousState);
       
-      console.error('Error following organization:', error);
+      logger.error('Error following organization', error as Error, {
+        componentName: 'useFollowOrganizationEventDriven',
+        operationName: 'followOrganization',
+        userId: user.id,
+        metadata: { organizationId }
+      });
       toast({
         title: "Error",
         description: "Failed to follow organization. Please try again.",
@@ -148,7 +164,12 @@ export function useFollowOrganizationEventDriven(organizationId: string): UseFol
       // Rollback optimistic update on error
       setIsFollowing(previousState);
       
-      console.error('Error unfollowing organization:', error);
+      logger.error('Error unfollowing organization', error as Error, {
+        componentName: 'useFollowOrganizationEventDriven',
+        operationName: 'unfollowOrganization',
+        userId: user.id,
+        metadata: { organizationId }
+      });
       toast({
         title: "Error",
         description: "Failed to unfollow organization. Please try again.",

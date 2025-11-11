@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/services/logger.service';
 
 interface ActivityItem {
   id: string;
@@ -64,7 +65,11 @@ export function useActivityFeed(userId?: string): UseActivityFeedReturn {
 
       setHasMore(newActivities.length === limit);
     } catch (error) {
-      console.error('Error fetching activity feed:', error);
+      logger.error('Error fetching activity feed', error as Error, {
+        componentName: 'useActivityFeed',
+        operationName: 'fetchActivities',
+        metadata: { userId }
+      });
       setError(error instanceof Error ? error.message : 'Failed to load activity feed');
     } finally {
       setLoading(false);

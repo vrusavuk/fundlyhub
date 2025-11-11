@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/services/logger.service';
 
 interface CampaignStats {
   activeCampaigns: number;
@@ -42,7 +43,10 @@ export function useCampaignStats() {
         setStats(finalStats);
 
       } catch (error) {
-        console.error('Error fetching campaign stats:', error);
+        logger.error('Error fetching campaign stats', error as Error, {
+          componentName: 'useCampaignStats',
+          operationName: 'fetchStats'
+        });
         setStats(prev => ({
           ...prev,
           loading: false,

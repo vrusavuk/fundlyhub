@@ -7,6 +7,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { useEventPublisher } from '@/hooks/useEventBus';
 import { createProjectUpdateCreatedEvent } from '@/lib/events/domain/ProjectEvents';
+import { logger } from '@/lib/services/logger.service';
 
 interface CreateUpdateInput {
   fundraiserId: string;
@@ -56,7 +57,10 @@ export function useCreateProjectUpdate() {
       });
     },
     onError: (error: Error) => {
-      console.error('Failed to create project update:', error);
+      logger.error('Failed to create project update', error, {
+        componentName: 'useCreateProjectUpdate',
+        operationName: 'createUpdate'
+      });
       toast({
         title: 'Failed to post update',
         description: error.message,

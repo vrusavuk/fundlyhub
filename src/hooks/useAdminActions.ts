@@ -9,6 +9,7 @@ import { useRBAC } from './useRBAC';
 import { useToast } from './use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { adminDataService } from '@/lib/services/AdminDataService';
+import { logger } from '@/lib/services/logger.service';
 
 interface ActionOptions {
   permission?: string;
@@ -64,7 +65,11 @@ export function useAdminActions() {
       onSuccess?.();
       return result;
     } catch (error) {
-      console.error('Action error:', error);
+      logger.error('Admin action failed', error as Error, {
+        componentName: 'useAdminActions',
+        operationName: 'executeAction',
+        metadata: { permission }
+      });
       
       toast({
         title: 'Error',

@@ -4,6 +4,7 @@
  */
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { searchSuggestionsService, SearchSuggestion } from '@/lib/services/searchSuggestions.service';
+import { logger } from '@/lib/services/logger.service';
 
 interface UseSearchSuggestionsOptions {
   query: string;
@@ -62,7 +63,10 @@ export function useSearchSuggestions({
       setRecentSearches(recent);
       setTrendingSearches(trending);
     } catch (error) {
-      console.error('Failed to load initial search data:', error);
+      logger.error('Failed to load initial search data', error as Error, {
+        componentName: 'useSearchSuggestions',
+        operationName: 'loadInitialData'
+      });
     } finally {
       setLoading(false);
     }
@@ -97,7 +101,11 @@ export function useSearchSuggestions({
 
       setSuggestions(newSuggestions);
     } catch (error) {
-      console.error('Failed to get search suggestions:', error);
+      logger.error('Failed to get search suggestions', error as Error, {
+        componentName: 'useSearchSuggestions',
+        operationName: 'getSuggestions',
+        metadata: { query: debouncedQuery, category }
+      });
       setSuggestions([]);
     } finally {
       setLoading(false);
@@ -116,7 +124,11 @@ export function useSearchSuggestions({
       const updated = searchSuggestionsService.getRecentSearches();
       setRecentSearches(updated);
     } catch (error) {
-      console.error('Failed to add recent search:', error);
+      logger.error('Failed to add recent search', error as Error, {
+        componentName: 'useSearchSuggestions',
+        operationName: 'addRecentSearch',
+        metadata: { query: searchQuery, category: searchCategory }
+      });
     }
   }, []);
 
@@ -126,7 +138,10 @@ export function useSearchSuggestions({
       searchSuggestionsService.clearRecentSearches();
       setRecentSearches([]);
     } catch (error) {
-      console.error('Failed to clear recent searches:', error);
+      logger.error('Failed to clear recent searches', error as Error, {
+        componentName: 'useSearchSuggestions',
+        operationName: 'clearRecentSearches'
+      });
     }
   }, []);
 
@@ -139,7 +154,11 @@ export function useSearchSuggestions({
     try {
       searchSuggestionsService.trackSearch(searchQuery, resultCount, searchCategory);
     } catch (error) {
-      console.error('Failed to track search:', error);
+      logger.error('Failed to track search', error as Error, {
+        componentName: 'useSearchSuggestions',
+        operationName: 'trackSearch',
+        metadata: { query: searchQuery, resultCount, category: searchCategory }
+      });
     }
   }, []);
 

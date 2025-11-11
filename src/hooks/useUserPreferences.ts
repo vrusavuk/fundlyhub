@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { logger } from '@/lib/services/logger.service';
 
 export interface UserPreferences {
   // Display preferences
@@ -88,12 +89,21 @@ export function useUserPreferences() {
           .upsert(dbPrefs, { onConflict: 'user_id' });
 
         if (upsertError) {
-          console.error('Failed to sync preferences with database:', upsertError);
+          logger.warn('Failed to sync preferences with database', {
+            componentName: 'useUserPreferences',
+            operationName: 'savePreferences',
+            userId: user.id,
+            metadata: { error: upsertError.message }
+          });
           // Don't throw error - localStorage backup is still available
         }
       }
     } catch (err) {
-      console.error('Failed to save user preferences:', err);
+      logger.error('Failed to save user preferences', err as Error, {
+        componentName: 'useUserPreferences',
+        operationName: 'savePreferences',
+        userId: user?.id
+      });
       setError('Failed to save preferences');
     }
   }, [preferences, user]);
@@ -122,7 +132,12 @@ export function useUserPreferences() {
           .maybeSingle();
 
         if (fetchError) {
-          console.error('Failed to load preferences from database:', fetchError);
+          logger.warn('Failed to load preferences from database', {
+            componentName: 'useUserPreferences',
+            operationName: 'loadPreferences',
+            userId: user.id,
+            metadata: { error: fetchError.message }
+          });
           // Continue with localStorage data
         } else if (dbPrefs) {
           // Map database fields to UserPreferences interface
@@ -156,7 +171,11 @@ export function useUserPreferences() {
 
       setPreferences(finalPrefs);
     } catch (err) {
-      console.error('Failed to load user preferences:', err);
+      logger.error('Failed to load user preferences', err as Error, {
+        componentName: 'useUserPreferences',
+        operationName: 'loadPreferences',
+        userId: user?.id
+      });
       setError('Failed to load preferences');
     } finally {
       setLoading(false);

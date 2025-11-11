@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
 import { fundraiserMutationService } from '@/lib/services/fundraiserMutation.service';
+import { logger } from '@/lib/services/logger.service';
 import {
   CompleteFundraiser,
   fundraiserBasicsSchema,
@@ -203,7 +204,12 @@ export function useCreateFundraiser() {
         throw new Error(result.error || 'Failed to create fundraiser');
       }
     } catch (error: any) {
-      console.error('Error submitting fundraiser:', error);
+      logger.error('Error submitting fundraiser', error, {
+        componentName: 'useCreateFundraiser',
+        operationName: 'submitFundraiser',
+        userId: user?.id,
+        metadata: { title: formData.title, isProject: formData.isProject }
+      });
       toast({
         title: 'Error creating fundraiser',
         description: error.message || 'Please try again later.',

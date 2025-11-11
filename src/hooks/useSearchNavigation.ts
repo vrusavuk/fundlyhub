@@ -7,6 +7,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useSearchSuggestions } from '@/hooks/useSearchSuggestions';
 import { SearchSuggestion } from '@/lib/services/searchSuggestions.service';
 import { hapticFeedback } from '@/lib/utils/mobile';
+import { logger } from '@/lib/services/logger.service';
 
 interface UseSearchNavigationOptions {
   onNavigate?: () => void;
@@ -43,7 +44,11 @@ export function useSearchNavigation({
       
       onNavigate?.();
     } catch (error) {
-      console.error('Navigation failed:', error);
+      logger.error('Navigation failed', error as Error, {
+        componentName: 'useSearchNavigation',
+        operationName: 'handleSubmit',
+        metadata: { query }
+      });
     }
   }, [addRecentSearch, trackSearch, navigate, onNavigate]);
 
@@ -61,7 +66,11 @@ export function useSearchNavigation({
       
       onNavigate?.();
     } catch (error) {
-      console.error('Suggestion navigation failed:', error);
+      logger.error('Suggestion navigation failed', error as Error, {
+        componentName: 'useSearchNavigation',
+        operationName: 'handleSuggestionSelect',
+        metadata: { suggestion }
+      });
     }
   }, [addRecentSearch, trackSearch, navigate, onNavigate]);
 
@@ -77,7 +86,11 @@ export function useSearchNavigation({
       
       onNavigate?.();
     } catch (error) {
-      console.error('Result navigation failed:', error);
+      logger.error('Result navigation failed', error as Error, {
+        componentName: 'useSearchNavigation',
+        operationName: 'handleResultClick',
+        metadata: { query, resultType: result.type }
+      });
     }
   }, [addRecentSearch, trackSearch, navigate, onNavigate]);
 
@@ -94,7 +107,11 @@ export function useSearchNavigation({
       
       onNavigate?.();
     } catch (error) {
-      console.error('View all results navigation failed:', error);
+      logger.error('View all results navigation failed', error as Error, {
+        componentName: 'useSearchNavigation',
+        operationName: 'handleViewAllResults',
+        metadata: { query, resultCount }
+      });
     }
   }, [addRecentSearch, trackSearch, navigate, onNavigate]);
 
