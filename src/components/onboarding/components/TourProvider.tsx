@@ -10,6 +10,7 @@ import { TourDialog } from './TourDialog';
 import { TOUR_STEPS } from '../config';
 import { useGlobalSearch } from '@/contexts/UnifiedSearchContext';
 import { useOnboardingDemo } from '../OnboardingDemoProvider';
+import { logger } from '@/lib/services/logger.service';
 
 interface TourProviderProps {
   children: ReactNode;
@@ -40,9 +41,10 @@ export function TourProvider({
   const isLastStep = currentStepIndex === steps.length - 1;
 
   const startTour = useCallback(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Starting onboarding tour');
-    }
+    logger.info('Starting onboarding tour', {
+      componentName: 'TourProvider',
+      operationName: 'startTour',
+    });
     
     setIsActive(true);
     setCurrentStepIndex(0);
@@ -52,9 +54,9 @@ export function TourProvider({
       onboardingDemo.setDemoMode(true);
       onboardingDemo.trackDemoInteraction('tour_started');
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('Failed to enable demo mode:', error);
-      }
+      logger.warn('Failed to enable demo mode', {
+        componentName: 'TourProvider',
+      });
     }
   }, [onboardingDemo]);
 
@@ -81,12 +83,14 @@ export function TourProvider({
 
         actionService.setServices(searchService, demoService);
         
-        if (process.env.NODE_ENV === 'development') {
-          console.log('TourActionService services initialized');
-        }
+        logger.debug('TourActionService services initialized', {
+          componentName: 'TourProvider',
+        });
       }
     } catch (error) {
-      console.warn('Failed to initialize tour action services:', error);
+      logger.warn('Failed to initialize tour action services', {
+        componentName: 'TourProvider',
+      });
     }
   }, [globalSearch, onboardingDemo, actionService]);
 
@@ -100,15 +104,18 @@ export function TourProvider({
   }, [isOpen, isActive, startTour]);
 
   const completeTour = useCallback(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Tour completed');
-    }
+    logger.info('Tour completed', {
+      componentName: 'TourProvider',
+      operationName: 'completeTour',
+    });
     
     try {
       onboardingDemo.trackDemoInteraction('tour_completed');
       onboardingDemo.setDemoMode(false);
     } catch (error) {
-      console.warn('Failed to track tour completion:', error);
+      logger.warn('Failed to track tour completion', {
+        componentName: 'TourProvider',
+      });
     }
     
     setIsActive(false);
@@ -117,9 +124,11 @@ export function TourProvider({
   }, [onboardingDemo, onComplete, onClose]);
 
   const skipTour = useCallback(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Tour skipped');
-    }
+    logger.info('Tour skipped', {
+      componentName: 'TourProvider',
+      operationName: 'skipTour',
+      metadata: { stepIndex: currentStepIndex },
+    });
     
     try {
       onboardingDemo.trackDemoInteraction('tour_skipped', {
@@ -127,7 +136,9 @@ export function TourProvider({
       });
       onboardingDemo.setDemoMode(false);
     } catch (error) {
-      console.warn('Failed to track tour skip:', error);
+      logger.warn('Failed to track tour skip', {
+        componentName: 'TourProvider',
+      });
     }
     
     setIsActive(false);
@@ -136,20 +147,29 @@ export function TourProvider({
   }, [currentStepIndex, onboardingDemo, onSkip, onClose]);
 
   const handleAction = useCallback(async (action: any) => {
-    console.log('🎯 TourProvider: Handling action', action);
+    logger.debug('Handling tour action', {
+      componentName: 'TourProvider',
+      operationName: 'handleAction',
+      metadata: { action },
+    });
     try {
       await actionService.executeAction(action);
     } catch (error) {
-      console.error('❌ TourProvider: Action execution failed:', error);
+      logger.error('Action execution failed', error as Error, {
+        componentName: 'TourProvider',
+        metadata: { action },
+      });
     }
   }, [actionService]);
 
   const nextStep = useCallback(async () => {
     if (!currentStep) return;
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Tour: Next step', currentStepIndex + 1);
-    }
+    logger.debug('Moving to next tour step', {
+      componentName: 'TourProvider',
+      operationName: 'nextStep',
+      metadata: { currentStepIndex, nextStepIndex: currentStepIndex + 1 },
+    });
 
     try {
       // Track interaction
@@ -165,7 +185,10 @@ export function TourProvider({
         setCurrentStepIndex(prev => prev + 1);
       }
     } catch (error) {
-      console.warn('Error during tour step execution:', error);
+      logger.warn('Error during tour step execution', {
+        componentName: 'TourProvider',
+        metadata: { currentStepIndex },
+      });
       // Continue to next step even if there's an error
       if (isLastStep) {
         completeTour();
@@ -184,7 +207,9 @@ export function TourProvider({
           stepIndex: currentStepIndex - 1
         });
       } catch (error) {
-        console.warn('Failed to track step back:', error);
+        logger.warn('Failed to track step back', {
+          componentName: 'TourProvider',
+        });
       }
     }
   }, [currentStepIndex, onboardingDemo]);

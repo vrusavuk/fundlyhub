@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { getTypographyClasses } from '@/lib/design/typography';
+import { logger } from '@/lib/services/logger.service';
 
 interface OptimisticAction {
   id: string;
@@ -87,8 +88,11 @@ export function useOptimisticUpdates(options: UseOptimisticUpdatesOptions = {}) 
           failedActions: [...prev.failedActions, action]
         }));
         
-        // Phase 4: Enhanced error extraction with comprehensive logging
-        console.log('[OptimisticUpdates] Processing error:', error);
+        // Enhanced error extraction with comprehensive logging
+        logger.debug('Processing optimistic update error', {
+          componentName: 'OptimisticUpdates',
+          operationName: 'executeAction',
+        });
         
         let errorMessage = "An unexpected error occurred";
         
@@ -96,12 +100,15 @@ export function useOptimisticUpdates(options: UseOptimisticUpdatesOptions = {}) 
           const supabaseError = error as any;
           
           // Log full error structure for debugging
-          console.error('[OptimisticUpdates] Full error details:', {
-            code: supabaseError.code,
-            message: supabaseError.message,
-            details: supabaseError.details,
-            hint: supabaseError.hint,
-            error_description: supabaseError.error_description
+          logger.error('Supabase error in optimistic update', error as Error, {
+            componentName: 'OptimisticUpdates',
+            metadata: {
+              code: supabaseError.code,
+              message: supabaseError.message,
+              details: supabaseError.details,
+              hint: supabaseError.hint,
+              error_description: supabaseError.error_description,
+            },
           });
           
           // Check for RLS policy violation (42501 is PostgreSQL's permission denied code)
@@ -109,7 +116,10 @@ export function useOptimisticUpdates(options: UseOptimisticUpdatesOptions = {}) 
               supabaseError.message?.includes('row-level security') ||
               supabaseError.message?.includes('policy')) {
             errorMessage = "Permission denied: You don't have access to perform this action";
-            console.error('[OptimisticUpdates] RLS policy violation detected');
+            logger.warn('RLS policy violation detected', {
+              componentName: 'OptimisticUpdates',
+              metadata: { code: supabaseError.code },
+            });
           }
           // Check for other PostgreSQL errors
           else if (supabaseError.code) {
@@ -136,7 +146,10 @@ export function useOptimisticUpdates(options: UseOptimisticUpdatesOptions = {}) 
           errorMessage = error.message;
         }
         
-        console.error('[OptimisticUpdates] Final error message:', errorMessage);
+        logger.error('Final error message extracted', undefined, {
+          componentName: 'OptimisticUpdates',
+          metadata: { errorMessage },
+        });
         
         if (!skipToast) {
           toast({

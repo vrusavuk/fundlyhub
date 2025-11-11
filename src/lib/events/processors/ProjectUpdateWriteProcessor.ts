@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { DomainEvent, EventHandler } from '../types';
 import type { ProjectUpdateCreatedEvent } from '../domain/ProjectEvents';
 import { eventIdempotency } from '../EventIdempotency';
+import { logger } from '@/lib/services/logger.service';
 
 export class ProjectUpdateWriteProcessor implements EventHandler<ProjectUpdateCreatedEvent> {
   readonly eventType = 'project.update.created';
@@ -18,7 +19,10 @@ export class ProjectUpdateWriteProcessor implements EventHandler<ProjectUpdateCr
     );
     
     if (!shouldProcess) {
-      console.log(`[ProjectUpdateWriteProcessor] Skipping duplicate event ${event.id}`);
+      logger.debug('Skipping duplicate event', {
+        componentName: 'ProjectUpdateWriteProcessor',
+        metadata: { eventId: event.id },
+      });
       return;
     }
 
@@ -28,7 +32,10 @@ export class ProjectUpdateWriteProcessor implements EventHandler<ProjectUpdateCr
       }
 
       await eventIdempotency.markComplete(event.id, 'ProjectUpdateWriteProcessor');
-      console.log(`[ProjectUpdateWriteProcessor] Successfully processed event ${event.id}`);
+      logger.info('Project update event processed successfully', {
+        componentName: 'ProjectUpdateWriteProcessor',
+        metadata: { eventId: event.id },
+      });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       await eventIdempotency.markFailed(
@@ -36,7 +43,10 @@ export class ProjectUpdateWriteProcessor implements EventHandler<ProjectUpdateCr
         'ProjectUpdateWriteProcessor', 
         errorMessage
       );
-      console.error(`[ProjectUpdateWriteProcessor] Failed to process event ${event.id}:`, error);
+      logger.error('Failed to process project update event', error as Error, {
+        componentName: 'ProjectUpdateWriteProcessor',
+        metadata: { eventId: event.id },
+      });
       throw error;
     }
   }
@@ -69,7 +79,10 @@ export class ProjectUpdateWriteProcessor implements EventHandler<ProjectUpdateCr
       .maybeSingle();
 
     if (existing) {
-      console.log(`[ProjectUpdateWriteProcessor] Update ${payload.updateId} already exists`);
+      logger.debug('Update already exists', {
+        componentName: 'ProjectUpdateWriteProcessor',
+        metadata: { updateId: payload.updateId },
+      });
       return;
     }
 
@@ -89,6 +102,13 @@ export class ProjectUpdateWriteProcessor implements EventHandler<ProjectUpdateCr
 
     if (error) throw error;
 
-    console.log(`[ProjectUpdateWriteProcessor] Created update ${payload.updateId}`);
+    logger.info('Project update created successfully', {
+      componentName: 'ProjectUpdateWriteProcessor',
+      userId: payload.authorId,
+      metadata: {
+        updateId: payload.updateId,
+        fundraiserId: payload.fundraiserId,
+      },
+    });
   }
 }

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AppError, ErrorType, ErrorSeverity, shouldLogError } from '@/lib/errors/AppError';
 import { ScreenReaderOnly } from '@/components/accessibility/ScreenReaderOnly';
+import { logger } from '@/lib/services/logger.service';
 
 interface Props {
   children: ReactNode;
@@ -31,7 +32,13 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    logger.error('ErrorBoundary caught an error', error, {
+      componentName: 'ErrorBoundary',
+      operationName: 'componentDidCatch',
+      metadata: {
+        componentStack: errorInfo.componentStack,
+      },
+    });
     
     this.setState({
       error,
@@ -57,7 +64,10 @@ export class ErrorBoundary extends Component<Props, State> {
       // Report to error tracking service in production
       if (process.env.NODE_ENV === 'production') {
         // TODO: Integrate with error tracking service (e.g., Sentry)
-        console.error('Production error:', appError.toJSON());
+        logger.critical('Production error in ErrorBoundary', error, {
+          componentName: 'ErrorBoundary',
+          metadata: appError.toJSON(),
+        });
       }
     }
 

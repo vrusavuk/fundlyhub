@@ -3,6 +3,7 @@
  */
 import { TourAction } from '../types';
 import { TOUR_CONFIG } from '../config';
+import { logger } from '@/lib/services/logger.service';
 
 export class TourActionService {
   private static instance: TourActionService;
@@ -24,7 +25,11 @@ export class TourActionService {
   }
 
   async executeAction(action: TourAction): Promise<void> {
-    console.log('🎯 TourActionService: Executing action', action.type, action.payload);
+    logger.debug('Executing tour action', {
+      componentName: 'TourActionService',
+      operationName: 'executeAction',
+      metadata: { actionType: action.type, payload: action.payload },
+    });
     
     switch (action.type) {
       case 'demo-search':
@@ -49,81 +54,116 @@ export class TourActionService {
         await this.handleCustomAction(action.payload ?? {});
         break;
       default:
-        console.warn('Unknown tour action type:', action.type);
+        logger.warn('Unknown tour action type', {
+          componentName: 'TourActionService',
+          metadata: { actionType: action.type },
+        });
     }
   }
 
   private async handleDemoSearch(query: string): Promise<void> {
-    console.log('🔍 TourActionService: Starting demo search with query:', query);
+    logger.debug('Starting demo search', {
+      componentName: 'TourActionService',
+      operationName: 'handleDemoSearch',
+      metadata: { query },
+    });
     
     if (!this.searchService || !this.demoService) {
-      console.error('❌ TourActionService: Search or demo service not initialized', {
-        searchService: !!this.searchService,
-        demoService: !!this.demoService
+      logger.error('Search or demo service not initialized', undefined, {
+        componentName: 'TourActionService',
+        metadata: {
+          searchService: !!this.searchService,
+          demoService: !!this.demoService,
+        },
       });
       return;
     }
 
     try {
-      console.log('✅ TourActionService: Services available, enabling demo mode');
+      logger.debug('Services available, enabling demo mode', {
+        componentName: 'TourActionService',
+      });
       
       // Enable demo mode first
       this.demoService.setDemoMode(true);
       
-      console.log('🚀 TourActionService: Forcing header search to open');
+      logger.debug('Forcing header search to open', {
+        componentName: 'TourActionService',
+      });
       
       // Force open header search regardless of page
       this.forceOpenHeaderSearch();
       
       // Wait a bit for the search input to appear
-      console.log('⏳ TourActionService: Waiting for search input to appear');
       await new Promise(resolve => setTimeout(resolve, 300));
       
       // Wait for search input to be available
       const searchInput = await this.waitForElement('input[placeholder*="Search"], input[placeholder*="search"]');
-      console.log('✅ TourActionService: Search input found, starting typing simulation');
+      logger.debug('Search input found, starting typing simulation', {
+        componentName: 'TourActionService',
+      });
       
       // Simulate typing with proper event handling
       await this.simulateTyping(searchInput, query);
       
-      console.log('✅ TourActionService: Demo search completed successfully');
+      logger.info('Demo search completed successfully', {
+        componentName: 'TourActionService',
+        metadata: { query },
+      });
       
     } catch (error) {
-      console.error('❌ TourActionService: Failed to execute demo search:', error);
+      logger.error('Failed to execute demo search', error as Error, {
+        componentName: 'TourActionService',
+        metadata: { query },
+      });
       // Even if demo search fails, continue the tour
     }
   }
 
   private forceOpenHeaderSearch(): void {
-    console.log('🔓 TourActionService: Attempting to force open header search');
+    logger.debug('Attempting to force open header search', {
+      componentName: 'TourActionService',
+      operationName: 'forceOpenHeaderSearch',
+    });
     
     // For demo mode, we need to ensure the search opens regardless of page
     try {
       // First try the custom forceOpen method if available
       if (this.searchService && typeof (this.searchService as any).forceOpen === 'function') {
-        console.log('🎯 TourActionService: Using custom forceOpen method');
+        logger.debug('Using custom forceOpen method', {
+          componentName: 'TourActionService',
+        });
         (this.searchService as any).forceOpen();
       } else {
         // Fallback to standard method
-        console.log('🔄 TourActionService: Using standard openHeaderSearch method');
+        logger.debug('Using standard openHeaderSearch method', {
+          componentName: 'TourActionService',
+        });
         this.searchService?.openHeaderSearch();
       }
       
       // Also dispatch custom event as additional fallback
-      console.log('📡 TourActionService: Dispatching custom event');
       document.dispatchEvent(new CustomEvent('open-header-search'));
       
       // Set demo mode indicator
       document.body.setAttribute('data-onboarding-active', 'true');
-      console.log('✅ TourActionService: Demo mode indicator set on body');
+      logger.debug('Demo mode indicator set on body', {
+        componentName: 'TourActionService',
+      });
       
     } catch (error) {
-      console.error('❌ TourActionService: Failed to force open header search:', error);
+      logger.error('Failed to force open header search', error as Error, {
+        componentName: 'TourActionService',
+      });
     }
   }
 
   private async handleNavigateAndScroll(path: string, scrollDemo: boolean = false): Promise<void> {
-    console.log('🌊 TourActionService: Navigate and scroll to:', path, 'in background');
+    logger.debug('Navigate and scroll in background', {
+      componentName: 'TourActionService',
+      operationName: 'handleNavigateAndScroll',
+      metadata: { path, scrollDemo },
+    });
     
     try {
       // Open the page in a new tab to avoid interrupting the onboarding flow
@@ -131,30 +171,47 @@ export class TourActionService {
         const newTab = window.open(path, '_blank');
         
         if (newTab) {
-          console.log('✅ TourActionService: Opened campaigns page in new tab');
+          logger.debug('Opened page in new tab', {
+            componentName: 'TourActionService',
+            metadata: { path },
+          });
           
           if (scrollDemo) {
             // Focus the new tab briefly to show it to the user
             setTimeout(() => {
               try {
                 newTab.focus();
-                console.log('🎯 TourActionService: Focused new tab to show campaigns page');
+                logger.debug('Focused new tab', {
+                  componentName: 'TourActionService',
+                });
               } catch (error) {
-                console.warn('Could not focus new tab:', error);
+                logger.warn('Could not focus new tab', {
+                  componentName: 'TourActionService',
+                });
               }
             }, 500);
           }
         } else {
-          console.warn('❌ TourActionService: Could not open new tab (popup blocked?)');
+          logger.warn('Could not open new tab (popup blocked?)', {
+            componentName: 'TourActionService',
+            metadata: { path },
+          });
         }
       }
     } catch (error) {
-      console.error('❌ TourActionService: Failed to navigate and scroll:', error);
+      logger.error('Failed to navigate and scroll', error as Error, {
+        componentName: 'TourActionService',
+        metadata: { path },
+      });
     }
   }
 
   private async handleHighlightSection(section: string, scrollTo: boolean = false): Promise<void> {
-    console.log('✨ TourActionService: Highlighting section:', section);
+    logger.debug('Highlighting section', {
+      componentName: 'TourActionService',
+      operationName: 'handleHighlightSection',
+      metadata: { section, scrollTo },
+    });
     
     try {
       if (scrollTo) {
@@ -165,7 +222,10 @@ export class TourActionService {
       this.addSectionHighlight(section);
       
     } catch (error) {
-      console.error('❌ TourActionService: Failed to highlight section:', error);
+      logger.error('Failed to highlight section', error as Error, {
+        componentName: 'TourActionService',
+        metadata: { section },
+      });
     }
   }
 
@@ -180,7 +240,10 @@ export class TourActionService {
     const element = document.querySelector(selector);
     
     if (element) {
-      console.log('📍 TourActionService: Scrolling to section element:', element);
+      logger.debug('Scrolling to section element', {
+        componentName: 'TourActionService',
+        metadata: { section, selector },
+      });
       element.scrollIntoView({ 
         behavior: 'smooth', 
         block: 'center',
@@ -190,7 +253,10 @@ export class TourActionService {
       // Wait for scroll to complete
       await new Promise(resolve => setTimeout(resolve, 1000));
     } else {
-      console.warn('⚠️ TourActionService: Section element not found:', selector);
+      logger.warn('Section element not found', {
+        componentName: 'TourActionService',
+        metadata: { section, selector },
+      });
     }
   }
 
@@ -246,7 +312,10 @@ export class TourActionService {
         document.head.appendChild(style);
       }
       
-      console.log('✨ TourActionService: Added highlight to section:', element);
+      logger.debug('Added highlight to section', {
+        componentName: 'TourActionService',
+        metadata: { section },
+      });
       
       // Auto-remove highlight after 10 seconds
       setTimeout(() => {
@@ -256,7 +325,10 @@ export class TourActionService {
   }
 
   private async performScrollDemo(): Promise<void> {
-    console.log('🎬 TourActionService: Starting scroll demo');
+    logger.debug('Starting scroll demo', {
+      componentName: 'TourActionService',
+      operationName: 'performScrollDemo',
+    });
     
     try {
       const scrollHeight = document.documentElement.scrollHeight;
@@ -278,10 +350,14 @@ export class TourActionService {
         await new Promise(resolve => setTimeout(resolve, stepDelay));
       }
       
-      console.log('✅ TourActionService: Scroll demo completed');
+      logger.info('Scroll demo completed', {
+        componentName: 'TourActionService',
+      });
       
     } catch (error) {
-      console.error('❌ TourActionService: Scroll demo failed:', error);
+      logger.error('Scroll demo failed', error as Error, {
+        componentName: 'TourActionService',
+      });
     }
   }
 
@@ -296,23 +372,32 @@ export class TourActionService {
   }
 
   private async waitForElement(selector: string, timeout = 5000): Promise<HTMLInputElement> {
-    console.log('⏳ TourActionService: Waiting for element:', selector);
+    logger.debug('Waiting for element', {
+      componentName: 'TourActionService',
+      operationName: 'waitForElement',
+      metadata: { selector, timeout },
+    });
     
     return new Promise((resolve, reject) => {
       const startTime = Date.now();
       
       const checkElement = () => {
         const element = document.querySelector(selector) as HTMLInputElement;
-        console.log('🔍 TourActionService: Checking for element...', !!element);
         
         if (element && element.isConnected) {
-          console.log('✅ TourActionService: Element found!', element);
+          logger.debug('Element found', {
+            componentName: 'TourActionService',
+            metadata: { selector },
+          });
           resolve(element);
           return;
         }
         
         if (Date.now() - startTime > timeout) {
-          console.error('❌ TourActionService: Element not found within timeout:', selector);
+          logger.error('Element not found within timeout', undefined, {
+            componentName: 'TourActionService',
+            metadata: { selector, timeout },
+          });
           reject(new Error(`Element ${selector} not found within ${timeout}ms`));
           return;
         }
