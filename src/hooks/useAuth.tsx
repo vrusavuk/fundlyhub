@@ -3,6 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { globalEventBus } from '@/lib/events';
 import { createUserRegisteredEvent, createUserLoggedInEvent } from '@/lib/events/domain/UserEvents';
+import { logger } from '@/lib/services/logger.service';
 
 interface AuthContextType {
   user: User | null;
@@ -68,7 +69,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
         await globalEventBus.publish(event);
       } catch (eventError) {
-        console.error('Failed to publish user registered event:', eventError);
+        logger.error(
+          'Failed to publish user registered event',
+          eventError instanceof Error ? eventError : new Error(String(eventError)),
+          {
+            componentName: 'useAuth',
+            operationName: 'signUp',
+            userId: data.user?.id
+          }
+        );
       }
     }
 
@@ -92,7 +101,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
         await globalEventBus.publish(event);
       } catch (eventError) {
-        console.error('Failed to publish user logged in event:', eventError);
+        logger.error(
+          'Failed to publish user logged in event',
+          eventError instanceof Error ? eventError : new Error(String(eventError)),
+          {
+            componentName: 'useAuth',
+            operationName: 'signIn',
+            userId: data.user?.id
+          }
+        );
       }
     }
 

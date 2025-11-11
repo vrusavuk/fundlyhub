@@ -17,6 +17,7 @@ import { createContext, useContext, ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/services/logger.service';
 
 export interface UserRole {
   role_name: string;
@@ -255,10 +256,18 @@ export function useRBAC(): RBACContextValue {
   const context = useContext(RBACContext);
   
   if (!context) {
-    console.error('[RBAC] Context is undefined. Check provider hierarchy:', {
-      location: window.location.pathname,
-      timestamp: new Date().toISOString(),
-    });
+    logger.error(
+      'RBAC context is undefined - check provider hierarchy',
+      undefined,
+      {
+        componentName: 'useRBAC',
+        operationName: 'contextAccess',
+        metadata: {
+          location: window.location.pathname,
+          timestamp: new Date().toISOString()
+        }
+      }
+    );
     throw new Error(
       'useRBAC must be used within RBACProvider. ' +
       'Ensure AppProviders wraps your component tree correctly.'

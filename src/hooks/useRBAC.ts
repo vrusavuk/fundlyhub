@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/services/logger.service';
 
 export interface UserRole {
   role_name: string;
@@ -118,7 +119,14 @@ export function useRBAC(): RBACState & RBACActions {
         }));
       }
     } catch (error) {
-      console.error('Error fetching RBAC data:', error);
+      logger.error(
+        'Error fetching RBAC data',
+        error instanceof Error ? error : new Error(String(error)),
+        {
+          componentName: 'useRBAC',
+          operationName: 'fetchUserRoles'
+        }
+      );
       setState(prev => ({
         ...prev,
         error: error instanceof Error ? error.message : 'Failed to load permissions',
