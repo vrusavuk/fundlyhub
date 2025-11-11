@@ -6,16 +6,37 @@
 import { z } from 'zod';
 import { DomainEvent } from '../types';
 
-// Campaign event schemas
+// Campaign event schemas (comprehensive payload for DB write)
 export const CampaignCreatedSchema = z.object({
   campaignId: z.string().uuid(),
   userId: z.string().uuid(),
   title: z.string(),
-  description: z.string(),
+  slug: z.string(),
+  summary: z.string().optional(),
+  story: z.string(),
   goalAmount: z.number().positive(),
-  categoryId: z.string().uuid(),
-  visibility: z.enum(['public', 'private']),
+  currency: z.string().default('USD'),
+  categoryId: z.string().uuid().optional(),
+  beneficiaryName: z.string().optional(),
+  location: z.string().optional(),
+  coverImage: z.string().optional(),
+  coverImageId: z.string().uuid().optional(),
   endDate: z.string().optional(),
+  visibility: z.enum(['public', 'private', 'unlisted']),
+  type: z.string().default('personal'),
+  status: z.enum(['draft', 'pending', 'active', 'paused', 'ended', 'closed', 'completed', 'cancelled']),
+  isProject: z.boolean().default(false),
+  isDiscoverable: z.boolean().default(true),
+  milestones: z.array(z.object({
+    title: z.string(),
+    description: z.string().optional(),
+    targetAmount: z.number(),
+    dueDate: z.string().optional(),
+  })).optional(),
+  // For private/unlisted campaigns
+  allowlistEmails: z.array(z.string().email()).optional(),
+  passcode: z.string().optional(),
+  linkToken: z.string().optional(),
 });
 
 export const CampaignUpdatedSchema = z.object({
@@ -40,8 +61,8 @@ export const CampaignGoalReachedSchema = z.object({
 
 export const CampaignStatusChangedSchema = z.object({
   campaignId: z.string().uuid(),
-  previousStatus: z.enum(['draft', 'active', 'paused', 'completed', 'cancelled']),
-  newStatus: z.enum(['draft', 'active', 'paused', 'completed', 'cancelled']),
+  previousStatus: z.enum(['draft', 'pending', 'active', 'paused', 'ended', 'closed', 'completed', 'cancelled']),
+  newStatus: z.enum(['draft', 'pending', 'active', 'paused', 'ended', 'closed', 'completed', 'cancelled']),
   reason: z.string().optional(),
 });
 
