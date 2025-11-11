@@ -32,6 +32,7 @@ import {
   createSearchAnalyticsRecordedEvent,
 } from '@/lib/events/domain/SearchEvents';
 import type { SearchResult } from '@/types/ui/search';
+import { logger } from './logger.service';
 
 // Import event bus instance - will be initialized later
 let eventBus: EventBus | null = null;
@@ -180,7 +181,11 @@ class SearchService implements ISearchService {
 
       return response;
     } catch (error) {
-      console.error('[SearchService] Search failed:', error);
+      logger.error('Search operation failed', error as Error, {
+        componentName: 'SearchService',
+        operationName: 'search',
+        metadata: { query: normalizedQuery, options },
+      });
       throw new Error('Search failed. Please try again.');
     }
   }
@@ -202,7 +207,11 @@ class SearchService implements ISearchService {
       const bus = await getEventBus();
       await bus.publish(event);
     } catch (error) {
-      console.error('[SearchService] Failed to track click:', error);
+      logger.error('Failed to track search result click', error as Error, {
+        componentName: 'SearchService',
+        operationName: 'trackSearchClick',
+        metadata: { query, resultId, resultType },
+      });
     }
   }
 
@@ -223,7 +232,11 @@ class SearchService implements ISearchService {
       const bus = await getEventBus();
       await bus.publish(event);
     } catch (error) {
-      console.error('[SearchService] Failed to track suggestion click:', error);
+      logger.error('Failed to track search suggestion click', error as Error, {
+        componentName: 'SearchService',
+        operationName: 'trackSuggestionClick',
+        metadata: { originalQuery, suggestionQuery },
+      });
     }
   }
 
@@ -233,7 +246,11 @@ class SearchService implements ISearchService {
   async clearCache(query?: string): Promise<void> {
     // This would publish a cache invalidation event
     // For now, we just let cache expire naturally
-    console.log('[SearchService] Cache cleared for query:', query);
+    logger.debug('Search cache cleared', {
+      componentName: 'SearchService',
+      operationName: 'clearCache',
+      metadata: { query },
+    });
   }
 
   // =====================================================
@@ -259,7 +276,11 @@ class SearchService implements ISearchService {
       });
 
     if (error) {
-      console.error('[SearchService] User search failed:', error);
+      logger.error('User projection search failed', error, {
+        componentName: 'SearchService',
+        operationName: 'searchUserProjection',
+        metadata: { query, maxResults: options.maxResults },
+      });
       return [];
     }
 
@@ -296,7 +317,11 @@ class SearchService implements ISearchService {
       .limit(options.maxResults || 50);
 
     if (error) {
-      console.error('[SearchService] Campaign search failed:', error);
+      logger.error('Campaign projection search failed', error, {
+        componentName: 'SearchService',
+        operationName: 'searchCampaignProjection',
+        metadata: { query, maxResults: options.maxResults },
+      });
       return [];
     }
 
@@ -333,7 +358,11 @@ class SearchService implements ISearchService {
       .limit(options.maxResults || 50);
 
     if (error) {
-      console.error('[SearchService] Organization search failed:', error);
+      logger.error('Organization projection search failed', error, {
+        componentName: 'SearchService',
+        operationName: 'searchOrganizationProjection',
+        metadata: { query, maxResults: options.maxResults },
+      });
       return [];
     }
 
@@ -361,7 +390,11 @@ class SearchService implements ISearchService {
       .limit(5);
 
     if (error) {
-      console.error('[SearchService] Suggestions fetch failed:', error);
+      logger.error('Search suggestions fetch failed', error, {
+        componentName: 'SearchService',
+        operationName: 'getSuggestions',
+        metadata: { query },
+      });
       return [];
     }
 
@@ -417,7 +450,15 @@ class SearchService implements ISearchService {
   ): Promise<void> {
     // ❌ REMOVED: Search service must NOT write to projections
     // Cache updates are now handled by the Projection Builder service
-    console.warn('[SearchService] cacheResults called but disabled (use projection-builder)');
+    logger.warn('Deprecated cacheResults method called', {
+      componentName: 'SearchService',
+      operationName: 'cacheResults',
+      metadata: { 
+        message: 'Cache writes disabled - use projection-builder edge function',
+        cacheKey,
+        query,
+      },
+    });
   }
 
   /**
@@ -441,7 +482,11 @@ class SearchService implements ISearchService {
       const bus = await getEventBus();
       await bus.publish(event);
     } catch (error) {
-      console.error('[SearchService] Analytics tracking failed:', error);
+      logger.error('Search analytics tracking failed', error as Error, {
+        componentName: 'SearchService',
+        operationName: 'trackSearchAnalytics',
+        metadata: { query, resultCount, executionTimeMs, cached },
+      });
     }
   }
 

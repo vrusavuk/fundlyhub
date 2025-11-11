@@ -6,6 +6,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { AdminCache } from '@/lib/cache/AdminCache';
+import { logger } from './logger.service';
 
 export interface PaginationOptions {
   page: number;
@@ -236,7 +237,11 @@ class AdminDataService {
       .rpc('get_fundraiser_totals', { fundraiser_ids: campaignIds });
 
     if (error) {
-      console.error('Error fetching campaign stats:', error);
+      logger.error('Failed to fetch campaign stats batch', error, {
+        componentName: 'AdminDataService',
+        operationName: 'fetchCampaignStatsBatch',
+        metadata: { campaignCount: campaignIds.length },
+      });
       return new Map();
     }
 
@@ -307,7 +312,11 @@ class AdminDataService {
       });
 
       if (error) {
-        console.error('Error fetching campaign stats:', error);
+        logger.error('Failed to fetch campaign aggregate stats', error, {
+          componentName: 'AdminDataService',
+          operationName: 'fetchCampaignStats',
+          metadata: { filters },
+        });
         throw error;
       }
 
@@ -401,7 +410,11 @@ class AdminDataService {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching campaign donations:', error);
+        logger.error('Failed to fetch campaign donations', error, {
+          componentName: 'AdminDataService',
+          operationName: 'fetchCampaignDonations',
+          metadata: { campaignId },
+        });
         throw error;
       }
 
@@ -513,7 +526,11 @@ class AdminDataService {
       const { data, error } = await query;
       
       if (error) {
-        console.error('Error fetching donation stats:', error);
+        logger.error('Failed to fetch donation stats', error, {
+          componentName: 'AdminDataService',
+          operationName: 'fetchDonationStats',
+          metadata: { filters },
+        });
         throw error;
       }
 

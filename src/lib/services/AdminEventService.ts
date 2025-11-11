@@ -6,6 +6,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { globalEventBus } from '@/lib/events';
+import { logger } from './logger.service';
 import {
   createUserSuspendedEvent,
   createUserUnsuspendedEvent,
@@ -194,7 +195,7 @@ export class AdminEventService {
   }
 
   /**
-   * Update campaign and publish event with validation - Phase 4 Enhanced Logging
+   * Update campaign and publish event with validation
    */
   static async updateCampaign(
     campaignId: string,
@@ -211,21 +212,23 @@ export class AdminEventService {
       };
     }
   ) {
-    console.log('[AdminEventService] updateCampaign called', {
-      campaignId,
-      updatedBy,
-      changes,
-      options
-    });
+    const context = {
+      componentName: 'AdminEventService',
+      operationName: 'updateCampaign',
+      userId: updatedBy,
+      metadata: { campaignId, changes, options },
+    };
+
+    logger.debug('Campaign update initiated', context);
 
     const { data: user } = await supabase.auth.getUser();
     if (!user?.user) {
-      console.error('[AdminEventService] User not authenticated');
+      logger.error('Campaign update failed: User not authenticated', undefined, context);
       throw new Error('User not authenticated');
     }
 
     // 1. Fetch current campaign
-    console.log('[AdminEventService] Fetching campaign data...');
+    logger.debug('Fetching campaign data', context);
     const { data: campaign, error: fetchError } = await supabase
       .from('fundraisers')
       .select('*, donations(id)')
@@ -233,18 +236,24 @@ export class AdminEventService {
       .single();
 
     if (fetchError || !campaign) {
-      console.error('[AdminEventService] Failed to fetch campaign:', fetchError);
+      logger.error('Failed to fetch campaign for update', fetchError, {
+        ...context,
+        metadata: { ...context.metadata, fetchError: fetchError?.message },
+      });
       throw new Error(`Failed to fetch campaign: ${fetchError?.message}`);
     }
 
-    console.log('[AdminEventService] Campaign fetched:', { 
-      id: campaign.id, 
-      owner: campaign.owner_user_id,
-      status: campaign.status 
+    logger.debug('Campaign fetched successfully', {
+      ...context,
+      metadata: { 
+        id: campaign.id, 
+        owner: campaign.owner_user_id,
+        status: campaign.status 
+      },
     });
 
-    // 2. Check permissions with detailed logging
-    console.log('[AdminEventService] Checking permissions...');
+    // 2. Check permissions
+    logger.debug('Checking campaign update permissions', context);
     const isOwner = campaign.owner_user_id === updatedBy;
     
     const { data: hasPermission, error: permError } = await supabase.rpc('user_has_permission', {
@@ -252,26 +261,39 @@ export class AdminEventService {
       _permission_name: 'manage_campaigns'
     });
 
-    console.log('[AdminEventService] Permission check results:', {
-      isOwner,
-      hasManageCampaigns: hasPermission,
-      permissionError: permError,
-      canProceed: isOwner || hasPermission
+    logger.debug('Permission check completed', {
+      ...context,
+      metadata: {
+        isOwner,
+        hasManageCampaigns: hasPermission,
+        permissionError: permError,
+        canProceed: isOwner || hasPermission
+      },
     });
 
     if (!isOwner && !hasPermission) {
-      console.error('[AdminEventService] Permission denied');
+      logger.security('Unauthorized campaign update attempt', 'medium', {
+        ...context,
+        metadata: { campaignId, ownerId: campaign.owner_user_id },
+      });
       throw new Error('You do not have permission to update this campaign');
     }
 
     // 3. Validate changes
     if (options?.validateTransitions !== false) {
-      console.log('[AdminEventService] Validating transitions...');
+      logger.debug('Validating campaign transitions', context);
       
       // Prevent reducing goal amount if donations exist
       if (changes.goal_amount && campaign.donations && campaign.donations.length > 0) {
         if (changes.goal_amount < campaign.goal_amount) {
-          console.error('[AdminEventService] Cannot reduce goal with donations');
+          logger.warn('Attempted to reduce goal amount with existing donations', {
+            ...context,
+            metadata: { 
+              currentGoal: campaign.goal_amount, 
+              newGoal: changes.goal_amount,
+              donationCount: campaign.donations.length,
+            },
+          });
           throw new Error('Cannot reduce goal amount after receiving donations');
         }
       }
@@ -279,7 +301,14 @@ export class AdminEventService {
       // Prevent changing currency if donations exist
       if (changes.currency && campaign.donations && campaign.donations.length > 0) {
         if (changes.currency !== campaign.currency) {
-          console.error('[AdminEventService] Cannot change currency with donations');
+          logger.warn('Attempted to change currency with existing donations', {
+            ...context,
+            metadata: { 
+              currentCurrency: campaign.currency, 
+              newCurrency: changes.currency,
+              donationCount: campaign.donations.length,
+            },
+          });
           throw new Error('Cannot change currency after receiving donations');
         }
       }
@@ -299,19 +328,27 @@ export class AdminEventService {
         const newStatus = changes.status;
         
         if (!validTransitions[currentStatus]?.includes(newStatus)) {
-          console.error('[AdminEventService] Invalid status transition:', {
-            from: currentStatus,
-            to: newStatus
+          logger.warn('Invalid campaign status transition attempted', {
+            ...context,
+            metadata: { 
+              from: currentStatus,
+              to: newStatus,
+              validTransitions: validTransitions[currentStatus],
+            },
           });
           throw new Error(`Invalid status transition from ${currentStatus} to ${newStatus}`);
         }
       }
       
-      console.log('[AdminEventService] Validation passed');
+      logger.debug('Campaign transition validation passed', context);
     }
 
-    // 4. Execute update with detailed logging
-    console.log('[AdminEventService] Executing database update:', changes);
+    // 4. Execute update
+    logger.info('Executing campaign database update', {
+      ...context,
+      metadata: { changes, changedFields: Object.keys(changes) },
+    });
+    
     const { data: updatedCampaign, error: updateError } = await supabase
       .from('fundraisers')
       .update({
@@ -323,16 +360,22 @@ export class AdminEventService {
       .single();
 
     if (updateError) {
-      console.error('[AdminEventService] Database update failed:', {
-        code: updateError.code,
-        message: updateError.message,
-        details: updateError.details,
-        hint: updateError.hint
+      logger.error('Campaign database update failed', updateError, {
+        ...context,
+        metadata: {
+          code: updateError.code,
+          message: updateError.message,
+          details: updateError.details,
+          hint: updateError.hint,
+        },
       });
       throw updateError;
     }
 
-    console.log('[AdminEventService] Campaign updated successfully:', updatedCampaign);
+    logger.info('Campaign updated successfully', {
+      ...context,
+      metadata: { updatedCampaignId: updatedCampaign.id },
+    });
 
     // 5. Handle image operations
     if (options?.imageOperations) {
@@ -367,8 +410,11 @@ export class AdminEventService {
           );
         }
       } catch (imageError) {
-        console.error('[AdminEventService] Image operation failed:', imageError);
-        // Campaign update succeeded but image linking failed - log as error
+        logger.error('Campaign image operation failed', imageError as Error, {
+          ...context,
+          metadata: { imageOperations: options.imageOperations },
+        });
+        // Campaign update succeeded but image linking failed
         // The calling component will handle user notification
       }
     }
@@ -398,7 +444,7 @@ export class AdminEventService {
       },
     });
 
-    console.log('[AdminEventService] Event published and audit logged');
+    logger.info('Campaign event published and audit logged', context);
     return { success: true };
   }
 

@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { globalEventBus } from '@/lib/events';
 import { DomainEvent } from '@/lib/events/types';
+import { logger } from './logger.service';
 
 interface NotificationTemplate {
   type: string;
@@ -135,7 +136,10 @@ class NotificationService {
   };
 
   async initialize() {
-    console.log('[NotificationService] Initializing...');
+    logger.info('NotificationService initializing', {
+      componentName: 'NotificationService',
+      operationName: 'initialize',
+    });
     
     Object.keys(this.templates).forEach(eventType => {
       globalEventBus.subscribe(eventType, {
@@ -146,7 +150,11 @@ class NotificationService {
       });
     });
 
-    console.log('[NotificationService] Subscribed to', Object.keys(this.templates).length, 'event types');
+    logger.info('NotificationService subscribed to event types', {
+      componentName: 'NotificationService',
+      operationName: 'initialize',
+      metadata: { eventTypeCount: Object.keys(this.templates).length },
+    });
   }
 
   private async createNotification(event: DomainEvent) {
@@ -156,7 +164,11 @@ class NotificationService {
     try {
       const recipients = await this.getRecipients(event, template);
       if (recipients.length === 0) {
-        console.log('[NotificationService] No recipients for event:', event.type);
+        logger.debug('No recipients found for notification event', {
+          componentName: 'NotificationService',
+          operationName: 'createNotification',
+          metadata: { eventType: event.type, eventId: event.id },
+        });
         return;
       }
 
@@ -185,13 +197,33 @@ class NotificationService {
           });
 
         if (error) {
-          console.error('[NotificationService] Failed to insert notification:', error);
+          logger.error('Failed to insert notification for recipient', error, {
+            componentName: 'NotificationService',
+            operationName: 'createNotification',
+            metadata: { 
+              eventType: event.type, 
+              recipientId,
+              notificationType: template.type,
+            },
+          });
         }
       }
 
-      console.log(`[NotificationService] Created ${recipients.length} notifications for ${event.type}`);
+      logger.info('Notifications created successfully', {
+        componentName: 'NotificationService',
+        operationName: 'createNotification',
+        metadata: { 
+          eventType: event.type, 
+          recipientCount: recipients.length,
+          notificationCategory: template.category,
+        },
+      });
     } catch (error) {
-      console.error('[NotificationService] Error creating notification:', error);
+      logger.error('Failed to create notification', error as Error, {
+        componentName: 'NotificationService',
+        operationName: 'createNotification',
+        metadata: { eventType: event.type, eventId: event.id },
+      });
     }
   }
 
