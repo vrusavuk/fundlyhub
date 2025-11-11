@@ -76,12 +76,18 @@ export const WIZARD_ALERTS = {
 } as const;
 
 export const WIZARD_BUTTONS = {
-  // Footer container - grid layout ensures consistent button positioning
-  footer: 'grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-2 sm:gap-3 items-center sm:sticky md:fixed bottom-0 left-0 right-0 md:left-auto md:right-auto md:max-w-screen-2xl md:mx-auto bg-background/95 backdrop-blur-sm p-3 border-t border-border z-50',
+  // Outer container - full viewport width, fixed positioning
+  footerOuter: 'fixed bottom-0 left-0 right-0 w-full bg-background/95 backdrop-blur-sm border-t border-border z-50',
+  
+  // Inner container - constrains content width and centers it
+  footerInner: 'container mx-auto px-4 py-3 max-w-screen-2xl',
+  
+  // Grid layout for button positioning
+  footerGrid: 'grid grid-cols-1 sm:grid-cols-[auto_1fr_auto] gap-3 items-center',
   
   // Button props
   size: 'lg' as const,
-  className: 'w-full sm:w-auto touch-button',
+  className: 'w-full sm:w-auto min-w-[120px] touch-button',
 } as const;
 
 export const WIZARD_BADGES = {

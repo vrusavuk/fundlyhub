@@ -166,61 +166,66 @@ export function CreateFundraiserWizard() {
         </CardContent>
       </Card>
 
-      <div className={WIZARD_BUTTONS.footer}>
-        {/* Left column - Previous button or empty space */}
-        <div className="flex justify-start mb-2 sm:mb-0">
-          {currentStep > 0 && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={goToPreviousStep}
-              disabled={isSubmitting}
-              size={WIZARD_BUTTONS.size}
-              className={WIZARD_BUTTONS.className}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Previous
-            </Button>
-          )}
-        </div>
-
-        {/* Center column - Auto-saving indicator */}
-        <div className="hidden sm:flex items-center justify-center gap-2 text-xs text-muted-foreground">
-          <Save className="h-4 w-4" />
-          <span>Auto-saving</span>
-        </div>
-
-        {/* Right column - Next/Publish button */}
-        <div className="flex justify-end">
-          {currentStep < (formData.isProject ? 5 : 4) ? (
-            <Button
-              type="button"
-              onClick={handleNext}
-              disabled={isSubmitting || (currentStep === 0 && formData.isProject === undefined)}
-              size={WIZARD_BUTTONS.size}
-              className={WIZARD_BUTTONS.className}
-            >
-              Next
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              onClick={handlePublish}
-              disabled={isSubmitting}
-              size={WIZARD_BUTTONS.size}
-              className={WIZARD_BUTTONS.className}
-            >
-              {isSubmitting ? (
-                <>
-                  <LoadingSpinner size="sm" className="mr-2" />
-                  Publishing...
-                </>
-              ) : (
-                'Publish Fundraiser'
+      {/* Fixed footer - breaks out of container constraints */}
+      <div className={WIZARD_BUTTONS.footerOuter}>
+        <div className={WIZARD_BUTTONS.footerInner}>
+          <div className={WIZARD_BUTTONS.footerGrid}>
+            {/* Left: Previous button */}
+            <div className="flex justify-start">
+              {currentStep > 0 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={goToPreviousStep}
+                  disabled={isSubmitting}
+                  size={WIZARD_BUTTONS.size}
+                  className={WIZARD_BUTTONS.className}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Previous
+                </Button>
               )}
-            </Button>
-          )}
+            </div>
+
+            {/* Center: Auto-saving indicator */}
+            <div className="hidden sm:flex items-center justify-center gap-2 text-xs text-muted-foreground">
+              <Save className="h-4 w-4" />
+              <span>Auto-saving</span>
+            </div>
+
+            {/* Right: Next/Publish button */}
+            <div className="flex justify-end">
+              {currentStep < (formData.isProject ? 5 : 4) ? (
+                <Button
+                  type="button"
+                  onClick={handleNext}
+                  disabled={isSubmitting || (currentStep === 0 && formData.isProject === undefined)}
+                  size={WIZARD_BUTTONS.size}
+                  className={WIZARD_BUTTONS.className}
+                >
+                  Next
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  onClick={handlePublish}
+                  disabled={isSubmitting}
+                  size={WIZARD_BUTTONS.size}
+                  className={WIZARD_BUTTONS.className}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <LoadingSpinner size="sm" className="mr-2" />
+                      Publishing...
+                    </>
+                  ) : (
+                    'Publish Fundraiser'
+                  )}
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
