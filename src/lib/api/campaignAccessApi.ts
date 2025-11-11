@@ -12,6 +12,7 @@ import {
   RotateLinkResponse,
   CampaignAccessRule,
 } from '@/types/domain/access';
+import { logger } from '@/lib/services/logger.service';
 
 export const campaignAccessApi = {
   /**
@@ -23,7 +24,11 @@ export const campaignAccessApi = {
     });
     
     if (error) {
-      console.error('[campaignAccessApi] checkAccess error:', error);
+      logger.error('Campaign access check failed', error, {
+        componentName: 'campaignAccessApi',
+        operationName: 'checkAccess',
+        metadata: { campaignId: request.campaign_id },
+      });
       throw error;
     }
     
@@ -39,7 +44,11 @@ export const campaignAccessApi = {
     });
     
     if (error) {
-      console.error('[campaignAccessApi] createCampaign error:', error);
+      logger.error('Campaign creation failed', error, {
+        componentName: 'campaignAccessApi',
+        operationName: 'createCampaign',
+        metadata: { name: request.name, visibility: request.visibility },
+      });
       throw error;
     }
     
@@ -55,7 +64,11 @@ export const campaignAccessApi = {
     });
     
     if (error) {
-      console.error('[campaignAccessApi] rotateLink error:', error);
+      logger.error('Link rotation failed', error, {
+        componentName: 'campaignAccessApi',
+        operationName: 'rotateLink',
+        metadata: { campaignId },
+      });
       throw error;
     }
     
@@ -73,7 +86,11 @@ export const campaignAccessApi = {
       .order('created_at', { ascending: false });
     
     if (error) {
-      console.error('[campaignAccessApi] getAccessRules error:', error);
+      logger.error('Failed to fetch access rules', error, {
+        componentName: 'campaignAccessApi',
+        operationName: 'getAccessRules',
+        metadata: { campaignId },
+      });
       throw error;
     }
     
@@ -99,7 +116,11 @@ export const campaignAccessApi = {
       .single();
     
     if (error) {
-      console.error('[campaignAccessApi] addAccessRule error:', error);
+      logger.error('Failed to add access rule', error, {
+        componentName: 'campaignAccessApi',
+        operationName: 'addAccessRule',
+        metadata: { campaignId, ruleType, ruleValue },
+      });
       throw error;
     }
     
@@ -116,7 +137,11 @@ export const campaignAccessApi = {
       .eq('id', ruleId);
     
     if (error) {
-      console.error('[campaignAccessApi] removeAccessRule error:', error);
+      logger.error('Failed to remove access rule', error, {
+        componentName: 'campaignAccessApi',
+        operationName: 'removeAccessRule',
+        metadata: { ruleId },
+      });
       throw error;
     }
   },
