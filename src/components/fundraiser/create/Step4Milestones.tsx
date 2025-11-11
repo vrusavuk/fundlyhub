@@ -105,7 +105,7 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
                       ) : (
                         <AlertCircle className={`${WIZARD_ICONS.standard} text-warning flex-shrink-0`} />
                       )}
-                      <CardTitle className={`${WIZARD_TYPOGRAPHY.subsectionTitle} sm:text-base`}>
+                      <CardTitle className={WIZARD_TYPOGRAPHY.subsectionTitle}>
                         Milestone {index + 1}
                         {!isValid && <span className={`text-warning ${WIZARD_TYPOGRAPHY.helperText} ml-1.5`}>(Incomplete)</span>}
                       </CardTitle>
@@ -292,7 +292,7 @@ export function Step4Milestones({ value, currency, onChange }: Step4MilestonesPr
             onClick={handleAddNew}
             className="text-primary"
           >
-            <Plus className={`h-5 w-5 mr-2`} />
+            <Plus className={`${WIZARD_ICONS.standard} mr-2`} />
             Add New Milestone
           </Button>
         </CardContent>

@@ -49,12 +49,12 @@ export function Step4Review({ formData, categoryName, categoryEmoji }: Step4Revi
     <div className={WIZARD_SPACING.stepContainer}>
       {isComplete ? (
         <div className={`flex items-center ${WIZARD_GAPS.inline} text-success p-4 bg-success/10 rounded-lg border border-success/20`}>
-          <CheckCircle2 className="h-5 w-5" />
+          <CheckCircle2 className={WIZARD_ICONS.standard} />
           <span className="font-medium">Ready to publish!</span>
         </div>
       ) : (
         <div className={`flex items-center ${WIZARD_GAPS.inline} text-warning p-4 bg-warning/10 rounded-lg border border-warning/20`}>
-          <AlertCircle className="h-5 w-5" />
+          <AlertCircle className={WIZARD_ICONS.standard} />
           <span className="font-medium">Please complete all required fields</span>
         </div>
       )}
@@ -198,7 +198,7 @@ export function Step4Review({ formData, categoryName, categoryEmoji }: Step4Revi
         <Card className="card-enhanced">
           <CardHeader className={WIZARD_CARDS.outerCard}>
             <CardTitle className={`flex items-center ${WIZARD_GAPS.inline}`}>
-              <Target className="h-5 w-5" />
+              <Target className={WIZARD_ICONS.standard} />
               Project Milestones ({formData.milestones.length})
             </CardTitle>
           </CardHeader>

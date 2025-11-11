@@ -32,7 +32,7 @@ export function ProgressIndicator({
     <nav aria-label="Progress" className="space-y-2 mb-4 sm:mb-6">
       {/* Progress Bar */}
       <div className="w-full max-w-3xl mx-auto">
-        <div className="flex items-center justify-between text-[10px] sm:text-xs text-muted-foreground mb-1.5">
+        <div className="flex items-center justify-between text-xs sm:text-sm text-muted-foreground mb-1.5">
           <span className="font-medium">
             Step {currentStep + 1} of {steps.length}
           </span>
@@ -99,14 +99,14 @@ export function ProgressIndicator({
                   )}
                 >
                   {isCompleted ? (
-                    <Check className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+                    <Check className={WIZARD_ICONS.standard} aria-hidden="true" />
                   ) : (
                     <span className="text-sm sm:text-base">{step.number}</span>
                   )}
                 </span>
                 <span
                   className={cn(
-                    'mt-1.5 text-[10px] sm:text-xs font-medium transition-colors text-center',
+                    'mt-1.5 text-xs font-medium transition-colors text-center',
                     isCurrent && 'text-foreground font-semibold',
                     !isCurrent && 'text-muted-foreground'
                   )}
