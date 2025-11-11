@@ -3,6 +3,11 @@
  * Single source of truth for all application services
  */
 
+// Foundation utilities (NEW - Phase 1 refactoring)
+export { logger, type LogContext } from './logger.service';
+export { AppConfig } from '@/config/app.config';
+export * from '@/lib/utils/result';
+
 // Core unified services (RECOMMENDED - use these)
 export { unifiedApi, ApiError, type RetryConfig, type CacheConfig, type QueryOptions, type ServiceResponse } from './unified-api.service';
 export { authService, type AuthResult, type SignUpData, type SignInData } from './auth.service';
