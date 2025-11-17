@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { payoutService, type PayoutRequest, type UserEarnings } from '@/lib/services/payout.service';
+import { unifiedApi } from '@/lib/services/unified-api.service';
 import { PayoutRequestDialog } from '@/components/payout/PayoutRequestDialog';
 import { BankAccountManager } from '@/components/payout/BankAccountManager';
 import { KYCVerificationBanner } from '@/components/payout/KYCVerificationBanner';
@@ -42,9 +43,23 @@ export function EarningsTab({ userId }: EarningsTabProps) {
     try {
       setLoading(true);
 
+      // Clear potentially corrupted cache
+      await unifiedApi.clearCache(`user-earnings:${userId}`);
+
       // Fetch user earnings - SINGLE SOURCE OF TRUTH
       const earningsData = await payoutService.getUserEarnings(userId);
-      setEarnings(earningsData);
+      
+      // Defensive check with fallback
+      setEarnings(earningsData || {
+        total_earnings: '0.00',
+        total_payouts: '0.00',
+        pending_payouts: '0.00',
+        available_balance: '0.00',
+        held_balance: '0.00',
+        currency: 'USD',
+        fundraiser_count: 0,
+        donation_count: 0,
+      });
 
       // Fetch payout history
       const payoutData = await payoutService.getPayoutRequests({ userId });
