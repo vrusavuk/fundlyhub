@@ -242,18 +242,27 @@ class PayoutService {
     account_type?: string;
     bank_name?: string;
   }): Promise<BankAccount> {
+    // Transform snake_case to camelCase for edge function
     const { data, error } = await supabase.functions.invoke('bank-account-verify', {
       body: {
-        action: 'add',
-        ...accountData,
+        accountHolderName: accountData.account_holder_name,
+        accountNumber: accountData.account_number,
+        routingNumber: accountData.routing_number,
+        accountType: accountData.account_type || 'checking',
+        // Optional fields - only include if provided
+        ...(accountData.bank_name && { bankName: accountData.bank_name }),
+        country: 'US',
+        currency: 'usd'
       },
     });
 
     if (error) {
+      console.error('Edge function invocation error:', error);
       throw new Error(error.message || 'Failed to add bank account');
     }
 
     if (data.error) {
+      console.error('Edge function returned error:', data.error);
       throw new Error(data.error);
     }
 

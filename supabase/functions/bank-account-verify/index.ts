@@ -11,11 +11,29 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+/**
+ * Bank Account Input Interface
+ * 
+ * IMPORTANT: This edge function expects camelCase field names.
+ * The frontend service layer must transform snake_case to camelCase before calling.
+ * 
+ * Required fields:
+ * - accountHolderName: Full name on the bank account
+ * - accountNumber: Bank account number
+ * - routingNumber: 9-digit ABA routing number
+ * - accountType: Either 'checking' or 'savings'
+ * 
+ * Optional fields:
+ * - bankName: Name of the bank (auto-detected if not provided)
+ * - country: ISO country code (defaults to 'US')
+ * - currency: ISO currency code (defaults to 'usd')
+ */
 interface BankAccountInput {
   accountHolderName: string;
   accountNumber: string;
   routingNumber: string;
   accountType: 'checking' | 'savings';
+  bankName?: string;
   country?: string;
   currency?: string;
 }
@@ -54,6 +72,8 @@ Deno.serve(async (req) => {
 
     const input: BankAccountInput = await req.json();
 
+    console.log('Received request body:', JSON.stringify(input, null, 2));
+
     // Validate input
     if (
       !input.accountHolderName ||
@@ -61,8 +81,21 @@ Deno.serve(async (req) => {
       !input.routingNumber ||
       !input.accountType
     ) {
+      const missingFields = [];
+      if (!input.accountHolderName) missingFields.push('accountHolderName');
+      if (!input.accountNumber) missingFields.push('accountNumber');
+      if (!input.routingNumber) missingFields.push('routingNumber');
+      if (!input.accountType) missingFields.push('accountType');
+      
+      console.error('Validation failed. Missing fields:', missingFields);
+      console.error('Received fields:', Object.keys(input));
+      
       return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
+        JSON.stringify({ 
+          error: 'Missing required fields',
+          missing: missingFields,
+          received: Object.keys(input)
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -82,6 +115,8 @@ Deno.serve(async (req) => {
         account_number: input.accountNumber,
       },
     });
+
+    console.log('Stripe token created:', token.id);
 
     // Get or create Stripe customer for user
     let customerId: string;
@@ -128,7 +163,7 @@ Deno.serve(async (req) => {
       account_number_last4: bankAccount.last4,
       routing_number_last4: bankAccount.routing_number?.slice(-4) || '',
       account_type: input.accountType,
-      bank_name: bankAccount.bank_name || '',
+      bank_name: input.bankName || bankAccount.bank_name || 'Unknown Bank',
       country: input.country || 'US',
       currency: input.currency || 'USD',
       verification_status: bankAccount.status === 'verified' ? 'verified' : 'pending',
@@ -182,7 +217,12 @@ Deno.serve(async (req) => {
       aggregate_id: bankAccountId,
     });
 
-    console.log('Bank account created:', bankAccountId, bankAccount.status);
+    console.log('Bank account created successfully:', {
+      bankAccountId,
+      status: bankAccount.status,
+      last4: bankAccount.last4,
+      bankName: input.bankName || bankAccount.bank_name || 'Unknown Bank'
+    });
 
     return new Response(
       JSON.stringify({
