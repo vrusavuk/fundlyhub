@@ -50,3 +50,6 @@ verify_jwt = false
 
 [functions.bank-account-verify]
 verify_jwt = true
+
+[functions.routing-lookup]
+verify_jwt = true

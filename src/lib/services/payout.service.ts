@@ -194,6 +194,34 @@ class PayoutService {
   }
 
   /**
+   * Lookup bank name by routing number
+   */
+  async lookupBankByRoutingNumber(routingNumber: string): Promise<{
+    bank_name: string;
+  } | null> {
+    try {
+      const { data, error } = await supabase.functions.invoke('routing-lookup', {
+        body: { routing_number: routingNumber },
+      });
+
+      if (error) {
+        console.error('Bank lookup error:', error);
+        return null;
+      }
+
+      if (data.error) {
+        console.error('Bank lookup failed:', data.error);
+        return null;
+      }
+
+      return { bank_name: data.bank_name };
+    } catch (error) {
+      console.error('Failed to lookup bank:', error);
+      return null;
+    }
+  }
+
+  /**
    * Add a new bank account
    */
   async addBankAccount(accountData: {
@@ -201,6 +229,7 @@ class PayoutService {
     routing_number: string;
     account_holder_name: string;
     account_type?: string;
+    bank_name?: string;
   }): Promise<BankAccount> {
     const { data, error } = await supabase.functions.invoke('bank-account-verify', {
       body: {
