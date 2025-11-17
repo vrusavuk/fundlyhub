@@ -2,7 +2,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FundraiserGrid } from '@/components/fundraisers/FundraiserGrid';
 import { FollowersList } from './FollowersList';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart, Users, Trophy } from 'lucide-react';
+import { Heart, Users, Trophy, Wallet } from 'lucide-react';
+import { EarningsTab } from './EarningsTab';
 import { LoadingState } from '@/components/common/LoadingState';
 import { ProfileTabContentSkeleton } from '@/components/skeletons/ProfilePageSkeleton';
 import { supabase } from '@/integrations/supabase/client';
@@ -88,7 +89,7 @@ export function ProfileTabs({ userId }: ProfileTabsProps) {
 
   return (
     <Tabs defaultValue="active" className="w-full">
-      <TabsList className="grid w-full grid-cols-4 mb-6">
+      <TabsList className={`grid w-full ${isOwnProfile ? 'grid-cols-5' : 'grid-cols-4'} mb-6`}>
         <TabsTrigger value="active" className="flex items-center gap-2">
           <Trophy className="h-4 w-4" />
           <span className="hidden sm:inline">Campaigns</span>
@@ -99,6 +100,13 @@ export function ProfileTabs({ userId }: ProfileTabsProps) {
           <span className="hidden sm:inline">Completed</span>
           <span className="sm:hidden">Done</span>
         </TabsTrigger>
+        {isOwnProfile && (
+          <TabsTrigger value="earnings" className="flex items-center gap-2">
+            <Wallet className="h-4 w-4" />
+            <span className="hidden sm:inline">Earnings</span>
+            <span className="sm:hidden">$$$</span>
+          </TabsTrigger>
+        )}
         <TabsTrigger value="supporters" className="flex items-center gap-2">
           <Users className="h-4 w-4" />
           <span className="hidden sm:inline">Supporters</span>
@@ -167,6 +175,12 @@ export function ProfileTabs({ userId }: ProfileTabsProps) {
           </CardContent>
         </Card>
       </TabsContent>
+
+      {isOwnProfile && (
+        <TabsContent value="earnings">
+          <EarningsTab userId={userId} />
+        </TabsContent>
+      )}
 
       <TabsContent value="supporters">
         <FollowersList userId={userId} type="followers" />
