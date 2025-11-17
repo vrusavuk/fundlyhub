@@ -64,45 +64,141 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Lookup using RoutingNumbers.info API (free, no auth required)
+// Multi-source lookup with intelligent fallback
     console.log(`Looking up routing number: ${cleanRouting}`);
-    const lookupUrl = `https://www.routingnumbers.info/api/name.json?rn=${cleanRouting}`;
     
-    const response = await fetch(lookupUrl, {
-      headers: {
-        'User-Agent': 'Supabase-Edge-Function',
-      },
-    });
+    let bankName: string | null = null;
+    let source = 'none';
 
-    if (!response.ok) {
-      console.error(`API error: ${response.status} ${response.statusText}`);
-      return new Response(
-        JSON.stringify({ error: 'Bank lookup service unavailable' }),
-        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // Source 1: RoutingNumbers.info (fast, good coverage)
+    try {
+      const response = await fetch(`https://www.routingnumbers.info/api/name.json?rn=${cleanRouting}`, {
+        headers: { 'User-Agent': 'Supabase-Edge-Function' },
+        signal: AbortSignal.timeout(5000),
+      });
+      
+      if (response.ok) {
+        const data: RoutingNumberResponse = await response.json();
+        bankName = data.customer_name || data.bank_name || data.name || null;
+        if (bankName) {
+          source = 'routingnumbers.info';
+          console.log(`Found via routingnumbers.info: ${bankName}`);
+        }
+      }
+    } catch (error) {
+      console.log(`RoutingNumbers.info lookup failed:`, error);
     }
 
-    const data: RoutingNumberResponse = await response.json();
-    const bankName = data.customer_name || data.bank_name || data.name;
-
+    // Source 2: bank.codes (comprehensive web scraping fallback)
     if (!bankName) {
-      return new Response(
-        JSON.stringify({ error: 'Bank not found for this routing number' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      try {
+        const response = await fetch(`https://bank.codes/us-routing-number/${cleanRouting}/`, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Supabase-Edge-Function)' },
+          signal: AbortSignal.timeout(5000),
+        });
+        
+        if (response.ok) {
+          const html = await response.text();
+          
+          // Parse bank name from HTML - look for various patterns
+          const patterns = [
+            /<h1[^>]*class="[^"]*bank-name[^"]*"[^>]*>(.*?)<\/h1>/i,
+            /<h1[^>]*>(.*?)<\/h1>/i,
+            /<div[^>]*class="[^"]*bank-name[^"]*"[^>]*>(.*?)<\/div>/i,
+            /<span[^>]*class="[^"]*bank-name[^"]*"[^>]*>(.*?)<\/span>/i,
+          ];
+          
+          for (const pattern of patterns) {
+            const match = html.match(pattern);
+            if (match && match[1]) {
+              bankName = match[1]
+                .trim()
+                .replace(/<[^>]*>/g, '') // Remove any HTML tags
+                .replace(/,\s*\w{2}$/i, '') // Remove state suffix like ", CA"
+                .replace(/\s+/g, ' '); // Normalize whitespace
+              
+              if (bankName && bankName.length > 2) {
+                source = 'bank.codes';
+                console.log(`Found via bank.codes: ${bankName}`);
+                break;
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.log(`bank.codes lookup failed:`, error);
+      }
     }
 
-    // Cache the result
-    routingCache.set(cleanRouting, {
-      bank_name: bankName,
-      timestamp: Date.now(),
-    });
+    // Source 3: RoutingTool (additional coverage)
+    if (!bankName) {
+      try {
+        const response = await fetch(`https://verify.routingtool.com/bank/info/routing/${cleanRouting}`, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Supabase-Edge-Function)' },
+          signal: AbortSignal.timeout(5000),
+        });
+        
+        if (response.ok) {
+          const html = await response.text();
+          
+          // Parse bank name from HTML
+          const patterns = [
+            /"bank_name":"([^"]+)"/i,
+            /"name":"([^"]+)"/i,
+            /<td[^>]*>Bank Name<\/td>\s*<td[^>]*>(.*?)<\/td>/i,
+          ];
+          
+          for (const pattern of patterns) {
+            const match = html.match(pattern);
+            if (match && match[1]) {
+              bankName = match[1]
+                .trim()
+                .replace(/\\"/g, '"')
+                .replace(/<[^>]*>/g, '')
+                .replace(/\s+/g, ' ');
+              
+              if (bankName && bankName.length > 2) {
+                source = 'routingtool';
+                console.log(`Found via routingtool: ${bankName}`);
+                break;
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.log(`RoutingTool lookup failed:`, error);
+      }
+    }
 
-    console.log(`Found bank: ${bankName}`);
-    return new Response(
-      JSON.stringify({ bank_name: bankName }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    // Return result (verified or unverified)
+    if (bankName) {
+      // Cache successful result
+      routingCache.set(cleanRouting, {
+        bank_name: bankName,
+        timestamp: Date.now(),
+      });
+
+      console.log(`Successfully found bank: ${bankName} (source: ${source})`);
+      return new Response(
+        JSON.stringify({ 
+          bank_name: bankName,
+          verified: true,
+          source: source 
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } else {
+      // All sources failed - return unverified but don't block user
+      console.log(`No bank found for routing number: ${cleanRouting}`);
+      return new Response(
+        JSON.stringify({ 
+          bank_name: null,
+          verified: false,
+          error: 'Unable to verify bank. Please verify your bank details manually.' 
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
   } catch (error) {
     console.error('Error in routing-lookup function:', error);

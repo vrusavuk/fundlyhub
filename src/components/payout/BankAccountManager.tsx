@@ -82,17 +82,17 @@ export function BankAccountManager({ open, onClose, userId }: BankAccountManager
 
       try {
         const result = await payoutService.lookupBankByRoutingNumber(cleanRouting);
-        if (result) {
+        if (result && result.bank_name) {
           setBankName(result.bank_name);
           setBankLookupError(null);
         } else {
           setBankName(null);
-          setBankLookupError('Bank not found');
+          setBankLookupError('Unable to auto-verify bank. Please verify your bank details manually.');
         }
       } catch (error) {
         console.error('Bank lookup failed:', error);
         setBankName(null);
-        setBankLookupError('Unable to verify bank');
+        setBankLookupError('Unable to auto-verify bank. Please verify your bank details manually.');
       } finally {
         setLookingUpBank(false);
       }
