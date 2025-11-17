@@ -342,55 +342,52 @@ class PayoutService {
    * This is the SINGLE SOURCE OF TRUTH for user earnings
    */
   async getUserEarnings(userId: string): Promise<UserEarnings> {
-    return unifiedApi.query(
+    const result = await unifiedApi.query(
       async () => {
+        // Call RPC and return result directly - no throwing
         const { data, error } = await supabase.rpc('get_user_earnings', {
           _user_id: userId,
         });
-
-        if (error) throw new Error(error.message || 'Failed to fetch user earnings');
-
-        // RPC returns array, get first result
-        if (data && data.length > 0) {
-          const row = data[0];
-          return {
-            data: {
-              total_earnings: row.total_earnings.toString(),
-              total_payouts: row.total_payouts.toString(),
-              pending_payouts: row.pending_payouts.toString(),
-              available_balance: row.available_balance.toString(),
-              held_balance: row.held_balance.toString(),
-              currency: row.currency,
-              fundraiser_count: row.fundraiser_count,
-              donation_count: row.donation_count,
-            },
-            error: null,
-          };
-        }
-
-        // User has no earnings yet - return zeros
-        return {
-          data: {
-            total_earnings: '0.00',
-            total_payouts: '0.00',
-            pending_payouts: '0.00',
-            available_balance: '0.00',
-            held_balance: '0.00',
-            currency: 'USD',
-            fundraiser_count: 0,
-            donation_count: 0,
-          },
-          error: null,
-        };
+        
+        // Return as-is, let unifiedApi.query handle errors
+        return { data, error };
       },
       {
         cache: {
           key: `user-earnings:${userId}`,
-          ttl: 60, // 1 minute cache
+          ttl: 60,
           tags: ['user-earnings', `user-${userId}`],
         },
       }
     );
+
+    // Transform the data AFTER retrieval
+    if (!result || result.length === 0) {
+      // No earnings yet - return zeros
+      return {
+        total_earnings: '0.00',
+        total_payouts: '0.00',
+        pending_payouts: '0.00',
+        available_balance: '0.00',
+        held_balance: '0.00',
+        currency: 'USD',
+        fundraiser_count: 0,
+        donation_count: 0,
+      };
+    }
+
+    // Transform the first row
+    const row = result[0];
+    return {
+      total_earnings: row.total_earnings?.toString() || '0.00',
+      total_payouts: row.total_payouts?.toString() || '0.00',
+      pending_payouts: row.pending_payouts?.toString() || '0.00',
+      available_balance: row.available_balance?.toString() || '0.00',
+      held_balance: row.held_balance?.toString() || '0.00',
+      currency: row.currency || 'USD',
+      fundraiser_count: row.fundraiser_count || 0,
+      donation_count: row.donation_count || 0,
+    };
   }
 
   // ============= ADMIN METHODS =============
