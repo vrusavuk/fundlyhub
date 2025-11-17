@@ -159,7 +159,6 @@ export function EarningsTab({ userId }: EarningsTabProps) {
               <Button
                 size="sm"
                 onClick={() => setShowPayoutDialog(true)}
-                disabled={kycStatus?.status !== 'verified'}
               >
                 <DollarSign className="h-4 w-4 mr-2" />
                 Request Payout
@@ -193,7 +192,7 @@ export function EarningsTab({ userId }: EarningsTabProps) {
             <Alert className="mt-4">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                Complete KYC verification to request payouts
+                Note: Identity verification may be required for high-value payouts ($1,000+)
               </AlertDescription>
             </Alert>
           )}

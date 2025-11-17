@@ -241,6 +241,14 @@ class PayoutService {
     account_holder_name: string;
     account_type?: string;
     bank_name?: string;
+    // Compliance fields for progressive KYC
+    date_of_birth?: string;
+    address_line1?: string;
+    address_line2?: string;
+    city?: string;
+    state?: string;
+    postal_code?: string;
+    ssn_last4?: string;
   }): Promise<BankAccount> {
     // Transform snake_case to camelCase for edge function
     const { data, error } = await supabase.functions.invoke('bank-account-verify', {
@@ -249,10 +257,15 @@ class PayoutService {
         accountNumber: accountData.account_number,
         routingNumber: accountData.routing_number,
         accountType: accountData.account_type || 'checking',
-        // Optional fields - only include if provided
-        ...(accountData.bank_name && { bankName: accountData.bank_name }),
-        country: 'US',
-        currency: 'usd'
+        bankName: accountData.bank_name,
+        // Compliance fields
+        dateOfBirth: accountData.date_of_birth,
+        addressLine1: accountData.address_line1,
+        addressLine2: accountData.address_line2,
+        city: accountData.city,
+        state: accountData.state,
+        postalCode: accountData.postal_code,
+        ssnLast4: accountData.ssn_last4,
       },
     });
 

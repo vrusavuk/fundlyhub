@@ -55,6 +55,14 @@ export function BankAccountManager({ open, onClose, userId }: BankAccountManager
   const [accountType, setAccountType] = useState('checking');
   const [showAccountNumber, setShowAccountNumber] = useState(false);
   
+  // Compliance fields
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [addressLine1, setAddressLine1] = useState('');
+  const [addressLine2, setAddressLine2] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+  const [postalCode, setPostalCode] = useState('');
+  
   // Bank lookup state
   const [bankName, setBankName] = useState<string | null>(null);
   const [lookingUpBank, setLookingUpBank] = useState(false);
@@ -132,6 +140,13 @@ export function BankAccountManager({ open, onClose, userId }: BankAccountManager
         account_holder_name: accountHolderName,
         account_type: accountType,
         bank_name: bankName || undefined,
+        // Compliance fields for progressive KYC
+        date_of_birth: dateOfBirth || undefined,
+        address_line1: addressLine1 || undefined,
+        address_line2: addressLine2 || undefined,
+        city: city || undefined,
+        state: state || undefined,
+        postal_code: postalCode || undefined,
       });
 
       toast({
@@ -146,6 +161,12 @@ export function BankAccountManager({ open, onClose, userId }: BankAccountManager
       setAccountType('checking');
       setBankName(null);
       setBankLookupError(null);
+      setDateOfBirth('');
+      setAddressLine1('');
+      setAddressLine2('');
+      setCity('');
+      setState('');
+      setPostalCode('');
       setShowAddForm(false);
 
       // Refresh list
@@ -337,6 +358,88 @@ export function BankAccountManager({ open, onClose, userId }: BankAccountManager
                     <SelectItem value="savings">Savings</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <Separator />
+
+              {/* Compliance Information */}
+              <div className="space-y-3">
+                <div>
+                  <h4 className="text-sm font-medium mb-1">Basic Information</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Required for compliance. May be needed for higher-value payouts.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="dob">Date of Birth</Label>
+                  <Input
+                    id="dob"
+                    type="date"
+                    value={dateOfBirth}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                    max={new Date().toISOString().split('T')[0]}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="address1">Address</Label>
+                  <Input
+                    id="address1"
+                    placeholder="Street address"
+                    value={addressLine1}
+                    onChange={(e) => setAddressLine1(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="address2">Address Line 2 (Optional)</Label>
+                  <Input
+                    id="address2"
+                    placeholder="Apartment, suite, etc."
+                    value={addressLine2}
+                    onChange={(e) => setAddressLine2(e.target.value)}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="city">City</Label>
+                    <Input
+                      id="city"
+                      placeholder="City"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="state">State</Label>
+                    <Input
+                      id="state"
+                      placeholder="State"
+                      maxLength={2}
+                      value={state}
+                      onChange={(e) => setState(e.target.value.toUpperCase())}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="postal">Postal Code</Label>
+                  <Input
+                    id="postal"
+                    placeholder="12345"
+                    maxLength={10}
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
 
               <Separator />
