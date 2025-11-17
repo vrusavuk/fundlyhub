@@ -503,6 +503,137 @@ export type Database = {
           },
         ]
       }
+      creator_kyc_verification: {
+        Row: {
+          address_line1: string | null
+          address_line2: string | null
+          approved_at: string | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          date_of_birth: string | null
+          document_type: string | null
+          document_uploaded: boolean | null
+          id: string
+          legal_first_name: string | null
+          legal_last_name: string | null
+          postal_code: string | null
+          rejected_at: string | null
+          rejection_reason: string | null
+          requires_info_details: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          risk_factors: Json | null
+          risk_level: string | null
+          selfie_uploaded: boolean | null
+          ssn_last4: string | null
+          started_at: string | null
+          state: string | null
+          status: Database["public"]["Enums"]["kyc_status"]
+          stripe_verification_session_id: string | null
+          submitted_at: string | null
+          tax_id_type: string | null
+          updated_at: string | null
+          user_id: string
+          verification_level: string | null
+        }
+        Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
+          approved_at?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          document_type?: string | null
+          document_uploaded?: boolean | null
+          id?: string
+          legal_first_name?: string | null
+          legal_last_name?: string | null
+          postal_code?: string | null
+          rejected_at?: string | null
+          rejection_reason?: string | null
+          requires_info_details?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          risk_factors?: Json | null
+          risk_level?: string | null
+          selfie_uploaded?: boolean | null
+          ssn_last4?: string | null
+          started_at?: string | null
+          state?: string | null
+          status?: Database["public"]["Enums"]["kyc_status"]
+          stripe_verification_session_id?: string | null
+          submitted_at?: string | null
+          tax_id_type?: string | null
+          updated_at?: string | null
+          user_id: string
+          verification_level?: string | null
+        }
+        Update: {
+          address_line1?: string | null
+          address_line2?: string | null
+          approved_at?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          document_type?: string | null
+          document_uploaded?: boolean | null
+          id?: string
+          legal_first_name?: string | null
+          legal_last_name?: string | null
+          postal_code?: string | null
+          rejected_at?: string | null
+          rejection_reason?: string | null
+          requires_info_details?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          risk_factors?: Json | null
+          risk_level?: string | null
+          selfie_uploaded?: boolean | null
+          ssn_last4?: string | null
+          started_at?: string | null
+          state?: string | null
+          status?: Database["public"]["Enums"]["kyc_status"]
+          stripe_verification_session_id?: string | null
+          submitted_at?: string | null
+          tax_id_type?: string | null
+          updated_at?: string | null
+          user_id?: string
+          verification_level?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_kyc_verification_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_kyc_verification_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_kyc_verification_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_kyc_verification_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       donations: {
         Row: {
           amount: number
@@ -1307,6 +1438,477 @@ export type Database = {
           website?: string | null
         }
         Relationships: []
+      }
+      payout_bank_accounts: {
+        Row: {
+          account_holder_name: string
+          account_number_last4: string
+          account_type: string | null
+          bank_name: string | null
+          country: string
+          created_at: string | null
+          currency: string
+          deleted_at: string | null
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          routing_number_last4: string | null
+          stripe_external_account_id: string
+          updated_at: string | null
+          user_id: string
+          verification_attempts: number | null
+          verification_failure_reason: string | null
+          verification_method: string | null
+          verification_status: string
+          verified_at: string | null
+        }
+        Insert: {
+          account_holder_name: string
+          account_number_last4: string
+          account_type?: string | null
+          bank_name?: string | null
+          country?: string
+          created_at?: string | null
+          currency?: string
+          deleted_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          routing_number_last4?: string | null
+          stripe_external_account_id: string
+          updated_at?: string | null
+          user_id: string
+          verification_attempts?: number | null
+          verification_failure_reason?: string | null
+          verification_method?: string | null
+          verification_status?: string
+          verified_at?: string | null
+        }
+        Update: {
+          account_holder_name?: string
+          account_number_last4?: string
+          account_type?: string | null
+          bank_name?: string | null
+          country?: string
+          created_at?: string | null
+          currency?: string
+          deleted_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          routing_number_last4?: string | null
+          stripe_external_account_id?: string
+          updated_at?: string | null
+          user_id?: string
+          verification_attempts?: number | null
+          verification_failure_reason?: string | null
+          verification_method?: string | null
+          verification_status?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payout_bank_accounts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payout_bank_accounts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payout_holds: {
+        Row: {
+          amount_held_str: string
+          created_at: string | null
+          created_by: string | null
+          currency: string
+          details: Json | null
+          fundraiser_id: string
+          hold_type: Database["public"]["Enums"]["hold_type"]
+          hold_until: string
+          id: string
+          is_active: boolean | null
+          reason: string
+          released_at: string | null
+          released_by: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_held_str: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string
+          details?: Json | null
+          fundraiser_id: string
+          hold_type: Database["public"]["Enums"]["hold_type"]
+          hold_until: string
+          id?: string
+          is_active?: boolean | null
+          reason: string
+          released_at?: string | null
+          released_by?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_held_str?: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string
+          details?: Json | null
+          fundraiser_id?: string
+          hold_type?: Database["public"]["Enums"]["hold_type"]
+          hold_until?: string
+          id?: string
+          is_active?: boolean | null
+          reason?: string
+          released_at?: string | null
+          released_by?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payout_holds_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payout_holds_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payout_holds_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "fundraisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payout_holds_released_by_fkey"
+            columns: ["released_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payout_holds_released_by_fkey"
+            columns: ["released_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payout_holds_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payout_holds_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payout_requests: {
+        Row: {
+          actual_arrival_date: string | null
+          admin_notes: string | null
+          approved_at: string | null
+          approved_by: string | null
+          bank_account_id: string
+          campaign_breakdown: Json | null
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          completed_at: string | null
+          correlation_id: string | null
+          created_at: string | null
+          creator_notes: string | null
+          currency: string
+          denial_reason: string | null
+          denied_at: string | null
+          denied_by: string | null
+          estimated_arrival_date: string | null
+          failed_at: string | null
+          fee_amount_str: string
+          fundraiser_id: string | null
+          id: string
+          info_required_message: string | null
+          is_first_payout: boolean | null
+          net_amount_str: string
+          priority: Database["public"]["Enums"]["payout_priority"] | null
+          processed_at: string | null
+          processed_by: string | null
+          requested_amount_str: string
+          requires_manual_review: boolean | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          risk_factors: Json | null
+          risk_score: number | null
+          status: Database["public"]["Enums"]["payout_status"]
+          stripe_failure_code: string | null
+          stripe_failure_message: string | null
+          stripe_payout_id: string | null
+          stripe_transfer_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          actual_arrival_date?: string | null
+          admin_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          bank_account_id: string
+          campaign_breakdown?: Json | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
+          correlation_id?: string | null
+          created_at?: string | null
+          creator_notes?: string | null
+          currency?: string
+          denial_reason?: string | null
+          denied_at?: string | null
+          denied_by?: string | null
+          estimated_arrival_date?: string | null
+          failed_at?: string | null
+          fee_amount_str?: string
+          fundraiser_id?: string | null
+          id?: string
+          info_required_message?: string | null
+          is_first_payout?: boolean | null
+          net_amount_str: string
+          priority?: Database["public"]["Enums"]["payout_priority"] | null
+          processed_at?: string | null
+          processed_by?: string | null
+          requested_amount_str: string
+          requires_manual_review?: boolean | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          risk_factors?: Json | null
+          risk_score?: number | null
+          status?: Database["public"]["Enums"]["payout_status"]
+          stripe_failure_code?: string | null
+          stripe_failure_message?: string | null
+          stripe_payout_id?: string | null
+          stripe_transfer_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          actual_arrival_date?: string | null
+          admin_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          bank_account_id?: string
+          campaign_breakdown?: Json | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
+          correlation_id?: string | null
+          created_at?: string | null
+          creator_notes?: string | null
+          currency?: string
+          denial_reason?: string | null
+          denied_at?: string | null
+          denied_by?: string | null
+          estimated_arrival_date?: string | null
+          failed_at?: string | null
+          fee_amount_str?: string
+          fundraiser_id?: string | null
+          id?: string
+          info_required_message?: string | null
+          is_first_payout?: boolean | null
+          net_amount_str?: string
+          priority?: Database["public"]["Enums"]["payout_priority"] | null
+          processed_at?: string | null
+          processed_by?: string | null
+          requested_amount_str?: string
+          requires_manual_review?: boolean | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          risk_factors?: Json | null
+          risk_score?: number | null
+          status?: Database["public"]["Enums"]["payout_status"]
+          stripe_failure_code?: string | null
+          stripe_failure_message?: string | null
+          stripe_payout_id?: string | null
+          stripe_transfer_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payout_requests_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payout_requests_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payout_requests_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "payout_bank_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payout_requests_denied_by_fkey"
+            columns: ["denied_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payout_requests_denied_by_fkey"
+            columns: ["denied_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payout_requests_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "fundraisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payout_requests_processed_by_fkey"
+            columns: ["processed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payout_requests_processed_by_fkey"
+            columns: ["processed_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payout_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payout_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payout_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payout_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payout_tax_records: {
+        Row: {
+          created_at: string | null
+          form_1099k_generated: boolean | null
+          form_1099k_sent: boolean | null
+          form_1099k_sent_at: string | null
+          form_1099k_url: string | null
+          id: string
+          payout_count: number | null
+          requires_1099k: boolean | null
+          tax_address: Json | null
+          tax_id_last4: string | null
+          tax_name: string | null
+          tax_year: number
+          total_fees_str: string
+          total_payouts_str: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          form_1099k_generated?: boolean | null
+          form_1099k_sent?: boolean | null
+          form_1099k_sent_at?: string | null
+          form_1099k_url?: string | null
+          id?: string
+          payout_count?: number | null
+          requires_1099k?: boolean | null
+          tax_address?: Json | null
+          tax_id_last4?: string | null
+          tax_name?: string | null
+          tax_year: number
+          total_fees_str?: string
+          total_payouts_str?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          form_1099k_generated?: boolean | null
+          form_1099k_sent?: boolean | null
+          form_1099k_sent_at?: string | null
+          form_1099k_url?: string | null
+          id?: string
+          payout_count?: number | null
+          requires_1099k?: boolean | null
+          tax_address?: Json | null
+          tax_id_last4?: string | null
+          tax_name?: string | null
+          tax_year?: number
+          total_fees_str?: string
+          total_payouts_str?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payout_tax_records_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payout_tax_records_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       permissions: {
         Row: {
@@ -2677,6 +3279,21 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_available_balance: {
+        Args: { _fundraiser_id: string; _user_id: string }
+        Returns: {
+          available_balance: number
+          total_fees: number
+          total_holds: number
+          total_previous_payouts: number
+          total_raised: number
+          total_refunds: number
+        }[]
+      }
+      calculate_payout_risk_score: {
+        Args: { _amount: number; _fundraiser_id: string; _user_id: string }
+        Returns: number
+      }
       calculate_similarity: {
         Args: { text1: string; text2: string }
         Returns: number
@@ -3062,6 +3679,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      update_tax_records: {
+        Args: { _payout_amount: string; _tax_year: number; _user_id: string }
+        Returns: undefined
+      }
       update_user_campaign_count: {
         Args: { user_id: string }
         Returns: undefined
@@ -3084,8 +3705,32 @@ export type Database = {
         | "ended"
         | "closed"
         | "pending"
+      hold_type:
+        | "automatic"
+        | "manual"
+        | "chargeback_reserve"
+        | "fraud_investigation"
+        | "compliance"
+      kyc_status:
+        | "not_started"
+        | "pending"
+        | "under_review"
+        | "approved"
+        | "rejected"
+        | "requires_info"
       org_member_role: "owner" | "admin" | "editor" | "viewer"
       payment_status: "paid" | "refunded" | "failed"
+      payout_priority: "low" | "normal" | "high" | "urgent"
+      payout_status:
+        | "pending"
+        | "under_review"
+        | "info_required"
+        | "approved"
+        | "processing"
+        | "completed"
+        | "failed"
+        | "denied"
+        | "cancelled"
       user_role: "visitor" | "creator" | "org_admin" | "admin"
       verification_status: "pending" | "approved" | "rejected"
       visibility_type: "public" | "unlisted" | "private"
@@ -3224,8 +3869,35 @@ export const Constants = {
         "closed",
         "pending",
       ],
+      hold_type: [
+        "automatic",
+        "manual",
+        "chargeback_reserve",
+        "fraud_investigation",
+        "compliance",
+      ],
+      kyc_status: [
+        "not_started",
+        "pending",
+        "under_review",
+        "approved",
+        "rejected",
+        "requires_info",
+      ],
       org_member_role: ["owner", "admin", "editor", "viewer"],
       payment_status: ["paid", "refunded", "failed"],
+      payout_priority: ["low", "normal", "high", "urgent"],
+      payout_status: [
+        "pending",
+        "under_review",
+        "info_required",
+        "approved",
+        "processing",
+        "completed",
+        "failed",
+        "denied",
+        "cancelled",
+      ],
       user_role: ["visitor", "creator", "org_admin", "admin"],
       verification_status: ["pending", "approved", "rejected"],
       visibility_type: ["public", "unlisted", "private"],
