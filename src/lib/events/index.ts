@@ -58,6 +58,9 @@ export { EventVersionManager, eventVersionManager } from './EventVersioning';
 export { DeadLetterQueueManager } from './DeadLetterQueueManager';
 export { CircuitBreaker, CircuitState } from './CircuitBreaker';
 
+// Export payout domain events
+export * from './domain/PayoutEvents';
+
 // Create middleware instances
 const loggingMiddleware = new LoggingMiddleware('info', true, false);
 const validationMiddleware = new ValidationMiddleware(false, false);
@@ -185,6 +188,42 @@ initializeSubscriptionSubscribers(globalEventBus);
 // Initialize project update subscribers
 import { initializeProjectUpdateSubscribers } from './subscribers/ProjectUpdateSubscriber';
 initializeProjectUpdateSubscribers(globalEventBus);
+
+// Register payout event processors
+import {
+  PayoutRequestedProcessor,
+  PayoutApprovedProcessor,
+  PayoutDeniedProcessor,
+  PayoutProcessingProcessor,
+  PayoutCompletedProcessor,
+  PayoutFailedProcessor,
+  PayoutCancelledProcessor,
+  PayoutInfoRequiredProcessor,
+} from './processors/PayoutRequestWriteProcessor';
+
+const payoutRequestedProcessor = new PayoutRequestedProcessor();
+const payoutApprovedProcessor = new PayoutApprovedProcessor();
+const payoutDeniedProcessor = new PayoutDeniedProcessor();
+const payoutProcessingProcessor = new PayoutProcessingProcessor();
+const payoutCompletedProcessor = new PayoutCompletedProcessor();
+const payoutFailedProcessor = new PayoutFailedProcessor();
+const payoutCancelledProcessor = new PayoutCancelledProcessor();
+const payoutInfoRequiredProcessor = new PayoutInfoRequiredProcessor();
+
+globalEventBus.subscribe('payout.requested', payoutRequestedProcessor);
+globalEventBus.subscribe('payout.approved', payoutApprovedProcessor);
+globalEventBus.subscribe('payout.denied', payoutDeniedProcessor);
+globalEventBus.subscribe('payout.processing', payoutProcessingProcessor);
+globalEventBus.subscribe('payout.completed', payoutCompletedProcessor);
+globalEventBus.subscribe('payout.failed', payoutFailedProcessor);
+globalEventBus.subscribe('payout.cancelled', payoutCancelledProcessor);
+globalEventBus.subscribe('payout.info_required', payoutInfoRequiredProcessor);
+
+logger.info('EventBus payout processors registered', {
+  componentName: 'EventBusInitializer',
+  operationName: 'initialize',
+  metadata: { processors: ['PayoutRequestWrite'] },
+});
 
 // Initialize notification service
 import { notificationService } from '@/lib/services/NotificationService';

@@ -38,3 +38,15 @@ verify_jwt = true
 
 [functions.enhance-project-update]
 verify_jwt = true
+
+[functions.payout-request-create]
+verify_jwt = true
+
+[functions.payout-process]
+verify_jwt = true
+
+[functions.stripe-payout-webhook]
+verify_jwt = false
+
+[functions.bank-account-verify]
+verify_jwt = true
