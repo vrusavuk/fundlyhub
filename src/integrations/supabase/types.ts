@@ -3590,6 +3590,19 @@ export type Database = {
           storage: string
         }[]
       }
+      get_user_earnings: {
+        Args: { _user_id: string }
+        Returns: {
+          available_balance: number
+          currency: string
+          donation_count: number
+          fundraiser_count: number
+          held_balance: number
+          pending_payouts: number
+          total_earnings: number
+          total_payouts: number
+        }[]
+      }
       get_user_profile_stats: {
         Args: { target_user_id: string }
         Returns: {
