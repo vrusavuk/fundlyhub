@@ -190,16 +190,23 @@ Deno.serve(async (req) => {
 
     // Return result (verified or unverified)
     if (bankName) {
-      // Cache successful result
+      // Clean bank name - remove routing number prefix if present
+      // e.g., "ACH Routing Number 322271627 - JPMORGAN CHASE" -> "JPMORGAN CHASE"
+      const cleanedBankName = bankName
+        .replace(/^ACH\s+Routing\s+Number\s+\d+\s*-\s*/i, '')
+        .replace(/^Routing\s+Number\s+\d+\s*-\s*/i, '')
+        .trim();
+      
+      // Cache successful result with cleaned name
       routingCache.set(cleanRouting, {
-        bank_name: bankName,
+        bank_name: cleanedBankName,
         timestamp: Date.now(),
       });
 
-      console.log(`Successfully found bank: ${bankName} (source: ${source})`);
+      console.log(`Successfully found bank: ${cleanedBankName} (source: ${source})`);
       return new Response(
         JSON.stringify({ 
-          bank_name: bankName,
+          bank_name: cleanedBankName,
           verified: true,
           source: source 
         }),
