@@ -342,52 +342,57 @@ class PayoutService {
    * This is the SINGLE SOURCE OF TRUTH for user earnings
    */
   async getUserEarnings(userId: string): Promise<UserEarnings> {
-    const result = await unifiedApi.query(
-      async () => {
-        // Call RPC and return result directly - no throwing
-        const { data, error } = await supabase.rpc('get_user_earnings', {
-          _user_id: userId,
-        });
-        
-        // Return as-is, let unifiedApi.query handle errors
-        return { data, error };
-      },
-      {
-        cache: {
-          key: `user-earnings:${userId}`,
-          ttl: 60,
-          tags: ['user-earnings', `user-${userId}`],
-        },
+    try {
+      console.log('[PayoutService] Fetching earnings for user:', userId);
+      
+      // Make direct RPC call - bypass caching layer
+      const { data, error } = await supabase.rpc('get_user_earnings', {
+        _user_id: userId,
+      });
+
+      console.log('[PayoutService] RPC Response:', { data, error });
+
+      if (error) {
+        console.error('[PayoutService] RPC Error:', error);
+        throw new Error(`Failed to fetch earnings: ${error.message}`);
       }
-    );
 
-    // Transform the data AFTER retrieval
-    if (!result || result.length === 0) {
-      // No earnings yet - return zeros
-      return {
-        total_earnings: '0.00',
-        total_payouts: '0.00',
-        pending_payouts: '0.00',
-        available_balance: '0.00',
-        held_balance: '0.00',
-        currency: 'USD',
-        fundraiser_count: 0,
-        donation_count: 0,
+      // Handle empty result - user has no earnings yet
+      if (!data || data.length === 0) {
+        console.log('[PayoutService] No earnings data found, returning zeros');
+        return {
+          total_earnings: '0.00',
+          total_payouts: '0.00',
+          pending_payouts: '0.00',
+          available_balance: '0.00',
+          held_balance: '0.00',
+          currency: 'USD',
+          fundraiser_count: 0,
+          donation_count: 0,
+        };
+      }
+
+      // Transform the first row with proper decimal formatting
+      const row = data[0];
+      console.log('[PayoutService] Raw row data:', row);
+
+      const earnings = {
+        total_earnings: (Number(row.total_earnings) || 0).toFixed(2),
+        total_payouts: (Number(row.total_payouts) || 0).toFixed(2),
+        pending_payouts: (Number(row.pending_payouts) || 0).toFixed(2),
+        available_balance: (Number(row.available_balance) || 0).toFixed(2),
+        held_balance: (Number(row.held_balance) || 0).toFixed(2),
+        currency: row.currency || 'USD',
+        fundraiser_count: row.fundraiser_count || 0,
+        donation_count: row.donation_count || 0,
       };
-    }
 
-    // Transform the first row
-    const row = result[0];
-    return {
-      total_earnings: row.total_earnings?.toString() || '0.00',
-      total_payouts: row.total_payouts?.toString() || '0.00',
-      pending_payouts: row.pending_payouts?.toString() || '0.00',
-      available_balance: row.available_balance?.toString() || '0.00',
-      held_balance: row.held_balance?.toString() || '0.00',
-      currency: row.currency || 'USD',
-      fundraiser_count: row.fundraiser_count || 0,
-      donation_count: row.donation_count || 0,
-    };
+      console.log('[PayoutService] Transformed earnings:', earnings);
+      return earnings;
+    } catch (error) {
+      console.error('[PayoutService] getUserEarnings error:', error);
+      throw error;
+    }
   }
 
   // ============= ADMIN METHODS =============
