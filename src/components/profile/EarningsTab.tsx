@@ -56,9 +56,22 @@ export function EarningsTab({ userId }: EarningsTabProps) {
 
     } catch (error) {
       console.error('Error fetching earnings data:', error);
+      
+      // Set default zero values for graceful degradation
+      setEarnings({
+        total_earnings: '0.00',
+        total_payouts: '0.00',
+        pending_payouts: '0.00',
+        available_balance: '0.00',
+        held_balance: '0.00',
+        currency: 'USD',
+        fundraiser_count: 0,
+        donation_count: 0,
+      });
+      
       toast({
-        title: "Error",
-        description: "Failed to load earnings data",
+        title: "Unable to Load Earnings",
+        description: error instanceof Error ? error.message : "Failed to load earnings data. Please try again.",
         variant: "destructive",
       });
     } finally {
