@@ -28,7 +28,9 @@ import {
   Trash2,
   AlertCircle,
   Loader2,
-  Info
+  Info,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -51,6 +53,7 @@ export function BankAccountManager({ open, onClose, userId }: BankAccountManager
   const [routingNumber, setRoutingNumber] = useState('');
   const [accountHolderName, setAccountHolderName] = useState('');
   const [accountType, setAccountType] = useState('checking');
+  const [showAccountNumber, setShowAccountNumber] = useState(false);
   
   // Bank lookup state
   const [bankName, setBankName] = useState<string | null>(null);
@@ -297,14 +300,30 @@ export function BankAccountManager({ open, onClose, userId }: BankAccountManager
 
               <div className="space-y-2">
                 <Label htmlFor="account">Account Number</Label>
-                <Input
-                  id="account"
-                  type="password"
-                  placeholder="••••••••••"
-                  value={accountNumber}
-                  onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ''))}
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    id="account"
+                    type={showAccountNumber ? "text" : "password"}
+                    placeholder="••••••••••"
+                    value={accountNumber}
+                    onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ''))}
+                    required
+                    className="pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowAccountNumber(!showAccountNumber)}
+                  >
+                    {showAccountNumber ? (
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </Button>
+                </div>
               </div>
 
               <div className="space-y-2">
