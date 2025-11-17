@@ -1444,15 +1444,22 @@ export type Database = {
           account_holder_name: string
           account_number_last4: string
           account_type: string | null
+          address_line1: string | null
+          address_line2: string | null
           bank_name: string | null
+          city: string | null
           country: string
           created_at: string | null
           currency: string
+          date_of_birth: string | null
           deleted_at: string | null
           id: string
           is_active: boolean | null
           is_default: boolean | null
+          postal_code: string | null
           routing_number_last4: string | null
+          ssn_last4: string | null
+          state: string | null
           stripe_external_account_id: string
           updated_at: string | null
           user_id: string
@@ -1466,15 +1473,22 @@ export type Database = {
           account_holder_name: string
           account_number_last4: string
           account_type?: string | null
+          address_line1?: string | null
+          address_line2?: string | null
           bank_name?: string | null
+          city?: string | null
           country?: string
           created_at?: string | null
           currency?: string
+          date_of_birth?: string | null
           deleted_at?: string | null
           id?: string
           is_active?: boolean | null
           is_default?: boolean | null
+          postal_code?: string | null
           routing_number_last4?: string | null
+          ssn_last4?: string | null
+          state?: string | null
           stripe_external_account_id: string
           updated_at?: string | null
           user_id: string
@@ -1488,15 +1502,22 @@ export type Database = {
           account_holder_name?: string
           account_number_last4?: string
           account_type?: string | null
+          address_line1?: string | null
+          address_line2?: string | null
           bank_name?: string | null
+          city?: string | null
           country?: string
           created_at?: string | null
           currency?: string
+          date_of_birth?: string | null
           deleted_at?: string | null
           id?: string
           is_active?: boolean | null
           is_default?: boolean | null
+          postal_code?: string | null
           routing_number_last4?: string | null
+          ssn_last4?: string | null
+          state?: string | null
           stripe_external_account_id?: string
           updated_at?: string | null
           user_id?: string

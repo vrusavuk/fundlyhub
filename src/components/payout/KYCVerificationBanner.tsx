@@ -26,10 +26,10 @@ export function KYCVerificationBanner({ kycStatus }: KYCVerificationBannerProps)
         return {
           icon: ShieldAlert,
           variant: 'default' as const,
-          title: 'Identity Verification Required',
-          description: 'Complete identity verification to request payouts and receive funds.',
-          action: 'Start Verification',
-          actionVariant: 'default' as const,
+          title: 'Identity Verification Available',
+          description: 'Identity verification is optional but may be required for high-value payouts ($1,000+) or in certain cases.',
+          action: null,
+          actionVariant: null,
         };
       case 'pending':
         return {
