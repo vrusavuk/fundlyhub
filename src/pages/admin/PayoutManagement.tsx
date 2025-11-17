@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRBAC } from '@/contexts/RBACContext';
+import { createColumnHelper } from '@tanstack/react-table';
 import {
   AdminPageLayout,
   AdminFilters,
@@ -20,12 +21,15 @@ import {
   Eye,
   Check,
   X,
-  MessageSquare
+  MessageSquare,
+  RefreshCw
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { payoutService, type PayoutRequest } from '@/lib/services/payout.service';
 import { PayoutDetailDialog } from '@/components/admin/PayoutDetailDialog';
 import { format } from 'date-fns';
+
+const columnHelper = createColumnHelper<PayoutRequest>();
 
 export default function PayoutManagement() {
   const { hasPermission } = useRBAC();
@@ -35,7 +39,11 @@ export default function PayoutManagement() {
   const [filteredPayouts, setFilteredPayouts] = useState<PayoutRequest[]>([]);
   const [selectedPayout, setSelectedPayout] = useState<PayoutRequest | null>(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
-  const [selectedRows, setSelectedRows] = useState<string[]>([]);
+  const [selectedRows, setSelectedRows] = useState<PayoutRequest[]>([]);
+  const [filterValues, setFilterValues] = useState<Record<string, any>>({
+    status: '',
+    priority: ''
+  });
 
   useEffect(() => {
     if (hasPermission('manage_payouts')) {
@@ -105,7 +113,7 @@ export default function PayoutManagement() {
 
   const filters: FilterConfig[] = [
     {
-      id: 'status',
+      key: 'status',
       label: 'Status',
       type: 'select',
       options: [
@@ -117,10 +125,9 @@ export default function PayoutManagement() {
         { label: 'Denied', value: 'denied' },
         { label: 'Info Required', value: 'info_required' },
       ],
-      defaultValue: '',
     },
     {
-      id: 'priority',
+      key: 'priority',
       label: 'Priority',
       type: 'select',
       options: [
@@ -129,64 +136,41 @@ export default function PayoutManagement() {
         { label: 'High', value: 'high' },
         { label: 'Urgent', value: 'urgent' },
       ],
-      defaultValue: '',
     },
   ];
 
-  const handleFilterChange = (filterId: string, value: any) => {
+  const handleFilterChange = (key: string, value: any) => {
+    const newValues = { ...filterValues, [key]: value };
+    setFilterValues(newValues);
+    
     let filtered = [...payouts];
 
-    // Apply filters
-    const activeFilters: Record<string, any> = {};
-    filters.forEach(f => {
-      if (f.id === filterId) {
-        activeFilters[f.id] = value;
-      }
-    });
-
-    if (activeFilters.status) {
-      filtered = filtered.filter(p => p.status === activeFilters.status);
+    if (newValues.status) {
+      filtered = filtered.filter(p => p.status === newValues.status);
     }
-    if (activeFilters.priority) {
-      filtered = filtered.filter(p => p.priority === activeFilters.priority);
+    if (newValues.priority) {
+      filtered = filtered.filter(p => p.priority === newValues.priority);
     }
 
     setFilteredPayouts(filtered);
   };
 
+  const handleBulkAction = (actionKey: string) => {
+    if (actionKey === 'approve') {
+      console.log('Bulk approve:', selectedRows.map(r => r.id));
+      toast({
+        title: "Bulk Action",
+        description: `Approving ${selectedRows.length} payouts...`,
+      });
+    }
+  };
+
   const bulkActions: BulkAction[] = [
     {
+      key: 'approve',
       label: 'Approve Selected',
       icon: Check,
       variant: 'default',
-      action: async (ids: string[]) => {
-        // Implement bulk approve
-        console.log('Bulk approve:', ids);
-      },
-      confirmMessage: 'Are you sure you want to approve the selected payouts?',
-    },
-  ];
-
-  const tableActions: TableAction[] = [
-    {
-      label: 'View Details',
-      icon: Eye,
-      variant: 'ghost',
-      action: (row: any) => handleViewDetails(row),
-    },
-    {
-      label: 'Approve',
-      icon: Check,
-      variant: 'default',
-      action: (row: any) => handleApprove(row.id),
-      condition: (row: any) => row.status === 'pending',
-    },
-    {
-      label: 'Deny',
-      icon: X,
-      variant: 'destructive',
-      action: (row: any) => handleDeny(row.id),
-      condition: (row: any) => row.status === 'pending',
     },
   ];
 
@@ -212,39 +196,83 @@ export default function PayoutManagement() {
   };
 
   const columns = [
+    columnHelper.accessor('user_id', {
+      header: 'User ID',
+      cell: (info) => <span className="font-mono text-xs">{info.getValue().slice(0, 8)}...</span>,
+    }),
+    columnHelper.accessor('requested_amount_str', {
+      header: 'Amount',
+      cell: (info) => <span className="font-semibold">${info.getValue()}</span>,
+    }),
+    columnHelper.accessor('net_amount_str', {
+      header: 'Net Amount',
+      cell: (info) => <span className="text-muted-foreground">${info.getValue()}</span>,
+    }),
+    columnHelper.accessor('status', {
+      header: 'Status',
+      cell: (info) => getStatusBadge(info.getValue()),
+    }),
+    columnHelper.accessor('risk_score', {
+      header: 'Risk Score',
+      cell: (info) => {
+        const value = info.getValue();
+        return (
+          <Badge variant={value && value > 70 ? 'destructive' : 'outline'}>
+            {value || 0}
+          </Badge>
+        );
+      },
+    }),
+    columnHelper.accessor('created_at', {
+      header: 'Requested',
+      cell: (info) => format(new Date(info.getValue()), 'MMM d, yyyy'),
+    }),
+    columnHelper.display({
+      id: 'actions',
+      header: 'Actions',
+      cell: (info) => {
+        const payout = info.row.original;
+        return (
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleViewDetails(payout)}
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+            {payout.status === 'pending' && (
+              <>
+                <Button
+                  size="sm"
+                  variant="default"
+                  onClick={() => handleApprove(payout.id)}
+                >
+                  <Check className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => handleDeny(payout.id)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </>
+            )}
+          </div>
+        );
+      },
+    }),
+  ];
+
+  const tableActions: TableAction[] = [
     {
-      key: 'user_id',
-      label: 'User ID',
-      render: (value: string) => <span className="font-mono text-xs">{value.slice(0, 8)}...</span>,
-    },
-    {
-      key: 'requested_amount_str',
-      label: 'Amount',
-      render: (value: string) => <span className="font-semibold">${value}</span>,
-    },
-    {
-      key: 'net_amount_str',
-      label: 'Net Amount',
-      render: (value: string) => <span className="text-muted-foreground">${value}</span>,
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      render: (value: string) => getStatusBadge(value),
-    },
-    {
-      key: 'risk_score',
-      label: 'Risk Score',
-      render: (value: number | null) => (
-        <Badge variant={value && value > 70 ? 'destructive' : 'outline'}>
-          {value || 0}
-        </Badge>
-      ),
-    },
-    {
-      key: 'created_at',
-      label: 'Requested',
-      render: (value: string) => format(new Date(value), 'MMM d, yyyy'),
+      key: 'refresh',
+      label: 'Refresh',
+      icon: RefreshCw,
+      variant: 'outline',
+      onClick: fetchPayouts,
+      loading,
     },
   ];
 
@@ -252,22 +280,27 @@ export default function PayoutManagement() {
     <AdminPageLayout
       title="Payout Management"
       description="Review and manage creator payout requests"
-      icon={DollarSign}
     >
       <AdminContentContainer>
         <AdminTableControls
           title="Payout Requests"
           totalCount={filteredPayouts.length}
           selectedCount={selectedRows.length}
-          onRefresh={fetchPayouts}
-          loading={loading}
           bulkActions={bulkActions}
-          selectedRows={selectedRows}
+          onBulkAction={handleBulkAction}
+          onClearSelection={() => setSelectedRows([])}
+          loading={loading}
+          actions={tableActions}
         />
 
         <AdminFilters
           filters={filters}
-          onFilterChange={handleFilterChange}
+          values={filterValues}
+          onChange={handleFilterChange}
+          onClear={() => {
+            setFilterValues({ status: '', priority: '' });
+            setFilteredPayouts(payouts);
+          }}
         />
 
         <AdminDataTable
@@ -276,8 +309,6 @@ export default function PayoutManagement() {
           loading={loading}
           selectedRows={selectedRows}
           onSelectionChange={setSelectedRows}
-          actions={tableActions}
-          emptyMessage="No payout requests found"
         />
       </AdminContentContainer>
 
