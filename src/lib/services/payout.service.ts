@@ -348,7 +348,7 @@ class PayoutService {
           _user_id: userId,
         });
 
-        if (error) return { data: null, error };
+        if (error) throw new Error(error.message || 'Failed to fetch user earnings');
 
         // RPC returns array, get first result
         if (data && data.length > 0) {
