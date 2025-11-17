@@ -26,9 +26,12 @@ import {
   Clock, 
   Plus, 
   Trash2,
-  AlertCircle
+  AlertCircle,
+  Loader2,
+  Info
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useDebounce } from '@/hooks/useDebounce';
 import { payoutService, type BankAccount } from '@/lib/services/payout.service';
 
 interface BankAccountManagerProps {
@@ -48,12 +51,55 @@ export function BankAccountManager({ open, onClose, userId }: BankAccountManager
   const [routingNumber, setRoutingNumber] = useState('');
   const [accountHolderName, setAccountHolderName] = useState('');
   const [accountType, setAccountType] = useState('checking');
+  
+  // Bank lookup state
+  const [bankName, setBankName] = useState<string | null>(null);
+  const [lookingUpBank, setLookingUpBank] = useState(false);
+  const [bankLookupError, setBankLookupError] = useState<string | null>(null);
+  
+  // Debounce routing number to avoid excessive lookups
+  const debouncedRoutingNumber = useDebounce(routingNumber, 500);
 
   useEffect(() => {
     if (open) {
       fetchBankAccounts();
     }
   }, [open, userId]);
+
+  // Auto-lookup bank name when routing number is entered
+  useEffect(() => {
+    const lookupBank = async () => {
+      // Only lookup if we have exactly 9 digits
+      const cleanRouting = debouncedRoutingNumber.replace(/\D/g, '');
+      if (cleanRouting.length !== 9) {
+        setBankName(null);
+        setBankLookupError(null);
+        return;
+      }
+
+      setLookingUpBank(true);
+      setBankLookupError(null);
+
+      try {
+        const result = await payoutService.lookupBankByRoutingNumber(cleanRouting);
+        if (result) {
+          setBankName(result.bank_name);
+          setBankLookupError(null);
+        } else {
+          setBankName(null);
+          setBankLookupError('Bank not found');
+        }
+      } catch (error) {
+        console.error('Bank lookup failed:', error);
+        setBankName(null);
+        setBankLookupError('Unable to verify bank');
+      } finally {
+        setLookingUpBank(false);
+      }
+    };
+
+    lookupBank();
+  }, [debouncedRoutingNumber]);
 
   const fetchBankAccounts = async () => {
     try {
@@ -82,6 +128,7 @@ export function BankAccountManager({ open, onClose, userId }: BankAccountManager
         routing_number: routingNumber,
         account_holder_name: accountHolderName,
         account_type: accountType,
+        bank_name: bankName || undefined,
       });
 
       toast({
@@ -94,6 +141,8 @@ export function BankAccountManager({ open, onClose, userId }: BankAccountManager
       setRoutingNumber('');
       setAccountHolderName('');
       setAccountType('checking');
+      setBankName(null);
+      setBankLookupError(null);
       setShowAddForm(false);
 
       // Refresh list
@@ -215,6 +264,36 @@ export function BankAccountManager({ open, onClose, userId }: BankAccountManager
                 />
                 <p className="text-xs text-muted-foreground">9-digit routing number</p>
               </div>
+
+              {/* Bank Name Display */}
+              {(lookingUpBank || bankName || bankLookupError) && (
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground">Bank Name</Label>
+                  <div className="flex items-center gap-2 rounded-md border border-border bg-muted/30 px-3 py-2 text-sm">
+                    {lookingUpBank && (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        <span className="text-muted-foreground">Looking up bank...</span>
+                      </>
+                    )}
+                    {!lookingUpBank && bankName && (
+                      <>
+                        <CheckCircle2 className="h-4 w-4 text-green-600" />
+                        <span className="font-medium">{bankName}</span>
+                        <Badge variant="secondary" className="ml-auto text-xs">
+                          Auto-detected
+                        </Badge>
+                      </>
+                    )}
+                    {!lookingUpBank && bankLookupError && (
+                      <>
+                        <Info className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">{bankLookupError}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="account">Account Number</Label>
