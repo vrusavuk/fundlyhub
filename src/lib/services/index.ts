@@ -27,6 +27,9 @@ export { campaignAccessApi } from '@/lib/api/campaignAccessApi';
 export { projectService } from './project.service';
 export { projectMutationService } from './project.mutation.service';
 
+// Payout services
+export { payoutService } from './payout.service';
+
 // Admin services
 export { 
   adminDataService, 

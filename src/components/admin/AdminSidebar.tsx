@@ -73,6 +73,12 @@ const mainNavItems: AdminNavItem[] = [
     permission: 'manage_campaigns'
   },
   {
+    title: 'Payouts',
+    url: '/admin/payouts',
+    icon: DollarSign,
+    permission: 'manage_payouts'
+  },
+  {
     title: 'Organizations',
     url: '/admin/organizations',
     icon: Building2,
