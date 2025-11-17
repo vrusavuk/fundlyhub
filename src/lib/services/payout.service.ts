@@ -57,6 +57,17 @@ export interface KYCStatus {
   rejection_reason: string | null;
 }
 
+export interface UserEarnings {
+  total_earnings: string;
+  total_payouts: string;
+  pending_payouts: string;
+  available_balance: string;
+  held_balance: string;
+  currency: string;
+  fundraiser_count: number;
+  donation_count: number;
+}
+
 class PayoutService {
   /**
    * Request a payout for a fundraiser
@@ -291,7 +302,7 @@ class PayoutService {
           .from('creator_kyc_verification')
           .select('status, verification_level, risk_level, requires_info_details, rejection_reason')
           .eq('user_id', userId)
-          .single();
+          .maybeSingle();
 
         return { data, error };
       },
@@ -299,6 +310,62 @@ class PayoutService {
         cache: {
           key: `kyc-status:${userId}`,
           ttl: 300, // 5 minutes cache
+        },
+      }
+    );
+  }
+
+  /**
+   * Get user's total earnings across all fundraisers
+   * This is the SINGLE SOURCE OF TRUTH for user earnings
+   */
+  async getUserEarnings(userId: string): Promise<UserEarnings> {
+    return unifiedApi.query(
+      async () => {
+        const { data, error } = await supabase.rpc('get_user_earnings', {
+          _user_id: userId,
+        });
+
+        if (error) return { data: null, error };
+
+        // RPC returns array, get first result
+        if (data && data.length > 0) {
+          const row = data[0];
+          return {
+            data: {
+              total_earnings: row.total_earnings.toString(),
+              total_payouts: row.total_payouts.toString(),
+              pending_payouts: row.pending_payouts.toString(),
+              available_balance: row.available_balance.toString(),
+              held_balance: row.held_balance.toString(),
+              currency: row.currency,
+              fundraiser_count: row.fundraiser_count,
+              donation_count: row.donation_count,
+            },
+            error: null,
+          };
+        }
+
+        // User has no earnings yet - return zeros
+        return {
+          data: {
+            total_earnings: '0.00',
+            total_payouts: '0.00',
+            pending_payouts: '0.00',
+            available_balance: '0.00',
+            held_balance: '0.00',
+            currency: 'USD',
+            fundraiser_count: 0,
+            donation_count: 0,
+          },
+          error: null,
+        };
+      },
+      {
+        cache: {
+          key: `user-earnings:${userId}`,
+          ttl: 60, // 1 minute cache
+          tags: ['user-earnings', `user-${userId}`],
         },
       }
     );
