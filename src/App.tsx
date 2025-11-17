@@ -59,6 +59,7 @@ import DonationDetail from '@/pages/admin/DonationDetail';
 import CampaignDetail from '@/pages/admin/CampaignDetail';
 import UserDetail from '@/pages/admin/UserDetail';
 import OrganizationDetail from '@/pages/admin/OrganizationDetail';
+import PayoutManagement from '@/pages/admin/PayoutManagement';
 
 const App = () => (
   <AppErrorBoundary>
@@ -139,6 +140,7 @@ const App = () => (
           <Route path="campaigns/:id" element={<CampaignDetail />} />
           <Route path="donations" element={<DonationManagement />} />
           <Route path="donations/:id" element={<DonationDetail />} />
+          <Route path="payouts" element={<PayoutManagement />} />
           <Route path="organizations" element={<OrganizationManagement />} />
           <Route path="organizations/:id" element={<OrganizationDetail />} />
           <Route path="notifications" element={<NotificationCenter />} />

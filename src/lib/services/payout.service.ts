@@ -112,7 +112,7 @@ class PayoutService {
           query = query.eq('user_id', filters.userId);
         }
         if (filters?.status) {
-          query = query.eq('status', filters.status);
+          query = query.eq('status', filters.status as any);
         }
 
         const { data, error } = await query;
@@ -130,11 +130,12 @@ class PayoutService {
   /**
    * Get available balance for a fundraiser
    */
-  async getAvailableBalance(fundraiserId: string): Promise<AvailableBalance> {
-    return unifiedApi.query(
+  async getAvailableBalance(fundraiserId: string, userId: string): Promise<AvailableBalance> {
+    const result = await unifiedApi.query(
       async () => {
         const { data, error } = await supabase.rpc('calculate_available_balance', {
-          p_fundraiser_id: fundraiserId,
+          _fundraiser_id: fundraiserId,
+          _user_id: userId,
         });
         return { data, error };
       },
@@ -145,6 +146,26 @@ class PayoutService {
         },
       }
     );
+
+    // Transform the result from RPC to match our interface
+    if (result && result.length > 0) {
+      const row = result[0];
+      return {
+        fundraiser_id: fundraiserId,
+        available_balance_str: row.available_balance.toString(),
+        pending_balance_str: '0.00',
+        held_balance_str: row.total_holds.toString(),
+        currency: 'USD',
+      };
+    }
+
+    return {
+      fundraiser_id: fundraiserId,
+      available_balance_str: '0.00',
+      pending_balance_str: '0.00',
+      held_balance_str: '0.00',
+      currency: 'USD',
+    };
   }
 
   /**
@@ -273,10 +294,10 @@ class PayoutService {
           .order('created_at', { ascending: false });
 
         if (filters?.status) {
-          query = query.eq('status', filters.status);
+          query = query.eq('status', filters.status as any);
         }
         if (filters?.priority) {
-          query = query.eq('priority', filters.priority);
+          query = query.eq('priority', filters.priority as any);
         }
         if (filters?.startDate) {
           query = query.gte('created_at', filters.startDate);
