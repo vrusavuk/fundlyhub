@@ -64,38 +64,51 @@ Deno.serve(async (req) => {
       );
     }
 
-// Multi-source lookup with intelligent fallback
+    // Multi-source lookup with intelligent fallback
     console.log(`Looking up routing number: ${cleanRouting}`);
     
     let bankName: string | null = null;
     let source = 'none';
 
-    // Source 1: RoutingNumbers.info (fast, good coverage)
+    // Source 1: RoutingNumbers.info (fast, good coverage - returns JSON)
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
       const response = await fetch(`https://www.routingnumbers.info/api/name.json?rn=${cleanRouting}`, {
         headers: { 'User-Agent': 'Supabase-Edge-Function' },
-        signal: AbortSignal.timeout(5000),
+        signal: controller.signal,
       });
       
+      clearTimeout(timeoutId);
+      
       if (response.ok) {
-        const data: RoutingNumberResponse = await response.json();
-        bankName = data.customer_name || data.bank_name || data.name || null;
-        if (bankName) {
-          source = 'routingnumbers.info';
-          console.log(`Found via routingnumbers.info: ${bankName}`);
+        const contentType = response.headers.get('content-type');
+        if (contentType?.includes('application/json')) {
+          const data: RoutingNumberResponse = await response.json();
+          bankName = data.customer_name || data.bank_name || data.name || null;
+          if (bankName) {
+            source = 'routingnumbers.info';
+            console.log(`Found via routingnumbers.info: ${bankName}`);
+          }
         }
       }
     } catch (error) {
       console.log(`RoutingNumbers.info lookup failed:`, error);
     }
 
-    // Source 2: bank.codes (comprehensive web scraping fallback)
+    // Source 2: bank.codes (comprehensive web scraping fallback - returns HTML)
     if (!bankName) {
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
         const response = await fetch(`https://bank.codes/us-routing-number/${cleanRouting}/`, {
           headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Supabase-Edge-Function)' },
-          signal: AbortSignal.timeout(5000),
+          signal: controller.signal,
         });
+        
+        clearTimeout(timeoutId);
         
         if (response.ok) {
           const html = await response.text();
@@ -130,13 +143,18 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Source 3: RoutingTool (additional coverage)
+    // Source 3: RoutingTool (additional coverage - returns HTML)
     if (!bankName) {
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
         const response = await fetch(`https://verify.routingtool.com/bank/info/routing/${cleanRouting}`, {
           headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Supabase-Edge-Function)' },
-          signal: AbortSignal.timeout(5000),
+          signal: controller.signal,
         });
+        
+        clearTimeout(timeoutId);
         
         if (response.ok) {
           const html = await response.text();
