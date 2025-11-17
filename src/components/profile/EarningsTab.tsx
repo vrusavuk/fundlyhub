@@ -14,7 +14,7 @@ import {
   Plus
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { payoutService, type PayoutRequest, type AvailableBalance } from '@/lib/services/payout.service';
+import { payoutService, type PayoutRequest, type UserEarnings } from '@/lib/services/payout.service';
 import { PayoutRequestDialog } from '@/components/payout/PayoutRequestDialog';
 import { BankAccountManager } from '@/components/payout/BankAccountManager';
 import { KYCVerificationBanner } from '@/components/payout/KYCVerificationBanner';
@@ -29,7 +29,7 @@ export function EarningsTab({ userId }: EarningsTabProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [payouts, setPayouts] = useState<PayoutRequest[]>([]);
-  const [balance, setBalance] = useState<AvailableBalance | null>(null);
+  const [earnings, setEarnings] = useState<UserEarnings | null>(null);
   const [showPayoutDialog, setShowPayoutDialog] = useState(false);
   const [showBankManager, setShowBankManager] = useState(false);
   const [kycStatus, setKycStatus] = useState<any>(null);
@@ -42,17 +42,17 @@ export function EarningsTab({ userId }: EarningsTabProps) {
     try {
       setLoading(true);
 
+      // Fetch user earnings - SINGLE SOURCE OF TRUTH
+      const earningsData = await payoutService.getUserEarnings(userId);
+      setEarnings(earningsData);
+
       // Fetch payout history
       const payoutData = await payoutService.getPayoutRequests({ userId });
       setPayouts(payoutData);
 
-      // Fetch KYC status
+      // Fetch KYC status (now returns null instead of throwing)
       const kyc = await payoutService.getKYCStatus(userId);
       setKycStatus(kyc);
-
-      // TODO: Fetch available balance when we have a fundraiser context
-      // const balanceData = await payoutService.getAvailableBalance(fundraiserId);
-      // setBalance(balanceData);
 
     } catch (error) {
       console.error('Error fetching earnings data:', error);
@@ -103,6 +103,39 @@ export function EarningsTab({ userId }: EarningsTabProps) {
         <KYCVerificationBanner kycStatus={kycStatus} />
       )}
 
+      {/* Earnings Summary Card */}
+      {earnings && earnings.donation_count > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Earnings Overview
+            </CardTitle>
+            <CardDescription>Your fundraising performance</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Raised</p>
+                <p className="text-xl font-semibold">${earnings.total_earnings}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Active Fundraisers</p>
+                <p className="text-xl font-semibold">{earnings.fundraiser_count}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Total Donations</p>
+                <p className="text-xl font-semibold">{earnings.donation_count}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Withdrawn</p>
+                <p className="text-xl font-semibold">${earnings.total_payouts}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Available Balance Card */}
       <Card>
         <CardHeader>
@@ -139,19 +172,19 @@ export function EarningsTab({ userId }: EarningsTabProps) {
             <div>
               <p className="text-sm text-muted-foreground">Available</p>
               <p className="text-3xl font-bold text-primary">
-                ${balance?.available_balance_str || '0.00'}
+                ${earnings?.available_balance || '0.00'}
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Pending</p>
               <p className="text-2xl font-semibold text-muted-foreground">
-                ${balance?.pending_balance_str || '0.00'}
+                ${earnings?.pending_payouts || '0.00'}
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">On Hold</p>
               <p className="text-2xl font-semibold text-muted-foreground">
-                ${balance?.held_balance_str || '0.00'}
+                ${earnings?.held_balance || '0.00'}
               </p>
             </div>
           </div>
