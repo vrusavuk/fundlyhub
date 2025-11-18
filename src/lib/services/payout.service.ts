@@ -63,6 +63,11 @@ export interface UserEarnings {
   pending_payouts: string;
   available_balance: string;
   held_balance: string;
+  held_campaign_pending?: string;
+  held_chargeback_reserve?: string;
+  held_fraud_investigation?: string;
+  held_manual?: string;
+  active_holds_count?: number;
   currency: string;
   fundraiser_count: number;
   donation_count: number;
