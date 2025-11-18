@@ -66,6 +66,11 @@ export function EarningsTab({ userId }: EarningsTabProps) {
         pending_payouts: '0.00',
         available_balance: '0.00',
         held_balance: '0.00',
+        held_campaign_pending: '0.00',
+        held_chargeback_reserve: '0.00',
+        held_fraud_investigation: '0.00',
+        held_manual: '0.00',
+        active_holds_count: 0,
         currency: 'USD',
         fundraiser_count: 0,
         donation_count: 0,
@@ -200,8 +205,60 @@ export function EarningsTab({ userId }: EarningsTabProps) {
               <p className="text-2xl font-semibold text-muted-foreground">
                 ${earnings?.held_balance || '0.00'}
               </p>
+              {earnings && (earnings.active_holds_count || 0) > 0 && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {earnings.active_holds_count} active {earnings.active_holds_count === 1 ? 'hold' : 'holds'}
+                </p>
+              )}
             </div>
           </div>
+
+          {/* Hold Breakdown */}
+          {earnings && parseFloat(earnings.held_balance) > 0 && (
+            <div className="mt-6 p-4 bg-muted/50 rounded-lg space-y-3">
+              <p className="text-sm font-medium flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-warning" />
+                Hold Details
+              </p>
+              <div className="space-y-2 text-sm">
+                {earnings.held_campaign_pending && parseFloat(earnings.held_campaign_pending) > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">
+                      • Campaign Pending Approval
+                    </span>
+                    <span className="font-medium">${earnings.held_campaign_pending}</span>
+                  </div>
+                )}
+                {earnings.held_chargeback_reserve && parseFloat(earnings.held_chargeback_reserve) > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">
+                      • Chargeback Protection (7 days)
+                    </span>
+                    <span className="font-medium">${earnings.held_chargeback_reserve}</span>
+                  </div>
+                )}
+                {earnings.held_fraud_investigation && parseFloat(earnings.held_fraud_investigation) > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">
+                      • Fraud Investigation
+                    </span>
+                    <span className="font-medium">${earnings.held_fraud_investigation}</span>
+                  </div>
+                )}
+                {earnings.held_manual && parseFloat(earnings.held_manual) > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">
+                      • Manual Review
+                    </span>
+                    <span className="font-medium">${earnings.held_manual}</span>
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground pt-2 border-t">
+                Held funds will be released automatically when conditions are met. Campaign holds release when approved, chargeback holds release after 7 days.
+              </p>
+            </div>
+          )}
 
           {kycStatus?.status !== 'verified' && (
             <Alert className="mt-4">

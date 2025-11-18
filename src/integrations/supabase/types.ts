@@ -3614,11 +3614,16 @@ export type Database = {
       get_user_earnings: {
         Args: { _user_id: string }
         Returns: {
+          active_holds_count: number
           available_balance: number
           currency: string
           donation_count: number
           fundraiser_count: number
           held_balance: number
+          held_campaign_pending: number
+          held_chargeback_reserve: number
+          held_fraud_investigation: number
+          held_manual: number
           pending_payouts: number
           total_earnings: number
           total_payouts: number
