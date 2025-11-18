@@ -11,9 +11,11 @@ export interface FundraiserQueryOptions {
   offset?: number;
   category?: string;
   searchTerm?: string;
-  status?: 'active' | 'draft' | 'ended' | 'closed' | 'pending';
+  status?: 'active' | 'draft' | 'ended' | 'closed' | 'pending' | 'paused';
   visibility?: 'public' | 'unlisted' | 'private';
   isProject?: boolean;
+  ownerId?: string;
+  includeAllStatuses?: boolean;
 }
 
 export interface FundraiserStats {
@@ -45,7 +47,9 @@ class FundraiserService {
       searchTerm,
       status = 'active',
       visibility = 'public',
-      isProject
+      isProject,
+      ownerId,
+      includeAllStatuses
     } = options;
 
     const cacheKey = `fundraisers:${JSON.stringify(options)}`;
@@ -55,9 +59,23 @@ class FundraiserService {
         let query = supabase
           .from('fundraisers')
           .select('*', { count: 'exact' })
-          .eq('status', status)
-          .eq('visibility', visibility)
+          .is('deleted_at', null)
           .order('created_at', { ascending: false });
+
+        // Owner filtering
+        if (ownerId) {
+          query = query.eq('owner_user_id', ownerId);
+        }
+
+        // Status filtering (optional for owner views)
+        if (!includeAllStatuses) {
+          query = query.eq('status', status);
+        }
+
+        // Visibility filtering (optional for owner views)
+        if (!ownerId || !includeAllStatuses) {
+          query = query.eq('visibility', visibility);
+        }
 
         if (category && category !== 'All') {
           query = query.eq('category_id', category);
@@ -195,6 +213,78 @@ class FundraiserService {
         return { data: data as Fundraiser, error: null };
       },
       { cache: { key: cacheKey, ttl: this.CACHE_TTL, tags: ['fundraisers'] } }
+    );
+  }
+
+  /**
+   * Get campaigns for a specific user profile
+   */
+  async getUserCampaigns(
+    userId: string, 
+    options: {
+      statuses?: ('active' | 'draft' | 'ended' | 'closed' | 'pending' | 'paused')[];
+      includePrivate?: boolean;
+      limit?: number;
+      offset?: number;
+    } = {}
+  ): Promise<PaginatedResult<Fundraiser>> {
+    const {
+      statuses = ['draft', 'active', 'paused'],
+      includePrivate = false,
+      limit = 50,
+      offset = 0
+    } = options;
+
+    const cacheKey = `user-campaigns:${userId}:${JSON.stringify(options)}`;
+
+    return unifiedApi.query(
+      async () => {
+        let query = supabase
+          .from('fundraisers')
+          .select('*', { count: 'exact' })
+          .eq('owner_user_id', userId)
+          .in('status', statuses)
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false });
+
+        // Filter by visibility if not including private campaigns
+        if (!includePrivate) {
+          query = query.eq('visibility', 'public');
+        }
+
+        const { data, error, count } = await query.range(offset, offset + limit - 1);
+
+        if (error) return { data: null, error };
+
+        // Fetch owner profiles securely using RPC
+        const fundraisers = data || [];
+        if (fundraisers.length > 0) {
+          const { data: profileData } = await supabase
+            .rpc('get_public_user_profile', { profile_id: userId });
+          
+          const profile = profileData?.[0] || null;
+
+          fundraisers.forEach((fundraiser: any) => {
+            fundraiser.profiles = profile;
+          });
+        }
+
+        return {
+          data: {
+            data: fundraisers as Fundraiser[],
+            hasMore: (fundraisers?.length || 0) === limit,
+            total: count || 0,
+          },
+          error: null
+        };
+      },
+      { 
+        cache: { 
+          key: cacheKey, 
+          ttl: this.CACHE_TTL, 
+          tags: ['fundraisers', `user-campaigns:${userId}`] 
+        } 
+      }
     );
   }
 
