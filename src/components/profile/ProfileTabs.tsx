@@ -6,11 +6,12 @@ import { Heart, Users, Trophy, Wallet } from 'lucide-react';
 import { EarningsTab } from './EarningsTab';
 import { LoadingState } from '@/components/common/LoadingState';
 import { ProfileTabContentSkeleton } from '@/components/skeletons/ProfilePageSkeleton';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
 import type { Fundraiser } from '@/types';
 import { logger } from '@/lib/services/logger.service';
+import { fundraiserService } from '@/lib/services/fundraiser.service';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProfileTabsProps {
   userId: string;
@@ -18,74 +19,76 @@ interface ProfileTabsProps {
 
 export function ProfileTabs({ userId }: ProfileTabsProps) {
   const { user } = useAuth();
+  const { toast } = useToast();
   const isOwnProfile = user?.id === userId;
   
   const [allCampaigns, setAllCampaigns] = useState<Fundraiser[]>([]);
   const [closedCampaigns, setClosedCampaigns] = useState<Fundraiser[]>([]);
+  const [campaignStats, setCampaignStats] = useState<Record<string, any>>({});
   const [allLoading, setAllLoading] = useState(true);
   const [closedLoading, setClosedLoading] = useState(true);
 
-  // Fetch campaigns for the user
+  // Fetch campaigns for the user using the single source of truth
   useEffect(() => {
     const fetchCampaigns = async () => {
       setAllLoading(true);
       setClosedLoading(true);
 
       try {
-        // Fetch all campaigns (draft, active, paused) - include all visibility types if viewing own profile
-        let allQuery = supabase
-          .from('fundraisers')
-          .select('*')
-          .eq('owner_user_id', userId)
-          .in('status', ['draft', 'active', 'paused'])
-          .is('deleted_at', null)
-          .order('created_at', { ascending: false });
+        console.log('[ProfileTabs] Fetching campaigns for user:', userId, 'isOwnProfile:', isOwnProfile);
 
-        // If not own profile, only show public active campaigns
-        if (!isOwnProfile) {
-          allQuery = allQuery.eq('visibility', 'public').eq('status', 'active');
-        }
+        // Fetch active/draft/paused campaigns
+        const activeResult = await fundraiserService.getUserCampaigns(userId, {
+          statuses: isOwnProfile ? ['draft', 'active', 'paused'] : ['active'],
+          includePrivate: isOwnProfile,
+          limit: 50,
+        });
 
-        const { data: allData, error: allError } = await allQuery;
-        
-        if (allError) throw allError;
-        setAllCampaigns((allData as Fundraiser[]) || []);
+        console.log('[ProfileTabs] ✅ Active campaigns fetched:', activeResult.data.length);
+        setAllCampaigns(activeResult.data);
         setAllLoading(false);
 
         // Fetch closed/ended campaigns
-        let closedQuery = supabase
-          .from('fundraisers')
-          .select('*')
-          .eq('owner_user_id', userId)
-          .in('status', ['ended', 'closed'])
-          .is('deleted_at', null)
-          .order('created_at', { ascending: false });
+        const closedResult = await fundraiserService.getUserCampaigns(userId, {
+          statuses: ['ended', 'closed'],
+          includePrivate: isOwnProfile,
+          limit: 50,
+        });
 
-        // If not own profile, only show public campaigns
-        if (!isOwnProfile) {
-          closedQuery = closedQuery.eq('visibility', 'public');
-        }
-
-        const { data: closedData, error: closedError } = await closedQuery;
-        
-        if (closedError) throw closedError;
-        setClosedCampaigns((closedData as Fundraiser[]) || []);
+        console.log('[ProfileTabs] ✅ Closed campaigns fetched:', closedResult.data.length);
+        setClosedCampaigns(closedResult.data);
         setClosedLoading(false);
 
+        // Fetch stats for all campaigns
+        const allIds = [...activeResult.data, ...closedResult.data].map(c => c.id);
+        if (allIds.length > 0) {
+          const stats = await fundraiserService.getFundraiserStats(allIds);
+          console.log('[ProfileTabs] ✅ Campaign stats fetched:', Object.keys(stats).length);
+          setCampaignStats(stats);
+        }
+
       } catch (error) {
+        console.error('[ProfileTabs] ❌ Error fetching campaigns:', error);
         logger.error('Error fetching user campaigns', error instanceof Error ? error : new Error(String(error)), {
           componentName: 'ProfileTabs',
           operationName: 'fetchCampaigns',
           userId,
           isOwnProfile
         });
+        
+        toast({
+          title: "Unable to Load Campaigns",
+          description: "Failed to load campaign data. Please try again.",
+          variant: "destructive",
+        });
+        
         setAllLoading(false);
         setClosedLoading(false);
       }
     };
 
     fetchCampaigns();
-  }, [userId, isOwnProfile]);
+  }, [userId, isOwnProfile, toast]);
 
   return (
     <Tabs defaultValue="active" className="w-full">
@@ -133,7 +136,7 @@ export function ProfileTabs({ userId }: ProfileTabsProps) {
             ) : allCampaigns.length > 0 ? (
               <FundraiserGrid 
                 fundraisers={allCampaigns} 
-                stats={{}}
+                stats={campaignStats}
                 loading={allLoading}
                 error={null}
                 showStatus={isOwnProfile}
@@ -162,7 +165,7 @@ export function ProfileTabs({ userId }: ProfileTabsProps) {
             ) : closedCampaigns.length > 0 ? (
               <FundraiserGrid 
                 fundraisers={closedCampaigns} 
-                stats={{}}
+                stats={campaignStats}
                 loading={closedLoading}
                 error={null}
                 onCardClick={(slug) => window.location.href = `/fundraiser/${slug}`}
