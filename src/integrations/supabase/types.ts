@@ -3745,6 +3745,7 @@ export type Database = {
         | "chargeback_reserve"
         | "fraud_investigation"
         | "compliance"
+        | "campaign_review"
       kyc_status:
         | "not_started"
         | "pending"
@@ -3909,6 +3910,7 @@ export const Constants = {
         "chargeback_reserve",
         "fraud_investigation",
         "compliance",
+        "campaign_review",
       ],
       kyc_status: [
         "not_started",
