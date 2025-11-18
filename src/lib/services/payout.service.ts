@@ -331,8 +331,9 @@ class PayoutService {
       {
         cache: {
           key: `kyc-status:${userId}`,
-          ttl: 300, // 5 minutes cache
+          ttl: 300,
         },
+        allowNull: true,
       }
     );
   }

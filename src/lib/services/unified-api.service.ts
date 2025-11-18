@@ -59,6 +59,7 @@ export interface QueryOptions<T = any> {
   retry?: Partial<RetryConfig>;
   cache?: CacheConfig;
   timeout?: number;
+  allowNull?: boolean;
 }
 
 /**
@@ -94,7 +95,7 @@ class UnifiedApiService {
   async query<T>(
     operation: () => Promise<{ data: T | null; error: any }>,
     options: QueryOptions<T> = {}
-  ): Promise<T> {
+  ): Promise<T | null> {
     // Check cache first
     if (options.cache && !options.cache.skipCache) {
       const cached = await this.cache.get<T>(options.cache.key);
@@ -104,7 +105,7 @@ class UnifiedApiService {
     }
 
     // Execute with retry
-    const result = await this.executeWithRetry(operation, options.retry);
+    const result = await this.executeWithRetry(operation, options.retry, options);
 
     // Cache the result
     if (options.cache && !options.cache.skipCache && result) {
@@ -148,8 +149,9 @@ class UnifiedApiService {
    */
   private async executeWithRetry<T>(
     operation: () => Promise<{ data: T | null; error: any }>,
-    retryConfig: Partial<RetryConfig> = {}
-  ): Promise<T> {
+    retryConfig: Partial<RetryConfig> = {},
+    options: QueryOptions<T> = {}
+  ): Promise<T | null> {
     const config = { ...this.defaultRetryConfig, ...retryConfig };
     let lastError: Error | null = null;
 
@@ -166,7 +168,7 @@ class UnifiedApiService {
           );
         }
 
-        if (data === null) {
+        if (data === null && !options?.allowNull) {
           throw new ApiError('No data returned', undefined, undefined, false);
         }
 

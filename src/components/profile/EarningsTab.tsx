@@ -42,26 +42,24 @@ export function EarningsTab({ userId }: EarningsTabProps) {
   const fetchEarningsData = async () => {
     try {
       setLoading(true);
-      console.log('[EarningsTab] Fetching earnings data for user:', userId);
+      console.log('[EarningsTab] Starting data fetch for user:', userId);
 
-      // Fetch user earnings - SINGLE SOURCE OF TRUTH
       const earningsData = await payoutService.getUserEarnings(userId);
-      console.log('[EarningsTab] Received earnings data:', earningsData);
-      
+      console.log('[EarningsTab] ✅ Earnings fetched:', earningsData);
       setEarnings(earningsData);
 
-      // Fetch payout history
       const payoutData = await payoutService.getPayoutRequests({ userId });
+      console.log('[EarningsTab] ✅ Payouts fetched:', payoutData.length, 'requests');
       setPayouts(payoutData);
 
-      // Fetch KYC status (now returns null instead of throwing)
       const kyc = await payoutService.getKYCStatus(userId);
+      console.log('[EarningsTab] ✅ KYC status:', kyc ? kyc.status : 'No KYC record');
       setKycStatus(kyc);
 
+      console.log('[EarningsTab] ✅ All data loaded successfully');
     } catch (error) {
-      console.error('Error fetching earnings data:', error);
+      console.error('[EarningsTab] ❌ Error fetching data:', error);
       
-      // Set default zero values for graceful degradation
       setEarnings({
         total_earnings: '0.00',
         total_payouts: '0.00',
