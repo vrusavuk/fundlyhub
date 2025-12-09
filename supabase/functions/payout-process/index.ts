@@ -229,7 +229,7 @@ Deno.serve(async (req) => {
         });
 
         return new Response(
-          JSON.stringify({ error: 'Stripe transfer failed', details: stripeError.message }),
+          JSON.stringify({ error: 'Transfer processing failed. Please try again or contact support.' }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -316,7 +316,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Error processing payout:', error);
     return new Response(
-      JSON.stringify({ error: 'Internal server error', details: error.message }),
+      JSON.stringify({ error: 'Failed to process payout. Please try again.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

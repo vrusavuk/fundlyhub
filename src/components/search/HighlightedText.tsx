@@ -3,9 +3,9 @@
  * Provides consistent highlighting behavior across the application
  */
 import { memo } from 'react';
+import DOMPurify from 'dompurify';
 import { cn } from '@/lib/utils';
 import { useSearchHighlight } from '@/hooks/useSearchHighlight';
-
 interface HighlightedTextProps {
   text: string;
   searchQuery: string;
@@ -39,7 +39,10 @@ export const HighlightedText = memo<HighlightedTextProps>(({
     return <Component className={className}>{displayText}</Component>;
   }
   
-  const highlightedContent = highlightText(displayText);
+  const highlightedContent = DOMPurify.sanitize(highlightText(displayText), {
+    ALLOWED_TAGS: ['mark'],
+    ALLOWED_ATTR: ['class']
+  });
   
   return (
     <Component 
