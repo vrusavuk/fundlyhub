@@ -129,13 +129,18 @@ function parseGoFundMeContent(markdown: string, html: string, metadata: any): Go
   };
 
   // Extract title from metadata or content
-  data.title = metadata.title?.replace(/\s*-\s*GoFundMe.*$/i, '').trim() || '';
+  let rawTitle = metadata.title?.replace(/\s*-\s*GoFundMe.*$/i, '').trim() || '';
+  
+  // Remove "Fundraiser by X : " prefix pattern
+  rawTitle = rawTitle.replace(/^Fundraiser\s+by\s+[^:]+\s*:\s*/i, '').trim();
+  
+  data.title = rawTitle;
   
   if (!data.title) {
     // Try to find title in markdown (usually first h1)
     const titleMatch = markdown.match(/^#\s+(.+)$/m);
     if (titleMatch) {
-      data.title = titleMatch[1].trim();
+      data.title = titleMatch[1].replace(/^Fundraiser\s+by\s+[^:]+\s*:\s*/i, '').trim();
     }
   }
 
@@ -144,10 +149,12 @@ function parseGoFundMeContent(markdown: string, html: string, metadata: any): Go
     data.coverImage = metadata.ogImage;
   }
 
-  // Extract goal amount - look for patterns like "$10,000 goal" or "goal of $10,000"
+  // Extract goal amount - look for patterns like "$200,000 goal", "of $200K", "of200K", "goal of $10,000"
   const goalPatterns = [
-    /\$([0-9,]+(?:\.[0-9]{2})?)\s*goal/i,
-    /goal\s*(?:of\s*)?\$([0-9,]+(?:\.[0-9]{2})?)/i,
+    /of\s*\$?([0-9,]+(?:\.[0-9]{2})?)\s*K\b/i,  // "of200K" or "of $200K"
+    /of\s*\$?([0-9,]+(?:\.[0-9]{2})?)\s*M\b/i,  // "of2M" or "of $2M"
+    /\$([0-9,]+(?:\.[0-9]{2})?)\s*goal/i,       // "$10,000 goal"
+    /goal\s*(?:of\s*)?\$([0-9,]+(?:\.[0-9]{2})?)/i, // "goal of $10,000"
     /€([0-9,]+(?:\.[0-9]{2})?)\s*goal/i,
     /£([0-9,]+(?:\.[0-9]{2})?)\s*goal/i,
   ];
@@ -156,7 +163,16 @@ function parseGoFundMeContent(markdown: string, html: string, metadata: any): Go
     const match = markdown.match(pattern) || html.match(pattern);
     if (match) {
       const amountStr = match[1].replace(/,/g, '');
-      data.goalAmount = parseFloat(amountStr);
+      let amount = parseFloat(amountStr);
+      
+      // Handle K (thousands) and M (millions) suffixes
+      if (pattern.source.includes('K\\\\b')) {
+        amount *= 1000;
+      } else if (pattern.source.includes('M\\\\b')) {
+        amount *= 1000000;
+      }
+      
+      data.goalAmount = amount;
       
       // Detect currency
       if (markdown.includes('€') || html.includes('€')) {
