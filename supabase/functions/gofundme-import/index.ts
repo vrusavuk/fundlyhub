@@ -199,6 +199,12 @@ function parseGoFundMeContent(markdown: string, html: string, metadata: any): Go
   // Extract title from metadata or content
   let rawTitle = metadata.title?.replace(/\s*-\s*GoFundMe.*$/i, '').trim() || '';
   
+  // Extract organizer name from "Fundraiser by X : " pattern BEFORE removing it
+  const organizerMatch = rawTitle.match(/^Fundraiser\s+by\s+([^:]+)\s*:/i);
+  if (organizerMatch) {
+    data.beneficiaryName = organizerMatch[1].trim();
+  }
+  
   // Remove "Fundraiser by X : " prefix pattern
   rawTitle = rawTitle.replace(/^Fundraiser\s+by\s+[^:]+\s*:\s*/i, '').trim();
   
@@ -208,7 +214,22 @@ function parseGoFundMeContent(markdown: string, html: string, metadata: any): Go
     // Try to find title in markdown (usually first h1)
     const titleMatch = markdown.match(/^#\s+(.+)$/m);
     if (titleMatch) {
+      // Also try to extract organizer from h1 if not found earlier
+      if (!data.beneficiaryName) {
+        const h1OrgMatch = titleMatch[1].match(/^Fundraiser\s+by\s+([^:]+)\s*:/i);
+        if (h1OrgMatch) {
+          data.beneficiaryName = h1OrgMatch[1].trim();
+        }
+      }
       data.title = titleMatch[1].replace(/^Fundraiser\s+by\s+[^:]+\s*:\s*/i, '').trim();
+    }
+  }
+  
+  // Also check markdown for "X is organizing this fundraiser" pattern
+  if (!data.beneficiaryName) {
+    const organizingMatch = markdown.match(/([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+is\s+organizing\s+this\s+fundraiser/i);
+    if (organizingMatch) {
+      data.beneficiaryName = organizingMatch[1].trim();
     }
   }
 
@@ -294,22 +315,9 @@ function parseGoFundMeContent(markdown: string, html: string, metadata: any): Go
     }
   }
 
-  // Extract beneficiary name if different from organizer
-  const beneficiaryPatterns = [
-    /(?:for|helping|support(?:ing)?)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)(?:'s)?/i,
-    /Beneficiary[:\s]+([^\n]+)/i,
-  ];
-  
-  for (const pattern of beneficiaryPatterns) {
-    const match = markdown.match(pattern);
-    if (match) {
-      const name = match[1].replace(/'s$/, '').trim();
-      if (name.length > 2 && name.length < 100) {
-        data.beneficiaryName = name;
-        break;
-      }
-    }
-  }
+  // Note: beneficiaryName is extracted from the organizer pattern above
+  // (the GoFundMe organizer becomes the beneficiary in FundlyHub since the 
+  // logged-in user becomes the new organizer)
 
   // Extract story - find the actual campaign description only
   let story = '';
