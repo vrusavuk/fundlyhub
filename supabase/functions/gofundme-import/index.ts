@@ -296,19 +296,24 @@ function parseGoFundMeContent(markdown: string, html: string, metadata: any): Go
     data.donorCount = parseInt(donorMatch[1].replace(/,/g, ''), 10);
   }
 
-  // Extract location - improved patterns
+  // Extract location - improved patterns (only City, State format)
   const locationPatterns = [
-    /📍\s*([^,\n]+(?:,\s*[A-Z]{2})?)/i,
-    /(?:Located in|from|Location:)\s*([^,\n]+(?:,\s*[A-Z]{2})?)/i,
-    /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*,\s*[A-Z]{2})\s*(?:\||$)/m, // City, ST pattern
+    /📍\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*,\s*[A-Z]{2})\b/,  // 📍 City, ST
+    /(?:Located in|Location:)\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*,\s*[A-Z]{2})\b/i,
+    /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*,\s*[A-Z]{2})\s*(?:\||·|—)/,  // City, ST followed by separator
   ];
+  
+  // Words that indicate we matched something other than a location
+  const locationExclusions = ['organizer', 'fundraiser', 'created', 'beneficiary', 'donate', 'share', 'goal', 'raised'];
   
   for (const pattern of locationPatterns) {
     const match = markdown.match(pattern) || html.match(pattern);
     if (match) {
       const loc = match[1].trim();
+      const locLower = loc.toLowerCase();
       // Filter out non-location matches
-      if (loc.length > 2 && loc.length < 100 && !loc.includes('http')) {
+      const isExcluded = locationExclusions.some(word => locLower.includes(word));
+      if (loc.length > 2 && loc.length < 60 && !loc.includes('http') && !isExcluded) {
         data.location = loc;
         break;
       }
