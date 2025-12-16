@@ -347,12 +347,12 @@ export function ImageUpload({
           {validPreviews.map((preview, index) => (
             <div
               key={index}
-              className="relative group aspect-video rounded-lg overflow-hidden border bg-muted"
+              className="relative group rounded-lg overflow-hidden border bg-muted flex items-center justify-center min-h-[100px]"
             >
               <img
                 src={preview}
                 alt={`Preview ${index + 1}`}
-                className="w-full h-full object-cover"
+                className="max-w-full max-h-[300px] w-auto h-auto object-contain"
                 onError={(e) => {
                   logger.error('Image failed to load', undefined, {
                     componentName: 'ImageUpload',

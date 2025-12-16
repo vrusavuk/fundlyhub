@@ -8,14 +8,81 @@ const corsHeaders = {
 interface GoFundMeData {
   title: string;
   story: string;
+  summary: string;
   goalAmount: number;
   currency: string;
   coverImage: string | null;
   beneficiaryName: string | null;
   location: string | null;
-  organizerName: string | null;
+  categoryName: string | null;
   amountRaised: number | null;
   donorCount: number | null;
+}
+
+// Category mapping from GoFundMe categories to FundlyHub categories
+const CATEGORY_KEYWORDS: Record<string, string[]> = {
+  'Medical': ['medical', 'hospital', 'surgery', 'treatment', 'cancer', 'health', 'illness', 'disease', 'therapy', 'doctor', 'medication', 'healing', 'recovery', 'diagnosis'],
+  'Emergency': ['emergency', 'urgent', 'fire', 'disaster', 'accident', 'crisis', 'flood', 'hurricane', 'earthquake'],
+  'Memorial': ['memorial', 'funeral', 'remembrance', 'passed away', 'tribute', 'in memory', 'loss', 'burial'],
+  'Education': ['education', 'school', 'tuition', 'scholarship', 'college', 'university', 'student', 'learning'],
+  'Family': ['family', 'children', 'kids', 'baby', 'parent', 'adoption', 'custody'],
+  'Sports': ['sports', 'team', 'athlete', 'competition', 'tournament', 'league', 'championship'],
+  'Animals': ['animal', 'pet', 'dog', 'cat', 'rescue', 'shelter', 'veterinary', 'vet'],
+  'Environment': ['environment', 'climate', 'conservation', 'wildlife', 'nature', 'sustainable', 'green'],
+  'Community': ['community', 'neighborhood', 'local', 'civic', 'public', 'town', 'city'],
+  'Creative': ['creative', 'art', 'music', 'film', 'book', 'album', 'project', 'production'],
+  'Business': ['business', 'startup', 'entrepreneur', 'company', 'venture', 'small business'],
+  'Faith': ['faith', 'church', 'religious', 'spiritual', 'mission', 'congregation'],
+  'Travel': ['travel', 'trip', 'journey', 'adventure', 'volunteer abroad'],
+  'Events': ['event', 'wedding', 'birthday', 'celebration', 'party', 'reunion'],
+  'Nonprofit': ['nonprofit', 'charity', 'organization', 'foundation', 'cause'],
+  'Other': [],
+};
+
+function detectCategory(content: string, title: string): string | null {
+  const searchText = `${title} ${content}`.toLowerCase();
+  
+  let bestMatch: { category: string; count: number } | null = null;
+  
+  for (const [category, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
+    if (category === 'Other') continue;
+    
+    let matchCount = 0;
+    for (const keyword of keywords) {
+      if (searchText.includes(keyword)) {
+        matchCount++;
+      }
+    }
+    
+    if (matchCount > 0 && (!bestMatch || matchCount > bestMatch.count)) {
+      bestMatch = { category, count: matchCount };
+    }
+  }
+  
+  return bestMatch?.category || null;
+}
+
+function generateSummary(story: string, title: string): string {
+  // Try to extract first meaningful sentence
+  const sentences = story.split(/[.!?]+/).filter(s => s.trim().length > 20);
+  
+  if (sentences.length > 0) {
+    let summary = sentences[0].trim();
+    // Ensure it's not too long
+    if (summary.length > 150) {
+      summary = summary.substring(0, 147) + '...';
+    } else if (summary.length < 10) {
+      // Too short, try combining first two sentences
+      summary = sentences.slice(0, 2).join('. ').trim();
+      if (summary.length > 150) {
+        summary = summary.substring(0, 147) + '...';
+      }
+    }
+    return summary;
+  }
+  
+  // Fallback to using title
+  return `Help support ${title}`;
 }
 
 serve(async (req) => {
@@ -118,12 +185,13 @@ function parseGoFundMeContent(markdown: string, html: string, metadata: any): Go
   const data: GoFundMeData = {
     title: '',
     story: '',
+    summary: '',
     goalAmount: 0,
     currency: 'USD',
     coverImage: null,
     beneficiaryName: null,
     location: null,
-    organizerName: null,
+    categoryName: null,
     amountRaised: null,
     donorCount: null,
   };
@@ -149,45 +217,47 @@ function parseGoFundMeContent(markdown: string, html: string, metadata: any): Go
     data.coverImage = metadata.ogImage;
   }
 
-  // Extract goal amount - look for patterns like "$200,000 goal", "of $200K", "of200K", "goal of $10,000"
+  // Extract goal amount - look for patterns with K/M suffixes
   const goalPatterns = [
-    /of\s*\$?([0-9,]+(?:\.[0-9]{2})?)\s*K\b/i,  // "of200K" or "of $200K"
-    /of\s*\$?([0-9,]+(?:\.[0-9]{2})?)\s*M\b/i,  // "of2M" or "of $2M"
-    /\$([0-9,]+(?:\.[0-9]{2})?)\s*goal/i,       // "$10,000 goal"
-    /goal\s*(?:of\s*)?\$([0-9,]+(?:\.[0-9]{2})?)/i, // "goal of $10,000"
-    /€([0-9,]+(?:\.[0-9]{2})?)\s*goal/i,
-    /£([0-9,]+(?:\.[0-9]{2})?)\s*goal/i,
+    // Patterns with K suffix: "$200K", "of$200K", "of $200K"
+    { pattern: /of\s*\$?\s*([0-9,]+(?:\.[0-9]+)?)\s*K\b/i, multiplier: 1000 },
+    { pattern: /\$([0-9,]+(?:\.[0-9]+)?)\s*K\s*goal/i, multiplier: 1000 },
+    // Patterns with M suffix
+    { pattern: /of\s*\$?\s*([0-9,]+(?:\.[0-9]+)?)\s*M\b/i, multiplier: 1000000 },
+    { pattern: /\$([0-9,]+(?:\.[0-9]+)?)\s*M\s*goal/i, multiplier: 1000000 },
+    // Standard patterns without suffix
+    { pattern: /\$([0-9,]+(?:\.[0-9]+)?)\s*goal/i, multiplier: 1 },
+    { pattern: /goal\s*(?:of\s*)?\$([0-9,]+(?:\.[0-9]+)?)/i, multiplier: 1 },
+    { pattern: /of\s*\$([0-9,]+(?:\.[0-9]+)?)\b/i, multiplier: 1 },
+    // Euro/Pound patterns
+    { pattern: /€([0-9,]+(?:\.[0-9]+)?)\s*goal/i, multiplier: 1 },
+    { pattern: /£([0-9,]+(?:\.[0-9]+)?)\s*goal/i, multiplier: 1 },
   ];
   
-  for (const pattern of goalPatterns) {
+  for (const { pattern, multiplier } of goalPatterns) {
     const match = markdown.match(pattern) || html.match(pattern);
     if (match) {
       const amountStr = match[1].replace(/,/g, '');
-      let amount = parseFloat(amountStr);
+      const amount = parseFloat(amountStr) * multiplier;
       
-      // Handle K (thousands) and M (millions) suffixes
-      if (pattern.source.includes('K\\\\b')) {
-        amount *= 1000;
-      } else if (pattern.source.includes('M\\\\b')) {
-        amount *= 1000000;
+      if (amount > 0) {
+        data.goalAmount = amount;
+        
+        // Detect currency
+        if (markdown.includes('€') || html.includes('€')) {
+          data.currency = 'EUR';
+        } else if (markdown.includes('£') || html.includes('£')) {
+          data.currency = 'GBP';
+        }
+        break;
       }
-      
-      data.goalAmount = amount;
-      
-      // Detect currency
-      if (markdown.includes('€') || html.includes('€')) {
-        data.currency = 'EUR';
-      } else if (markdown.includes('£') || html.includes('£')) {
-        data.currency = 'GBP';
-      }
-      break;
     }
   }
 
   // Extract amount raised
   const raisedPatterns = [
-    /\$([0-9,]+(?:\.[0-9]{2})?)\s*(?:raised|of)/i,
-    /raised\s*\$([0-9,]+(?:\.[0-9]{2})?)/i,
+    /\$([0-9,]+(?:\.[0-9]+)?)\s*(?:raised|of)/i,
+    /raised\s*\$([0-9,]+(?:\.[0-9]+)?)/i,
   ];
   
   for (const pattern of raisedPatterns) {
@@ -205,29 +275,28 @@ function parseGoFundMeContent(markdown: string, html: string, metadata: any): Go
     data.donorCount = parseInt(donorMatch[1].replace(/,/g, ''), 10);
   }
 
-  // Extract location
-  const locationMatch = markdown.match(/(?:📍|Located in|from)\s*([^,\n]+(?:,\s*[A-Z]{2})?)/i);
-  if (locationMatch) {
-    data.location = locationMatch[1].trim();
-  }
-
-  // Extract organizer name - look for "Organizer" or "organized by" patterns
-  const organizerPatterns = [
-    /(?:Organizer|Organized by)[:\s]+([^\n|]+)/i,
-    /(?:by|created by)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/,
+  // Extract location - improved patterns
+  const locationPatterns = [
+    /📍\s*([^,\n]+(?:,\s*[A-Z]{2})?)/i,
+    /(?:Located in|from|Location:)\s*([^,\n]+(?:,\s*[A-Z]{2})?)/i,
+    /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*,\s*[A-Z]{2})\s*(?:\||$)/m, // City, ST pattern
   ];
   
-  for (const pattern of organizerPatterns) {
-    const match = markdown.match(pattern);
+  for (const pattern of locationPatterns) {
+    const match = markdown.match(pattern) || html.match(pattern);
     if (match) {
-      data.organizerName = match[1].trim();
-      break;
+      const loc = match[1].trim();
+      // Filter out non-location matches
+      if (loc.length > 2 && loc.length < 100 && !loc.includes('http')) {
+        data.location = loc;
+        break;
+      }
     }
   }
 
   // Extract beneficiary name if different from organizer
   const beneficiaryPatterns = [
-    /(?:for|helping|support)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?(?:'s)?)/i,
+    /(?:for|helping|support(?:ing)?)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)(?:'s)?/i,
     /Beneficiary[:\s]+([^\n]+)/i,
   ];
   
@@ -235,10 +304,10 @@ function parseGoFundMeContent(markdown: string, html: string, metadata: any): Go
     const match = markdown.match(pattern);
     if (match) {
       const name = match[1].replace(/'s$/, '').trim();
-      if (name !== data.organizerName) {
+      if (name.length > 2 && name.length < 100) {
         data.beneficiaryName = name;
+        break;
       }
-      break;
     }
   }
 
@@ -258,15 +327,19 @@ function parseGoFundMeContent(markdown: string, html: string, metadata: any): Go
   story = story.replace(/^\$[0-9,]+.*?goal\s*/im, '');
   story = story.replace(/^[0-9,]+\s*donors?\s*/im, '');
   
+  // Remove navigation items
+  story = story.replace(/^(?:Donate|Share|Updates?|Comments?|Organizer?)\s*$/gim, '');
+  
   // Clean up whitespace
   story = story.replace(/\n{3,}/g, '\n\n').trim();
   
-  // Take the main story content (limit to reasonable length)
-  if (story.length > 5000) {
-    story = story.substring(0, 5000) + '...';
-  }
-  
   data.story = story;
+
+  // Generate summary from story
+  data.summary = generateSummary(story, data.title);
+
+  // Detect category
+  data.categoryName = detectCategory(story, data.title);
 
   return data;
 }

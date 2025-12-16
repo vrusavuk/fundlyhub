@@ -41,7 +41,7 @@ export const fundraiserStorySchema = z.object({
   
   story: z.string()
     .min(150, 'Story must be at least 150 characters')
-    .max(1000, 'Story cannot exceed 1000 characters')
+    .max(10000, 'Story cannot exceed 10,000 characters')
     .refine((val) => val.trim().length > 0, 'Story is required'),
 });
 

@@ -59,20 +59,35 @@ export function CreateFundraiserWizard() {
   const handleGoFundMeImport = (data: {
     title: string;
     story: string;
+    summary: string;
     goalAmount: number;
     currency: string;
     coverImage: string | null;
     beneficiaryName: string | null;
     location: string | null;
+    categoryName: string | null;
   }) => {
+    // Find category ID by name if detected
+    let categoryId: string | undefined;
+    if (data.categoryName) {
+      const matchedCategory = categories.find(
+        cat => cat.name.toLowerCase() === data.categoryName?.toLowerCase()
+      );
+      if (matchedCategory) {
+        categoryId = matchedCategory.id;
+      }
+    }
+
     // Map imported data to form fields
     updateFormData({
       title: data.title,
       story: data.story,
+      summary: data.summary || undefined,
       goalAmount: data.goalAmount,
       coverImage: data.coverImage || undefined,
       beneficiaryName: data.beneficiaryName || undefined,
       location: data.location || undefined,
+      categoryId,
       isProject: false, // Default to quick fundraiser for imports
     });
     
