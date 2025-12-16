@@ -3,7 +3,7 @@
  * Multi-step fundraiser creation with AI enhancement
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, ArrowRight, Save } from 'lucide-react';
@@ -21,6 +21,7 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { WIZARD_BUTTONS } from './designConstants';
+import { GoFundMeImportModal } from '../import/GoFundMeImportModal';
 
 const STEPS = [
   { number: 0, title: 'Type', description: 'Choose fundraising type' },
@@ -35,6 +36,7 @@ export function CreateFundraiserWizard() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { categories } = useCategories();
+  const [showImportModal, setShowImportModal] = useState(false);
   
   const {
     currentStep,
@@ -53,6 +55,30 @@ export function CreateFundraiserWizard() {
     autoSaveInterval: 30000, // 30 seconds
     enabled: !!user,
   });
+
+  const handleGoFundMeImport = (data: {
+    title: string;
+    story: string;
+    goalAmount: number;
+    currency: string;
+    coverImage: string | null;
+    beneficiaryName: string | null;
+    location: string | null;
+  }) => {
+    // Map imported data to form fields
+    updateFormData({
+      title: data.title,
+      story: data.story,
+      goalAmount: data.goalAmount,
+      coverImage: data.coverImage || undefined,
+      beneficiaryName: data.beneficiaryName || undefined,
+      location: data.location || undefined,
+      isProject: false, // Default to quick fundraiser for imports
+    });
+    
+    // Move to step 1 (basics) so user can review/edit
+    goToStep(1);
+  };
 
   // Load draft on mount
   useEffect(() => {
@@ -119,8 +145,15 @@ export function CreateFundraiserWizard() {
             <Step0ProjectType
               value={formData.isProject}
               onChange={(isProject) => updateFormData({ isProject })}
+              onImportClick={() => setShowImportModal(true)}
             />
           )}
+          
+          <GoFundMeImportModal
+            open={showImportModal}
+            onOpenChange={setShowImportModal}
+            onImport={handleGoFundMeImport}
+          />
 
           {currentStep === 1 && (
             <Step1Basics

@@ -4,16 +4,18 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Rocket, Target, Check, Clock, TrendingUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Rocket, Target, Check, Clock, TrendingUp, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WIZARD_SPACING, WIZARD_TYPOGRAPHY, WIZARD_ICONS, WIZARD_GAPS } from './designConstants';
 
 interface Step0ProjectTypeProps {
   value: boolean | undefined;
   onChange: (isProject: boolean) => void;
+  onImportClick?: () => void;
 }
 
-export function Step0ProjectType({ value, onChange }: Step0ProjectTypeProps) {
+export function Step0ProjectType({ value, onChange, onImportClick }: Step0ProjectTypeProps) {
   return (
     <div className={WIZARD_SPACING.stepContainer}>
       <div className={`text-center ${WIZARD_SPACING.fieldGroup}`}>
@@ -22,6 +24,20 @@ export function Step0ProjectType({ value, onChange }: Step0ProjectTypeProps) {
           Select the format that best fits your needs
         </p>
       </div>
+      
+      {/* Import from GoFundMe option */}
+      {onImportClick && (
+        <div className="flex justify-center mb-6">
+          <Button
+            variant="outline"
+            onClick={onImportClick}
+            className="gap-2"
+          >
+            <ExternalLink className="h-4 w-4" />
+            Import from GoFundMe
+          </Button>
+        </div>
+      )}
 
       <div className={`grid md:grid-cols-2 ${WIZARD_GAPS.responsive} max-w-4xl mx-auto`}>
         {/* Quick Fundraiser Card */}
