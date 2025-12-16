@@ -1,16 +1,22 @@
 /**
  * Step 4: Review & Submit
- * Preview and confirm all details
+ * True preview of how the fundraiser page will look
  */
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { CheckCircle2, AlertCircle, Calendar, MapPin, User, Shield, Lock, Mail, Target } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  CheckCircle2, AlertCircle, Calendar, MapPin, Shield, Lock, 
+  Mail, Target, Share2, Heart, Eye, Verified
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { VisibilityBadge } from '@/components/fundraiser/VisibilityBadge';
 import { TipsBox } from './TipsBox';
-import { WIZARD_SPACING, WIZARD_TYPOGRAPHY, WIZARD_ICONS, WIZARD_GAPS, WIZARD_CARDS } from './designConstants';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Step4ReviewProps {
   formData: {
@@ -41,219 +47,342 @@ interface Step4ReviewProps {
 }
 
 export function Step4Review({ formData, categoryName, categoryEmoji }: Step4ReviewProps) {
+  const { user } = useAuth();
+  
   const isComplete = formData.title && formData.categoryId && formData.goalAmount && 
                      formData.summary && formData.story &&
                      (!formData.isProject || (formData.milestones && formData.milestones.length > 0));
 
-  return (
-    <div className={WIZARD_SPACING.stepContainer}>
-      {isComplete ? (
-        <div className={`flex items-center ${WIZARD_GAPS.inline} text-success p-4 bg-success/10 rounded-lg border border-success/20`}>
-          <CheckCircle2 className={WIZARD_ICONS.standard} />
-          <span className="font-medium">Ready to publish!</span>
-        </div>
-      ) : (
-        <div className={`flex items-center ${WIZARD_GAPS.inline} text-warning p-4 bg-warning/10 rounded-lg border border-warning/20`}>
-          <AlertCircle className={WIZARD_ICONS.standard} />
-          <span className="font-medium">Please complete all required fields</span>
-        </div>
-      )}
+  const userName = user?.user_metadata?.name || user?.email?.split('@')[0] || 'You';
 
-      <Card className="card-enhanced">
-        <CardHeader className={WIZARD_CARDS.outerCard}>
-          <div className={`flex items-start justify-between ${WIZARD_GAPS.standard}`}>
-            <div className="flex-1">
-              <CardTitle className="text-2xl mb-2">
-                {formData.title || 'Untitled Fundraiser'}
-              </CardTitle>
-              <div className={`flex flex-wrap ${WIZARD_GAPS.inline}`}>
-                {categoryName && (
-                  <Badge variant="secondary" className={WIZARD_TYPOGRAPHY.bodyText}>
-                    {categoryEmoji} {categoryName}
-                  </Badge>
-                )}
-                {formData.type === 'charity' && (
-                  <Badge variant="default" className={WIZARD_TYPOGRAPHY.bodyText}>
-                    <Shield className={`${WIZARD_ICONS.inline} mr-1`} />
-                    Tax-Deductible
-                  </Badge>
-                )}
-                {formData.visibility && (
-                  <VisibilityBadge visibility={formData.visibility} />
-                )}
-              </div>
-            </div>
-            {formData.goalAmount && (
-              <div className="text-right">
-                <div className={`${WIZARD_TYPOGRAPHY.bodyText} text-muted-foreground`}>Goal</div>
-                <div className="text-2xl font-bold text-primary">
-                  ${formData.goalAmount.toLocaleString()}
+  return (
+    <div className="space-y-4 sm:space-y-6">
+      {/* Preview Mode Banner */}
+      <div className="flex items-center justify-between gap-3 p-3 sm:p-4 rounded-lg bg-muted/50 border border-border">
+        <div className="flex items-center gap-2">
+          <Eye className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium">Preview Mode</span>
+        </div>
+        {isComplete ? (
+          <div className="flex items-center gap-2 text-success">
+            <CheckCircle2 className="h-4 w-4" />
+            <span className="text-sm font-medium">Ready to publish</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 text-warning">
+            <AlertCircle className="h-4 w-4" />
+            <span className="text-sm font-medium">Missing required fields</span>
+          </div>
+        )}
+      </div>
+
+      {/* Main Preview Layout - Matches FundraiserDetail */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+          {/* Hero Image */}
+          <div className="aspect-video rounded-xl overflow-hidden shadow-lg bg-muted">
+            {formData.coverImage ? (
+              <img
+                src={formData.coverImage}
+                alt="Campaign cover"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                <div className="text-center">
+                  <div className="text-4xl mb-2">📷</div>
+                  <p className="text-sm">No cover image</p>
                 </div>
               </div>
             )}
           </div>
-        </CardHeader>
-        <CardContent className={`${WIZARD_SPACING.cardSection} ${WIZARD_CARDS.outerCard}`}>
-          {formData.summary && (
-            <div>
-              <h4 className={`${WIZARD_TYPOGRAPHY.cardTitle} mb-2`}>Summary</h4>
-              <p className={WIZARD_TYPOGRAPHY.subsectionTitle}>{formData.summary}</p>
+
+          {/* Title and Info */}
+          <div className="space-y-3 sm:space-y-4">
+            {/* Badges */}
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              {categoryName && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  {categoryEmoji} {categoryName}
+                </Badge>
+              )}
+              {formData.location && (
+                <Badge variant="outline" className="flex items-center gap-1">
+                  <MapPin className="h-3 w-3" />
+                  {formData.location}
+                </Badge>
+              )}
+              <Badge variant="outline" className="flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                Created today
+              </Badge>
+              {formData.type === 'charity' && (
+                <Badge variant="default" className="flex items-center gap-1">
+                  <Shield className="h-3 w-3" />
+                  Tax-Deductible
+                </Badge>
+              )}
+              {formData.visibility && (
+                <VisibilityBadge visibility={formData.visibility} />
+              )}
             </div>
-          )}
-
-          <Separator />
-
-          {formData.story && (
-            <div>
-              <h4 className={`${WIZARD_TYPOGRAPHY.cardTitle} mb-2`}>Story</h4>
-              <p className={`${WIZARD_TYPOGRAPHY.bodyText} whitespace-pre-wrap`}>{formData.story}</p>
+            
+            {/* Title */}
+            <h1 className="text-2xl sm:text-3xl font-bold leading-tight">
+              {formData.title || 'Untitled Fundraiser'}
+            </h1>
+            
+            {/* Summary */}
+            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+              {formData.summary || 'No summary provided'}
+            </p>
+            
+            {/* Organizer */}
+            <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+              <div className="flex items-center gap-3 rounded-lg p-2">
+                <Avatar className="h-12 w-12">
+                  <AvatarFallback>{userName.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{userName}</span>
+                    <Badge variant="outline" className="text-xs">
+                      <Verified className="h-3 w-3 mr-1" />
+                      Verified
+                    </Badge>
+                  </div>
+                  <span className="text-sm text-muted-foreground">Organizer</span>
+                </div>
+              </div>
             </div>
-          )}
 
+            {/* Beneficiary Info */}
+            {formData.beneficiaryName && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Heart className="h-4 w-4" />
+                <span>Beneficiary: <strong className="text-foreground">{formData.beneficiaryName}</strong></span>
+              </div>
+            )}
+          </div>
+
+          {/* Tabs - Story, Milestones, etc. */}
+          <Tabs defaultValue="story" className="w-full">
+            <TabsList className={`grid w-full ${formData.isProject ? 'grid-cols-3' : 'grid-cols-2'} mb-4`}>
+              <TabsTrigger value="story" className="text-sm">Story</TabsTrigger>
+              {formData.isProject && (
+                <TabsTrigger value="milestones" className="text-sm">
+                  Milestones ({formData.milestones?.length || 0})
+                </TabsTrigger>
+              )}
+              <TabsTrigger value="comments" className="text-sm">Comments (0)</TabsTrigger>
+            </TabsList>
+              
+            <TabsContent value="story" className="mt-4 space-y-4">
+              <Card>
+                <CardContent className="p-4 sm:p-6">
+                  {formData.story ? (
+                    <div className="prose max-w-none whitespace-pre-wrap">
+                      {formData.story}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground italic">No story provided yet</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Share Section Preview */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Share2 className="h-5 w-5" />
+                    Share this fundraiser
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2 sm:gap-3">
+                    <Button variant="outline" className="flex items-center gap-2" disabled>
+                      Facebook
+                    </Button>
+                    <Button variant="outline" className="flex items-center gap-2" disabled>
+                      Twitter
+                    </Button>
+                    <Button variant="outline" className="flex items-center gap-2" disabled>
+                      Copy Link
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {formData.isProject && (
+              <TabsContent value="milestones" className="mt-4 space-y-4">
+                {formData.milestones && formData.milestones.length > 0 ? (
+                  <>
+                    {formData.milestones.map((milestone, index) => (
+                      <Card key={index} className="border-l-4 border-l-primary/50">
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="flex items-center gap-2">
+                              <Target className="h-4 w-4 text-primary" />
+                              <h5 className="font-semibold">{milestone.title || `Milestone ${index + 1}`}</h5>
+                            </div>
+                            <Badge variant="secondary">
+                              {new Intl.NumberFormat('en-US', {
+                                style: 'currency',
+                                currency: milestone.currency || 'USD',
+                              }).format(milestone.target_amount || 0)}
+                            </Badge>
+                          </div>
+                          {milestone.description && (
+                            <p className="text-sm text-muted-foreground mb-2 whitespace-pre-wrap">
+                              {milestone.description}
+                            </p>
+                          )}
+                          {milestone.due_date && (
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <Calendar className="h-3 w-3" />
+                              Due: {format(new Date(milestone.due_date), 'PPP')}
+                            </div>
+                          )}
+                          <div className="mt-3">
+                            <Progress value={0} className="h-2" />
+                            <p className="text-xs text-muted-foreground mt-1">$0 of goal</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                    
+                    <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
+                      <p className="text-sm font-medium flex items-center justify-between">
+                        <span>Total Milestone Goals:</span>
+                        <span className="text-primary">
+                          {new Intl.NumberFormat('en-US', {
+                            style: 'currency',
+                            currency: formData.milestones[0]?.currency || 'USD',
+                          }).format(
+                            formData.milestones.reduce((sum, m) => sum + (m.target_amount || 0), 0)
+                          )}
+                        </span>
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <Card>
+                    <CardContent className="p-6 text-center text-muted-foreground">
+                      No milestones added yet
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+            )}
+
+            <TabsContent value="comments" className="mt-4">
+              <Card>
+                <CardContent className="p-6 text-center text-muted-foreground">
+                  No comments yet. Comments will appear here after your fundraiser is published.
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {/* Sidebar - Donation Widget Preview */}
+        <div className="lg:col-span-1 space-y-4">
+          <Card className="sticky top-4">
+            <CardContent className="p-4 sm:p-6 space-y-4">
+              {/* Goal Amount */}
+              <div className="text-center">
+                <div className="text-3xl sm:text-4xl font-bold text-primary">
+                  ${(formData.goalAmount || 0).toLocaleString()}
+                </div>
+                <p className="text-sm text-muted-foreground">goal</p>
+              </div>
+
+              {/* Progress */}
+              <div className="space-y-2">
+                <Progress value={0} className="h-3" />
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium">$0 raised</span>
+                  <span className="text-muted-foreground">0%</span>
+                </div>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-2 gap-3 py-3 border-y border-border">
+                <div className="text-center">
+                  <div className="text-xl font-bold">0</div>
+                  <div className="text-xs text-muted-foreground">donors</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xl font-bold">0</div>
+                  <div className="text-xs text-muted-foreground">days left</div>
+                </div>
+              </div>
+
+              {/* Donate Button (disabled preview) */}
+              <Button className="w-full" size="lg" disabled>
+                <Heart className="h-4 w-4 mr-2" />
+                Donate Now
+              </Button>
+
+              <p className="text-xs text-center text-muted-foreground">
+                Preview only — donations enabled after publishing
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Access Controls (for private campaigns) */}
           {formData.visibility === 'private' && (formData.passcode || formData.allowlistEmails) && (
-            <>
-              <Separator />
-              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
-                <h4 className={`${WIZARD_TYPOGRAPHY.bodyText} font-medium mb-3 flex items-center ${WIZARD_GAPS.inline}`}>
-                  <Lock className={WIZARD_ICONS.standard} />
+            <Card className="bg-primary/5 border-primary/20">
+              <CardContent className="p-4">
+                <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                  <Lock className="h-4 w-4" />
                   Access Controls
                 </h4>
-                <div className={`${WIZARD_SPACING.listItems} ${WIZARD_TYPOGRAPHY.bodyText}`}>
+                <div className="space-y-2 text-sm">
                   {formData.passcode && (
-                    <div className={`flex items-center ${WIZARD_GAPS.inline} text-muted-foreground`}>
-                      <CheckCircle2 className={`${WIZARD_ICONS.standard} text-success`} />
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <CheckCircle2 className="h-4 w-4 text-success" />
                       Passcode protected
                     </div>
                   )}
                   {formData.allowlistEmails && (
-                    <div className={`flex items-center ${WIZARD_GAPS.inline} text-muted-foreground`}>
-                      <Mail className={`${WIZARD_ICONS.standard} text-success`} />
-                      Allowlist: {formData.allowlistEmails.split(',').filter(Boolean).length} email(s)
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Mail className="h-4 w-4 text-success" />
+                      {formData.allowlistEmails.split(',').filter(Boolean).length} email(s) allowed
                     </div>
                   )}
                 </div>
-              </div>
-            </>
+              </CardContent>
+            </Card>
           )}
 
-          {(formData.beneficiaryName || formData.location || formData.endDate) && (
-            <>
-              <Separator />
-              <div className={`grid grid-cols-1 sm:grid-cols-2 ${WIZARD_GAPS.standard}`}>
-                {formData.beneficiaryName && (
-                  <div className={`flex items-center ${WIZARD_GAPS.inline}`}>
-                    <User className={`${WIZARD_ICONS.standard} text-muted-foreground`} />
-                    <div>
-                      <div className={`${WIZARD_TYPOGRAPHY.helperText}`}>Beneficiary</div>
-                      <div className={`${WIZARD_TYPOGRAPHY.bodyText} font-medium`}>{formData.beneficiaryName}</div>
-                    </div>
-                  </div>
-                )}
-
-                {formData.location && (
-                  <div className={`flex items-center ${WIZARD_GAPS.inline}`}>
-                    <MapPin className={`${WIZARD_ICONS.standard} text-muted-foreground`} />
-                    <div>
-                      <div className={WIZARD_TYPOGRAPHY.helperText}>Location</div>
-                      <div className={`${WIZARD_TYPOGRAPHY.bodyText} font-medium`}>{formData.location}</div>
-                    </div>
-                  </div>
-                )}
-
-                {formData.endDate && (
-                  <div className={`flex items-center ${WIZARD_GAPS.inline}`}>
-                    <Calendar className={`${WIZARD_ICONS.standard} text-muted-foreground`} />
-                    <div>
-                      <div className={WIZARD_TYPOGRAPHY.helperText}>End Date</div>
-                      <div className={`${WIZARD_TYPOGRAPHY.bodyText} font-medium`}>
-                        {format(new Date(formData.endDate), 'PPP')}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </>
+          {/* End Date */}
+          {formData.endDate && (
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span>Ends {format(new Date(formData.endDate), 'PPP')}</span>
+                </div>
+              </CardContent>
+            </Card>
           )}
+        </div>
+      </div>
 
-          {formData.coverImage && (
-            <>
-              <Separator />
-              <div>
-                <h4 className={`${WIZARD_TYPOGRAPHY.cardTitle} mb-2`}>Cover Image</h4>
-                <img
-                  src={formData.coverImage}
-                  alt="Campaign cover"
-                  className="rounded-lg w-full h-48 object-cover"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      {formData.isProject && formData.milestones && formData.milestones.length > 0 && (
-        <Card className="card-enhanced">
-          <CardHeader className={WIZARD_CARDS.outerCard}>
-            <CardTitle className={`flex items-center ${WIZARD_GAPS.inline}`}>
-              <Target className={WIZARD_ICONS.standard} />
-              Project Milestones ({formData.milestones.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className={`${WIZARD_SPACING.cardSection} ${WIZARD_CARDS.outerCard}`}>
-            {formData.milestones.map((milestone, index) => (
-              <Card key={index} className="border-l-4 border-l-primary/50">
-                <CardContent className={WIZARD_CARDS.nestedCard}>
-                  <div className="flex justify-between items-start mb-2">
-                    <h5 className={WIZARD_TYPOGRAPHY.subsectionTitle}>{milestone.title}</h5>
-                    <Badge variant="secondary" className="ml-2">
-                      {new Intl.NumberFormat('en-US', {
-                        style: 'currency',
-                        currency: milestone.currency,
-                      }).format(milestone.target_amount)}
-                    </Badge>
-                  </div>
-                  {milestone.description && (
-                    <p className={`${WIZARD_TYPOGRAPHY.bodyText} text-muted-foreground mb-2 whitespace-pre-wrap`}>
-                      {milestone.description}
-                    </p>
-                  )}
-                  {milestone.due_date && (
-                    <div className={`flex items-center ${WIZARD_GAPS.tight} ${WIZARD_TYPOGRAPHY.helperText} text-muted-foreground`}>
-                      <Calendar className={WIZARD_ICONS.inline} />
-                      Due: {format(new Date(milestone.due_date), 'PPP')}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-            
-            <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
-              <p className={`${WIZARD_TYPOGRAPHY.bodyText} font-medium flex items-center justify-between`}>
-                <span>Total Milestone Goals:</span>
-                <span className="text-primary">
-                  {new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: formData.milestones[0]?.currency || 'USD',
-                  }).format(
-                    formData.milestones.reduce((sum, m) => sum + m.target_amount, 0)
-                  )}
-                </span>
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
+      {/* Tips Box */}
       <TipsBox
         title="Before you publish:"
         tips={[
-          'Review all information',
-          'Check story is compelling',
-          'Verify goal amount',
-          ...(formData.isProject ? ['Ensure milestones are complete'] : []),
+          'Review all information for accuracy',
+          'Check your story is compelling and complete',
+          'Verify your goal amount is realistic',
+          ...(formData.isProject ? ['Ensure milestones are complete and achievable'] : []),
         ]}
       />
     </div>
