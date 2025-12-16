@@ -311,27 +311,85 @@ function parseGoFundMeContent(markdown: string, html: string, metadata: any): Go
     }
   }
 
-  // Extract story - main content after removing headers and metadata
-  let story = markdown;
+  // Extract story - find the actual campaign description only
+  let story = '';
   
-  // Remove the title if present at the start
-  story = story.replace(/^#\s+.+\n+/, '');
+  // Method 1: Look for "## Story" section and extract content until next section
+  const storyMatch = markdown.match(/##\s*Story\s*\n+([\s\S]*?)(?=\n##|\nRead more|\n\d+%|\n\*\*[A-Z]|\$[\d,]+\s*raised)/i);
+  if (storyMatch) {
+    story = storyMatch[1].trim();
+  }
   
-  // Remove common GoFundMe navigation/footer elements
-  story = story.replace(/\*\*Share\*\*[\s\S]*$/i, '');
-  story = story.replace(/\*\*Donate now\*\*[\s\S]*$/i, '');
-  story = story.replace(/\[.*?\]\(.*?\)/g, ''); // Remove markdown links
-  story = story.replace(/!\[.*?\]\(.*?\)/g, ''); // Remove images
+  // Method 2: If no Story section found, try to find the main content block
+  if (!story) {
+    // Look for content that starts with a narrative (capital letter, proper sentence)
+    const narrativeMatch = markdown.match(/\n\n([A-Z][^#\n][\s\S]*?)(?=\n##|\nRead more|\n\d+%|\n\*\*[A-Z]|\$[\d,]+\s*raised)/);
+    if (narrativeMatch) {
+      story = narrativeMatch[1].trim();
+    }
+  }
   
-  // Remove donation/goal stats at the start
-  story = story.replace(/^\$[0-9,]+.*?goal\s*/im, '');
-  story = story.replace(/^[0-9,]+\s*donors?\s*/im, '');
+  // Method 3: Fallback - use the whole markdown but clean aggressively
+  if (!story || story.length < 100) {
+    story = markdown;
+  }
   
-  // Remove navigation items
-  story = story.replace(/^(?:Donate|Share|Updates?|Comments?|Organizer?)\s*$/gim, '');
+  // Clean up the extracted story
+  // Remove markdown links but keep link text
+  story = story.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+  // Remove image markdown
+  story = story.replace(/!\[.*?\]\(.*?\)/g, '');
+  // Remove bold/italic markers around single words but keep content
+  story = story.replace(/\*\*([^*]+)\*\*/g, '$1');
+  story = story.replace(/\*([^*]+)\*/g, '$1');
+  // Remove section headers
+  story = story.replace(/^#{1,3}\s+.*$/gm, '');
+  // Remove navigation/action elements
+  story = story.replace(/^(?:Donate|Share|Updates?|Comments?|Organizer?|Read more|See all|See top|Contact)\s*$/gim, '');
+  // Remove donation stats lines
+  story = story.replace(/^\$[\d,]+.*?(?:raised|goal).*$/gim, '');
+  story = story.replace(/^[\d,]+\s*(?:donors?|donations?|people).*$/gim, '');
+  story = story.replace(/^\d+%\s*$/gm, '');
+  // Remove "X is organizing this fundraiser" lines
+  story = story.replace(/^.*is organizing this fundraiser.*$/gim, '');
+  // Remove "Donation protected" and similar
+  story = story.replace(/^Donation protected.*$/gim, '');
+  // Remove timestamp-like patterns (e.g., "32 mins", "1 hr", "3 hrs", "2 d")
+  story = story.replace(/^\d+\s*(?:mins?|hrs?|hours?|d|days?|ago)\s*$/gim, '');
+  // Remove standalone currency amounts
+  story = story.replace(/^[\$€£]\s*[\d,]+\s*$/gm, '');
+  // Remove empty list items
+  story = story.replace(/^-\s*$/gm, '');
+  // Remove "Monthly" standalone lines
+  story = story.replace(/^Monthly\s*$/gim, '');
+  // Remove lines that look like names with donation amounts
+  story = story.replace(/^[A-Z][a-z]+\s+[A-Z][a-z]+\s*$/gm, '');
+  // Remove "Anonymous" lines
+  story = story.replace(/^Anonymous\s*$/gim, '');
   
-  // Clean up whitespace
+  // Clean up excessive whitespace
   story = story.replace(/\n{3,}/g, '\n\n').trim();
+  
+  // If story still has too much noise, try to find ending markers
+  const endMarkers = [
+    '\n## Updates',
+    '\n## Donations', 
+    '\n## Organizer',
+    '\n## Words of support',
+    '\nCreated ',
+    '\nSee all',
+    '\n1K people',
+    '\nSandra Smith',
+    '\nReact\n',
+    '\nNearby\n',
+  ];
+  
+  for (const marker of endMarkers) {
+    const idx = story.indexOf(marker);
+    if (idx > 100) { // Keep at least 100 chars
+      story = story.substring(0, idx).trim();
+    }
+  }
   
   data.story = story;
 
