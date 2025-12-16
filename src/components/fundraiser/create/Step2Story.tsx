@@ -117,13 +117,13 @@ export function Step2Story({ formData, errors, onChange, categoryName }: Step2St
             storySuggestion && 'border-primary border-2 bg-primary/5'
           )}
           rows={10}
-          maxLength={1000}
+          maxLength={10000}
           readOnly={!!storySuggestion}
         />
         <CharacterCounter
           current={(storySuggestion || formData.story || '').length}
           min={150}
-          max={1000}
+          max={10000}
           showMinimum
         />
         {errors.story && (

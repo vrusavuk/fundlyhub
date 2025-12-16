@@ -5,18 +5,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, ExternalLink, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Loader2, ExternalLink, AlertCircle, CheckCircle2, Tag, MapPin } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 
-interface GoFundMeData {
+export interface GoFundMeData {
   title: string;
   story: string;
+  summary: string;
   goalAmount: number;
   currency: string;
   coverImage: string | null;
   beneficiaryName: string | null;
   location: string | null;
-  organizerName: string | null;
+  categoryName: string | null;
   amountRaised: number | null;
   donorCount: number | null;
 }
@@ -150,11 +152,11 @@ export function GoFundMeImportModal({ open, onOpenChange, onImport }: GoFundMeIm
 
               {/* Cover Image Preview */}
               {previewData.coverImage && (
-                <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
+                <div className="relative rounded-lg overflow-hidden bg-muted">
                   <img
                     src={previewData.coverImage}
                     alt={previewData.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-auto max-h-[300px] object-contain"
                   />
                 </div>
               )}
@@ -164,6 +166,22 @@ export function GoFundMeImportModal({ open, onOpenChange, onImport }: GoFundMeIm
                 <div>
                   <Label className="text-xs text-muted-foreground">Title</Label>
                   <p className="font-semibold">{previewData.title}</p>
+                </div>
+
+                {/* Category & Location badges */}
+                <div className="flex flex-wrap gap-2">
+                  {previewData.categoryName && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      <Tag className="h-3 w-3" />
+                      {previewData.categoryName}
+                    </Badge>
+                  )}
+                  {previewData.location && (
+                    <Badge variant="outline" className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {previewData.location}
+                    </Badge>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -181,27 +199,17 @@ export function GoFundMeImportModal({ open, onOpenChange, onImport }: GoFundMeIm
                   )}
                 </div>
 
-                {(previewData.beneficiaryName || previewData.organizerName) && (
-                  <div className="grid grid-cols-2 gap-3">
-                    {previewData.beneficiaryName && (
-                      <div>
-                        <Label className="text-xs text-muted-foreground">Beneficiary</Label>
-                        <p>{previewData.beneficiaryName}</p>
-                      </div>
-                    )}
-                    {previewData.organizerName && (
-                      <div>
-                        <Label className="text-xs text-muted-foreground">Organizer</Label>
-                        <p>{previewData.organizerName}</p>
-                      </div>
-                    )}
+                {previewData.beneficiaryName && (
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Beneficiary</Label>
+                    <p>{previewData.beneficiaryName}</p>
                   </div>
                 )}
 
-                {previewData.location && (
+                {previewData.summary && (
                   <div>
-                    <Label className="text-xs text-muted-foreground">Location</Label>
-                    <p>{previewData.location}</p>
+                    <Label className="text-xs text-muted-foreground">Summary</Label>
+                    <p className="text-sm">{previewData.summary}</p>
                   </div>
                 )}
 
