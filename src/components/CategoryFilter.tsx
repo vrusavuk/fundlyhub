@@ -145,7 +145,7 @@ export function CategoryFilter() {
                 It's free to start and our platform makes it easy to reach your goals.
               </Text>
               <Button 
-                variant="accent"
+                variant="hero"
                 size="lg" 
                 className="px-8"
                 onClick={() => navigate('/create')}
