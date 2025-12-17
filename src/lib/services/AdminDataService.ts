@@ -141,7 +141,8 @@ class AdminDataService {
           *,
           profiles!fundraisers_owner_user_id_fkey(id, name, email, avatar),
           categories(name, emoji, color_class)
-        `, { count: 'exact' });
+        `, { count: 'exact' })
+        .is('deleted_at', null); // Filter out soft-deleted campaigns
 
       // Apply filters
       if (filters.search) {

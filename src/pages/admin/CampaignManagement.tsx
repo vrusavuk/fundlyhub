@@ -275,6 +275,51 @@ export function CampaignManagement() {
     );
   };
 
+  const handleDeleteCampaign = (campaign: CampaignData) => {
+    setConfirmAction({
+      open: true,
+      title: 'Delete Campaign',
+      description: `Are you sure you want to delete "${campaign.title}"? The campaign will be moved to deleted campaigns and can be restored by a super admin.`,
+      variant: 'destructive',
+      action: async () => {
+        const { data: user } = await supabase.auth.getUser();
+        if (!user?.user) {
+          toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'You must be logged in to delete campaigns'
+          });
+          return;
+        }
+
+        try {
+          await AdminEventService.deleteCampaign(
+            campaign.id,
+            user.user.id,
+            'Admin deleted campaign'
+          );
+          
+          // Remove from local state immediately
+          setCampaigns(prev => prev.filter(c => c.id !== campaign.id));
+          
+          toast({
+            title: 'Campaign Deleted',
+            description: `"${campaign.title}" has been moved to deleted campaigns.`
+          });
+          
+          // Refresh stats
+          fetchCampaignStats();
+        } catch (error: any) {
+          toast({
+            variant: 'destructive',
+            title: 'Delete Failed',
+            description: error.message || 'Failed to delete campaign'
+          });
+        }
+      }
+    });
+  };
+
   // Subscribe to campaign events for real-time updates
   useEventSubscriber('campaign.updated', (event) => {
     console.log('[CampaignManagement] Campaign updated event:', event);
@@ -299,6 +344,12 @@ export function CampaignManagement() {
   useEventSubscriber('admin.campaign.closed', (event) => {
     console.log('[CampaignManagement] Campaign closed event:', event);
     fetchCampaigns();
+  });
+
+  useEventSubscriber('campaign.deleted', (event) => {
+    console.log('[CampaignManagement] Campaign deleted event:', event);
+    fetchCampaigns();
+    fetchCampaignStats();
   });
 
   // Subscribe to donation events for real-time campaign updates
@@ -374,6 +425,8 @@ export function CampaignManagement() {
     (campaignId, status) => {
       handleCampaignStatusChange(campaignId, status);
     },
+    // onDeleteCampaign
+    handleDeleteCampaign,
     // permissions
     {
       canModerate: hasPermission('moderate_campaigns'),
