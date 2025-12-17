@@ -161,7 +161,13 @@ export default function CampaignDetail() {
   const detectChanges = (formData: CampaignEditData, original: any) => {
     const changes: Record<string, any> = {};
     
+    // Fields that are form-only and don't exist in the database
+    const nonDatabaseFields = ['coverImageId', 'coverImagePath'];
+    
     Object.entries(formData).forEach(([key, value]) => {
+      // Skip non-database fields
+      if (nonDatabaseFields.includes(key)) return;
+      
       const originalValue = original[key];
       const normalizedNew = normalizeValue(value);
       const normalizedOld = normalizeValue(originalValue);
