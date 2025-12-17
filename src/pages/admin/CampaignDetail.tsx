@@ -56,9 +56,15 @@ export default function CampaignDetail() {
   const { categories } = useCategories();
   const [campaign, setCampaign] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(() => searchParams.get('edit') === '1');
+  const editParam = searchParams.get('edit');
+  const [isEditing, setIsEditing] = useState(() => editParam === '1');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadedCoverImageId, setUploadedCoverImageId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Keep UI state in sync with URL (?edit=1)
+    setIsEditing(editParam === '1');
+  }, [editParam]);
 
   const form = useForm<CampaignEditData>({
     resolver: zodResolver(campaignEditSchema),
@@ -429,7 +435,6 @@ export default function CampaignDetail() {
                     variant="default"
                     size="sm"
                     onClick={() => {
-                      setIsEditing(true);
                       setSearchParams({ edit: '1' });
                     }}
                   >
