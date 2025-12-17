@@ -416,6 +416,7 @@ export default function CampaignDetail() {
               ) : (
                 <>
                   <Button
+                    type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => navigate('/admin/campaigns')}
@@ -424,6 +425,7 @@ export default function CampaignDetail() {
                     Back
                   </Button>
                   <Button
+                    type="button"
                     variant="default"
                     size="sm"
                     onClick={() => {
@@ -435,6 +437,7 @@ export default function CampaignDetail() {
                     Edit Campaign
                   </Button>
                   <Button
+                    type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => window.open(`/fundraiser/${campaign.slug}`, '_blank')}

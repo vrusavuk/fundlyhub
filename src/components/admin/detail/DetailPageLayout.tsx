@@ -35,9 +35,15 @@ export function DetailPageLayout({
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-[32px] font-semibold text-foreground leading-tight">
-                {title}
-              </h1>
+              {typeof title === 'string' ? (
+                <h1 className="text-[32px] font-semibold text-foreground leading-tight">
+                  {title}
+                </h1>
+              ) : (
+                <div className="text-[32px] font-semibold text-foreground leading-tight">
+                  {title}
+                </div>
+              )}
               {status && <div className="shrink-0">{status}</div>}
             </div>
             {subtitle && (
