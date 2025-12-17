@@ -29,7 +29,6 @@ import { adminDataService } from '@/lib/services/AdminDataService';
 import { useEventSubscriber } from '@/hooks/useEventBus';
 import { AdminEventService } from '@/lib/services/AdminEventService';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
-import { EditCampaignDialog } from '@/components/admin/EditCampaignDialog';
 import { createCampaignColumns, CampaignData } from '@/lib/data-table/campaign-columns';
 import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
 import {
@@ -60,8 +59,6 @@ export function CampaignManagement() {
   const [campaigns, setCampaigns] = useState<CampaignData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCampaigns, setSelectedCampaigns] = useState<CampaignData[]>([]);
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [editingCampaign, setEditingCampaign] = useState<CampaignData | null>(null);
   const [confirmAction, setConfirmAction] = useState<{
     open: boolean;
     title: string;
@@ -185,55 +182,10 @@ export function CampaignManagement() {
     }
   }, [pagination.state.page, pagination.state.pageSize, debouncedSearch, filters, toast]);
 
-  const handleCampaignUpdate = async (campaignId: string, changes: Record<string, any>, imageOperations?: any) => {
-    console.group('🔄 Campaign Update Handler');
-    console.log('Campaign ID:', campaignId);
-    console.log('Changes to apply:', changes);
-    console.log('Image operations:', imageOperations);
-    
-    return optimisticUpdates.executeAction(
-      {
-        type: 'update',
-        description: `Update campaign fields${imageOperations ? ' and images' : ''}`,
-        originalData: { ...editingCampaign },
-        rollbackFn: async () => {
-          console.log('⏮️ Rolling back campaign update');
-          await fetchCampaigns();
-        }
-      },
-      async () => {
-        const { data: user } = await supabase.auth.getUser();
-        if (!user?.user) {
-          console.error('❌ User not authenticated');
-          throw new Error('Not authenticated');
-        }
+  // Legacy dialog-based editing has been replaced by the unified Campaign Detail page.
+  // Keep this handler removed to avoid accidental use.
+  // (Editing now happens at /admin/campaigns/:id?edit=1)
 
-        console.log('📤 Calling AdminEventService.updateCampaign');
-        
-        // This will throw on error - no need to catch
-        await AdminEventService.updateCampaign(
-          campaignId,
-          user.user.id,
-          changes,
-          { 
-            validateTransitions: true,
-            reason: 'Admin manual update',
-            imageOperations
-          }
-        );
-        
-        console.log('✅ AdminEventService.updateCampaign completed');
-        console.groupEnd();
-        
-        // Optimistic update in UI
-        setCampaigns((prev) =>
-          prev.map((c) => (c.id === campaignId ? { ...c, ...changes } : c))
-        );
-        
-        await fetchCampaigns();
-      }
-    );
-  };
 
   const handleCampaignStatusChange = async (campaignId: string, newStatus: string, reason?: string) => {
     const campaign = campaigns.find(c => c.id === campaignId);
@@ -416,10 +368,9 @@ export function CampaignManagement() {
     (campaign) => {
       navigate(`/admin/campaigns/${campaign.id}`);
     },
-    // onEditCampaign
+    // onEditCampaign (navigate to unified detail page in edit mode)
     (campaign) => {
-      setEditingCampaign(campaign);
-      setShowEditDialog(true);
+      navigate(`/admin/campaigns/${campaign.id}?edit=1`);
     },
     // onStatusChange
     (campaignId, status) => {
@@ -646,12 +597,6 @@ export function CampaignManagement() {
         onClearFailed={optimisticUpdates.clearFailed}
       />
 
-      <EditCampaignDialog
-        campaign={editingCampaign}
-        open={showEditDialog}
-        onOpenChange={setShowEditDialog}
-        onSave={handleCampaignUpdate}
-      />
 
       <ConfirmDialog
         open={confirmAction.open}
