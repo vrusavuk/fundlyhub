@@ -1,6 +1,6 @@
 /**
- * EXACT Stripe Dashboard Table Component
- * Replicates Stripe's table design with pixel-perfect accuracy
+ * Stripe Dashboard Table Component
+ * Uses design system tokens for consistent theming
  */
 
 import * as React from "react";
@@ -26,7 +26,7 @@ const StripeTableHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <thead
     ref={ref}
-    className={cn("bg-white border-b border-[#E3E8EE]", className)}
+    className={cn("bg-card border-b border-border", className)}
     {...props}
   />
 ));
@@ -36,7 +36,7 @@ const StripeTableBody = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <tbody ref={ref} className={cn("bg-white", className)} {...props} />
+  <tbody ref={ref} className={cn("bg-card", className)} {...props} />
 ));
 StripeTableBody.displayName = "StripeTableBody";
 
@@ -46,7 +46,7 @@ const StripeTableFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <tfoot
     ref={ref}
-    className={cn("border-t border-[#E3E8EE] bg-white font-medium", className)}
+    className={cn("border-t border-border bg-card font-medium", className)}
     {...props}
   />
 ));
@@ -67,7 +67,7 @@ const StripeTableRow = React.forwardRef<
       ref={ref}
       className={cn(
         heightClasses[density],
-        "border-b border-[#E3E8EE] transition-colors hover:bg-[#FAFBFC]",
+        "border-b border-border transition-colors hover:bg-muted",
         className
       )}
       {...props}
@@ -82,7 +82,7 @@ const StripeTableHead = React.forwardRef<
 >(({ className, density = 'comfortable', ...props }, ref) => {
   const heightClasses = {
     compact: 'h-[36px] px-3 text-[11px]',
-    comfortable: 'h-[44px] px-4 text-[12px]',
+    comfortable: 'h-[44px] px-4 text-xs',
     spacious: 'h-[52px] px-5 text-[13px]',
   };
   
@@ -91,7 +91,7 @@ const StripeTableHead = React.forwardRef<
       ref={ref}
       className={cn(
         heightClasses[density],
-        "text-left align-middle font-semibold uppercase tracking-[0.5px] text-[#425466]",
+        "text-left align-middle font-semibold uppercase tracking-wider text-muted-foreground",
         className
       )}
       {...props}
@@ -106,7 +106,7 @@ const StripeTableCell = React.forwardRef<
 >(({ className, density = 'comfortable', ...props }, ref) => {
   const heightClasses = {
     compact: 'h-[36px] px-3 text-[13px]',
-    comfortable: 'h-[44px] px-4 text-[14px]',
+    comfortable: 'h-[44px] px-4 text-sm',
     spacious: 'h-[52px] px-5 text-[15px]',
   };
   
@@ -115,7 +115,7 @@ const StripeTableCell = React.forwardRef<
       ref={ref}
       className={cn(
         heightClasses[density],
-        "align-middle font-normal text-[#0A2540]",
+        "align-middle font-normal text-foreground",
         className
       )}
       {...props}
@@ -130,7 +130,7 @@ const StripeTableCaption = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <caption
     ref={ref}
-    className={cn("mt-4 text-sm text-[#425466]", className)}
+    className={cn("mt-4 text-sm text-muted-foreground", className)}
     {...props}
   />
 ));

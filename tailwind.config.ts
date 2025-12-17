@@ -130,6 +130,12 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        interactive: {
+          primary: "hsl(var(--interactive-primary))",
+          "primary-hover": "hsl(var(--interactive-primary-hover))",
+          surface: "hsl(var(--interactive-surface))",
+          "surface-hover": "hsl(var(--interactive-surface-hover))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

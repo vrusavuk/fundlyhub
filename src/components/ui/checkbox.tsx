@@ -11,33 +11,33 @@ const Checkbox = React.forwardRef<
   <CheckboxPrimitive.Root
     ref={ref}
     className={cn(
-      // Base - Square with minimal rounding (Stripe style)
+      // Base - Square with minimal rounding
       "peer h-4 w-4 shrink-0 rounded-[3px]",
       
-      // Stripe colors
-      "border-[1.5px] border-[#E3E8EE]",
-      "bg-white dark:bg-background",
+      // Border and background using design tokens
+      "border-[1.5px] border-border",
+      "bg-card",
       
       // Smooth transitions
       "transition-all duration-200 ease-in-out",
       
       // Hover state
-      "hover:border-[#0073E6]",
+      "hover:border-primary",
       
-      // Checked state - Stripe blue
-      "data-[state=checked]:bg-[#0073E6]",
-      "data-[state=checked]:border-[#0073E6]",
-      "data-[state=checked]:text-white",
+      // Checked state - Primary color
+      "data-[state=checked]:bg-primary",
+      "data-[state=checked]:border-primary",
+      "data-[state=checked]:text-primary-foreground",
       
       // Indeterminate state
-      "data-[state=indeterminate]:bg-[#0073E6]",
-      "data-[state=indeterminate]:border-[#0073E6]",
-      "data-[state=indeterminate]:text-white",
+      "data-[state=indeterminate]:bg-primary",
+      "data-[state=indeterminate]:border-primary",
+      "data-[state=indeterminate]:text-primary-foreground",
       
       // Focus ring
       "focus-visible:outline-none",
       "focus-visible:ring-2",
-      "focus-visible:ring-[#0073E6]/20",
+      "focus-visible:ring-ring/20",
       "focus-visible:ring-offset-2",
       "focus-visible:ring-offset-background",
       

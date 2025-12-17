@@ -72,24 +72,24 @@ export function AdminFilters({
                 variant="outline"
                 size="sm"
                 className={cn(
-                  'h-9 px-3 text-[14px] border-[#E3E8EE] hover:border-[#635BFF] hover:bg-[#F6F9FC]',
-                  isActive && 'border-[#635BFF] bg-[#F6F9FC]'
+                  'h-9 px-3 text-sm border-border hover:border-primary hover:bg-muted',
+                  isActive && 'border-primary bg-muted'
                 )}
               >
-                <Icon className="h-3.5 w-3.5 mr-2 text-[#425466]" />
+                <Icon className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
                 {filter.label}
                 {isActive && (
                   <StripeBadgeExact variant="info" className="ml-2 h-4 px-1.5 text-[10px]">
                     1
                   </StripeBadgeExact>
                 )}
-                <ChevronDown className="h-3.5 w-3.5 ml-2 text-[#425466]" />
+                <ChevronDown className="h-3.5 w-3.5 ml-2 text-muted-foreground" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[300px] p-4 border-[#E3E8EE]" align="start">
+            <PopoverContent className="w-[300px] p-4 border-border" align="start">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-[12px] font-semibold text-[#425466] uppercase tracking-[0.5px]">
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     {filter.label}
                   </h4>
                   {isActive && (
@@ -100,7 +100,7 @@ export function AdminFilters({
                         onChange(filter.key, '');
                         setOpenPills({ ...openPills, [filter.key]: false });
                       }}
-                      className="h-7 px-2 text-[12px] text-[#425466]"
+                      className="h-7 px-2 text-xs text-muted-foreground"
                     >
                       Clear
                     </Button>
@@ -109,12 +109,12 @@ export function AdminFilters({
 
                 {filter.type === 'search' && (
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#425466]" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       placeholder={filter.placeholder || `Search ${filter.label.toLowerCase()}...`}
                       value={values[filter.key] || ''}
                       onChange={(e) => onChange(filter.key, e.target.value)}
-                      className="h-9 pl-10 text-[14px] border-[#E3E8EE]"
+                      className="h-9 pl-10 text-sm border-border"
                     />
                   </div>
                 )}
@@ -127,15 +127,15 @@ export function AdminFilters({
                       setOpenPills({ ...openPills, [filter.key]: false });
                     }}
                   >
-                    <SelectTrigger className="h-9 text-[14px] border-[#E3E8EE]">
+                    <SelectTrigger className="h-9 text-sm border-border">
                       <SelectValue placeholder={filter.placeholder || `Select ${filter.label.toLowerCase()}`} />
                     </SelectTrigger>
-                    <SelectContent className="border-[#E3E8EE]">
+                    <SelectContent className="border-border">
                       {filter.options.map((option) => (
                         <SelectItem 
                           key={option.value} 
                           value={option.value}
-                          className="text-[14px]"
+                          className="text-sm"
                         >
                           {option.label}
                         </SelectItem>
@@ -155,7 +155,7 @@ export function AdminFilters({
           variant="ghost"
           size="sm"
           onClick={onClear}
-          className="h-9 px-3 text-[14px] text-[#425466] hover:text-[#0A2540]"
+          className="h-9 px-3 text-sm text-muted-foreground hover:text-foreground"
         >
           Clear all
         </Button>

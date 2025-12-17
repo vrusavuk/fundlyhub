@@ -41,9 +41,9 @@ export function StripeActionButtons({
             onClick={action.onClick}
             disabled={action.disabled || action.loading}
             className={cn(
-              "h-9 px-4 text-[14px] font-medium",
+              "h-9 px-4 text-sm font-medium",
               action.variant === "outline" &&
-                "border-[#E3E8EE] hover:border-[#635BFF] hover:bg-[#F6F9FC]"
+                "border-border hover:border-primary hover:bg-muted"
             )}
           >
             {action.loading ? (
@@ -53,7 +53,7 @@ export function StripeActionButtons({
             )}
             {action.label}
             {action.shortcut && (
-              <kbd className="ml-2 px-1.5 py-0.5 text-[11px] font-semibold text-[#425466] bg-[#F6F9FC] border border-[#E3E8EE] rounded">
+              <kbd className="ml-2 px-1.5 py-0.5 text-[11px] font-semibold text-muted-foreground bg-muted border border-border rounded">
                 {action.shortcut}
               </kbd>
             )}
@@ -67,7 +67,7 @@ export function StripeActionButtons({
           size="sm"
           onClick={primaryAction.onClick}
           disabled={primaryAction.disabled || primaryAction.loading}
-          className="h-9 px-4 text-[14px] font-medium bg-[#635BFF] hover:bg-[#5048E5] text-white"
+          className="h-9 px-4 text-sm font-medium"
         >
           {primaryAction.loading ? (
             <span className="animate-spin mr-2">⏳</span>
@@ -76,7 +76,7 @@ export function StripeActionButtons({
           )}
           {primaryAction.label}
           {primaryAction.shortcut && (
-            <kbd className="ml-2 px-1.5 py-0.5 text-[11px] font-semibold bg-[#7C75FF] border border-[#8B85FF] rounded">
+            <kbd className="ml-2 px-1.5 py-0.5 text-[11px] font-semibold bg-primary-foreground/20 border border-primary-foreground/30 rounded">
               {primaryAction.shortcut}
             </kbd>
           )}

@@ -38,10 +38,10 @@ export function StripeStatusTabs({
             onClick={() => onTabChange(tab.key)}
             className={cn(
               "inline-flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium whitespace-nowrap transition-all",
-              "hover:border-[#635BFF] hover:bg-[#F6F9FC]",
+              "hover:border-primary hover:bg-muted",
               isActive
-                ? "border-[#635BFF] bg-[#FAFAFF] text-[#0A2540]"
-                : "border-[#E3E8EE] bg-white text-[#425466]"
+                ? "border-primary bg-interactive-surface text-foreground"
+                : "border-border bg-card text-muted-foreground"
             )}
           >
             {Icon && <Icon className="h-4 w-4" />}
@@ -51,8 +51,8 @@ export function StripeStatusTabs({
                 className={cn(
                   "px-1.5 py-0.5 rounded text-xs font-semibold",
                   isActive
-                    ? "bg-[#635BFF] text-white"
-                    : "bg-[#E3E8EE] text-[#425466]"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
                 )}
               >
                 {tab.count}
