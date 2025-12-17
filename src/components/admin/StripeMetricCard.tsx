@@ -1,6 +1,6 @@
 /**
- * EXACT Stripe Dashboard Metric Card
- * Replicates Stripe's metric cards - no icon backgrounds
+ * Metric Card Component
+ * Uses semantic design tokens for consistent styling
  */
 
 import { TrendingUp, TrendingDown } from "lucide-react";
@@ -28,21 +28,21 @@ export function StripeMetricCard({
   return (
     <div
       className={cn(
-        "bg-white border border-[#E3E8EE] rounded-lg p-5",
+        "bg-card border border-border rounded-lg p-5",
         className
       )}
     >
-      <p className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[#425466] mb-2">
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
         {label}
       </p>
-      <p className="text-[32px] font-semibold text-[#0A2540] leading-none mb-2">
+      <p className="text-3xl font-semibold text-foreground leading-none mb-2">
         {value}
       </p>
       {change && (
         <div
           className={cn(
-            "flex items-center text-[14px] font-medium",
-            change.isPositive ? "text-[#00D924]" : "text-[#DF1B41]"
+            "flex items-center text-sm font-medium",
+            change.isPositive ? "text-status-success" : "text-status-error"
           )}
         >
           {change.isPositive ? (
@@ -52,7 +52,7 @@ export function StripeMetricCard({
           )}
           <span>{change.value}%</span>
           {change.label && (
-            <span className="ml-1 text-[#425466] font-normal">
+            <span className="ml-1 text-muted-foreground font-normal">
               {change.label}
             </span>
           )}

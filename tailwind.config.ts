@@ -28,28 +28,36 @@ export default {
         'touch': '44px', // Mobile touch target width
       },
       colors: {
-        // EXACT Stripe color palette
-        stripe: {
-          purple: '#635BFF',
-          'purple-dark': '#5851EA',
-          navy: '#0A2540',
-          'navy-light': '#1A3A5A',
-          'light-bg': '#F6F9FC',
-          'text-primary': '#0A2540',
-          'text-secondary': '#425466',
-          border: '#E3E8EE',
-          hover: '#FAFBFC',
-          'success-bg': '#00D924',
-          'warning-bg': '#FFC043',
-          'error-bg': '#DF1B41',
+        /* All colors use semantic CSS variables for theme consistency */
+        neutral: {
+          50: "hsl(var(--neutral-50))",
+          100: "hsl(var(--neutral-100))",
+          200: "hsl(var(--neutral-200))",
+          300: "hsl(var(--neutral-300))",
+          400: "hsl(var(--neutral-400))",
+          500: "hsl(var(--neutral-500))",
+          600: "hsl(var(--neutral-600))",
+          700: "hsl(var(--neutral-700))",
+          800: "hsl(var(--neutral-800))",
+          900: "hsl(var(--neutral-900))",
         },
-        // Stripe-inspired neutral palette
-        'stripe-neutral': {
-          50: 'hsl(248, 250, 252)',
-          100: 'hsl(241, 245, 249)',
-          200: 'hsl(226, 232, 240)',
-          700: 'hsl(51, 65, 85)',
-          900: 'hsl(15, 23, 42)',
+        /* Banner colors for info banners */
+        banner: {
+          info: {
+            bg: "hsl(var(--banner-info-bg))",
+            border: "hsl(var(--banner-info-border))",
+            text: "hsl(var(--banner-info-text))",
+          },
+          recommendation: {
+            bg: "hsl(var(--banner-recommendation-bg))",
+            border: "hsl(var(--banner-recommendation-border))",
+            text: "hsl(var(--banner-recommendation-text))",
+          },
+          warning: {
+            bg: "hsl(var(--banner-warning-bg))",
+            border: "hsl(var(--banner-warning-border))",
+            text: "hsl(var(--banner-warning-text))",
+          },
         },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

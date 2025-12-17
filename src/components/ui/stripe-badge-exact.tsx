@@ -1,6 +1,6 @@
 /**
- * EXACT Stripe Dashboard Badge Component
- * Replicates Stripe's badge design with exact colors
+ * Status Badge Component
+ * Uses semantic design tokens for consistent status indicators
  */
 
 import * as React from "react";
@@ -12,11 +12,11 @@ const stripeBadgeVariants = cva(
   {
     variants: {
       variant: {
-        success: "bg-[#00D924] text-white",
-        warning: "bg-[#FFC043] text-[#0A2540]",
-        error: "bg-[#DF1B41] text-white",
-        info: "bg-[#635BFF] text-white",
-        neutral: "bg-[#E3E8EE] text-[#0A2540]",
+        success: "bg-status-success text-status-success-foreground",
+        warning: "bg-status-warning text-status-warning-foreground",
+        error: "bg-status-error text-status-error-foreground",
+        info: "bg-status-info text-status-info-foreground",
+        neutral: "bg-muted text-foreground",
       },
     },
     defaultVariants: {

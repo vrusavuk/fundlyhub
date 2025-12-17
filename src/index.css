@@ -6,92 +6,111 @@
 
 @layer base {
   :root {
-    /* Stripe-inspired professional color palette */
+    /* Core background and foreground */
     --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    --foreground: 210 29% 15%;
     
-    /* Stripe-like neutral grays */
+    /* Stripe-inspired neutral grays (all HSL) */
     --neutral-50: 210 40% 98%;
-    --neutral-100: 210 40% 96%;
-    --neutral-200: 214 32% 91%;
+    --neutral-100: 213 27% 96%;
+    --neutral-200: 214 22% 91%;
+    --neutral-300: 213 18% 85%;
+    --neutral-400: 215 14% 65%;
+    --neutral-500: 215 16% 47%;
+    --neutral-600: 215 19% 35%;
     --neutral-700: 215 25% 27%;
-    --neutral-900: 222 47% 11%;
+    --neutral-800: 217 33% 17%;
+    --neutral-900: 210 29% 15%;
 
     /* Card & Surface colors */
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 27%;
+    --card-foreground: 210 29% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 27%;
+    --popover-foreground: 210 29% 15%;
 
-    /* Primary - Trust-building blue */
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 98%;
-    --primary-hover: 217 91% 55%;
+    /* Primary - Stripe purple-inspired */
+    --primary: 245 58% 68%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 245 58% 60%;
 
-    /* Secondary - Warm, approachable */
-    --secondary: 210 100% 97%;
-    --secondary-foreground: 215 25% 27%;
+    /* Secondary - Light background surfaces */
+    --secondary: 213 27% 96%;
+    --secondary-foreground: 210 29% 15%;
 
-    /* Success - Progress & achievements */
-    --success: 142 71% 45%;
-    --success-foreground: 0 0% 98%;
-    --success-light: 142 71% 95%;
+    /* Success - Vibrant green */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --success-light: 142 76% 96%;
 
-    /* Warning - Goals & targets */
-    --warning: 45 93% 58%;
-    --warning-foreground: 0 0% 98%;
-    --warning-light: 45 93% 95%;
+    /* Warning - Amber/gold */
+    --warning: 43 96% 56%;
+    --warning-foreground: 210 29% 15%;
+    --warning-light: 43 96% 96%;
 
-    /* Muted - Subtle information */
-    --muted: 210 40% 96%;
+    /* Muted - Subtle backgrounds and text */
+    --muted: 213 27% 96%;
     --muted-foreground: 215 16% 47%;
 
-    /* Accent - Call-to-action warmth */
+    /* Accent - Orange for CTAs */
     --accent: 24 100% 50%;
-    --accent-foreground: 0 0% 98%;
+    --accent-foreground: 0 0% 100%;
     --accent-hover: 24 100% 45%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    /* Destructive - Error red */
+    --destructive: 354 70% 54%;
+    --destructive-foreground: 0 0% 100%;
     
     /* Status Colors - Semantic tokens for consistent status indicators */
     --status-success: 142 76% 36%;
-    --status-success-foreground: 0 0% 98%;
+    --status-success-foreground: 0 0% 100%;
     --status-success-light: 142 76% 96%;
     --status-success-border: 142 76% 86%;
     
-    --status-warning: 45 93% 47%;
-    --status-warning-foreground: 0 0% 98%;
-    --status-warning-light: 45 93% 96%;
-    --status-warning-border: 45 93% 86%;
+    --status-warning: 43 96% 56%;
+    --status-warning-foreground: 210 29% 15%;
+    --status-warning-light: 43 96% 96%;
+    --status-warning-border: 43 96% 80%;
     
-    --status-error: 0 84% 60%;
-    --status-error-foreground: 0 0% 98%;
-    --status-error-light: 0 84% 96%;
-    --status-error-border: 0 84% 86%;
+    --status-error: 354 70% 54%;
+    --status-error-foreground: 0 0% 100%;
+    --status-error-light: 354 70% 96%;
+    --status-error-border: 354 70% 86%;
     
-    --status-info: 221 83% 53%;
-    --status-info-foreground: 0 0% 98%;
-    --status-info-light: 221 83% 96%;
-    --status-info-border: 221 83% 86%;
+    --status-info: 245 58% 68%;
+    --status-info-foreground: 0 0% 100%;
+    --status-info-light: 245 58% 96%;
+    --status-info-border: 245 58% 86%;
+    
+    /* Banner colors for info banners */
+    --banner-info-bg: 225 60% 97%;
+    --banner-info-border: 225 60% 85%;
+    --banner-info-text: 210 29% 15%;
+    
+    --banner-recommendation-bg: 210 20% 98%;
+    --banner-recommendation-border: 214 22% 91%;
+    --banner-recommendation-text: 215 16% 47%;
+    
+    --banner-warning-bg: 43 100% 95%;
+    --banner-warning-border: 43 96% 80%;
+    --banner-warning-text: 35 92% 33%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 217 91% 60%;
+    --border: 214 22% 91%;
+    --input: 214 22% 91%;
+    --ring: 245 58% 68%;
 
     --radius: 0.75rem;
 
     /* Gradients for visual appeal */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(217 91% 70%));
-    --gradient-success: linear-gradient(135deg, hsl(var(--success)), hsl(142 71% 55%));
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(245 58% 78%));
+    --gradient-success: linear-gradient(135deg, hsl(var(--success)), hsl(142 76% 46%));
     --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(24 100% 60%));
-    --gradient-hero: linear-gradient(135deg, hsl(217 91% 60%), hsl(24 100% 50%));
+    --gradient-hero: linear-gradient(135deg, hsl(245 58% 68%), hsl(24 100% 50%));
 
     /* Minimal Shadow System - 3-tier hierarchy */
-    --shadow-minimal: 0 1px 2px 0 hsl(215 25% 27% / 0.05);
-    --shadow-standard: 0 1px 3px 0 hsl(215 25% 27% / 0.1), 0 1px 2px -1px hsl(215 25% 27% / 0.1);
-    --shadow-elevated: 0 4px 6px -1px hsl(215 25% 27% / 0.1), 0 2px 4px -2px hsl(215 25% 27% / 0.1);
+    --shadow-minimal: 0 1px 2px 0 hsl(var(--neutral-900) / 0.05);
+    --shadow-standard: 0 1px 3px 0 hsl(var(--neutral-900) / 0.1), 0 1px 2px -1px hsl(var(--neutral-900) / 0.1);
+    --shadow-elevated: 0 4px 6px -1px hsl(var(--neutral-900) / 0.1), 0 2px 4px -2px hsl(var(--neutral-900) / 0.1);
 
     /* Animation */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -107,79 +126,100 @@
     }
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 245 58% 68%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 222 47% 6%;
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
+    /* Neutral grays - dark mode */
+    --neutral-50: 217 33% 17%;
+    --neutral-100: 215 25% 20%;
+    --neutral-200: 215 25% 27%;
+    --neutral-300: 215 19% 35%;
+    --neutral-400: 215 16% 47%;
+    --neutral-500: 215 14% 65%;
+    --neutral-600: 213 18% 85%;
+    --neutral-700: 214 22% 91%;
+    --neutral-800: 213 27% 96%;
+    --neutral-900: 210 40% 98%;
+
+    --card: 222 47% 8%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 222 47% 8%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 245 58% 68%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 245 58% 75%;
 
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 24 100% 50%;
+    --accent-foreground: 0 0% 100%;
+    --accent-hover: 24 100% 55%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 354 70% 50%;
+    --destructive-foreground: 0 0% 100%;
     
     /* Status Colors - Dark Mode */
-    --status-success: 142 76% 40%;
-    --status-success-foreground: 0 0% 98%;
+    --status-success: 142 76% 45%;
+    --status-success-foreground: 0 0% 100%;
     --status-success-light: 142 76% 15%;
-    --status-success-border: 142 76% 25%;
+    --status-success-border: 142 76% 30%;
     
-    --status-warning: 45 93% 50%;
-    --status-warning-foreground: 0 0% 98%;
-    --status-warning-light: 45 93% 15%;
-    --status-warning-border: 45 93% 25%;
+    --status-warning: 43 96% 56%;
+    --status-warning-foreground: 0 0% 100%;
+    --status-warning-light: 43 96% 15%;
+    --status-warning-border: 43 96% 30%;
     
-    --status-error: 0 84% 60%;
-    --status-error-foreground: 0 0% 98%;
-    --status-error-light: 0 84% 15%;
-    --status-error-border: 0 84% 25%;
+    --status-error: 354 70% 55%;
+    --status-error-foreground: 0 0% 100%;
+    --status-error-light: 354 70% 15%;
+    --status-error-border: 354 70% 30%;
     
-    --status-info: 221 83% 53%;
-    --status-info-foreground: 0 0% 98%;
-    --status-info-light: 221 83% 15%;
-    --status-info-border: 221 83% 25%;
+    --status-info: 245 58% 68%;
+    --status-info-foreground: 0 0% 100%;
+    --status-info-light: 245 58% 15%;
+    --status-info-border: 245 58% 30%;
+    
+    /* Banner colors - Dark Mode */
+    --banner-info-bg: 225 60% 15%;
+    --banner-info-border: 225 60% 25%;
+    --banner-info-text: 210 40% 98%;
+    
+    --banner-recommendation-bg: 217 33% 12%;
+    --banner-recommendation-border: 217 33% 20%;
+    --banner-recommendation-text: 215 20% 65%;
+    
+    --banner-warning-bg: 43 96% 15%;
+    --banner-warning-border: 43 96% 25%;
+    --banner-warning-text: 43 96% 80%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 245 58% 68%;
+    
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary: 245 58% 68%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 245 58% 68%;
   }
 }
 
