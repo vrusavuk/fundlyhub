@@ -25,8 +25,20 @@ export function DonationDetailSidebar({ donation }: DonationDetailSidebarProps) 
         />
         <DetailKeyValue
           label="Payment Method"
-          value={donation.payment_method || 'Card'}
+          value={donation.payment_method_type || 'Card'}
         />
+        {donation.card_brand && (
+          <DetailKeyValue
+            label="Card Brand"
+            value={donation.card_brand.charAt(0).toUpperCase() + donation.card_brand.slice(1)}
+          />
+        )}
+        {donation.card_last4 && (
+          <DetailKeyValue
+            label="Card Last 4"
+            value={`•••• ${donation.card_last4}`}
+          />
+        )}
         <DetailKeyValue
           label="Payment Provider"
           value={donation.payment_provider || 'Stripe'}

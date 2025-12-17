@@ -637,6 +637,8 @@ export type Database = {
       donations: {
         Row: {
           amount: number
+          card_brand: string | null
+          card_last4: string | null
           created_at: string | null
           currency: string | null
           donor_email: string | null
@@ -648,6 +650,7 @@ export type Database = {
           is_anonymous: boolean
           message: string | null
           net_amount: number | null
+          payment_method_type: string | null
           payment_provider: string | null
           payment_status: Database["public"]["Enums"]["payment_status"] | null
           receipt_id: string | null
@@ -656,6 +659,8 @@ export type Database = {
         }
         Insert: {
           amount: number
+          card_brand?: string | null
+          card_last4?: string | null
           created_at?: string | null
           currency?: string | null
           donor_email?: string | null
@@ -667,6 +672,7 @@ export type Database = {
           is_anonymous?: boolean
           message?: string | null
           net_amount?: number | null
+          payment_method_type?: string | null
           payment_provider?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"] | null
           receipt_id?: string | null
@@ -675,6 +681,8 @@ export type Database = {
         }
         Update: {
           amount?: number
+          card_brand?: string | null
+          card_last4?: string | null
           created_at?: string | null
           currency?: string | null
           donor_email?: string | null
@@ -686,6 +694,7 @@ export type Database = {
           is_anonymous?: boolean
           message?: string | null
           net_amount?: number | null
+          payment_method_type?: string | null
           payment_provider?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"] | null
           receipt_id?: string | null
