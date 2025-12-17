@@ -60,6 +60,7 @@ export function createCampaignColumns(
   onViewDetails: (campaign: CampaignData) => void,
   onEditCampaign: (campaign: CampaignData) => void,
   onStatusChange: (campaignId: string, status: string) => void,
+  onDeleteCampaign: (campaign: CampaignData) => void,
   permissions: {
     canModerate: boolean;
     isSuperAdmin: boolean;
@@ -261,7 +262,7 @@ export function createCampaignColumns(
           {
             label: "Delete Campaign",
             icon: Trash2,
-            onClick: (campaign: CampaignData) => console.log("Delete", campaign.id),
+            onClick: onDeleteCampaign,
             variant: "destructive" as const,
           },
         ] : []),

@@ -449,13 +449,16 @@ export class AdminEventService {
   }
 
   /**
-   * Delete campaign and publish event
+   * Soft delete campaign and publish event
    */
-  static async deleteCampaign(campaignId: string, deletedBy: string) {
-    // Database operation
+  static async deleteCampaign(campaignId: string, deletedBy: string, reason?: string) {
+    // Soft delete: set deleted_at and deleted_by instead of hard delete
     const { error } = await supabase
       .from('fundraisers')
-      .delete()
+      .update({
+        deleted_at: new Date().toISOString(),
+        deleted_by: deletedBy,
+      })
       .eq('id', campaignId);
 
     if (error) throw error;
@@ -464,6 +467,7 @@ export class AdminEventService {
     const event = createCampaignDeletedEvent({
       campaignId,
       userId: deletedBy,
+      reason,
     });
     await globalEventBus.publish(event);
 
@@ -473,6 +477,7 @@ export class AdminEventService {
       _action: 'campaign_deleted',
       _resource_type: 'campaign',
       _resource_id: campaignId,
+      _metadata: { reason, soft_delete: true },
     });
 
     return { success: true };
