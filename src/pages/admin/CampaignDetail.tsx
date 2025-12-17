@@ -3,7 +3,7 @@
  * Unified view and edit page for individual campaigns
  */
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, ExternalLink, Check, Clock, TrendingUp, Pencil, X, Save, Loader2 } from 'lucide-react';
@@ -51,11 +51,12 @@ import { AdminEventService } from '@/lib/services/AdminEventService';
 export default function CampaignDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const { categories } = useCategories();
   const [campaign, setCampaign] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(() => searchParams.get('edit') === '1');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadedCoverImageId, setUploadedCoverImageId] = useState<string | null>(null);
 
@@ -260,6 +261,8 @@ export default function CampaignDetail() {
     });
     setUploadedCoverImageId(null);
     setIsEditing(false);
+    setSearchParams({});
+      setSearchParams({});
   };
 
   if (loading) {
@@ -423,7 +426,10 @@ export default function CampaignDetail() {
                   <Button
                     variant="default"
                     size="sm"
-                    onClick={() => setIsEditing(true)}
+                    onClick={() => {
+                      setIsEditing(true);
+                      setSearchParams({ edit: '1' });
+                    }}
                   >
                     <Pencil className="h-4 w-4 mr-2" />
                     Edit Campaign
