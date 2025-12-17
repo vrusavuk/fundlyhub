@@ -66,17 +66,17 @@ export function ImageEditor({ imageUrl, onComplete, onCancel, open }: ImageEdito
       ctx.rotate((rotation * Math.PI) / 180);
       ctx.translate(-safeArea / 2, -safeArea / 2);
 
-      // Draw rotated image
-      ctx.drawImage(
-        image,
-        safeArea / 2 - image.width / 2,
-        safeArea / 2 - image.height / 2
-      );
+      // Calculate where image is drawn on canvas (for offset calculation)
+      const imageX = safeArea / 2 - image.width / 2;
+      const imageY = safeArea / 2 - image.height / 2;
 
-      // Get cropped area
+      // Draw rotated image
+      ctx.drawImage(image, imageX, imageY);
+
+      // Get cropped area - add offset to account for image position on canvas
       const data = ctx.getImageData(
-        croppedAreaPixels.x,
-        croppedAreaPixels.y,
+        croppedAreaPixels.x + imageX,
+        croppedAreaPixels.y + imageY,
         croppedAreaPixels.width,
         croppedAreaPixels.height
       );
