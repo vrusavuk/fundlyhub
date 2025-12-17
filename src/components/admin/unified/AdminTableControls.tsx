@@ -66,7 +66,7 @@ export function AdminTableControls({
         {(title || totalCount > 0) && (
           <div className="flex items-center gap-3">
             {title && (
-              <h2 className="text-[16px] font-semibold text-[#0A2540]">
+              <h2 className="text-base font-semibold text-foreground">
                 {title}
               </h2>
             )}
@@ -106,7 +106,7 @@ export function AdminTableControls({
 
       {/* Bulk Actions Bar */}
       {hasSelection && bulkActions.length > 0 && (
-        <div className="bg-[#F6F9FC] border border-[#E3E8EE] rounded-lg px-4 py-3">
+        <div className="bg-muted border border-border rounded-lg px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <StripeBadgeExact variant="info">
@@ -121,8 +121,8 @@ export function AdminTableControls({
                     <ChevronDown className="ml-2 h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="border-[#E3E8EE]">
-                  <DropdownMenuLabel className="text-[12px] font-medium text-[#425466]">
+                <DropdownMenuContent align="end" className="border-border">
+                  <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
                     Actions for {selectedCount} items
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
@@ -131,8 +131,8 @@ export function AdminTableControls({
                       key={action.key}
                       onClick={() => onBulkAction?.(action.key)}
                       className={cn(
-                        'text-[14px] cursor-pointer',
-                        action.variant === 'destructive' && 'text-[#DF1B41]'
+                        'text-sm cursor-pointer',
+                        action.variant === 'destructive' && 'text-destructive'
                       )}
                     >
                       {action.icon && <action.icon className="h-4 w-4 mr-2" />}
@@ -148,7 +148,7 @@ export function AdminTableControls({
               size="sm"
               variant="ghost"
               onClick={onClearSelection}
-              className="h-8 text-[#425466] hover:text-[#0A2540] hover:bg-white"
+              className="h-8 text-muted-foreground hover:text-foreground hover:bg-card"
             >
               <X className="h-4 w-4 mr-1" />
               Clear Selection
