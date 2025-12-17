@@ -89,6 +89,31 @@ serve(async (req) => {
         const stripeFee = Math.round(totalAmount * 0.029 + 30);
         const netAmount = totalAmount - stripeFee;
 
+        // Retrieve payment method details from Stripe
+        let paymentMethodType: string | null = 'card';
+        let cardBrand: string | null = null;
+        let cardLast4: string | null = null;
+
+        const paymentMethodId = paymentIntent.payment_method;
+        if (paymentMethodId) {
+          try {
+            const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId as string);
+            paymentMethodType = paymentMethod.type;
+            if (paymentMethod.card) {
+              cardBrand = paymentMethod.card.brand;
+              cardLast4 = paymentMethod.card.last4;
+            }
+            console.log('Payment method details:', {
+              type: paymentMethodType,
+              brand: cardBrand,
+              last4: cardLast4
+            });
+          } catch (pmError) {
+            console.error('Failed to retrieve payment method:', pmError);
+            // Continue without payment method details - donation is still valid
+          }
+        }
+
         // Create donation record
         const { data: donation, error: donationError } = await supabase
           .from('donations')
@@ -106,6 +131,9 @@ serve(async (req) => {
             donor_email: metadata.donor_email || null,
             donor_name: metadata.donor_name || null,
             message: metadata.message || null,
+            payment_method_type: paymentMethodType,
+            card_brand: cardBrand,
+            card_last4: cardLast4,
           })
           .select('id')
           .single();

@@ -33,6 +33,9 @@ export interface DonationData {
   donor_name?: string;
   donor_email?: string;
   payment_method?: string;
+  payment_method_type?: string;
+  card_brand?: string;
+  card_last4?: string;
   created_at: string;
   
   // Relationships
@@ -190,13 +193,15 @@ export function createDonationColumns(
         <DataTableColumnHeader column={column} title="Payment method" />
       ),
       cell: ({ row }) => {
-        const provider = row.original.payment_provider || "stripe";
-        const paymentMethod = row.original.payment_method || "card";
+        const donation = row.original;
+        // Use card_brand if available, otherwise fall back to payment_method_type or 'card'
+        const cardType = donation.card_brand || donation.payment_method_type || 'card';
+        const last4 = donation.card_last4;
         
         return (
           <PaymentMethodIcon 
-            type={paymentMethod}
-            last4="3027"
+            type={cardType}
+            last4={last4}
           />
         );
       },

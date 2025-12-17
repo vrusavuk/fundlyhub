@@ -453,6 +453,9 @@ class AdminDataService {
         .from('donations')
         .select(`
           *,
+          payment_method_type,
+          card_brand,
+          card_last4,
           fundraisers!fundraiser_id(
             id,
             title,
