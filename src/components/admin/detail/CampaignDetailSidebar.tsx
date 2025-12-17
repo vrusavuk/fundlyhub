@@ -1,20 +1,40 @@
 /**
  * Campaign Detail Sidebar Component
+ * Supports both view and edit modes
  */
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink } from 'lucide-react';
+import { UseFormReturn } from 'react-hook-form';
 import { DetailSidebarSection } from './DetailSidebar';
 import { DetailKeyValue } from './DetailKeyValue';
 import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import type { CampaignEditData } from '@/lib/validation/campaignEdit.schema';
 
 interface CampaignDetailSidebarProps {
   campaign: any;
+  isEditing?: boolean;
+  form?: UseFormReturn<CampaignEditData>;
 }
 
-export function CampaignDetailSidebar({ campaign }: CampaignDetailSidebarProps) {
+export function CampaignDetailSidebar({ campaign, isEditing = false, form }: CampaignDetailSidebarProps) {
   const statusColors = {
     active: 'default',
+    pending: 'secondary',
     paused: 'secondary',
     ended: 'outline',
     closed: 'outline',
@@ -30,18 +50,72 @@ export function CampaignDetailSidebar({ campaign }: CampaignDetailSidebarProps) 
           value={campaign.id}
           copyable
         />
-        <DetailKeyValue
-          label="Status"
-          value={
-            <Badge variant={statusColors[campaign.status as keyof typeof statusColors] || 'default'}>
-              {campaign.status}
-            </Badge>
-          }
-        />
-        <DetailKeyValue
-          label="Visibility"
-          value={campaign.visibility}
-        />
+        
+        {isEditing && form ? (
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-xs text-muted-foreground">Status</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="paused">Paused</SelectItem>
+                    <SelectItem value="closed">Closed</SelectItem>
+                    <SelectItem value="ended">Ended</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormItem>
+            )}
+          />
+        ) : (
+          <DetailKeyValue
+            label="Status"
+            value={
+              <Badge variant={statusColors[campaign.status as keyof typeof statusColors] || 'default'}>
+                {campaign.status}
+              </Badge>
+            }
+          />
+        )}
+        
+        {isEditing && form ? (
+          <FormField
+            control={form.control}
+            name="visibility"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-xs text-muted-foreground">Visibility</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="public">Public</SelectItem>
+                    <SelectItem value="unlisted">Unlisted</SelectItem>
+                    <SelectItem value="private">Private</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormItem>
+            )}
+          />
+        ) : (
+          <DetailKeyValue
+            label="Visibility"
+            value={campaign.visibility}
+          />
+        )}
+        
         <DetailKeyValue
           label="Category"
           value={campaign.category_name || 'Uncategorized'}
@@ -50,12 +124,31 @@ export function CampaignDetailSidebar({ campaign }: CampaignDetailSidebarProps) 
           label="Created"
           value={new Date(campaign.created_at).toLocaleDateString()}
         />
-        {campaign.end_date && (
+        
+        {isEditing && form ? (
+          <FormField
+            control={form.control}
+            name="end_date"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-xs text-muted-foreground">End Date</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    value={field.value || ''} 
+                    type="date" 
+                    className="h-8"
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        ) : campaign.end_date ? (
           <DetailKeyValue
             label="End Date"
             value={new Date(campaign.end_date).toLocaleDateString()}
           />
-        )}
+        ) : null}
       </DetailSidebarSection>
 
       {/* Owner Information */}
