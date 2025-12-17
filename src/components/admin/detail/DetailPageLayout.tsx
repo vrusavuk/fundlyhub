@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 interface DetailPageLayoutProps {
   // Header section
   title: string | React.ReactNode;
-  subtitle?: string;
+  subtitle?: string | React.ReactNode;
   status?: React.ReactNode;
   actions?: React.ReactNode;
   
@@ -41,9 +41,9 @@ export function DetailPageLayout({
               {status && <div className="shrink-0">{status}</div>}
             </div>
             {subtitle && (
-              <p className="text-[14px] text-muted-foreground mt-1">
+              <div className="text-[14px] text-muted-foreground mt-1">
                 {subtitle}
-              </p>
+              </div>
             )}
           </div>
           {actions && (
