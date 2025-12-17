@@ -8,18 +8,24 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "border-transparent bg-[#635BFF] text-white hover:bg-[#5851EA]",
-        secondary: "border-transparent bg-[#E3E8EE] text-[#0A2540] hover:bg-[#D1D9E0]",
-        destructive: "border-transparent bg-[#DF1B41] text-white hover:bg-[#C71739]",
-        outline: "text-[#0A2540] border-[#E3E8EE] hover:bg-[#FAFBFC]",
-        success: "border-transparent bg-[#00D924] text-white hover:bg-[#00C020]",
-        warning: "border-transparent bg-[#FFC043] text-[#0A2540] hover:bg-[#F0B030]",
-        // Stripe-inspired subtle variants
-        'stripe-success': "bg-[#00D924]/10 text-[#00D924] ring-1 ring-inset ring-[#00D924]/20",
-        'stripe-warning': "bg-[#FFC043]/10 text-[#8B6A00] ring-1 ring-inset ring-[#FFC043]/20",
-        'stripe-error': "bg-[#DF1B41]/10 text-[#DF1B41] ring-1 ring-inset ring-[#DF1B41]/20",
-        'stripe-info': "bg-[#635BFF]/10 text-[#635BFF] ring-1 ring-inset ring-[#635BFF]/20",
-        'stripe-neutral': "bg-[#E3E8EE] text-[#0A2540] ring-1 ring-inset ring-[#E3E8EE]",
+        // Primary badge
+        default: "border-transparent bg-primary text-primary-foreground hover:bg-primary-hover",
+        // Secondary/muted badge
+        secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-neutral-200",
+        // Destructive/error badge
+        destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        // Outline badge
+        outline: "text-foreground border-border hover:bg-muted",
+        // Success badge
+        success: "border-transparent bg-success text-success-foreground hover:bg-success/90",
+        // Warning badge
+        warning: "border-transparent bg-warning text-warning-foreground hover:bg-warning/90",
+        // Status badges with subtle backgrounds
+        'status-success': "bg-status-success-light text-status-success ring-1 ring-inset ring-status-success-border",
+        'status-warning': "bg-status-warning-light text-status-warning-foreground ring-1 ring-inset ring-status-warning-border",
+        'status-error': "bg-status-error-light text-status-error ring-1 ring-inset ring-status-error-border",
+        'status-info': "bg-status-info-light text-status-info ring-1 ring-inset ring-status-info-border",
+        'status-neutral': "bg-muted text-foreground ring-1 ring-inset ring-border",
       },
     },
     defaultVariants: {

@@ -9,17 +9,24 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Exact Stripe button styles
-        default: "bg-[#635BFF] text-white hover:bg-[#5851EA] font-semibold",
-        secondary: "bg-[#E3E8EE] text-[#0A2540] hover:bg-[#D1D9E0] font-medium",
-        outline: "border border-[#E3E8EE] bg-white text-[#0A2540] hover:bg-[#FAFBFC]",
-        destructive: "bg-[#DF1B41] text-white hover:bg-[#C71739] font-semibold",
-        ghost: "hover:bg-[#FAFBFC] text-[#0A2540]",
-        link: "text-[#635BFF] underline-offset-4 hover:underline",
-        // Legacy variants for backward compatibility
-        hero: "bg-gradient-hero text-white hover:opacity-90 shadow-medium font-semibold",
-        accent: "bg-accent text-accent-foreground hover:bg-accent-hover shadow-soft",
-        success: "bg-success text-success-foreground hover:bg-success/90 shadow-soft",
+        // Primary action button
+        default: "bg-primary text-primary-foreground hover:bg-primary-hover font-semibold",
+        // Secondary/subtle button
+        secondary: "bg-secondary text-secondary-foreground hover:bg-neutral-200 font-medium",
+        // Outline button
+        outline: "border border-border bg-background text-foreground hover:bg-muted",
+        // Destructive/danger button
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 font-semibold",
+        // Ghost button (minimal)
+        ghost: "hover:bg-muted text-foreground",
+        // Link style button
+        link: "text-primary underline-offset-4 hover:underline",
+        // Hero/CTA gradient button
+        hero: "bg-gradient-hero text-white hover:opacity-90 shadow-standard font-semibold",
+        // Accent button
+        accent: "bg-accent text-accent-foreground hover:bg-accent-hover shadow-minimal",
+        // Success button
+        success: "bg-success text-success-foreground hover:bg-success/90 shadow-minimal",
       },
       size: {
         default: "h-9 px-4 rounded-md",

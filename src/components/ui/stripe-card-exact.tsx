@@ -1,6 +1,6 @@
 /**
- * EXACT Stripe Dashboard Card Component
- * Replicates Stripe's card design - NO shadows, clean borders
+ * Card Component
+ * Uses semantic design tokens for consistent styling
  */
 
 import * as React from "react";
@@ -16,7 +16,7 @@ const StripeCardExact = React.forwardRef<HTMLDivElement, StripeCardExactProps>(
       <div
         ref={ref}
         className={cn(
-          "bg-white border border-[#E3E8EE] rounded-lg",
+          "bg-card border border-border rounded-lg",
           !noPadding && "p-6",
           className
         )}
@@ -36,7 +36,7 @@ const StripeCardExactHeader = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("flex items-center justify-between pb-4 border-b border-[#E3E8EE] mb-4", className)}
+      className={cn("flex items-center justify-between pb-4 border-b border-border mb-4", className)}
       {...props}
     />
   );
@@ -50,7 +50,7 @@ const StripeCardExactTitle = React.forwardRef<
   return (
     <h3
       ref={ref}
-      className={cn("text-[16px] font-semibold text-[#0A2540]", className)}
+      className={cn("text-base font-semibold text-foreground", className)}
       {...props}
     />
   );
@@ -72,7 +72,7 @@ const StripeCardExactFooter = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("flex items-center pt-4 border-t border-[#E3E8EE] mt-4", className)}
+      className={cn("flex items-center pt-4 border-t border-border mt-4", className)}
       {...props}
     />
   );

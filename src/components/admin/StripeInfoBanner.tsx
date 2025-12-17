@@ -1,6 +1,6 @@
 /**
- * Stripe Info Banner
- * Light gray-blue recommendation banners with icons
+ * Info Banner Component
+ * Uses semantic design tokens for consistent styling
  */
 
 import { ReactNode, useState } from "react";
@@ -41,15 +41,15 @@ export function StripeInfoBanner({
     <div
       className={cn(
         "flex items-center justify-between gap-4 px-4 py-3 rounded-lg border",
-        variant === "info" && "bg-[#F0F4FF] border-[#D0DBFF] text-[#0A2540]",
-        variant === "recommendation" && "bg-[#F6F9FC] border-[#E3E8EE] text-[#425466]",
-        variant === "warning" && "bg-[#FFF6E5] border-[#FFE4B3] text-[#6B4600]",
+        variant === "info" && "bg-banner-info-bg border-banner-info-border text-banner-info-text",
+        variant === "recommendation" && "bg-banner-recommendation-bg border-banner-recommendation-border text-banner-recommendation-text",
+        variant === "warning" && "bg-banner-warning-bg border-banner-warning-border text-banner-warning-text",
         className
       )}
     >
       <div className="flex items-center gap-3 flex-1">
         <Icon className="h-5 w-5 flex-shrink-0" />
-        <p className="text-[14px]">{message}</p>
+        <p className="text-sm">{message}</p>
       </div>
 
       <div className="flex items-center gap-2">
@@ -58,7 +58,7 @@ export function StripeInfoBanner({
             variant="link"
             size="sm"
             onClick={onAction}
-            className="text-[#635BFF] hover:text-[#5048E5] h-auto p-0 font-medium text-[14px]"
+            className="text-primary hover:text-primary-hover h-auto p-0 font-medium text-sm"
           >
             {actionLabel} →
           </Button>
@@ -67,7 +67,7 @@ export function StripeInfoBanner({
         {dismissible && (
           <button
             onClick={() => setDismissed(true)}
-            className="p-1 rounded hover:bg-[#0A2540]/5 transition-colors"
+            className="p-1 rounded hover:bg-foreground/5 transition-colors"
             aria-label="Dismiss"
           >
             <X className="h-4 w-4" />
