@@ -473,14 +473,18 @@ export function EditCampaignDialog({
                             <ImageUpload
                               value={uploadedCoverImageId ? [form.watch('cover_image')] : (field.value ? [field.value] : [])}
                               onChange={(url) => {
-                                if (typeof url === 'string') {
-                                  field.onChange(url);
+                                // Handle both string and array types
+                                const imageUrl = typeof url === 'string' ? url : (Array.isArray(url) ? url[0] : '');
+                                if (imageUrl) {
+                                  field.onChange(imageUrl);
                                 }
                               }}
                               onImageIdChange={(ids) => {
-                                if (ids && ids.length > 0) {
-                                  setUploadedCoverImageId(ids[0]);
-                                  form.setValue('coverImageId', ids[0]);
+                                // Handle both string and array types (string when maxFiles=1)
+                                const imageId = typeof ids === 'string' ? ids : (Array.isArray(ids) ? ids[0] : '');
+                                if (imageId) {
+                                  setUploadedCoverImageId(imageId);
+                                  form.setValue('coverImageId', imageId);
                                 }
                               }}
                               maxFiles={1}
