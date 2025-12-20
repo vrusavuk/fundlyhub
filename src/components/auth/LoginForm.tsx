@@ -5,11 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { authService } from '@/lib/services/auth.service';
-import { createLoginSchema, emailSchema } from '@/lib/validation/dynamicAuthSchemas';
+import { createLoginSchema } from '@/lib/validation/dynamicAuthSchemas';
 import { EmailInput } from './EmailInput';
 import { PasswordInput } from './PasswordInput';
 import { GoogleSignInButton } from './GoogleSignInButton';
-import { DisplayHeading, Text, Caption } from '@/components/ui/typography';
+import { DisplayHeading, Text } from '@/components/ui/typography';
 import type { AuthConfig } from '@/hooks/useAuthConfig';
 
 interface LoginFormProps {
@@ -18,9 +18,6 @@ interface LoginFormProps {
 }
 
 export const LoginForm = ({ onToggleMode, config }: LoginFormProps) => {
-  const [step, setStep] = useState<'email' | 'password'>('email');
-  const [emailInput, setEmailInput] = useState('');
-  const [emailError, setEmailError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -34,25 +31,6 @@ export const LoginForm = ({ onToggleMode, config }: LoginFormProps) => {
       password: '',
     },
   });
-
-  const handleEmailContinue = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    const validation = emailSchema.safeParse({ email: emailInput });
-    if (!validation.success) {
-      setEmailError(validation.error.errors[0].message);
-      return;
-    }
-    setEmailError('');
-    form.setValue('email', emailInput);
-    setStep('password');
-  };
-
-  const handleEmailKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !loading) {
-      e.preventDefault();
-      handleEmailContinue();
-    }
-  };
 
   const handleLogin = async (data: { email: string; password: string }) => {
     setLoading(true);
@@ -86,67 +64,33 @@ export const LoginForm = ({ onToggleMode, config }: LoginFormProps) => {
     }
   };
 
-  if (step === 'email') {
-    return (
-      <div className="space-y-6">
-        <div className="space-y-2 text-center">
-          <DisplayHeading level="md" as="h1">Welcome back</DisplayHeading>
-          <Text size="md" emphasis="low">Enter your email to sign in to your account</Text>
-        </div>
-
-        <form onSubmit={handleEmailContinue} className="space-y-4">
-          <EmailInput
-            value={emailInput}
-            onChange={setEmailInput}
-            onKeyDown={handleEmailKeyDown}
-            error={emailError}
-            disabled={loading}
-            autoFocus
-          />
-
-          <Button 
-            type="submit"
-            className="w-full" 
-            disabled={loading}
-          >
-            Continue
-          </Button>
-
-          <GoogleSignInButton onSignIn={handleGoogleSignIn} disabled={loading} />
-
-          <p className="text-center text-sm text-muted-foreground">
-            Don't have an account?{' '}
-            <button
-              type="button"
-              onClick={onToggleMode}
-              className="font-medium text-primary hover:underline"
-              disabled={loading}
-            >
-              Sign up
-            </button>
-          </p>
-        </form>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <button
-          type="button"
-          onClick={() => setStep('email')}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          disabled={loading}
-        >
-          ← Back
-        </button>
-        <DisplayHeading level="md" as="h1">Enter your password</DisplayHeading>
-        <Caption size="sm">{emailInput}</Caption>
+      <div className="space-y-2 text-center">
+        <DisplayHeading level="md" as="h1">Welcome back</DisplayHeading>
+        <Text size="md" emphasis="low">Sign in to your account</Text>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field, fieldState }) => (
+              <FormItem>
+                <FormControl>
+                  <EmailInput
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={fieldState.error?.message}
+                    disabled={loading}
+                    autoFocus
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name="password"
@@ -171,6 +115,8 @@ export const LoginForm = ({ onToggleMode, config }: LoginFormProps) => {
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Signing in...' : 'Sign in'}
           </Button>
+
+          <GoogleSignInButton onSignIn={handleGoogleSignIn} disabled={loading} />
 
           <p className="text-center text-sm text-muted-foreground">
             Don't have an account?{' '}

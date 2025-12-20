@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { usePasswordValidation } from '@/hooks/usePasswordValidation';
 import { authService } from '@/lib/services/auth.service';
-import { createSignupSchema, emailSchema } from '@/lib/validation/dynamicAuthSchemas';
+import { createSignupSchema } from '@/lib/validation/dynamicAuthSchemas';
 import { EmailInput } from './EmailInput';
 import { PasswordInput } from './PasswordInput';
 import { PasswordStrengthIndicator } from './PasswordStrengthIndicator';
@@ -17,7 +17,7 @@ import type { AuthConfig } from '@/hooks/useAuthConfig';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Lock } from 'lucide-react';
-import { DisplayHeading, Text, Caption } from '@/components/ui/typography';
+import { DisplayHeading, Text } from '@/components/ui/typography';
 
 interface SignupFormProps {
   onToggleMode: () => void;
@@ -25,9 +25,6 @@ interface SignupFormProps {
 }
 
 export const SignupForm = ({ onToggleMode, config }: SignupFormProps) => {
-  const [step, setStep] = useState<'email' | 'credentials'>('email');
-  const [emailInput, setEmailInput] = useState('');
-  const [emailError, setEmailError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -78,25 +75,6 @@ export const SignupForm = ({ onToggleMode, config }: SignupFormProps) => {
   const confirmPasswordValue = form.watch('confirmPassword');
   const { criteria } = usePasswordValidation(passwordValue, confirmPasswordValue, config);
 
-  const handleEmailContinue = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    const validation = emailSchema.safeParse({ email: emailInput });
-    if (!validation.success) {
-      setEmailError(validation.error.errors[0].message);
-      return;
-    }
-    setEmailError('');
-    form.setValue('email', emailInput);
-    setStep('credentials');
-  };
-
-  const handleEmailKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !loading) {
-      e.preventDefault();
-      handleEmailContinue();
-    }
-  };
-
   const handleSignup = async (data: { name: string; email: string; password: string; confirmPassword: string }) => {
     setLoading(true);
     try {
@@ -139,67 +117,33 @@ export const SignupForm = ({ onToggleMode, config }: SignupFormProps) => {
     }
   };
 
-  if (step === 'email') {
-    return (
-      <div className="space-y-6">
-        <div className="space-y-2 text-center">
-          <DisplayHeading level="md" as="h1">Create an account</DisplayHeading>
-          <Text size="md" emphasis="low">Enter your email to get started</Text>
-        </div>
-
-        <form onSubmit={handleEmailContinue} className="space-y-4">
-          <EmailInput
-            value={emailInput}
-            onChange={setEmailInput}
-            onKeyDown={handleEmailKeyDown}
-            error={emailError}
-            disabled={loading}
-            autoFocus
-          />
-
-          <Button 
-            type="submit"
-            className="w-full" 
-            disabled={loading}
-          >
-            Continue
-          </Button>
-
-          <GoogleSignInButton onSignIn={handleGoogleSignIn} disabled={loading} />
-
-          <p className="text-center text-sm text-muted-foreground">
-            Already have an account?{' '}
-            <button
-              type="button"
-              onClick={onToggleMode}
-              className="font-medium text-primary hover:underline"
-              disabled={loading}
-            >
-              Sign in
-            </button>
-          </p>
-        </form>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <button
-          type="button"
-          onClick={() => setStep('email')}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          disabled={loading}
-        >
-          ← Back
-        </button>
-        <DisplayHeading level="md" as="h1">Complete your profile</DisplayHeading>
-        <Caption size="sm">{emailInput}</Caption>
+      <div className="space-y-2 text-center">
+        <DisplayHeading level="md" as="h1">Create an account</DisplayHeading>
+        <Text size="md" emphasis="low">Enter your details to get started</Text>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSignup)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field, fieldState }) => (
+              <FormItem>
+                <FormControl>
+                  <EmailInput
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={fieldState.error?.message}
+                    disabled={loading}
+                    autoFocus
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name="name"
@@ -209,6 +153,8 @@ export const SignupForm = ({ onToggleMode, config }: SignupFormProps) => {
                 <FormControl>
                   <Input
                     id="name"
+                    name="name"
+                    autoComplete="name"
                     placeholder="John Doe"
                     {...field}
                     disabled={loading}
@@ -282,6 +228,8 @@ export const SignupForm = ({ onToggleMode, config }: SignupFormProps) => {
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Creating account...' : 'Create account'}
           </Button>
+
+          <GoogleSignInButton onSignIn={handleGoogleSignIn} disabled={loading} />
 
           <p className="text-center text-sm text-muted-foreground">
             Already have an account?{' '}
