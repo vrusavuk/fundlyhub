@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,7 @@ interface LoginFormProps {
 export const LoginForm = ({ onToggleMode, config }: LoginFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const hasAutoSubmitted = useRef(false);
 
   const { toast } = useToast();
 
@@ -31,6 +32,23 @@ export const LoginForm = ({ onToggleMode, config }: LoginFormProps) => {
       password: '',
     },
   });
+
+  const email = form.watch('email');
+  const password = form.watch('password');
+
+  // Auto-submit when both fields are filled (e.g., via iOS autofill)
+  useEffect(() => {
+    if (email && password && !loading && !hasAutoSubmitted.current) {
+      // Small delay to ensure autofill is complete
+      const timer = setTimeout(() => {
+        if (form.getValues('email') && form.getValues('password')) {
+          hasAutoSubmitted.current = true;
+          form.handleSubmit(handleLogin)();
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [email, password]);
 
   const handleLogin = async (data: { email: string; password: string }) => {
     setLoading(true);
