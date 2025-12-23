@@ -114,12 +114,27 @@ serve(async (req) => {
           }
         }
 
+        // Look up donor by email to link to their profile
+        let donorUserId: string | null = null;
+        if (metadata.donor_email) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('email', metadata.donor_email)
+            .maybeSingle();
+          
+          if (profile) {
+            donorUserId = profile.id;
+            console.log('Linked donation to user profile:', donorUserId);
+          }
+        }
+
         // Create donation record
         const { data: donation, error: donationError } = await supabase
           .from('donations')
           .insert({
             fundraiser_id: metadata.fundraiser_id,
-            donor_user_id: null, // Anonymous or will be linked later
+            donor_user_id: donorUserId,
             amount: donationAmount / 100,
             tip_amount: tipAmount / 100,
             fee_amount: stripeFee / 100,
@@ -165,7 +180,7 @@ serve(async (req) => {
             payload: {
               donationId: donation.id,
               campaignId: metadata.fundraiser_id,
-              donorId: undefined,
+              donorId: donorUserId || undefined,
               amount: donationAmount / 100,
               currency: paymentIntent.currency.toUpperCase(),
               processingFee: stripeFee / 100,
