@@ -1,29 +1,27 @@
 /**
  * Utility functions for formatting data display
+ * @deprecated Import directly from specific utilities:
+ * - Currency: import { formatCurrency } from '@/lib/utils/currency'
+ * - Dates: import { formatDate, formatRelativeTime } from '@/lib/utils/date'
  */
 
 import { logger } from '@/lib/services/logger.service';
+import { formatCurrency as currencyFormat } from './currency';
 
 /**
  * Formats currency amounts with proper localization
- * @deprecated Use MoneyMath.format() for precise financial calculations
+ * @deprecated Use formatCurrency from '@/lib/utils/currency' instead
  */
 export function formatCurrency(
   amount: number, 
   currency: string = 'USD',
   locale: string = 'en-US'
 ): string {
-  logger.warn('formatCurrency is deprecated. Use MoneyMath.format() for precise financial calculations.', {
+  logger.warn('formatCurrency from formatters.ts is deprecated. Use formatCurrency from @/lib/utils/currency instead.', {
     componentName: 'formatters',
     operationName: 'formatCurrency',
-    metadata: { amount, currency, locale },
   });
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 2, // Changed to 2 for proper money display
-    maximumFractionDigits: 2,
-  }).format(amount);
+  return currencyFormat(amount, currency, locale);
 }
 
 /**
@@ -71,16 +69,6 @@ export function truncateText(text: string, maxLength: number): string {
 
 /**
  * Formats relative time (e.g., "2 days ago")
+ * @deprecated Use formatRelativeTime from '@/lib/utils/date' instead
  */
-export function formatRelativeTime(date: string | Date): string {
-  const now = new Date();
-  const target = new Date(date);
-  const diffInSeconds = Math.floor((now.getTime() - target.getTime()) / 1000);
-
-  if (diffInSeconds < 60) return 'Just now';
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
-  
-  return target.toLocaleDateString();
-}
+export { formatRelativeTime } from './date';

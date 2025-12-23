@@ -5,6 +5,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { EventHandler, DomainEvent } from '../types';
 import { eventIdempotency } from '../EventIdempotency';
+import { logger } from '@/lib/services/logger.service';
 
 export class RoleCreatedProcessor implements EventHandler {
   readonly eventType = 'admin.role.created';
@@ -16,6 +17,8 @@ export class RoleCreatedProcessor implements EventHandler {
     );
     
     if (!shouldProcess) return;
+
+    const ctx = { componentName: 'RoleCRUDProcessor', operationName: 'RoleCreatedProcessor' };
 
     try {
       const { roleId, name, displayName, description, hierarchyLevel, isSystemRole } = event.payload;
@@ -31,12 +34,12 @@ export class RoleCreatedProcessor implements EventHandler {
           is_system_role: isSystemRole,
         });
 
-      console.log(`[RoleCRUD] Role created: ${name} (${roleId})`);
+      logger.info(`Role created: ${name}`, { ...ctx, metadata: { roleId, name } });
       await eventIdempotency.markComplete(event.id, 'RoleCreatedProcessor');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       await eventIdempotency.markFailed(event.id, 'RoleCreatedProcessor', errorMessage);
-      console.error('[RoleCRUD] Error creating role:', error);
+      logger.error('Error creating role', error as Error, ctx);
       throw error;
     }
   }
@@ -52,6 +55,8 @@ export class RolePermissionsUpdatedProcessor implements EventHandler {
     );
     
     if (!shouldProcess) return;
+
+    const ctx = { componentName: 'RoleCRUDProcessor', operationName: 'RolePermissionsUpdatedProcessor' };
 
     try {
       const { roleId, addedPermissions, removedPermissions } = event.payload;
@@ -77,12 +82,12 @@ export class RolePermissionsUpdatedProcessor implements EventHandler {
           .insert(newPerms);
       }
 
-      console.log(`[RoleCRUD] Role permissions updated for ${roleId}: +${addedPermissions.length} -${removedPermissions.length}`);
+      logger.info(`Role permissions updated`, { ...ctx, metadata: { roleId, added: addedPermissions.length, removed: removedPermissions.length } });
       await eventIdempotency.markComplete(event.id, 'RolePermissionsUpdatedProcessor');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       await eventIdempotency.markFailed(event.id, 'RolePermissionsUpdatedProcessor', errorMessage);
-      console.error('[RoleCRUD] Error updating permissions:', error);
+      logger.error('Error updating permissions', error as Error, ctx);
       throw error;
     }
   }

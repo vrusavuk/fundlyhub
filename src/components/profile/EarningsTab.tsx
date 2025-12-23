@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { payoutService, type PayoutRequest, type UserEarnings } from '@/lib/services/payout.service';
+import { logger } from '@/lib/services/logger.service';
 
 import { PayoutRequestDialog } from '@/components/payout/PayoutRequestDialog';
 import { BankAccountManager } from '@/components/payout/BankAccountManager';
@@ -40,25 +41,26 @@ export function EarningsTab({ userId }: EarningsTabProps) {
   }, [userId]);
 
   const fetchEarningsData = async () => {
+    const ctx = { componentName: 'EarningsTab', operationName: 'fetchEarningsData', userId };
+    
     try {
       setLoading(true);
-      console.log('[EarningsTab] Starting data fetch for user:', userId);
+      logger.debug('Starting data fetch', ctx);
 
       const earningsData = await payoutService.getUserEarnings(userId);
-      console.log('[EarningsTab] ✅ Earnings fetched:', earningsData);
+      logger.debug('Earnings fetched', { ...ctx, metadata: { fundraiser_count: earningsData.fundraiser_count } });
       setEarnings(earningsData);
 
       const payoutData = await payoutService.getPayoutRequests({ userId });
-      console.log('[EarningsTab] ✅ Payouts fetched:', payoutData.length, 'requests');
+      logger.debug('Payouts fetched', { ...ctx, metadata: { count: payoutData.length } });
       setPayouts(payoutData);
 
       const kyc = await payoutService.getKYCStatus(userId);
-      console.log('[EarningsTab] ✅ KYC status:', kyc ? kyc.status : 'No KYC record');
+      logger.debug('KYC status fetched', { ...ctx, metadata: { status: kyc?.status || 'none' } });
       setKycStatus(kyc);
 
-      console.log('[EarningsTab] ✅ All data loaded successfully');
     } catch (error) {
-      console.error('[EarningsTab] ❌ Error fetching data:', error);
+      logger.error('Error fetching earnings data', error as Error, ctx);
       
       setEarnings({
         total_earnings: '0.00',
