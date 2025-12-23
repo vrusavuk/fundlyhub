@@ -8,8 +8,10 @@ export interface TipFeedback {
   animationKey: number;
 }
 
-function randomPick<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
+function randomPickExcluding<T>(arr: T[], exclude: T): T {
+  if (arr.length <= 1) return arr[0];
+  const filtered = arr.filter(item => item !== exclude);
+  return filtered[Math.floor(Math.random() * filtered.length)];
 }
 
 function getNumericValue(value: number | 'custom', customValue: number): number {
@@ -35,12 +37,15 @@ export function useTipFeedback(
     percentage: tipPercentage,
     amount: tipAmount,
   });
+  const prevMessageRef = useRef<string>('');
   
   const [feedback, setFeedback] = useState<TipFeedback>(() => {
     const mood = tipAmount > 0 ? 'grateful' : 'none';
     const config = tipFeedbackConfig[mood];
+    const message = randomPickExcluding(config.messages, '');
+    prevMessageRef.current = message;
     return {
-      message: randomPick(config.messages),
+      message,
       styles: config.styles,
       showHeart: config.showHeart,
       animationKey: Date.now(),
@@ -64,8 +69,11 @@ export function useTipFeedback(
 
     // Only update if there's an actual change
     if (currentAmount !== prevAmount || tipPercentage !== prevTipRef.current.percentage) {
+      const newMessage = randomPickExcluding(config.messages, prevMessageRef.current);
+      prevMessageRef.current = newMessage;
+      
       setFeedback({
-        message: randomPick(config.messages),
+        message: newMessage,
         styles: config.styles,
         showHeart: config.showHeart,
         animationKey: Date.now(),
