@@ -1,6 +1,7 @@
 /**
  * EXACT Stripe Dashboard Data Table
  * Replicates Stripe's table design with pixel-perfect accuracy
+ * Supports sticky first/last columns with shadow effects
  */
 
 import * as React from "react";
@@ -13,6 +14,7 @@ import {
   getSortedRowModel,
   SortingState,
   Row,
+  ColumnPinningState,
 } from "@tanstack/react-table";
 import {
   StripeTable,
@@ -23,6 +25,7 @@ import {
   StripeTableRow,
 } from "@/components/ui/stripe-table";
 import { Checkbox } from "@/components/ui/checkbox";
+import { getColumnPinningStyles } from "@/lib/data-table/column-pinning-styles";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -33,6 +36,10 @@ interface DataTableProps<TData, TValue> {
   enableSelection?: boolean;
   className?: string;
   density?: 'compact' | 'comfortable' | 'spacious';
+  /** Pin first column (after checkbox if selection enabled) to the left */
+  pinFirstColumn?: boolean;
+  /** Pin last column (typically actions) to the right */
+  pinLastColumn?: boolean;
 }
 
 export function DataTableExact<TData, TValue>({
@@ -44,6 +51,8 @@ export function DataTableExact<TData, TValue>({
   enableSelection = false,
   className,
   density = 'comfortable',
+  pinFirstColumn = false,
+  pinLastColumn = false,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [rowSelection, setRowSelection] = React.useState(selectedRows || {});
@@ -95,6 +104,34 @@ export function DataTableExact<TData, TValue>({
     ];
   }, [columns, enableSelection]);
 
+  // Calculate column pinning state based on props
+  const columnPinning = React.useMemo<ColumnPinningState>(() => {
+    const state: ColumnPinningState = { left: [], right: [] };
+    
+    if (!pinFirstColumn && !pinLastColumn) return state;
+    
+    if (pinFirstColumn && tableColumns.length > 0) {
+      // Pin select column if selection enabled, otherwise first data column
+      if (enableSelection) {
+        state.left = ['select', tableColumns[1]?.id || (tableColumns[1] as any)?.accessorKey].filter(Boolean) as string[];
+      } else {
+        const firstCol = tableColumns[0];
+        const firstColId = firstCol?.id || (firstCol as any)?.accessorKey;
+        if (firstColId) state.left = [firstColId];
+      }
+    }
+    
+    if (pinLastColumn && tableColumns.length > 0) {
+      const lastCol = tableColumns[tableColumns.length - 1];
+      const lastColId = lastCol?.id || (lastCol as any)?.accessorKey;
+      if (lastColId) state.right = [lastColId];
+    }
+    
+    return state;
+  }, [tableColumns, pinFirstColumn, pinLastColumn, enableSelection]);
+
+  const enableColumnPinning = pinFirstColumn || pinLastColumn;
+
   const table = useReactTable({
     data,
     columns: tableColumns,
@@ -109,25 +146,39 @@ export function DataTableExact<TData, TValue>({
     state: {
       sorting,
       rowSelection,
+      columnPinning,
     },
+    enableColumnPinning,
   });
 
   return (
     <div className={cn("bg-card", className)}>
-      <StripeTable>
+      <StripeTable enableColumnPinning={enableColumnPinning}>
         <StripeTableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <StripeTableRow key={headerGroup.id} density={density} className="hover:bg-transparent">
-              {headerGroup.headers.map((header) => (
-                <StripeTableHead key={header.id} density={density}>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                </StripeTableHead>
-              ))}
+              {headerGroup.headers.map((header) => {
+                const isPinned = header.column.getIsPinned();
+                const pinningStyles = enableColumnPinning 
+                  ? getColumnPinningStyles(header.column, true) 
+                  : {};
+                
+                return (
+                  <StripeTableHead 
+                    key={header.id} 
+                    density={density}
+                    isPinned={!!isPinned}
+                    style={pinningStyles}
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </StripeTableHead>
+                );
+              })}
             </StripeTableRow>
           ))}
         </StripeTableHeader>
@@ -143,11 +194,23 @@ export function DataTableExact<TData, TValue>({
                   onRowClick && "cursor-pointer"
                 )}
               >
-                {row.getVisibleCells().map((cell) => (
-                  <StripeTableCell key={cell.id} density={density}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </StripeTableCell>
-                ))}
+                {row.getVisibleCells().map((cell) => {
+                  const isPinned = cell.column.getIsPinned();
+                  const pinningStyles = enableColumnPinning 
+                    ? getColumnPinningStyles(cell.column, false) 
+                    : {};
+                  
+                  return (
+                    <StripeTableCell 
+                      key={cell.id} 
+                      density={density}
+                      isPinned={!!isPinned}
+                      style={pinningStyles}
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </StripeTableCell>
+                  );
+                })}
               </StripeTableRow>
             ))
           ) : (
