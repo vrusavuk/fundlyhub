@@ -739,13 +739,16 @@ class AdminDataService {
   }
 
   /**
-   * Fetch donations for a specific user with pagination
+   * Fetch donations for a specific user with pagination and sorting
    */
   async fetchUserDonationsPaginated(
     userId: string,
-    pagination: { page: number; pageSize: number }
+    pagination: { page: number; pageSize: number },
+    sorting?: { sortBy: string; sortOrder: 'asc' | 'desc' }
   ) {
-    const cacheKey = `user-donations-paginated:${userId}:${pagination.page}:${pagination.pageSize}`;
+    const sortBy = sorting?.sortBy || 'created_at';
+    const sortOrder = sorting?.sortOrder || 'desc';
+    const cacheKey = `user-donations-paginated:${userId}:${pagination.page}:${pagination.pageSize}:${sortBy}:${sortOrder}`;
     
     return this.cache.getOrSet(cacheKey, async () => {
       const from = (pagination.page - 1) * pagination.pageSize;
@@ -757,7 +760,17 @@ class AdminDataService {
         .select('*', { count: 'exact', head: true })
         .eq('donor_user_id', userId);
 
-      // Get paginated data
+      // Map column names to actual database columns
+      const columnMap: Record<string, string> = {
+        'amount': 'amount',
+        'campaign': 'fundraiser_id', // Will sort by FK, but data is joined
+        'payment_status': 'payment_status',
+        'created_at': 'created_at'
+      };
+
+      const dbColumn = columnMap[sortBy] || 'created_at';
+
+      // Get paginated data with sorting
       const { data, error } = await supabase
         .from('donations')
         .select(`
@@ -777,7 +790,7 @@ class AdminDataService {
           )
         `)
         .eq('donor_user_id', userId)
-        .order('created_at', { ascending: false })
+        .order(dbColumn, { ascending: sortOrder === 'asc' })
         .range(from, to);
 
       if (error) throw error;

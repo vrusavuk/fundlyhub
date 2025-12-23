@@ -2,7 +2,7 @@
  * User Detail Page
  * Stripe-inspired detail view for individual users
  */
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { User, Check, XCircle, Ban, UserCheck, UserX, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { usePagination } from '@/hooks/usePagination';
 import { formatDistanceToNow } from 'date-fns';
-import { ColumnDef, Row } from '@tanstack/react-table';
+import { ColumnDef, Row, SortingState } from '@tanstack/react-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
 import {
@@ -55,6 +55,11 @@ export default function UserDetail() {
     initialPageSize: 10,
     syncWithURL: false
   });
+
+  // Sorting state for donations table
+  const [donationSorting, setDonationSorting] = useState<SortingState>([
+    { id: 'created_at', desc: true }
+  ]);
 
   // Set dynamic breadcrumbs
   useDetailPageBreadcrumbs(
@@ -180,12 +185,18 @@ export default function UserDetail() {
       
       try {
         setDonationsLoading(true);
+        
+        // Convert sorting state to API format
+        const sortBy = donationSorting.length > 0 ? donationSorting[0].id : 'created_at';
+        const sortOrder = donationSorting.length > 0 && donationSorting[0].desc ? 'desc' : 'asc';
+        
         const result = await adminDataService.fetchUserDonationsPaginated(
           id,
           {
             page: donationPagination.state.page,
             pageSize: donationPagination.state.pageSize
-          }
+          },
+          { sortBy, sortOrder }
         );
         setDonations(result.data);
         setTotalDonations(result.total);
@@ -200,7 +211,13 @@ export default function UserDetail() {
     if (user) {
       fetchDonations();
     }
-  }, [id, user, donationPagination.state.page, donationPagination.state.pageSize]);
+  }, [id, user, donationPagination.state.page, donationPagination.state.pageSize, donationSorting]);
+
+  // Handle sorting change - reset to first page when sorting changes
+  const handleDonationSortingChange = useCallback((newSorting: SortingState) => {
+    setDonationSorting(newSorting);
+    donationPagination.goToPage(1);
+  }, [donationPagination]);
 
   const handleStatusChange = async (newStatus: 'active' | 'suspended' | 'banned', reason?: string) => {
     if (!id) return;
@@ -570,6 +587,9 @@ export default function UserDetail() {
                     density="comfortable"
                     pinFirstColumn={true}
                     pinLastColumn={true}
+                    sorting={donationSorting}
+                    onSortingChange={handleDonationSortingChange}
+                    manualSorting={true}
                   />
                   {donationPagination.state.totalPages > 1 && (
                     <StripePagination
