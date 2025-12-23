@@ -162,6 +162,13 @@ export function UnifiedPaymentForm({
         options={{
           layout: 'tabs',
           paymentMethodOrder: ['card', 'apple_pay', 'google_pay', 'paypal', 'us_bank_account'],
+          fields: {
+            billingDetails: {
+              address: {
+                country: 'never',
+              },
+            },
+          },
           business: {
             name: 'FundlyHub',
           },
