@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Building2, Building, Loader2 } from 'lucide-react';
-import { useFollowOrganizationEventDriven } from '@/hooks/useFollowOrganizationEventDriven';
+import { useFollowOrganization } from '@/hooks/useFollow';
 import { useAuth } from '@/hooks/useAuth';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 
@@ -23,10 +23,10 @@ export function FollowOrganizationButton({
   const { 
     isFollowing, 
     loading, 
-    followOrganization, 
-    unfollowOrganization, 
+    follow, 
+    unfollow, 
     checkFollowStatus 
-  } = useFollowOrganizationEventDriven(organizationId);
+  } = useFollowOrganization(organizationId);
 
   useEffect(() => {
     if (user && organizationId) {
@@ -41,9 +41,9 @@ export function FollowOrganizationButton({
 
   const handleClick = () => {
     if (isFollowing) {
-      unfollowOrganization();
+      unfollow();
     } else {
-      followOrganization();
+      follow();
     }
   };
 

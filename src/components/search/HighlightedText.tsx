@@ -2,10 +2,11 @@
  * Component for displaying text with search term highlighting
  * Provides consistent highlighting behavior across the application
  */
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import DOMPurify from 'dompurify';
 import { cn } from '@/lib/utils';
-import { useSearchHighlight } from '@/hooks/useSearchHighlight';
+import { highlightSearchText } from '@/hooks/useUnifiedSearch';
+
 interface HighlightedTextProps {
   text: string;
   searchQuery: string;
@@ -27,27 +28,27 @@ export const HighlightedText = memo<HighlightedTextProps>(({
   caseSensitive = false,
   fallback = '',
 }) => {
-  const { highlightText } = useSearchHighlight({ 
-    query: searchQuery || '', 
-    caseSensitive 
-  });
-  
   const displayText = text || fallback;
+  
+  const highlightedContent = useMemo(() => {
+    if (!searchQuery || !displayText) return null;
+    
+    const highlighted = highlightSearchText(displayText, searchQuery, { caseSensitive });
+    return DOMPurify.sanitize(highlighted, {
+      ALLOWED_TAGS: ['mark'],
+      ALLOWED_ATTR: ['class']
+    });
+  }, [displayText, searchQuery, caseSensitive]);
   
   // If no search query, render plain text
   if (!searchQuery || !displayText) {
     return <Component className={className}>{displayText}</Component>;
   }
   
-  const highlightedContent = DOMPurify.sanitize(highlightText(displayText), {
-    ALLOWED_TAGS: ['mark'],
-    ALLOWED_ATTR: ['class']
-  });
-  
   return (
     <Component 
       className={className}
-      dangerouslySetInnerHTML={{ __html: highlightedContent }}
+      dangerouslySetInnerHTML={{ __html: highlightedContent || displayText }}
     />
   );
 });
