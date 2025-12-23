@@ -56,6 +56,63 @@ const formatDate = (dateString: string): string => {
   });
 };
 
+// Poll for donation data with retries
+const MAX_RETRIES = 10;
+const RETRY_DELAY = 1500;
+
+async function fetchDonationWithRetries(paymentIntentId: string): Promise<DonationDetails | null> {
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    const { data: donationData, error } = await supabase
+      .from('donations')
+      .select(`
+        id,
+        amount,
+        tip_amount,
+        fee_amount,
+        net_amount,
+        currency,
+        donor_name,
+        donor_email,
+        is_anonymous,
+        receipt_id,
+        payment_method_type,
+        card_brand,
+        card_last4,
+        created_at,
+        fundraiser:fundraisers(title, slug)
+      `)
+      .eq('receipt_id', paymentIntentId)
+      .maybeSingle();
+
+    if (donationData) {
+      return {
+        id: donationData.id,
+        amount: donationData.amount,
+        tip_amount: donationData.tip_amount || 0,
+        fee_amount: donationData.fee_amount || 0,
+        net_amount: donationData.net_amount || 0,
+        currency: donationData.currency || 'USD',
+        donor_name: donationData.donor_name,
+        donor_email: donationData.donor_email,
+        is_anonymous: donationData.is_anonymous,
+        receipt_id: donationData.receipt_id,
+        payment_method_type: donationData.payment_method_type,
+        card_brand: donationData.card_brand,
+        card_last4: donationData.card_last4,
+        created_at: donationData.created_at,
+        campaign_title: (donationData.fundraiser as any)?.title || 'Campaign',
+        campaign_slug: (donationData.fundraiser as any)?.slug || '',
+      };
+    }
+
+    // Wait before next retry
+    if (attempt < MAX_RETRIES - 1) {
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+    }
+  }
+  return null;
+}
+
 export default function PaymentComplete() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -65,6 +122,7 @@ export default function PaymentComplete() {
   const [emailInput, setEmailInput] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [isLoadingDonation, setIsLoadingDonation] = useState(false);
 
   useEffect(() => {
     const checkPaymentStatus = async () => {
@@ -112,53 +170,17 @@ export default function PaymentComplete() {
           }
         }
 
-        // Fetch donation details from database
+        // Fetch donation details from database with polling
         if (finalPaymentIntentId) {
-          // Wait a moment for webhook to process
-          await new Promise(resolve => setTimeout(resolve, 1500));
+          setIsLoadingDonation(true);
+          setMessage('Loading your receipt...');
           
-          const { data: donationData, error } = await supabase
-            .from('donations')
-            .select(`
-              id,
-              amount,
-              tip_amount,
-              fee_amount,
-              net_amount,
-              currency,
-              donor_name,
-              donor_email,
-              is_anonymous,
-              receipt_id,
-              payment_method_type,
-              card_brand,
-              card_last4,
-              created_at,
-              fundraiser:fundraisers(title, slug)
-            `)
-            .eq('receipt_id', finalPaymentIntentId)
-            .maybeSingle();
-
+          const donationData = await fetchDonationWithRetries(finalPaymentIntentId);
+          
+          setIsLoadingDonation(false);
+          
           if (donationData) {
-            setDonation({
-              id: donationData.id,
-              amount: donationData.amount,
-              tip_amount: donationData.tip_amount || 0,
-              fee_amount: donationData.fee_amount || 0,
-              net_amount: donationData.net_amount || 0,
-              currency: donationData.currency || 'USD',
-              donor_name: donationData.donor_name,
-              donor_email: donationData.donor_email,
-              is_anonymous: donationData.is_anonymous,
-              receipt_id: donationData.receipt_id,
-              payment_method_type: donationData.payment_method_type,
-              card_brand: donationData.card_brand,
-              card_last4: donationData.card_last4,
-              created_at: donationData.created_at,
-              campaign_title: (donationData.fundraiser as any)?.title || 'Campaign',
-              campaign_slug: (donationData.fundraiser as any)?.slug || '',
-            });
-            
+            setDonation(donationData);
             if (donationData.donor_email) {
               setEmailInput(donationData.donor_email);
             }
@@ -171,6 +193,7 @@ export default function PaymentComplete() {
         }
       } catch (error) {
         logger.error('Error checking payment status', error as Error);
+        setIsLoadingDonation(false);
         // Still show success if redirect_status was succeeded
         if (redirectStatus === 'succeeded') {
           setStatus('succeeded');
@@ -399,6 +422,11 @@ export default function PaymentComplete() {
   };
 
   const getStatusIcon = () => {
+    // Show loading spinner while fetching donation data
+    if (isLoadingDonation) {
+      return <Loader2 className="h-16 w-16 text-primary animate-spin" />;
+    }
+    
     switch (status) {
       case 'loading':
         return <Loader2 className="h-16 w-16 text-primary animate-spin" />;
@@ -412,6 +440,10 @@ export default function PaymentComplete() {
   };
 
   const getStatusTitle = () => {
+    if (isLoadingDonation) {
+      return 'Loading Receipt...';
+    }
+    
     switch (status) {
       case 'loading':
         return 'Verifying Payment...';
@@ -441,8 +473,15 @@ export default function PaymentComplete() {
         </CardHeader>
         
         <CardContent className="space-y-6">
+          {/* Loading indicator while fetching donation */}
+          {isLoadingDonation && (
+            <div className="text-center text-muted-foreground text-sm">
+              <p>Please wait while we prepare your receipt...</p>
+            </div>
+          )}
+          
           {/* Receipt Details - Only show on success with donation data */}
-          {status === 'succeeded' && donation && (
+          {status === 'succeeded' && donation && !isLoadingDonation && (
             <>
               {/* Campaign Info */}
               <div className="bg-muted/50 rounded-lg p-4">
