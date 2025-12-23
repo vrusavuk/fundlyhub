@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useRBAC } from '@/contexts/RBACContext';
 import { supabase } from '@/integrations/supabase/client';
 import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
@@ -17,11 +18,15 @@ import {
   CheckCircle,
   Clock,
   Activity,
-  BarChart3
+  BarChart3,
+  Heart,
+  ArrowRight
 } from 'lucide-react';
 import { AdminPageLayout, PageSection, PageGrid } from '@/components/admin/unified';
 import { StatsGridSkeleton } from '@/components/admin/StatsCardSkeleton';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PlatformTipsStatsCards } from '@/components/admin/PlatformTipsStats';
+import { platformTipsService, type PlatformTipsStats } from '@/lib/services/platformTips.service';
 
 interface PlatformStats {
   totalUsers: number;
@@ -51,7 +56,10 @@ interface SystemHealth {
 
 export function AdminDashboard() {
   const { hasPermission, isSuperAdmin } = useRBAC();
+  const navigate = useNavigate();
   const [stats, setStats] = useState<PlatformStats | null>(null);
+  const [tipsStats, setTipsStats] = useState<PlatformTipsStats | null>(null);
+  const [tipsLoading, setTipsLoading] = useState(true);
   const [systemHealth, setSystemHealth] = useState<SystemHealth | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -112,7 +120,20 @@ export function AdminDashboard() {
       }
     };
 
+    const fetchTipsData = async () => {
+      try {
+        setTipsLoading(true);
+        const tips = await platformTipsService.fetchTipsStats();
+        setTipsStats(tips);
+      } catch (err) {
+        console.error('Error fetching tips stats:', err);
+      } finally {
+        setTipsLoading(false);
+      }
+    };
+
     fetchDashboardData();
+    fetchTipsData();
   }, []);
 
   if (loading) {
@@ -266,6 +287,21 @@ export function AdminDashboard() {
                 </>
               )}
             </PageGrid>
+
+      {/* Platform Revenue Section */}
+      <PageSection spacing="normal">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Heart className="h-5 w-5 text-rose-500" />
+            <h2 className="text-lg font-semibold">Platform Revenue</h2>
+            <Badge variant="secondary">Tips</Badge>
+          </div>
+          <Button variant="link" className="px-0" onClick={() => navigate('/admin/platform-revenue')}>
+            View All <ArrowRight className="ml-1 h-4 w-4" />
+          </Button>
+        </div>
+        <PlatformTipsStatsCards stats={tipsStats} loading={tipsLoading} variant="dashboard" />
+      </PageSection>
 
       {/* Main Content */}
       <PageSection spacing="normal">

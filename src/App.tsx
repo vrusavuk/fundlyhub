@@ -61,7 +61,7 @@ import CampaignDetail from '@/pages/admin/CampaignDetail';
 import UserDetail from '@/pages/admin/UserDetail';
 import OrganizationDetail from '@/pages/admin/OrganizationDetail';
 import PayoutManagement from '@/pages/admin/PayoutManagement';
-
+import PlatformRevenue from '@/pages/admin/PlatformRevenue';
 const App = () => (
   <AppErrorBoundary>
     <AppProviders>
@@ -145,6 +145,7 @@ const App = () => (
           <Route path="donations" element={<DonationManagement />} />
           <Route path="donations/:id" element={<DonationDetail />} />
           <Route path="payouts" element={<PayoutManagement />} />
+          <Route path="platform-revenue" element={<PlatformRevenue />} />
           <Route path="organizations" element={<OrganizationManagement />} />
           <Route path="organizations/:id" element={<OrganizationDetail />} />
           <Route path="notifications" element={<NotificationCenter />} />
