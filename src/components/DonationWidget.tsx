@@ -13,6 +13,8 @@ import { loadStripe, Appearance } from '@stripe/stripe-js';
 import { UnifiedPaymentForm } from '@/components/payments/UnifiedPaymentForm';
 import { useStripePayment } from '@/hooks/useStripePayment';
 import { logger } from '@/lib/services/logger.service';
+import { useTipFeedback } from '@/hooks/useTipFeedback';
+import { TipFeedbackMessage } from '@/components/TipFeedbackMessage';
 
 const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 if (!stripePublishableKey) {
@@ -114,6 +116,8 @@ export function DonationWidget({
     ? (parseFloat(customTipValue) || 0)
     : Math.round(currentAmount * (tipPercentage / 100) * 100) / 100;
   const totalAmount = currentAmount + tipAmount;
+  
+  const tipFeedback = useTipFeedback(tipPercentage, tipAmount, parseFloat(customTipValue) || 0);
 
   const handleAmountSelect = (amount: number) => {
     setSelectedAmount(amount);
@@ -306,14 +310,7 @@ export function DonationWidget({
                   />
                 </div>
               )}
-              {tipAmount > 0 ? (
-                <div className="flex items-center gap-2 text-sm text-primary mt-2 bg-primary/10 rounded-md p-2">
-                  <Heart className="h-4 w-4 fill-primary" />
-                  <span>Thank you for supporting our mission!</span>
-                </div>
-              ) : tipPercentage === 0 && (
-                <p className="text-xs text-muted-foreground mt-2">No worries — 100% of your donation goes to the cause.</p>
-              )}
+              <TipFeedbackMessage feedback={tipFeedback} className="mt-2" />
             </div>
           )}
 
@@ -693,14 +690,7 @@ export function DonationWidget({
                     />
                   )}
                   
-                  {tipAmount > 0 ? (
-                    <div className="flex items-center gap-2 text-sm text-primary mt-3 bg-primary/10 rounded-md p-2 animate-fade-in">
-                      <Heart className="h-4 w-4 fill-primary" />
-                      <span>Thank you for supporting our mission!</span>
-                    </div>
-                  ) : tipPercentage === 0 && (
-                    <p className="text-xs text-muted-foreground mt-3 animate-fade-in">No worries — 100% of your donation goes to the cause.</p>
-                  )}
+                  <TipFeedbackMessage feedback={tipFeedback} className="mt-3" />
                 </div>
               )}
 
