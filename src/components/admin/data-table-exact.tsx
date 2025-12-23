@@ -40,6 +40,12 @@ interface DataTableProps<TData, TValue> {
   pinFirstColumn?: boolean;
   /** Pin last column (actions) to the right */
   pinLastColumn?: boolean;
+  /** External sorting state for server-side sorting */
+  sorting?: SortingState;
+  /** Callback when sorting changes (for server-side sorting) */
+  onSortingChange?: (sorting: SortingState) => void;
+  /** Whether sorting is handled server-side (disables client-side sorting) */
+  manualSorting?: boolean;
 }
 
 export function DataTableExact<TData, TValue>({
@@ -53,14 +59,21 @@ export function DataTableExact<TData, TValue>({
   density = 'comfortable',
   pinFirstColumn = false,
   pinLastColumn = false,
+  sorting: externalSorting,
+  onSortingChange,
+  manualSorting = false,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [internalSorting, setInternalSorting] = React.useState<SortingState>([]);
   const [rowSelection, setRowSelection] = React.useState(selectedRows || {});
   const [scrollState, setScrollState] = React.useState<ScrollState>({
     isScrolledLeft: false,
     isScrolledRight: false,
   });
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
+  // Use external sorting if provided, otherwise use internal
+  const sorting = externalSorting !== undefined ? externalSorting : internalSorting;
+  const setSorting = onSortingChange || setInternalSorting;
 
   // Track horizontal scroll position
   React.useEffect(() => {
@@ -164,8 +177,12 @@ export function DataTableExact<TData, TValue>({
     data,
     columns: tableColumns,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    onSortingChange: setSorting,
+    getSortedRowModel: manualSorting ? undefined : getSortedRowModel(),
+    manualSorting,
+    onSortingChange: (updater) => {
+      const newSorting = typeof updater === 'function' ? updater(sorting) : updater;
+      setSorting(newSorting);
+    },
     onRowSelectionChange: (updater) => {
       const newSelection = typeof updater === 'function' ? updater(rowSelection) : updater;
       setRowSelection(newSelection);
