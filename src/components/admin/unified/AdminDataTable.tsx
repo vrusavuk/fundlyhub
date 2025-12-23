@@ -172,7 +172,8 @@ export function AdminDataTable<TData, TValue>({
         
         {/* Data Table with responsive wrapper */}
         <div className="w-full overflow-x-auto">
-          <StripeCardExact noPadding>
+          {/* Stripe-like: no outer perimeter border around the table, only inner row dividers */}
+          <StripeCardExact noPadding borderless>
             <DataTableExact
               columns={columns}
               data={data}
@@ -182,7 +183,7 @@ export function AdminDataTable<TData, TValue>({
               onSelectionChange={handleDataTableSelectionChange}
               density={density}
             />
-            
+
             {/* Pagination Controls */}
             {enablePagination && paginationState && onPageChange && onPageSizeChange && paginationState.totalPages && paginationState.totalPages > 1 && (
               <StripePagination
