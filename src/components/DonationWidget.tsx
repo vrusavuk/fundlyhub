@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -103,6 +103,9 @@ export function DonationWidget({
   const [donorName, setDonorName] = useState('');
   const { toast } = useToast();
   const { createPaymentIntent, isLoading } = useStripePayment();
+  
+  // Track the amount used when PaymentIntent was created
+  const paymentIntentAmountRef = useRef<number | null>(null);
 
   const formatAmount = (amount: number) => new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -118,6 +121,19 @@ export function DonationWidget({
   const totalAmount = currentAmount + tipAmount;
   
   const tipFeedback = useTipFeedback(tipPercentage, tipAmount, parseFloat(customTipValue) || 0);
+
+  // Auto-close payment form when donation amount or tip changes after form is shown
+  useEffect(() => {
+    if (showPaymentForm && paymentIntentAmountRef.current !== null) {
+      const currentTotal = Math.round(totalAmount * 100);
+      if (currentTotal !== paymentIntentAmountRef.current) {
+        // Amount changed - close payment form and clear client secret
+        setShowPaymentForm(false);
+        setClientSecret(null);
+        paymentIntentAmountRef.current = null;
+      }
+    }
+  }, [totalAmount, showPaymentForm]);
 
   const handleAmountSelect = (amount: number) => {
     setSelectedAmount(amount);
@@ -141,6 +157,7 @@ export function DonationWidget({
   const handleDonate = async () => {
     if (currentAmount <= 0) return;
 
+    const totalInCents = Math.round(totalAmount * 100);
     const response = await createPaymentIntent({
       fundraiser_id: fundraiserId,
       amount: Math.round(currentAmount * 100),
@@ -153,6 +170,7 @@ export function DonationWidget({
 
     if (response?.client_secret) {
       setClientSecret(response.client_secret);
+      paymentIntentAmountRef.current = totalInCents;
       setShowPaymentForm(true);
     }
   };
@@ -161,6 +179,7 @@ export function DonationWidget({
     setShowPaymentForm(false);
     setShowDonationForm(false);
     setClientSecret(null);
+    paymentIntentAmountRef.current = null;
     setSelectedAmount(null);
     setCustomAmount('');
     setTipPercentage(15);
