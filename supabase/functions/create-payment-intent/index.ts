@@ -75,6 +75,8 @@ serve(async (req) => {
       amount: totalAmount,
       currency: currency.toLowerCase(),
       customer: customerId,
+      // Send Stripe receipt email to donor (if email provided and not anonymous)
+      receipt_email: (!is_anonymous && donor_email) ? donor_email : undefined,
       automatic_payment_methods: {
         enabled: true,
       },
