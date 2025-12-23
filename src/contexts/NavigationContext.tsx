@@ -33,10 +33,11 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
   }, [location]);
 
   const navigateBack = useCallback(() => {
-    if (referrer) {
-      navigate(referrer);
-    } else if (window.history.length > 1) {
+    // Always prioritize browser history for proper back navigation
+    if (window.history.length > 1) {
       navigate(-1);
+    } else if (referrer) {
+      navigate(referrer);
     } else {
       navigate('/');
     }
