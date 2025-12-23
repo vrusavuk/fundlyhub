@@ -1,6 +1,6 @@
 /**
  * Stripe Dashboard Table Component
- * Uses design system tokens for consistent theming
+ * Matches Stripe's clean, minimal table design
  */
 
 import * as React from "react";
@@ -13,7 +13,7 @@ const StripeTable = React.forwardRef<
   <div className="w-full overflow-auto">
     <table
       ref={ref}
-      className={cn("w-full border-collapse", className)}
+      className={cn("w-full border-collapse text-sm", className)}
       {...props}
     />
   </div>
@@ -26,7 +26,7 @@ const StripeTableHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <thead
     ref={ref}
-    className={cn("bg-card border-b border-border", className)}
+    className={cn("bg-muted/30 border-b border-border", className)}
     {...props}
   />
 ));
@@ -36,7 +36,7 @@ const StripeTableBody = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <tbody ref={ref} className={cn("bg-card", className)} {...props} />
+  <tbody ref={ref} className={cn("bg-card divide-y divide-border", className)} {...props} />
 ));
 StripeTableBody.displayName = "StripeTableBody";
 
@@ -46,7 +46,7 @@ const StripeTableFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <tfoot
     ref={ref}
-    className={cn("border-t border-border bg-card font-medium", className)}
+    className={cn("border-t border-border bg-muted/30 font-medium", className)}
     {...props}
   />
 ));
@@ -56,18 +56,12 @@ const StripeTableRow = React.forwardRef<
   HTMLTableRowElement,
   React.HTMLAttributes<HTMLTableRowElement> & { density?: 'compact' | 'comfortable' | 'spacious' }
 >(({ className, density = 'comfortable', ...props }, ref) => {
-  const heightClasses = {
-    compact: 'h-[36px]',
-    comfortable: 'h-[44px]',
-    spacious: 'h-[52px]',
-  };
-  
   return (
     <tr
       ref={ref}
       className={cn(
-        heightClasses[density],
-        "border-b border-border transition-colors hover:bg-muted",
+        "transition-colors hover:bg-muted/50 group",
+        "data-[state=selected]:bg-primary/5",
         className
       )}
       {...props}
@@ -80,18 +74,20 @@ const StripeTableHead = React.forwardRef<
   HTMLTableCellElement,
   React.ThHTMLAttributes<HTMLTableCellElement> & { density?: 'compact' | 'comfortable' | 'spacious' }
 >(({ className, density = 'comfortable', ...props }, ref) => {
-  const heightClasses = {
-    compact: 'h-[36px] px-3 text-[11px]',
-    comfortable: 'h-[44px] px-4 text-xs',
-    spacious: 'h-[52px] px-5 text-[13px]',
+  const paddingClasses = {
+    compact: 'py-2 px-3',
+    comfortable: 'py-3 px-4',
+    spacious: 'py-4 px-5',
   };
   
   return (
     <th
       ref={ref}
       className={cn(
-        heightClasses[density],
-        "text-left align-middle font-semibold uppercase tracking-wider text-muted-foreground",
+        paddingClasses[density],
+        "text-left align-middle font-medium text-muted-foreground text-xs",
+        "first:pl-4 last:pr-4",
+        "[&:has([role=checkbox])]:w-12 [&:has([role=checkbox])]:pl-4",
         className
       )}
       {...props}
@@ -104,18 +100,20 @@ const StripeTableCell = React.forwardRef<
   HTMLTableCellElement,
   React.TdHTMLAttributes<HTMLTableCellElement> & { density?: 'compact' | 'comfortable' | 'spacious' }
 >(({ className, density = 'comfortable', ...props }, ref) => {
-  const heightClasses = {
-    compact: 'h-[36px] px-3 text-[13px]',
-    comfortable: 'h-[44px] px-4 text-sm',
-    spacious: 'h-[52px] px-5 text-[15px]',
+  const paddingClasses = {
+    compact: 'py-2 px-3',
+    comfortable: 'py-3 px-4',
+    spacious: 'py-4 px-5',
   };
   
   return (
     <td
       ref={ref}
       className={cn(
-        heightClasses[density],
-        "align-middle font-normal text-foreground",
+        paddingClasses[density],
+        "align-middle text-foreground",
+        "first:pl-4 last:pr-4",
+        "[&:has([role=checkbox])]:w-12 [&:has([role=checkbox])]:pl-4",
         className
       )}
       {...props}

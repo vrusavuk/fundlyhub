@@ -113,11 +113,11 @@ export function DataTableExact<TData, TValue>({
   });
 
   return (
-    <div className={cn("bg-white border border-[#E3E8EE] rounded-lg overflow-hidden", className)}>
+    <div className={cn("bg-card border border-border rounded-lg overflow-hidden", className)}>
       <StripeTable>
         <StripeTableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <StripeTableRow key={headerGroup.id} density={density}>
+            <StripeTableRow key={headerGroup.id} density={density} className="hover:bg-transparent">
               {headerGroup.headers.map((header) => (
                 <StripeTableHead key={header.id} density={density}>
                   {header.isPlaceholder
@@ -140,8 +140,7 @@ export function DataTableExact<TData, TValue>({
                 data-state={row.getIsSelected() && "selected"}
                 onClick={() => onRowClick?.(row)}
                 className={cn(
-                  onRowClick && "cursor-pointer",
-                  row.getIsSelected() && "bg-[#F6F9FC]"
+                  onRowClick && "cursor-pointer"
                 )}
               >
                 {row.getVisibleCells().map((cell) => (
@@ -152,11 +151,11 @@ export function DataTableExact<TData, TValue>({
               </StripeTableRow>
             ))
           ) : (
-            <StripeTableRow density={density}>
+            <StripeTableRow density={density} className="hover:bg-transparent">
               <StripeTableCell
                 density={density}
                 colSpan={tableColumns.length}
-                className="h-24 text-center text-[#425466]"
+                className="h-24 text-center text-muted-foreground"
               >
                 No results.
               </StripeTableCell>
