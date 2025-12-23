@@ -4,7 +4,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, XCircle, Clock, DollarSign, RefreshCw, ExternalLink } from 'lucide-react';
+import { Check, XCircle, Clock, RefreshCw, ExternalLink, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
@@ -15,7 +15,6 @@ import {
   DetailSection,
   DetailKeyValue,
   DetailTimeline,
-  DetailCard,
   DonationDetailSidebar,
 } from '@/components/admin/detail';
 import { adminDataService } from '@/lib/services/AdminDataService';
@@ -108,6 +107,18 @@ export default function DonationDetail() {
     }
   };
 
+  const handleViewCampaign = () => {
+    if (donation.fundraiser_id) {
+      navigate(`/admin/campaigns/${donation.fundraiser_id}`);
+    }
+  };
+
+  const handleViewDonor = () => {
+    if (donation.donor_user_id) {
+      navigate(`/admin/users/${donation.donor_user_id}`);
+    }
+  };
+
   return (
     <DetailPageLayout
       title={MoneyMath.format(MoneyMath.create(donation.amount, donation.currency))}
@@ -121,16 +132,38 @@ export default function DonationDetail() {
         </Badge>
       }
       actions={
-        donation.receipt_id ? (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleViewInStripe}
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            View in Stripe
-          </Button>
-        ) : undefined
+        <div className="flex flex-wrap gap-2">
+          {donation.fundraiser_id && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleViewCampaign}
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              View Campaign
+            </Button>
+          )}
+          {donation.donor_user_id && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleViewDonor}
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              View Donor
+            </Button>
+          )}
+          {donation.receipt_id && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleViewInStripe}
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              View in Stripe
+            </Button>
+          )}
+        </div>
       }
       mainContent={
         <>
@@ -189,7 +222,7 @@ export default function DonationDetail() {
 
           {/* Payment Method Details */}
           <DetailSection title="Payment Method">
-            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
               <DetailKeyValue
                 label="Method"
                 value={donation.payment_method || 'Card'}
