@@ -129,8 +129,8 @@ const StripeTableCell = React.forwardRef<HTMLTableCellElement, StripeTableCellPr
           "align-middle text-foreground",
           "first:pl-0 last:pr-0",
           "[&:has([role=checkbox])]:w-12 [&:has([role=checkbox])]:pl-0",
-          // Pinned columns need explicit background + inherit row hover state
-          isPinned && "bg-background group-hover:bg-muted/40 group-data-[state=selected]:bg-muted/50",
+          // Pinned columns need solid opaque backgrounds (not semi-transparent)
+          isPinned && "bg-card group-hover:bg-muted group-data-[state=selected]:bg-muted",
           className
         )}
         style={style}
