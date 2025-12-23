@@ -94,6 +94,12 @@ const analyticsItems: AdminNavItem[] = [
     icon: PieChart,
     permission: 'view_platform_analytics'
   },
+  {
+    title: 'Platform Revenue',
+    url: '/admin/platform-revenue',
+    icon: DollarSign,
+    permission: 'view_platform_analytics'
+  },
 ];
 
 // Management section (collapsible)
