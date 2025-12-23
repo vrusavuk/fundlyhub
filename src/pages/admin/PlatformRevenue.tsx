@@ -38,6 +38,7 @@ import {
   TableAction
 } from '@/components/admin/unified';
 import { StripeStatusTabs, StatusTab } from '@/components/admin/StripeStatusTabs';
+import { PlatformTipMobileCard } from '@/components/ui/mobile-card';
 
 interface TipsFilters {
   search: string;
@@ -310,6 +311,10 @@ export default function PlatformRevenue() {
             data={tips}
             loading={loading}
             actions={tableActions}
+            onRowClick={(row) => handleViewDonation(row.original.donationId)}
+            mobileCardRenderer={(tip) => (
+              <PlatformTipMobileCard tip={tip} />
+            )}
             enableSorting={true}
             enableColumnVisibility={true}
             enablePagination={true}

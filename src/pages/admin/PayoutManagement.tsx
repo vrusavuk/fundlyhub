@@ -27,6 +27,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { payoutService, type PayoutRequest } from '@/lib/services/payout.service';
 import { PayoutDetailDialog } from '@/components/admin/PayoutDetailDialog';
+import { PayoutMobileCard } from '@/components/ui/mobile-card';
 import { format } from 'date-fns';
 
 const columnHelper = createColumnHelper<PayoutRequest>();
@@ -309,6 +310,10 @@ export default function PayoutManagement() {
           loading={loading}
           selectedRows={selectedRows}
           onSelectionChange={setSelectedRows}
+          onRowClick={(row) => handleViewDetails(row.original)}
+          mobileCardRenderer={(payout) => (
+            <PayoutMobileCard payout={payout} />
+          )}
           pinFirstColumn={true}
           pinLastColumn={true}
         />
