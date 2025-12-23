@@ -11,10 +11,11 @@
 
 import { useState } from 'react';
 import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { StripePaymentElementChangeEvent } from '@stripe/stripe-js';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, CreditCard, Wallet } from 'lucide-react';
+import { Loader2, CreditCard, Building2, Smartphone, Wallet } from 'lucide-react';
 
 interface UnifiedPaymentFormProps {
   clientSecret: string;
@@ -29,6 +30,25 @@ interface UnifiedPaymentFormProps {
   onEmailChange?: (email: string) => void;
   onNameChange?: (name: string) => void;
 }
+
+type PaymentMethodType = 'card' | 'paypal' | 'venmo' | 'us_bank_account' | 'apple_pay' | 'google_pay' | 'link';
+
+const getPaymentIcon = (paymentMethod: PaymentMethodType) => {
+  switch (paymentMethod) {
+    case 'paypal':
+    case 'venmo':
+    case 'link':
+      return <Wallet className="h-5 w-5" />;
+    case 'us_bank_account':
+      return <Building2 className="h-5 w-5" />;
+    case 'apple_pay':
+    case 'google_pay':
+      return <Smartphone className="h-5 w-5" />;
+    case 'card':
+    default:
+      return <CreditCard className="h-5 w-5" />;
+  }
+};
 
 export function UnifiedPaymentForm({
   clientSecret,
@@ -46,6 +66,13 @@ export function UnifiedPaymentForm({
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethodType>('card');
+
+  const handlePaymentElementChange = (event: StripePaymentElementChangeEvent) => {
+    if (event.value.type) {
+      setSelectedPaymentMethod(event.value.type as PaymentMethodType);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,21 +99,17 @@ export function UnifiedPaymentForm({
       });
 
       if (error) {
-        // Handle errors from payment confirmation
         if (error.type === 'card_error' || error.type === 'validation_error') {
           onError(error.message || 'Payment failed');
         } else {
           onError('An unexpected error occurred. Please try again.');
         }
       } else if (paymentIntent) {
-        // Payment succeeded without redirect
         if (paymentIntent.status === 'succeeded') {
           onSuccess();
         } else if (paymentIntent.status === 'processing') {
-          // Bank transfers may take time
           onSuccess();
         } else if (paymentIntent.status === 'requires_action') {
-          // This case is handled by Stripe redirect
           onError('Payment requires additional authentication. Please follow the prompts.');
         }
       }
@@ -134,23 +157,16 @@ export function UnifiedPaymentForm({
         </>
       )}
 
-      <div className="space-y-2">
-        <Label className="flex items-center gap-2">
-          <Wallet className="h-4 w-4" />
-          Payment Method
-        </Label>
-        <div className="border rounded-md p-3 bg-background">
-          <PaymentElement
-            options={{
-              layout: 'tabs',
-              paymentMethodOrder: ['card', 'apple_pay', 'google_pay', 'paypal', 'us_bank_account'],
-              business: {
-                name: 'FundlyHub',
-              },
-            }}
-          />
-        </div>
-      </div>
+      <PaymentElement
+        onChange={handlePaymentElementChange}
+        options={{
+          layout: 'tabs',
+          paymentMethodOrder: ['card', 'apple_pay', 'google_pay', 'paypal', 'us_bank_account'],
+          business: {
+            name: 'FundlyHub',
+          },
+        }}
+      />
 
       <Button
         type="submit"
@@ -160,22 +176,16 @@ export function UnifiedPaymentForm({
       >
         {isProcessing ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
             Processing...
           </>
         ) : (
           <>
-            <CreditCard className="mr-2 h-4 w-4" />
-            Pay {formatAmount(amount)}
+            {getPaymentIcon(selectedPaymentMethod)}
+            <span className="ml-2">Pay {formatAmount(amount)}</span>
           </>
         )}
       </Button>
-
-      <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-        <span>Secured by Stripe</span>
-        <span>•</span>
-        <span>Cards, PayPal, Venmo, Bank & more</span>
-      </div>
     </form>
   );
 }
