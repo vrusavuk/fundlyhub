@@ -31,6 +31,7 @@ import { AdminEventService } from '@/lib/services/AdminEventService';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { createCampaignColumns, CampaignData } from '@/lib/data-table/campaign-columns';
 import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
+import { CampaignMobileCard } from '@/components/ui/mobile-card';
 import {
   AdminPageLayout, 
   AdminFilters, 
@@ -573,6 +574,31 @@ export function CampaignManagement() {
         loading={loading}
         selectedRows={selectedCampaigns}
         onSelectionChange={setSelectedCampaigns}
+        onRowClick={(row) => navigate(`/admin/campaigns/${row.original.id}`)}
+        mobileCardRenderer={(campaign) => (
+          <CampaignMobileCard 
+            campaign={{
+              id: campaign.id,
+              title: campaign.title,
+              summary: campaign.summary || undefined,
+              cover_image: campaign.cover_image || undefined,
+              category: campaign.category,
+              status: campaign.status,
+              goal_amount: campaign.goal_amount,
+              currency: campaign.currency,
+              created_at: campaign.created_at,
+              owner_profile: campaign.owner_profile ? {
+                name: campaign.owner_profile.name || undefined,
+                avatar: campaign.owner_profile.avatar || undefined,
+              } : undefined,
+              stats: campaign.stats ? {
+                total_raised: campaign.stats.total_raised,
+                donor_count: campaign.stats.donor_count,
+              } : undefined,
+            }}
+            showActions={false}
+          />
+        )}
         actions={tableActions}
         bulkActions={bulkActions}
         onBulkAction={handleBulkActionClick}

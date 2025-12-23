@@ -112,6 +112,8 @@ export default function DonationDetail() {
     <DetailPageLayout
       title={MoneyMath.format(MoneyMath.create(donation.amount, donation.currency))}
       subtitle={`Charged to ${donation.donor_name || 'Anonymous donor'}`}
+      backUrl="/admin/donations"
+      backLabel="Donations"
       status={
         <Badge variant={status.variant} className="gap-1">
           <StatusIcon className="h-3 w-3" />
@@ -119,26 +121,16 @@ export default function DonationDetail() {
         </Badge>
       }
       actions={
-        <>
+        donation.receipt_id ? (
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigate('/admin/donations')}
+            onClick={handleViewInStripe}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Donations
+            <ExternalLink className="h-4 w-4 mr-2" />
+            View in Stripe
           </Button>
-          {donation.receipt_id && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleViewInStripe}
-            >
-              <ExternalLink className="h-4 w-4 mr-2" />
-              View in Stripe
-            </Button>
-          )}
-        </>
+        ) : undefined
       }
       mainContent={
         <>
