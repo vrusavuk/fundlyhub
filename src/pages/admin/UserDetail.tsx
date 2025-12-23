@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { usePagination } from '@/hooks/usePagination';
 import { formatDistanceToNow } from 'date-fns';
 import { ColumnDef, Row } from '@tanstack/react-table';
+import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
 import {
   DetailPageLayout,
@@ -100,21 +101,33 @@ export default function UserDetail() {
   const donationColumns: ColumnDef<any, any>[] = useMemo(() => [
     {
       accessorKey: 'amount',
-      header: 'Amount',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Amount" />
+      ),
       cell: ({ row }) => (
         <span className="font-medium">
           {MoneyMath.format(MoneyMath.create(row.original.amount, row.original.currency))}
         </span>
       ),
+      sortingFn: (rowA, rowB) => rowA.original.amount - rowB.original.amount,
     },
     {
       accessorKey: 'campaign',
-      header: 'Campaign',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Campaign" />
+      ),
       cell: ({ row }) => row.original.fundraisers?.title || 'Unknown Campaign',
+      sortingFn: (rowA, rowB) => {
+        const a = rowA.original.fundraisers?.title || '';
+        const b = rowB.original.fundraisers?.title || '';
+        return a.localeCompare(b);
+      },
     },
     {
       accessorKey: 'payment_status',
-      header: 'Status',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
       cell: ({ row }) => (
         <Badge variant={getStatusVariant(row.original.payment_status) as any}>
           {getStatusLabel(row.original.payment_status)}
@@ -123,7 +136,9 @@ export default function UserDetail() {
     },
     {
       accessorKey: 'created_at',
-      header: 'Date',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Date" />
+      ),
       cell: ({ row }) => formatDistanceToNow(new Date(row.original.created_at), { addSuffix: true }),
     },
     {
