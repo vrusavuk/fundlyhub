@@ -4,7 +4,7 @@
  * Follows Open/Closed Principle - extensible pagination strategies
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 export interface PaginationState {
@@ -22,6 +22,12 @@ export interface PaginationControls {
   setPageSize: (size: number) => void;
   setTotal: (total: number) => void;
   reset: () => void;
+  /** Check if we can go to previous page */
+  canGoPrevious: boolean;
+  /** Check if we can go to next page */
+  canGoNext: boolean;
+  /** Check if pagination should be shown */
+  shouldShowPagination: boolean;
 }
 
 interface UsePaginationOptions {
@@ -29,6 +35,8 @@ interface UsePaginationOptions {
   initialPageSize?: number;
   syncWithURL?: boolean;
   onPageChange?: (page: number) => void;
+  /** Minimum items to show pagination (default: 1) */
+  minItemsForPagination?: number;
 }
 
 export function usePagination(options: UsePaginationOptions = {}): PaginationControls {
@@ -36,7 +44,8 @@ export function usePagination(options: UsePaginationOptions = {}): PaginationCon
     initialPage = 1,
     initialPageSize = 20,
     syncWithURL = false,
-    onPageChange
+    onPageChange,
+    minItemsForPagination = 1
   } = options;
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -73,11 +82,13 @@ export function usePagination(options: UsePaginationOptions = {}): PaginationCon
       params.set('pageSize', state.pageSize.toString());
       setSearchParams(params, { replace: true });
     }
-  }, [state.page, state.pageSize, syncWithURL]);
+  }, [state.page, state.pageSize, syncWithURL, searchParams, setSearchParams]);
 
   const goToPage = useCallback((page: number) => {
     setState(prev => {
-      const newPage = Math.max(1, Math.min(page, prev.totalPages || 1));
+      // Calculate max page - if totalPages is 0, allow page 1
+      const maxPage = Math.max(1, prev.totalPages);
+      const newPage = Math.max(1, Math.min(page, maxPage));
       if (newPage !== prev.page) {
         onPageChange?.(newPage);
         return { ...prev, page: newPage };
@@ -111,9 +122,12 @@ export function usePagination(options: UsePaginationOptions = {}): PaginationCon
   const setPageSize = useCallback((pageSize: number) => {
     setState(prev => {
       const newTotalPages = Math.ceil(prev.total / pageSize);
-      const newPage = Math.min(prev.page, newTotalPages || 1);
+      // When changing page size, try to stay on current page or go to max valid page
+      const newPage = Math.max(1, Math.min(prev.page, newTotalPages || 1));
       
-      onPageChange?.(newPage);
+      if (newPage !== prev.page) {
+        onPageChange?.(newPage);
+      }
       
       return {
         ...prev,
@@ -127,7 +141,13 @@ export function usePagination(options: UsePaginationOptions = {}): PaginationCon
   const setTotal = useCallback((total: number) => {
     setState(prev => {
       const totalPages = Math.ceil(total / prev.pageSize);
-      const page = Math.min(prev.page, totalPages || 1);
+      // Only clamp page if it exceeds total pages, but keep at least 1
+      const page = totalPages > 0 ? Math.min(prev.page, totalPages) : 1;
+      
+      // Only trigger page change if page actually changed
+      if (page !== prev.page) {
+        onPageChange?.(page);
+      }
       
       return {
         ...prev,
@@ -136,7 +156,7 @@ export function usePagination(options: UsePaginationOptions = {}): PaginationCon
         page
       };
     });
-  }, []);
+  }, [onPageChange]);
 
   const reset = useCallback(() => {
     setState({
@@ -148,6 +168,11 @@ export function usePagination(options: UsePaginationOptions = {}): PaginationCon
     onPageChange?.(initialPage);
   }, [initialPage, initialPageSize, onPageChange]);
 
+  // Computed properties
+  const canGoPrevious = state.page > 1;
+  const canGoNext = state.page < state.totalPages;
+  const shouldShowPagination = state.total >= minItemsForPagination && state.totalPages >= 1;
+
   return {
     state,
     goToPage,
@@ -155,6 +180,9 @@ export function usePagination(options: UsePaginationOptions = {}): PaginationCon
     prevPage,
     setPageSize,
     setTotal,
-    reset
+    reset,
+    canGoPrevious,
+    canGoNext,
+    shouldShowPagination
   };
 }

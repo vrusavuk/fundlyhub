@@ -565,7 +565,8 @@ export default function UserDetail() {
                       />
                     </div>
                   ))}
-                  {donationPagination.state.totalPages > 1 && (
+                  {/* Always show pagination when there's data */}
+                  {totalDonations > 0 && (
                     <StripePagination
                       page={donationPagination.state.page}
                       pageSize={donationPagination.state.pageSize}
@@ -591,7 +592,8 @@ export default function UserDetail() {
                     onSortingChange={handleDonationSortingChange}
                     manualSorting={true}
                   />
-                  {donationPagination.state.totalPages > 1 && (
+                  {/* Always show pagination when there's data */}
+                  {totalDonations > 0 && (
                     <StripePagination
                       page={donationPagination.state.page}
                       pageSize={donationPagination.state.pageSize}

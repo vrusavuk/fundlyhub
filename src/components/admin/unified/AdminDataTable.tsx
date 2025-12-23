@@ -234,14 +234,14 @@ export function AdminDataTable<TData, TValue>({
           {/* Mobile Card List */}
           {renderMobileCards()}
 
-          {/* Pagination Controls */}
-          {enablePagination && paginationState && onPageChange && onPageSizeChange && paginationState.totalPages && paginationState.totalPages > 1 && (
+          {/* Pagination Controls - show when there's data */}
+          {enablePagination && paginationState && onPageChange && onPageSizeChange && (paginationState.totalCount || 0) > 0 && (
             <div className="border-t border-border pt-4">
               <StripePagination
                 page={paginationState.page}
                 pageSize={paginationState.pageSize}
                 totalItems={paginationState.totalCount || 0}
-                totalPages={paginationState.totalPages}
+                totalPages={paginationState.totalPages || 1}
                 onPageChange={onPageChange}
                 onPageSizeChange={onPageSizeChange}
               />
@@ -305,13 +305,13 @@ export function AdminDataTable<TData, TValue>({
               pinLastColumn={pinLastColumn}
             />
 
-            {/* Pagination Controls */}
-            {enablePagination && paginationState && onPageChange && onPageSizeChange && paginationState.totalPages && paginationState.totalPages > 1 && (
+            {/* Pagination Controls - show when there's data */}
+            {enablePagination && paginationState && onPageChange && onPageSizeChange && (paginationState.totalCount || 0) > 0 && (
               <StripePagination
                 page={paginationState.page}
                 pageSize={paginationState.pageSize}
                 totalItems={paginationState.totalCount || 0}
-                totalPages={paginationState.totalPages}
+                totalPages={paginationState.totalPages || 1}
                 onPageChange={onPageChange}
                 onPageSizeChange={onPageSizeChange}
               />

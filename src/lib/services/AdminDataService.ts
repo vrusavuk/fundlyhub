@@ -750,6 +750,7 @@ class AdminDataService {
     const sortOrder = sorting?.sortOrder || 'desc';
     const cacheKey = `user-donations-paginated:${userId}:${pagination.page}:${pagination.pageSize}:${sortBy}:${sortOrder}`;
     
+    // Short TTL (3 seconds) to ensure fresh data while still providing some caching benefit
     return this.cache.getOrSet(cacheKey, async () => {
       const from = (pagination.page - 1) * pagination.pageSize;
       const to = from + pagination.pageSize - 1;
@@ -801,7 +802,7 @@ class AdminDataService {
         page: pagination.page,
         pageSize: pagination.pageSize
       };
-    }, { ttl: 10000 });
+    }, { ttl: 3000 }); // 3 second cache for fresh data
   }
 
   /**
