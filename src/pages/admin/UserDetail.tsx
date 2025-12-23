@@ -63,6 +63,78 @@ export default function UserDetail() {
     loading
   );
 
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case 'paid':
+      case 'completed':
+        return 'stripe-success';
+      case 'pending':
+        return 'stripe-warning';
+      case 'failed':
+        return 'destructive';
+      case 'refunded':
+        return 'stripe-neutral';
+      default:
+        return 'secondary';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'paid':
+        return 'Succeeded';
+      case 'completed':
+        return 'Completed';
+      case 'pending':
+        return 'Pending';
+      case 'failed':
+        return 'Failed';
+      case 'refunded':
+        return 'Refunded';
+      default:
+        return status.charAt(0).toUpperCase() + status.slice(1);
+    }
+  };
+
+  // Column definitions for donation table - must be before any early returns
+  const donationColumns: ColumnDef<any, any>[] = useMemo(() => [
+    {
+      accessorKey: 'amount',
+      header: 'Amount',
+      cell: ({ row }) => (
+        <span className="font-medium">
+          {MoneyMath.format(MoneyMath.create(row.original.amount, row.original.currency))}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'campaign',
+      header: 'Campaign',
+      cell: ({ row }) => row.original.fundraisers?.title || 'Unknown Campaign',
+    },
+    {
+      accessorKey: 'payment_status',
+      header: 'Status',
+      cell: ({ row }) => (
+        <Badge variant={getStatusVariant(row.original.payment_status) as any}>
+          {getStatusLabel(row.original.payment_status)}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: 'created_at',
+      header: 'Date',
+      cell: ({ row }) => formatDistanceToNow(new Date(row.original.created_at), { addSuffix: true }),
+    },
+    {
+      id: 'actions',
+      header: '',
+      cell: () => (
+        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+      ),
+    },
+  ], []);
+
   const fetchUser = async () => {
     if (!id) return;
     
@@ -219,77 +291,6 @@ export default function UserDetail() {
       .slice(0, 2);
   };
 
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case 'paid':
-      case 'completed':
-        return 'stripe-success';
-      case 'pending':
-        return 'stripe-warning';
-      case 'failed':
-        return 'destructive';
-      case 'refunded':
-        return 'stripe-neutral';
-      default:
-        return 'secondary';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'paid':
-        return 'Succeeded';
-      case 'completed':
-        return 'Completed';
-      case 'pending':
-        return 'Pending';
-      case 'failed':
-        return 'Failed';
-      case 'refunded':
-        return 'Refunded';
-      default:
-        return status.charAt(0).toUpperCase() + status.slice(1);
-    }
-  };
-
-  // Column definitions for donation table
-  const donationColumns: ColumnDef<any, any>[] = useMemo(() => [
-    {
-      accessorKey: 'amount',
-      header: 'Amount',
-      cell: ({ row }) => (
-        <span className="font-medium">
-          {MoneyMath.format(MoneyMath.create(row.original.amount, row.original.currency))}
-        </span>
-      ),
-    },
-    {
-      accessorKey: 'campaign',
-      header: 'Campaign',
-      cell: ({ row }) => row.original.fundraisers?.title || 'Unknown Campaign',
-    },
-    {
-      accessorKey: 'payment_status',
-      header: 'Status',
-      cell: ({ row }) => (
-        <Badge variant={getStatusVariant(row.original.payment_status) as any}>
-          {getStatusLabel(row.original.payment_status)}
-        </Badge>
-      ),
-    },
-    {
-      accessorKey: 'created_at',
-      header: 'Date',
-      cell: ({ row }) => formatDistanceToNow(new Date(row.original.created_at), { addSuffix: true }),
-    },
-    {
-      id: 'actions',
-      header: '',
-      cell: () => (
-        <ChevronRight className="h-4 w-4 text-muted-foreground" />
-      ),
-    },
-  ], []);
 
   const handleDonationRowClick = (row: Row<any>) => {
     navigate(`/admin/donations/${row.original.id}`);
