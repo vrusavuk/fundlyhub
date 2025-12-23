@@ -262,8 +262,8 @@ export function DonationWidget({
             <div className="border rounded-lg p-3 bg-muted/30">
               <div className="flex items-center justify-between mb-2">
                 <div>
-                  <p className="font-medium text-sm">Tip FundlyHub</p>
-                  <p className="text-xs text-muted-foreground">Help keep the platform running</p>
+                  <p className="font-medium text-sm">Support FundlyHub</p>
+                  <p className="text-xs text-muted-foreground">We don't charge platform fees — your optional tip keeps us running</p>
                 </div>
                 <Gift className="h-4 w-4 text-primary" />
               </div>
@@ -304,6 +304,12 @@ export function DonationWidget({
                     min="0"
                     step="0.01"
                   />
+                </div>
+              )}
+              {tipAmount > 0 && (
+                <div className="flex items-center gap-2 text-sm text-primary mt-2 bg-primary/10 rounded-md p-2">
+                  <Heart className="h-4 w-4 fill-primary" />
+                  <span>Thank you for supporting our mission! 💚</span>
                 </div>
               )}
             </div>
@@ -638,9 +644,9 @@ export function DonationWidget({
                 <div className="border rounded-lg p-4 bg-muted/30 animate-fade-in">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <p className="font-medium text-sm">Tip FundlyHub</p>
+                      <p className="font-medium text-sm">Support FundlyHub</p>
                       <p className="text-xs text-muted-foreground">
-                        Help us keep the platform running
+                        We don't charge platform fees — your optional tip keeps us running
                       </p>
                     </div>
                     <Gift className="h-4 w-4 text-primary" />
@@ -683,6 +689,13 @@ export function DonationWidget({
                       min="0"
                       step="0.01"
                     />
+                  )}
+                  
+                  {tipAmount > 0 && (
+                    <div className="flex items-center gap-2 text-sm text-primary mt-3 bg-primary/10 rounded-md p-2 animate-fade-in">
+                      <Heart className="h-4 w-4 fill-primary" />
+                      <span>Thank you for supporting our mission! 💚</span>
+                    </div>
                   )}
                 </div>
               )}
