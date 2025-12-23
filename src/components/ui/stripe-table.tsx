@@ -1,23 +1,28 @@
 /**
  * Stripe Dashboard Table Component
- * Matches Stripe's clean, borderless table design
+ * Matches Stripe's clean, borderless table design with sticky column support
  */
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-const StripeTable = React.forwardRef<
-  HTMLTableElement,
-  React.HTMLAttributes<HTMLTableElement>
->(({ className, ...props }, ref) => (
-  <div className="w-full overflow-auto">
-    <table
-      ref={ref}
-      className={cn("w-full text-sm", className)}
-      {...props}
-    />
-  </div>
-));
+interface StripeTableProps extends React.HTMLAttributes<HTMLTableElement> {
+  /** Enable sticky column support with proper border-collapse */
+  enableColumnPinning?: boolean;
+}
+
+const StripeTable = React.forwardRef<HTMLTableElement, StripeTableProps>(
+  ({ className, enableColumnPinning = false, ...props }, ref) => (
+    <div className="w-full overflow-auto">
+      <table
+        ref={ref}
+        className={cn("w-full text-sm", className)}
+        style={enableColumnPinning ? { borderCollapse: 'separate', borderSpacing: 0 } : undefined}
+        {...props}
+      />
+    </div>
+  )
+);
 StripeTable.displayName = "StripeTable";
 
 const StripeTableHeader = React.forwardRef<
@@ -70,56 +75,70 @@ const StripeTableRow = React.forwardRef<
 });
 StripeTableRow.displayName = "StripeTableRow";
 
-const StripeTableHead = React.forwardRef<
-  HTMLTableCellElement,
-  React.ThHTMLAttributes<HTMLTableCellElement> & { density?: 'compact' | 'comfortable' | 'spacious' }
->(({ className, density = 'comfortable', ...props }, ref) => {
-  const paddingClasses = {
-    compact: 'py-2 px-3',
-    comfortable: 'py-3 px-4',
-    spacious: 'py-4 px-5',
-  };
-  
-  return (
-    <th
-      ref={ref}
-      className={cn(
-        paddingClasses[density],
-        "text-left align-middle font-medium text-muted-foreground text-xs uppercase tracking-wide",
-        "first:pl-0 last:pr-0",
-        "[&:has([role=checkbox])]:w-12 [&:has([role=checkbox])]:pl-0",
-        className
-      )}
-      {...props}
-    />
-  );
-});
+interface StripeTableHeadProps extends React.ThHTMLAttributes<HTMLTableCellElement> {
+  density?: 'compact' | 'comfortable' | 'spacious';
+  isPinned?: boolean;
+}
+
+const StripeTableHead = React.forwardRef<HTMLTableCellElement, StripeTableHeadProps>(
+  ({ className, density = 'comfortable', isPinned = false, style, ...props }, ref) => {
+    const paddingClasses = {
+      compact: 'py-2 px-3',
+      comfortable: 'py-3 px-4',
+      spacious: 'py-4 px-5',
+    };
+
+    return (
+      <th
+        ref={ref}
+        className={cn(
+          paddingClasses[density],
+          "text-left align-middle font-medium text-muted-foreground text-xs uppercase tracking-wide",
+          "first:pl-0 last:pr-0",
+          "[&:has([role=checkbox])]:w-12 [&:has([role=checkbox])]:pl-0",
+          // Pinned columns need explicit background to cover scrolling content
+          isPinned && "bg-background",
+          className
+        )}
+        style={style}
+        {...props}
+      />
+    );
+  }
+);
 StripeTableHead.displayName = "StripeTableHead";
 
-const StripeTableCell = React.forwardRef<
-  HTMLTableCellElement,
-  React.TdHTMLAttributes<HTMLTableCellElement> & { density?: 'compact' | 'comfortable' | 'spacious' }
->(({ className, density = 'comfortable', ...props }, ref) => {
-  const paddingClasses = {
-    compact: 'py-3 px-3',
-    comfortable: 'py-4 px-4',
-    spacious: 'py-5 px-5',
-  };
-  
-  return (
-    <td
-      ref={ref}
-      className={cn(
-        paddingClasses[density],
-        "align-middle text-foreground",
-        "first:pl-0 last:pr-0",
-        "[&:has([role=checkbox])]:w-12 [&:has([role=checkbox])]:pl-0",
-        className
-      )}
-      {...props}
-    />
-  );
-});
+interface StripeTableCellProps extends React.TdHTMLAttributes<HTMLTableCellElement> {
+  density?: 'compact' | 'comfortable' | 'spacious';
+  isPinned?: boolean;
+}
+
+const StripeTableCell = React.forwardRef<HTMLTableCellElement, StripeTableCellProps>(
+  ({ className, density = 'comfortable', isPinned = false, style, ...props }, ref) => {
+    const paddingClasses = {
+      compact: 'py-3 px-3',
+      comfortable: 'py-4 px-4',
+      spacious: 'py-5 px-5',
+    };
+
+    return (
+      <td
+        ref={ref}
+        className={cn(
+          paddingClasses[density],
+          "align-middle text-foreground",
+          "first:pl-0 last:pr-0",
+          "[&:has([role=checkbox])]:w-12 [&:has([role=checkbox])]:pl-0",
+          // Pinned columns need explicit background + inherit row hover state
+          isPinned && "bg-background group-hover:bg-muted/40 group-data-[state=selected]:bg-muted/50",
+          className
+        )}
+        style={style}
+        {...props}
+      />
+    );
+  }
+);
 StripeTableCell.displayName = "StripeTableCell";
 
 const StripeTableCaption = React.forwardRef<

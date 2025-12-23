@@ -313,6 +313,8 @@ export default function PlatformRevenue() {
             enableSorting={true}
             enableColumnVisibility={true}
             enablePagination={true}
+            pinFirstColumn={true}
+            pinLastColumn={true}
             paginationState={pagination.state}
             onPageChange={pagination.goToPage}
             onPageSizeChange={pagination.setPageSize}

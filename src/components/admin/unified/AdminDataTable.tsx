@@ -58,6 +58,12 @@ interface AdminDataTableProps<TData, TValue> {
   className?: string;
   density?: 'compact' | 'comfortable' | 'spacious';
   
+  // Column pinning for sticky columns
+  /** Pin first column to left with shadow on horizontal scroll */
+  pinFirstColumn?: boolean;
+  /** Pin last column (actions) to right with shadow on horizontal scroll */
+  pinLastColumn?: boolean;
+  
   // Pagination
   pageSizeOptions?: number[];
   // Server-side pagination
@@ -90,6 +96,8 @@ export function AdminDataTable<TData, TValue>({
   mobileCardType,
   className,
   density = 'comfortable',
+  pinFirstColumn = false,
+  pinLastColumn = false,
   pageSizeOptions = [10, 25, 50, 100],
   paginationState,
   onPageChange,
@@ -182,6 +190,8 @@ export function AdminDataTable<TData, TValue>({
               selectedRows={convertSelectionToRowIds(currentSelection)}
               onSelectionChange={handleDataTableSelectionChange}
               density={density}
+              pinFirstColumn={pinFirstColumn}
+              pinLastColumn={pinLastColumn}
             />
 
             {/* Pagination Controls */}
