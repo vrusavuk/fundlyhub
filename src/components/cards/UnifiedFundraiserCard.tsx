@@ -13,6 +13,7 @@ import { EnhancedButton } from '@/components/enhanced/EnhancedButton';
 import { HighlightedTitle, HighlightedDescription, HighlightedLabel } from '@/components/search/HighlightedText';
 import { useCategories } from '@/hooks/useCategories';
 import { hapticFeedback } from '@/lib/utils/mobile';
+import { stripMarkdown } from '@/lib/utils/textUtils';
 import { cn } from '@/lib/utils';
 import { 
   Heart, 
@@ -27,6 +28,9 @@ import {
   Award,
   Zap
 } from 'lucide-react';
+
+// Default fallback image for campaigns with broken/missing images
+const DEFAULT_CAMPAIGN_IMAGE = 'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=800&q=80';
 
 interface UnifiedFundraiserCardProps {
   id: string;
@@ -92,7 +96,11 @@ export function UnifiedFundraiserCard({
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageSrc, setImageSrc] = useState(coverImage || DEFAULT_CAMPAIGN_IMAGE);
   const { categories } = useCategories();
+  
+  // Clean summary of markdown formatting
+  const cleanSummary = stripMarkdown(summary);
   
   const progressPercentage = Math.min((raisedAmount / goalAmount) * 100, 100);
   
@@ -201,13 +209,14 @@ export function UnifiedFundraiserCard({
           imageLoaded ? "bg-transparent" : "animate-pulse"
         )}>
           <img
-            src={coverImage}
+            src={imageSrc}
             alt={title}
             className={cn(
               "h-full w-full object-cover",
               imageLoaded ? "opacity-100" : "opacity-0"
             )}
             onLoad={() => setImageLoaded(true)}
+            onError={() => setImageSrc(DEFAULT_CAMPAIGN_IMAGE)}
             loading="lazy"
           />
         </div>
@@ -351,7 +360,7 @@ export function UnifiedFundraiserCard({
           {/* Fixed height description area */}
           <div className="h-10">
             <HighlightedDescription
-              text={summary}
+              text={cleanSummary}
               searchQuery={searchQuery || ''}
               className="text-sm text-muted-foreground line-clamp-2 leading-relaxed"
             />
