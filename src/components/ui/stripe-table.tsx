@@ -1,6 +1,6 @@
 /**
  * Stripe Dashboard Table Component
- * Matches Stripe's clean, minimal table design
+ * Matches Stripe's clean, borderless table design
  */
 
 import * as React from "react";
@@ -13,7 +13,7 @@ const StripeTable = React.forwardRef<
   <div className="w-full overflow-auto">
     <table
       ref={ref}
-      className={cn("w-full border-collapse text-sm", className)}
+      className={cn("w-full text-sm", className)}
       {...props}
     />
   </div>
@@ -26,7 +26,7 @@ const StripeTableHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <thead
     ref={ref}
-    className={cn("bg-muted/30 border-b border-border", className)}
+    className={cn("", className)}
     {...props}
   />
 ));
@@ -36,7 +36,7 @@ const StripeTableBody = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <tbody ref={ref} className={cn("bg-card divide-y divide-border", className)} {...props} />
+  <tbody ref={ref} className={cn("", className)} {...props} />
 ));
 StripeTableBody.displayName = "StripeTableBody";
 
@@ -46,7 +46,7 @@ const StripeTableFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <tfoot
     ref={ref}
-    className={cn("border-t border-border bg-muted/30 font-medium", className)}
+    className={cn("font-medium", className)}
     {...props}
   />
 ));
@@ -60,8 +60,8 @@ const StripeTableRow = React.forwardRef<
     <tr
       ref={ref}
       className={cn(
-        "transition-colors hover:bg-muted/50 group",
-        "data-[state=selected]:bg-primary/5",
+        "transition-colors hover:bg-muted/40 group",
+        "data-[state=selected]:bg-muted/50",
         className
       )}
       {...props}
@@ -85,9 +85,9 @@ const StripeTableHead = React.forwardRef<
       ref={ref}
       className={cn(
         paddingClasses[density],
-        "text-left align-middle font-medium text-muted-foreground text-xs",
-        "first:pl-4 last:pr-4",
-        "[&:has([role=checkbox])]:w-12 [&:has([role=checkbox])]:pl-4",
+        "text-left align-middle font-medium text-muted-foreground text-xs uppercase tracking-wide",
+        "first:pl-0 last:pr-0",
+        "[&:has([role=checkbox])]:w-12 [&:has([role=checkbox])]:pl-0",
         className
       )}
       {...props}
@@ -101,9 +101,9 @@ const StripeTableCell = React.forwardRef<
   React.TdHTMLAttributes<HTMLTableCellElement> & { density?: 'compact' | 'comfortable' | 'spacious' }
 >(({ className, density = 'comfortable', ...props }, ref) => {
   const paddingClasses = {
-    compact: 'py-2 px-3',
-    comfortable: 'py-3 px-4',
-    spacious: 'py-4 px-5',
+    compact: 'py-3 px-3',
+    comfortable: 'py-4 px-4',
+    spacious: 'py-5 px-5',
   };
   
   return (
@@ -112,8 +112,8 @@ const StripeTableCell = React.forwardRef<
       className={cn(
         paddingClasses[density],
         "align-middle text-foreground",
-        "first:pl-4 last:pr-4",
-        "[&:has([role=checkbox])]:w-12 [&:has([role=checkbox])]:pl-4",
+        "first:pl-0 last:pr-0",
+        "[&:has([role=checkbox])]:w-12 [&:has([role=checkbox])]:pl-0",
         className
       )}
       {...props}
