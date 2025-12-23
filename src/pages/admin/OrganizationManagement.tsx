@@ -361,7 +361,8 @@ export function OrganizationManagement() {
         bulkActions={bulkActions}
         onBulkAction={handleBulkActionClick}
         density={density}
-        
+        pinFirstColumn={true}
+        pinLastColumn={true}
         emptyStateTitle="No organizations found"
         emptyStateDescription="No organizations match your current filters."
         enableSelection={true}

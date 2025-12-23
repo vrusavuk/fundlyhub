@@ -110,21 +110,18 @@ export function DataTableExact<TData, TValue>({
     
     if (!pinFirstColumn && !pinLastColumn) return state;
     
-    if (pinFirstColumn && tableColumns.length > 0) {
-      // Pin select column if selection enabled, otherwise first data column
-      if (enableSelection) {
-        state.left = ['select', tableColumns[1]?.id || (tableColumns[1] as any)?.accessorKey].filter(Boolean) as string[];
-      } else {
-        const firstCol = tableColumns[0];
-        const firstColId = firstCol?.id || (firstCol as any)?.accessorKey;
-        if (firstColId) state.left = [firstColId];
-      }
+    // Pin ONLY the select/checkbox column to the left
+    if (pinFirstColumn && enableSelection) {
+      state.left = ['select'];
     }
     
-    if (pinLastColumn && tableColumns.length > 0) {
-      const lastCol = tableColumns[tableColumns.length - 1];
-      const lastColId = lastCol?.id || (lastCol as any)?.accessorKey;
-      if (lastColId) state.right = [lastColId];
+    // Pin ONLY the actions column to the right
+    if (pinLastColumn) {
+      // Find the actions column (typically has id: 'actions')
+      const actionsCol = tableColumns.find(col => col.id === 'actions');
+      if (actionsCol) {
+        state.right = ['actions'];
+      }
     }
     
     return state;

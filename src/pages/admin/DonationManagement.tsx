@@ -472,6 +472,8 @@ export function DonationManagement() {
         enableColumnVisibility={true}
         enablePagination={true}
         density={density}
+        pinFirstColumn={true}
+        pinLastColumn={true}
         paginationState={pagination.state}
         onPageChange={pagination.goToPage}
         onPageSizeChange={pagination.setPageSize}
