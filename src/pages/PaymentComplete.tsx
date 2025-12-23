@@ -1,6 +1,7 @@
 /**
  * Payment Complete Page
  * Comprehensive thank you page with receipt details, download, and email functionality
+ * v2.0 - Enhanced with receipt download and email forwarding
  */
 
 import { useEffect, useState } from 'react';
