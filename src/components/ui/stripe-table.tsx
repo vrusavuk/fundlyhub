@@ -26,7 +26,7 @@ const StripeTableHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <thead
     ref={ref}
-    className={cn("", className)}
+    className={cn("border-b border-border", className)}
     {...props}
   />
 ));
