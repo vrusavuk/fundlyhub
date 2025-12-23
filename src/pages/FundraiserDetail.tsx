@@ -23,6 +23,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Share2, Calendar, MapPin, Verified, Facebook, Twitter, Copy, Heart } from 'lucide-react';
 import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
 import { sanitizeHTML } from '@/lib/utils/sanitize';
+import { stripMarkdown } from '@/lib/utils/textUtils';
 import { FollowButton } from '@/components/profile/FollowButton';
 import { SmartBackButton } from '@/components/navigation/SmartBackButton';
 import { FollowOrganizationButton } from '@/components/profile/FollowOrganizationButton';
@@ -354,7 +355,7 @@ export default function FundraiserDetail() {
               
               <h1 className="text-2xl sm:text-3xl font-bold leading-tight">{fundraiser.title}</h1>
               
-              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">{fundraiser.summary}</p>
+              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">{stripMarkdown(fundraiser.summary)}</p>
               
               <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
                 {/* Campaign Organizer */}
