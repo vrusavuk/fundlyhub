@@ -1,16 +1,22 @@
 /**
  * Platform Tips Table Column Definitions
+ * Stripe-style clean table design
  */
 
 import { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { ExternalLink, Eye } from 'lucide-react';
+import { ExternalLink, MoreHorizontal } from 'lucide-react';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
-import { formatDate } from '@/lib/utils/date';
+import { formatDate, formatDateTime } from '@/lib/utils/date';
 import type { TipRecord } from '@/lib/services/platformTips.service';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export function createPlatformTipsColumns(
   onViewDonation: (id: string) => void,
@@ -18,44 +24,49 @@ export function createPlatformTipsColumns(
 ): ColumnDef<TipRecord>[] {
   return [
     {
-      accessorKey: 'createdAt',
+      accessorKey: 'tipAmount',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Date" />
+        <DataTableColumnHeader column={column} title="Amount" />
       ),
       cell: ({ row }) => {
+        const tip = row.original;
+        const tipAmount = MoneyMath.format(MoneyMath.create(tip.tipAmount, 'USD'));
+        const percentage = tip.tipPercentage;
+        
+        // Badge styling based on percentage
+        let badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        let label = 'Tip';
+        
+        if (percentage > 20) {
+          label = 'High';
+        } else if (percentage >= 10) {
+          label = 'Standard';
+          badgeClass = 'bg-blue-50 text-blue-700 border-blue-200';
+        } else {
+          label = 'Low';
+          badgeClass = 'bg-muted text-muted-foreground border-border';
+        }
+        
         return (
-          <span className="text-sm text-muted-foreground">
-            {formatDate(row.original.createdAt)}
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="font-medium text-foreground">{tipAmount}</span>
+            <span className="text-muted-foreground text-xs">USD</span>
+            <Badge variant="outline" className={`text-xs font-normal ${badgeClass}`}>
+              {label} ({percentage.toFixed(0)}%)
+            </Badge>
+          </div>
         );
       },
     },
     {
-      accessorKey: 'donorName',
+      accessorKey: 'donationAmount',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Donor" />
+        <DataTableColumnHeader column={column} title="Donation" />
       ),
       cell: ({ row }) => {
-        const tip = row.original;
+        const amount = MoneyMath.format(MoneyMath.create(row.original.donationAmount, 'USD'));
         return (
-          <div className="flex items-center gap-2">
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="text-xs bg-muted">
-                {tip.donorName.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col">
-              <span className="font-medium text-sm">{tip.donorName}</span>
-              {tip.donorEmail && !tip.isAnonymous && (
-                <span className="text-xs text-muted-foreground">{tip.donorEmail}</span>
-              )}
-            </div>
-            {tip.isAnonymous && (
-              <Badge variant="secondary" className="text-xs">
-                Anonymous
-              </Badge>
-            )}
-          </div>
+          <span className="text-muted-foreground">{amount}</span>
         );
       },
     },
@@ -67,18 +78,30 @@ export function createPlatformTipsColumns(
       cell: ({ row }) => {
         const tip = row.original;
         return (
-          <div className="flex items-center gap-2">
-            <span className="text-sm truncate max-w-[200px]" title={tip.campaignTitle}>
+          <div className="flex items-center gap-2 max-w-[280px]">
+            <span className="truncate text-foreground" title={tip.campaignTitle}>
               {tip.campaignTitle}
             </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6"
-              onClick={() => onViewCampaign(tip.campaignId)}
-            >
-              <ExternalLink className="h-3 w-3" />
-            </Button>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: 'donorName',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Donor" />
+      ),
+      cell: ({ row }) => {
+        const tip = row.original;
+        if (tip.isAnonymous) {
+          return <span className="text-muted-foreground italic">Anonymous</span>;
+        }
+        return (
+          <div className="flex flex-col">
+            <span className="text-foreground">{tip.donorName}</span>
+            {tip.donorEmail && (
+              <span className="text-xs text-muted-foreground">{tip.donorEmail}</span>
+            )}
           </div>
         );
       },
@@ -90,70 +113,64 @@ export function createPlatformTipsColumns(
       ),
       cell: ({ row }) => {
         return (
-          <span className="text-sm">{row.original.creatorName}</span>
+          <span className="text-foreground">{row.original.creatorName}</span>
         );
       },
     },
     {
-      accessorKey: 'donationAmount',
+      accessorKey: 'createdAt',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Donation" />
+        <DataTableColumnHeader column={column} title="Date" />
       ),
       cell: ({ row }) => {
-        const amount = MoneyMath.format(MoneyMath.create(row.original.donationAmount, 'USD'));
-        return <span className="font-medium">{amount}</span>;
-      },
-    },
-    {
-      accessorKey: 'tipAmount',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Tip" />
-      ),
-      cell: ({ row }) => {
-        const amount = MoneyMath.format(MoneyMath.create(row.original.tipAmount, 'USD'));
-        return <span className="font-medium text-emerald-600">{amount}</span>;
-      },
-    },
-    {
-      accessorKey: 'tipPercentage',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Tip %" />
-      ),
-      cell: ({ row }) => {
-        const percentage = row.original.tipPercentage;
-        let variant: 'default' | 'secondary' | 'outline' = 'default';
-        let colorClass = '';
-        
-        if (percentage > 20) {
-          variant = 'default';
-          colorClass = 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100';
-        } else if (percentage >= 10) {
-          variant = 'secondary';
-          colorClass = 'bg-blue-100 text-blue-700 hover:bg-blue-100';
-        } else {
-          variant = 'outline';
-          colorClass = 'text-muted-foreground';
-        }
-        
+        const date = new Date(row.original.createdAt);
         return (
-          <Badge variant={variant} className={colorClass}>
-            {percentage.toFixed(1)}%
-          </Badge>
+          <span className="text-muted-foreground whitespace-nowrap">
+            {formatDateTime(date)}
+          </span>
         );
       },
     },
     {
       id: 'actions',
       cell: ({ row }) => {
+        const tip = row.original;
+        
         return (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onViewDonation(row.original.donationId)}
-          >
-            <Eye className="h-4 w-4 mr-1" />
-            View
-          </Button>
+          <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={(e) => {
+                e.stopPropagation();
+                onViewCampaign(tip.campaignId);
+              }}
+              title="View campaign"
+            >
+              <ExternalLink className="h-4 w-4" />
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onViewDonation(tip.donationId)}>
+                  View donation details
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onViewCampaign(tip.campaignId)}>
+                  View campaign
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         );
       },
     },
