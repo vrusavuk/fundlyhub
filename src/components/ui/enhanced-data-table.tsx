@@ -400,23 +400,36 @@ export function EnhancedDataTable<TData, TValue>({
 
         {/* Table Controls */}
         <div className="flex items-center space-x-2">
-          {/* Column Visibility */}
-          {enableColumnVisibility && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Eye className="h-4 w-4 mr-2" />
-                  Columns
-                  <ChevronDown className="h-4 w-4 ml-2" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[200px]">
-                <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {table
-                  .getAllColumns()
-                  .filter((column) => column.getCanHide())
-                  .map((column) => {
+          {/* Column Visibility - show when enabled OR when columns are hidden */}
+          {(() => {
+            const hasHiddenColumns = table.getAllColumns().some(col => !col.getIsVisible() && col.getCanHide());
+            const hideableColumns = table.getAllColumns().filter(col => col.getCanHide());
+            
+            if (!enableColumnVisibility && !hasHiddenColumns) return null;
+            if (hideableColumns.length === 0) return null;
+            
+            return (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="flex items-center gap-1.5">
+                    <Eye className="h-4 w-4" />
+                    Columns
+                    {hasHiddenColumns && (
+                      <span className="ml-1 rounded-full bg-primary px-1.5 py-0.5 text-xs text-primary-foreground">
+                        {table.getAllColumns().filter(col => !col.getIsVisible() && col.getCanHide()).length}
+                      </span>
+                    )}
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[200px]">
+                  <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {hideableColumns.map((column) => {
+                    const columnName = typeof column.columnDef.header === 'string' 
+                      ? column.columnDef.header 
+                      : column.id.charAt(0).toUpperCase() + column.id.slice(1).replace(/_/g, ' ');
+                    
                     return (
                       <DropdownMenuCheckboxItem
                         key={column.id}
@@ -426,13 +439,14 @@ export function EnhancedDataTable<TData, TValue>({
                           column.toggleVisibility(!!value)
                         }
                       >
-                        {column.id}
+                        {columnName}
                       </DropdownMenuCheckboxItem>
                     );
                   })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            );
+          })()}
 
           {/* Custom toolbar */}
           {toolbar}

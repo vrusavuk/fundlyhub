@@ -15,6 +15,7 @@ import {
   SortingState,
   Row,
   ColumnPinningState,
+  VisibilityState,
 } from "@tanstack/react-table";
 import {
   StripeTable,
@@ -26,6 +27,7 @@ import {
 } from "@/components/ui/stripe-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getColumnPinningStyles, type ScrollState } from "@/lib/data-table/column-pinning-styles";
+import { DataTableViewOptions } from "@/components/ui/data-table-view-options";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -46,6 +48,8 @@ interface DataTableProps<TData, TValue> {
   onSortingChange?: (sorting: SortingState) => void;
   /** Whether sorting is handled server-side (disables client-side sorting) */
   manualSorting?: boolean;
+  /** Show column visibility toggle */
+  showColumnVisibility?: boolean;
 }
 
 export function DataTableExact<TData, TValue>({
@@ -62,9 +66,11 @@ export function DataTableExact<TData, TValue>({
   sorting: externalSorting,
   onSortingChange,
   manualSorting = false,
+  showColumnVisibility = false,
 }: DataTableProps<TData, TValue>) {
   const [internalSorting, setInternalSorting] = React.useState<SortingState>([]);
   const [rowSelection, setRowSelection] = React.useState(selectedRows || {});
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [scrollState, setScrollState] = React.useState<ScrollState>({
     isScrolledLeft: false,
     isScrolledRight: false,
@@ -188,16 +194,27 @@ export function DataTableExact<TData, TValue>({
       setRowSelection(newSelection);
       onSelectionChange?.(newSelection);
     },
+    onColumnVisibilityChange: setColumnVisibility,
     state: {
       sorting,
       rowSelection,
       columnPinning,
+      columnVisibility,
     },
     enableColumnPinning,
   });
 
+  // Check if any columns are hidden
+  const hasHiddenColumns = table.getAllColumns().some(col => !col.getIsVisible() && col.getCanHide());
+
   return (
     <div className={cn("bg-card", className)}>
+      {/* Column visibility controls - show when enabled or when columns are hidden */}
+      {(showColumnVisibility || hasHiddenColumns) && (
+        <div className="flex items-center justify-end py-2 px-4 border-b border-border/50">
+          <DataTableViewOptions table={table} />
+        </div>
+      )}
       <div ref={scrollContainerRef} className="w-full overflow-auto">
         <table
           className="w-full text-sm"
