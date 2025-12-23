@@ -8,15 +8,21 @@ import { cn } from "@/lib/utils";
 
 export interface StripeCardExactProps extends React.HTMLAttributes<HTMLDivElement> {
   noPadding?: boolean;
+  /**
+   * Removes the card perimeter border/radius for "borderless" table containers
+   * while keeping the background.
+   */
+  borderless?: boolean;
 }
 
 const StripeCardExact = React.forwardRef<HTMLDivElement, StripeCardExactProps>(
-  ({ className, noPadding = false, children, ...props }, ref) => {
+  ({ className, noPadding = false, borderless = false, children, ...props }, ref) => {
     return (
       <div
         ref={ref}
         className={cn(
-          "bg-card border border-border rounded-lg",
+          "bg-card",
+          !borderless && "border border-border rounded-lg",
           !noPadding && "p-6",
           className
         )}
