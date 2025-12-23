@@ -619,7 +619,7 @@ export default function CampaignDetail() {
                         <FormControl>
                           <div className="space-y-4">
                             <ImageUpload
-                              value={uploadedCoverImageId ? [form.watch('cover_image')] : (field.value ? [field.value] : [])}
+                              value={uploadedCoverImageId ? [form.watch('cover_image')] : []}
                               onChange={(url) => {
                                 const imageUrl = typeof url === 'string' ? url : (Array.isArray(url) ? url[0] : '');
                                 if (imageUrl) {
@@ -631,6 +631,8 @@ export default function CampaignDetail() {
                                 if (imageId) {
                                   setUploadedCoverImageId(imageId);
                                   form.setValue('coverImageId', imageId);
+                                  // Clear the URL input when a new image is uploaded
+                                  form.setValue('cover_image', '');
                                 }
                               }}
                               maxFiles={1}

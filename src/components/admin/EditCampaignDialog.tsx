@@ -469,13 +469,14 @@ export function EditCampaignDialog({
                         <FormLabel>Cover Image</FormLabel>
                         <FormControl>
                           <div className="space-y-4">
-                            {/* Upload Option */}
+                            {/* Upload Option - pass empty value when URL is present so uploads are always allowed */}
                             <ImageUpload
-                              value={uploadedCoverImageId ? [form.watch('cover_image')] : (field.value ? [field.value] : [])}
+                              value={uploadedCoverImageId ? [form.watch('cover_image')] : []}
                               onChange={(url) => {
                                 // Handle both string and array types
                                 const imageUrl = typeof url === 'string' ? url : (Array.isArray(url) ? url[0] : '');
                                 if (imageUrl) {
+                                  // Clear any existing URL when a new image is uploaded
                                   field.onChange(imageUrl);
                                 }
                               }}
@@ -485,6 +486,8 @@ export function EditCampaignDialog({
                                 if (imageId) {
                                   setUploadedCoverImageId(imageId);
                                   form.setValue('coverImageId', imageId);
+                                  // Clear the URL input when a new image is uploaded
+                                  form.setValue('cover_image', '');
                                 }
                               }}
                               maxFiles={1}
