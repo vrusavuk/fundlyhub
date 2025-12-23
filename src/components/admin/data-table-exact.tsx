@@ -113,7 +113,7 @@ export function DataTableExact<TData, TValue>({
   });
 
   return (
-    <div className={cn("bg-card border border-border rounded-lg overflow-hidden", className)}>
+    <div className={cn("bg-card", className)}>
       <StripeTable>
         <StripeTableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
