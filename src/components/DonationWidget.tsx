@@ -9,8 +9,8 @@ import { Heart, Share2, Facebook, Twitter, Copy, Check, Gift, CreditCard, Wallet
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
 import { Elements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
-import { StripePaymentForm } from '@/components/payments/StripePaymentForm';
+import { loadStripe, Appearance } from '@stripe/stripe-js';
+import { UnifiedPaymentForm } from '@/components/payments/UnifiedPaymentForm';
 import { useStripePayment } from '@/hooks/useStripePayment';
 import { logger } from '@/lib/services/logger.service';
 
@@ -22,6 +22,19 @@ if (!stripePublishableKey) {
   });
 }
 const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
+
+// Stripe Elements appearance for unified styling
+const stripeAppearance: Appearance = {
+  theme: 'stripe',
+  variables: {
+    colorPrimary: 'hsl(var(--primary))',
+    colorBackground: 'hsl(var(--background))',
+    colorText: 'hsl(var(--foreground))',
+    colorDanger: 'hsl(var(--destructive))',
+    fontFamily: 'inherit',
+    borderRadius: '8px',
+  },
+};
 
 interface Donation {
   id: string;
@@ -330,13 +343,21 @@ export function DonationWidget({
                 </>
               ) : (
                 clientSecret && (
-                  <Elements stripe={stripePromise}>
-                    <StripePaymentForm
+                  <Elements 
+                    stripe={stripePromise} 
+                    options={{ 
+                      clientSecret,
+                      appearance: stripeAppearance,
+                    }}
+                  >
+                    <UnifiedPaymentForm
                       clientSecret={clientSecret}
                       amount={Math.round(totalAmount * 100)}
+                      currency={currency}
                       isAnonymous={isAnonymous}
                       donorEmail={donorEmail}
                       donorName={donorName}
+                      returnUrl={`${window.location.origin}/payment/complete?return_to=${encodeURIComponent(`/fundraiser/${fundraiserId}`)}`}
                       onSuccess={handlePaymentSuccess}
                       onError={handlePaymentError}
                       onEmailChange={setDonorEmail}
@@ -703,13 +724,21 @@ export function DonationWidget({
                     </>
                   ) : (
                     clientSecret && (
-                      <Elements stripe={stripePromise}>
-                        <StripePaymentForm
+                      <Elements 
+                        stripe={stripePromise}
+                        options={{
+                          clientSecret,
+                          appearance: stripeAppearance,
+                        }}
+                      >
+                        <UnifiedPaymentForm
                           clientSecret={clientSecret}
                           amount={Math.round(totalAmount * 100)}
+                          currency={currency}
                           isAnonymous={isAnonymous}
                           donorEmail={donorEmail}
                           donorName={donorName}
+                          returnUrl={`${window.location.origin}/payment/complete?return_to=${encodeURIComponent(`/fundraiser/${fundraiserId}`)}`}
                           onSuccess={handlePaymentSuccess}
                           onError={handlePaymentError}
                           onEmailChange={setDonorEmail}

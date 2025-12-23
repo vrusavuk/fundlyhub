@@ -19,6 +19,7 @@ import FundlyGive from "./pages/FundlyGive";
 import SearchResults from "./pages/SearchResults";
 import FundraiserDetail from "./pages/FundraiserDetail";
 import ProjectDetailExample from "./pages/ProjectDetailExample";
+import PaymentComplete from "./pages/PaymentComplete";
 
 // Route-specific skeleton loaders
 import {
@@ -113,6 +114,9 @@ const App = () => (
             <LazyApiDocs />
           </Suspense>
         } />
+        
+        {/* Payment completion page for redirect-based payments (PayPal, Venmo, Bank) */}
+        <Route path="/payment/complete" element={<PaymentComplete />} />
         
         {/* Legacy route redirect */}
         <Route path="/fundlypay" element={<Navigate to="/fundly-give" replace />} />
