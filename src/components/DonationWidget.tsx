@@ -89,7 +89,8 @@ export function DonationWidget({
 }: DonationWidgetProps) {
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState('');
-  const [tipAmount, setTipAmount] = useState(0);
+  const [tipPercentage, setTipPercentage] = useState<number | 'custom'>(15);
+  const [customTipValue, setCustomTipValue] = useState('');
   const [showTip, setShowTip] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showDonationForm, setShowDonationForm] = useState(showInSheet);
@@ -109,6 +110,9 @@ export function DonationWidget({
   }).format(amount);
 
   const currentAmount = selectedAmount || parseFloat(customAmount) || 0;
+  const tipAmount = tipPercentage === 'custom' 
+    ? (parseFloat(customTipValue) || 0)
+    : Math.round(currentAmount * (tipPercentage / 100) * 100) / 100;
   const totalAmount = currentAmount + tipAmount;
 
   const handleAmountSelect = (amount: number) => {
@@ -123,9 +127,11 @@ export function DonationWidget({
     setShowTip(value !== '');
   };
 
-  const handleTipSelect = (percentage: number) => {
-    const tip = Math.round(currentAmount * (percentage / 100) * 100) / 100;
-    setTipAmount(tip);
+  const handleTipSelect = (percentage: number | 'custom') => {
+    setTipPercentage(percentage);
+    if (percentage !== 'custom') {
+      setCustomTipValue('');
+    }
   };
 
   const handleDonate = async () => {
@@ -153,7 +159,8 @@ export function DonationWidget({
     setClientSecret(null);
     setSelectedAmount(null);
     setCustomAmount('');
-    setTipAmount(0);
+    setTipPercentage(15);
+    setCustomTipValue('');
     setShowTip(false);
     setIsAnonymous(false);
     setDonorEmail('');
@@ -260,19 +267,45 @@ export function DonationWidget({
                 </div>
                 <Gift className="h-4 w-4 text-primary" />
               </div>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-5 gap-1.5">
                 {[0, 10, 15, 20].map((percentage) => (
                   <Button
                     key={percentage}
-                    variant={tipAmount === Math.round(currentAmount * (percentage / 100) * 100) / 100 ? "default" : "outline"}
+                    variant={tipPercentage === percentage ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleTipSelect(percentage)}
-                    className="text-xs h-8"
+                    className="text-xs h-8 relative"
                   >
                     {percentage === 0 ? 'No tip' : `${percentage}%`}
+                    {percentage === 15 && (
+                      <Badge variant="secondary" className="absolute -top-2 -right-1 text-[8px] px-1 py-0 h-3">
+                        Popular
+                      </Badge>
+                    )}
                   </Button>
                 ))}
+                <Button
+                  variant={tipPercentage === 'custom' ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleTipSelect('custom')}
+                  className="text-xs h-8"
+                >
+                  Custom
+                </Button>
               </div>
+              {tipPercentage === 'custom' && (
+                <div className="mt-2">
+                  <Input
+                    type="number"
+                    placeholder="Enter tip amount"
+                    value={customTipValue}
+                    onChange={(e) => setCustomTipValue(e.target.value)}
+                    className="h-8 text-sm"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+              )}
             </div>
           )}
 
@@ -613,29 +646,44 @@ export function DonationWidget({
                     <Gift className="h-4 w-4 text-primary" />
                   </div>
                   
-                  <div className="grid grid-cols-4 gap-2 mb-3">
+                  <div className="grid grid-cols-5 gap-2 mb-3">
                     {[0, 10, 15, 20].map((percentage) => (
                       <Button
                         key={percentage}
-                        variant={tipAmount === Math.round(currentAmount * (percentage / 100) * 100) / 100 ? "default" : "outline"}
+                        variant={tipPercentage === percentage ? "default" : "outline"}
                         size="sm"
                         onClick={() => handleTipSelect(percentage)}
-                        className="text-xs hover-scale"
+                        className="text-xs hover-scale relative"
                       >
                         {percentage === 0 ? 'No tip' : `${percentage}%`}
+                        {percentage === 15 && (
+                          <Badge variant="secondary" className="absolute -top-2 -right-1 text-[8px] px-1 py-0 h-3">
+                            Popular
+                          </Badge>
+                        )}
                       </Button>
                     ))}
+                    <Button
+                      variant={tipPercentage === 'custom' ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handleTipSelect('custom')}
+                      className="text-xs hover-scale"
+                    >
+                      Custom
+                    </Button>
                   </div>
                   
-                  <Input
-                    type="number"
-                    placeholder="Custom tip amount"
-                    value={tipAmount || ''}
-                    onChange={(e) => setTipAmount(parseFloat(e.target.value) || 0)}
-                    className="h-8 text-sm"
-                    min="0"
-                    step="0.01"
-                  />
+                  {tipPercentage === 'custom' && (
+                    <Input
+                      type="number"
+                      placeholder="Enter custom tip amount"
+                      value={customTipValue}
+                      onChange={(e) => setCustomTipValue(e.target.value)}
+                      className="h-8 text-sm"
+                      min="0"
+                      step="0.01"
+                    />
+                  )}
                 </div>
               )}
 
