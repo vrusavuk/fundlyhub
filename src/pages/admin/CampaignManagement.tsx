@@ -577,7 +577,8 @@ export function CampaignManagement() {
         bulkActions={bulkActions}
         onBulkAction={handleBulkActionClick}
         density={density}
-        
+        pinFirstColumn={true}
+        pinLastColumn={true}
         emptyStateTitle="No campaigns found"
         emptyStateDescription="No campaigns match your current filters."
         enableSelection={true}

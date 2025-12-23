@@ -309,6 +309,8 @@ export default function PayoutManagement() {
           loading={loading}
           selectedRows={selectedRows}
           onSelectionChange={setSelectedRows}
+          pinFirstColumn={true}
+          pinLastColumn={true}
         />
       </AdminContentContainer>
 

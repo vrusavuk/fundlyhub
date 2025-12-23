@@ -555,7 +555,8 @@ export function UserManagement() {
         bulkActions={bulkActions}
         onBulkAction={handleBulkAction}
         density={density}
-        
+        pinFirstColumn={true}
+        pinLastColumn={true}
         emptyStateTitle="No users found"
         emptyStateDescription="No users match your current filters. Try adjusting your search criteria."
         error={null}
