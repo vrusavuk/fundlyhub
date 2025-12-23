@@ -24,6 +24,8 @@ interface DonationDetails {
   id: string;
   amount: number;
   tip_amount: number;
+  fee_amount: number;
+  net_amount: number;
   currency: string;
   donor_name: string | null;
   donor_email: string | null;
@@ -41,7 +43,7 @@ const formatCurrency = (amount: number, currency: string = 'USD'): string => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: currency.toUpperCase(),
-  }).format(amount / 100);
+  }).format(amount);
 };
 
 const formatDate = (dateString: string): string => {
@@ -121,6 +123,8 @@ export default function PaymentComplete() {
               id,
               amount,
               tip_amount,
+              fee_amount,
+              net_amount,
               currency,
               donor_name,
               donor_email,
@@ -140,6 +144,8 @@ export default function PaymentComplete() {
               id: donationData.id,
               amount: donationData.amount,
               tip_amount: donationData.tip_amount || 0,
+              fee_amount: donationData.fee_amount || 0,
+              net_amount: donationData.net_amount || 0,
               currency: donationData.currency || 'USD',
               donor_name: donationData.donor_name,
               donor_email: donationData.donor_email,
@@ -250,7 +256,7 @@ export default function PaymentComplete() {
         </div>
         
         <div class="details">
-          <div class="details-header">Receipt Details</div>
+          <div class="details-header">Payment Summary</div>
           <div class="row">
             <span class="row-label">Donation Amount</span>
             <span class="row-value">${formatCurrency(donation.amount, donation.currency)}</span>
@@ -262,10 +268,30 @@ export default function PaymentComplete() {
           </div>
           ` : ''}
           <div class="row total-row">
-            <span class="row-label">Total</span>
+            <span class="row-label">Total Charged</span>
             <span class="row-value">${formatCurrency(totalAmount, donation.currency)}</span>
           </div>
         </div>
+        
+        ${donation.fee_amount > 0 || donation.net_amount > 0 ? `
+        <div class="details" style="margin-top: 16px;">
+          <div class="details-header">Payment Breakdown</div>
+          <div class="row">
+            <span class="row-label">Payment Amount</span>
+            <span class="row-value">${formatCurrency(totalAmount, donation.currency)}</span>
+          </div>
+          ${donation.fee_amount > 0 ? `
+          <div class="row">
+            <span class="row-label">Stripe Processing Fees</span>
+            <span class="row-value" style="color: #dc2626;">-${formatCurrency(donation.fee_amount, donation.currency)}</span>
+          </div>
+          ` : ''}
+          <div class="row total-row">
+            <span class="row-label">Net Amount</span>
+            <span class="row-value">${formatCurrency(donation.net_amount || (totalAmount - donation.fee_amount), donation.currency)}</span>
+          </div>
+        </div>
+        ` : ''}
         
         <div class="meta">
           <div class="row">
@@ -308,12 +334,14 @@ export default function PaymentComplete() {
     
     try {
       const { data, error } = await supabase.functions.invoke('send-receipt-email', {
-        body: {
+      body: {
           recipient_email: emailInput,
           receipt_data: {
             donor_name: donation.donor_name || 'Generous Donor',
             amount: donation.amount,
             tip_amount: donation.tip_amount,
+            fee_amount: donation.fee_amount,
+            net_amount: donation.net_amount,
             currency: donation.currency,
             campaign_title: donation.campaign_title,
             campaign_slug: donation.campaign_slug,
@@ -425,7 +453,7 @@ export default function PaymentComplete() {
               {/* Amount Breakdown */}
               <div className="bg-muted/50 rounded-lg p-4 space-y-3">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b border-border pb-2">
-                  Receipt Details
+                  Payment Summary
                 </p>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Donation Amount</span>
@@ -437,11 +465,34 @@ export default function PaymentComplete() {
                     <span className="font-medium">{formatCurrency(donation.tip_amount, donation.currency)}</span>
                   </div>
                 )}
-                <div className="flex justify-between pt-2 border-t border-border">
-                  <span className="font-semibold">Total</span>
-                  <span className="font-bold text-lg text-green-600">{formatCurrency(totalAmount, donation.currency)}</span>
+                <div className="flex justify-between text-sm pt-2 border-t border-border">
+                  <span className="font-semibold">Total Charged</span>
+                  <span className="font-bold text-green-600">{formatCurrency(totalAmount, donation.currency)}</span>
                 </div>
               </div>
+
+              {/* Payment Breakdown - Fees & Net */}
+              {(donation.fee_amount > 0 || donation.net_amount > 0) && (
+                <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b border-border pb-2">
+                    Payment Breakdown
+                  </p>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Payment Amount</span>
+                    <span className="font-medium">{formatCurrency(totalAmount, donation.currency)}</span>
+                  </div>
+                  {donation.fee_amount > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Stripe Processing Fees</span>
+                      <span className="font-medium text-destructive">-{formatCurrency(donation.fee_amount, donation.currency)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-sm pt-2 border-t border-border">
+                    <span className="font-semibold">Net Amount</span>
+                    <span className="font-bold text-green-600">{formatCurrency(donation.net_amount || (totalAmount - donation.fee_amount), donation.currency)}</span>
+                  </div>
+                </div>
+              )}
 
               {/* Transaction Details */}
               <div className="space-y-2 text-sm">

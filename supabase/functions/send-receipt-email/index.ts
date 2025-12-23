@@ -17,6 +17,8 @@ interface ReceiptEmailRequest {
     donor_name: string;
     amount: number;
     tip_amount: number;
+    fee_amount?: number;
+    net_amount?: number;
     currency: string;
     campaign_title: string;
     campaign_slug: string;
@@ -33,7 +35,7 @@ const formatCurrency = (amount: number, currency: string = 'USD'): string => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: currency.toUpperCase(),
-  }).format(amount / 100);
+  }).format(amount);
 };
 
 const formatDate = (dateString: string): string => {
@@ -50,6 +52,8 @@ const generateReceiptHtml = (data: {
   donor_name: string;
   amount: number;
   tip_amount: number;
+  fee_amount?: number;
+  net_amount?: number;
   currency: string;
   campaign_title: string;
   campaign_slug: string;
@@ -61,6 +65,8 @@ const generateReceiptHtml = (data: {
   is_anonymous: boolean;
 }): string => {
   const totalAmount = data.amount + (data.tip_amount || 0);
+  const feeAmount = data.fee_amount || 0;
+  const netAmount = data.net_amount || (totalAmount - feeAmount);
   const paymentDisplay = data.card_brand && data.card_last4 
     ? `${data.card_brand} •••• ${data.card_last4}`
     : data.payment_method || 'Card';
@@ -120,9 +126,29 @@ const generateReceiptHtml = (data: {
                         <td colspan="2" style="border-top: 1px solid #e5e7eb; padding-top: 12px; margin-top: 8px;"></td>
                       </tr>
                       <tr>
-                        <td style="padding: 8px 0; color: #111827; font-size: 16px; font-weight: 600;">Total</td>
+                        <td style="padding: 8px 0; color: #111827; font-size: 16px; font-weight: 600;">Total Charged</td>
                         <td style="padding: 8px 0; color: #10b981; font-size: 16px; text-align: right; font-weight: 700;">${formatCurrency(totalAmount, data.currency)}</td>
                       </tr>
+                      ${feeAmount > 0 ? `
+                      <tr>
+                        <td colspan="2" style="border-top: 1px solid #e5e7eb; padding-top: 16px; margin-top: 12px;"></td>
+                      </tr>
+                      <tr>
+                        <td colspan="2" style="padding: 0 0 8px; color: #374151; font-size: 13px; font-weight: 600;">Payment Breakdown</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 0; color: #6b7280; font-size: 13px;">Payment Amount</td>
+                        <td style="padding: 6px 0; color: #111827; font-size: 13px; text-align: right;">${formatCurrency(totalAmount, data.currency)}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 0; color: #6b7280; font-size: 13px;">Stripe Processing Fees</td>
+                        <td style="padding: 6px 0; color: #dc2626; font-size: 13px; text-align: right;">-${formatCurrency(feeAmount, data.currency)}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; color: #111827; font-size: 14px; font-weight: 600;">Net Amount</td>
+                        <td style="padding: 8px 0; color: #10b981; font-size: 14px; text-align: right; font-weight: 600;">${formatCurrency(netAmount, data.currency)}</td>
+                      </tr>
+                      ` : ''}
                     </table>
                   </td>
                 </tr>
@@ -206,6 +232,8 @@ const handler = async (req: Request): Promise<Response> => {
           id,
           amount,
           tip_amount,
+          fee_amount,
+          net_amount,
           currency,
           donor_name,
           is_anonymous,
@@ -227,6 +255,8 @@ const handler = async (req: Request): Promise<Response> => {
         donor_name: donation.donor_name || "Generous Donor",
         amount: donation.amount,
         tip_amount: donation.tip_amount || 0,
+        fee_amount: donation.fee_amount || 0,
+        net_amount: donation.net_amount || 0,
         currency: donation.currency || "USD",
         campaign_title: donation.fundraiser?.title || "Campaign",
         campaign_slug: donation.fundraiser?.slug || "",
