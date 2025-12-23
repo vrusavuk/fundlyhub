@@ -69,15 +69,13 @@ serve(async (req) => {
       }
     }
 
-    // Create PaymentIntent with automatic payment methods
-    // Supports: Cards, PayPal, Venmo, Bank (ACH), Apple Pay, Google Pay
+    // Create PaymentIntent with explicit payment methods
+    // Excludes Klarna, crypto, and other unwanted methods
     const paymentIntent = await stripe.paymentIntents.create({
       amount: totalAmount,
       currency: currency.toLowerCase(),
       customer: customerId,
-      automatic_payment_methods: {
-        enabled: true,
-      },
+      payment_method_types: ['card', 'paypal', 'venmo', 'us_bank_account', 'link'],
       metadata: {
         fundraiser_id,
         tip_amount: tip_amount.toString(),
