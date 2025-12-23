@@ -175,14 +175,22 @@ export function DonationWidget({
   const handleDonate = async () => {
     if (currentAmount <= 0) return;
 
+    // Ensure we have the donor email for logged-in users (fallback to user.email)
+    const effectiveDonorEmail = !isAnonymous 
+      ? (donorEmail || user?.email || '') 
+      : undefined;
+    const effectiveDonorName = !isAnonymous 
+      ? (donorName || user?.user_metadata?.name || user?.email?.split('@')[0] || '') 
+      : undefined;
+
     const totalInCents = Math.round(totalAmount * 100);
     const response = await createPaymentIntent({
       fundraiser_id: fundraiserId,
       amount: Math.round(currentAmount * 100),
       tip_amount: Math.round(tipAmount * 100),
       currency: currency,
-      donor_email: !isAnonymous ? donorEmail : undefined,
-      donor_name: !isAnonymous ? donorName : undefined,
+      donor_email: effectiveDonorEmail,
+      donor_name: effectiveDonorName,
       is_anonymous: isAnonymous,
     });
 
