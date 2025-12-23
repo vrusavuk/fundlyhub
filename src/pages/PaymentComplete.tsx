@@ -39,22 +39,12 @@ interface DonationDetails {
   campaign_slug: string;
 }
 
-const formatCurrency = (amount: number, currency: string = 'USD'): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currency.toUpperCase(),
-  }).format(amount);
-};
+// Use centralized utilities
+import { formatCurrency } from '@/lib/utils/currency';
+import { formatDateTime } from '@/lib/utils/date';
 
-const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
+// Re-export for inline use in this file
+const formatDate = formatDateTime;
 
 // Poll for donation data with retries
 const MAX_RETRIES = 10;

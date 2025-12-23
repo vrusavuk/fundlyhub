@@ -9,6 +9,7 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/services/logger.service';
 
 const SEARCH_API_URL = `${import.meta.env.VITE_SUPABASE_URL || 'https://sgcaqrtnxqhrrqzxmupa.supabase.co'}/functions/v1/search-api`;
 
@@ -55,6 +56,7 @@ export interface SuggestResponse {
 
 class SearchApiService {
   private apiUrl: string;
+  private readonly ctx = { componentName: 'SearchApiService' };
 
   constructor() {
     this.apiUrl = SEARCH_API_URL;
@@ -105,7 +107,7 @@ class SearchApiService {
       const data: SearchResponse = await response.json();
       return data;
     } catch (error) {
-      console.error('Search API error:', error);
+      logger.error('Search API error', error as Error, { ...this.ctx, operationName: 'search' });
       return {
         results: [],
         total: 0,
@@ -144,7 +146,7 @@ class SearchApiService {
       const data: SuggestResponse = await response.json();
       return data;
     } catch (error) {
-      console.error('Suggest API error:', error);
+      logger.error('Suggest API error', error as Error, { ...this.ctx, operationName: 'suggest' });
       return { suggestions: [], executionTimeMs: 0 };
     }
   }
@@ -164,7 +166,7 @@ class SearchApiService {
 
       return await response.json();
     } catch (error) {
-      console.error('Health check error:', error);
+      logger.error('Health check error', error as Error, { ...this.ctx, operationName: 'health' });
       return { status: 'unhealthy', timestamp: new Date().toISOString() };
     }
   }

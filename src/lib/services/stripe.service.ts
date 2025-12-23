@@ -5,6 +5,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { loadStripe, Stripe, PaymentIntentResult } from '@stripe/stripe-js';
+import { logger } from './logger.service';
 
 export interface CreatePaymentIntentRequest {
   fundraiser_id: string;
@@ -27,10 +28,15 @@ export interface PaymentIntentResponse {
 export class StripeService {
   private stripePromise: Promise<Stripe | null> | null = null;
   private readonly publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '';
+  private readonly ctx = { componentName: 'StripeService' };
 
   constructor() {
     if (!this.publishableKey) {
-      console.error('Stripe publishable key is not configured. Please check VITE_STRIPE_PUBLISHABLE_KEY in .env file');
+      logger.error('Stripe publishable key is not configured', undefined, { 
+        ...this.ctx, 
+        operationName: 'constructor',
+        metadata: { hint: 'Check VITE_STRIPE_PUBLISHABLE_KEY in .env file' }
+      });
     }
   }
 
@@ -56,7 +62,7 @@ export class StripeService {
     });
 
     if (error) {
-      console.error('Error creating payment intent:', error);
+      logger.error('Error creating payment intent', error as Error, { ...this.ctx, operationName: 'createPaymentIntent' });
       throw new Error(error.message || 'Failed to create payment intent');
     }
 
@@ -92,7 +98,7 @@ export class StripeService {
       throw new Error('Payment intent is null');
     }
 
-    console.log('Payment successful:', paymentIntent.id);
+    logger.info('Payment successful', { ...this.ctx, operationName: 'handlePaymentSuccess', metadata: { paymentIntentId: paymentIntent.id } });
     // The webhook will handle creating the donation record
   }
 
@@ -100,7 +106,11 @@ export class StripeService {
    * Handle payment error
    */
   handlePaymentError(error: any): string {
-    console.error('Payment error:', error);
+    logger.error('Payment error', error instanceof Error ? error : new Error(error?.message || 'Unknown payment error'), { 
+      ...this.ctx, 
+      operationName: 'handlePaymentError',
+      metadata: { type: error?.type }
+    });
 
     if (error.type === 'card_error' || error.type === 'validation_error') {
       return error.message;

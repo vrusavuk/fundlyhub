@@ -5,6 +5,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { unifiedApi } from './unified-api.service';
+import { logger } from './logger.service';
 
 export interface PayoutRequest {
   id: string;
@@ -221,18 +222,18 @@ class PayoutService {
       });
 
       if (error) {
-        console.error('Bank lookup error:', error);
+        logger.error('Bank lookup error', error as Error, { componentName: 'PayoutService', operationName: 'lookupBankByRoutingNumber' });
         return null;
       }
 
       if (data.error) {
-        console.error('Bank lookup failed:', data.error);
+        logger.warn('Bank lookup failed', { componentName: 'PayoutService', operationName: 'lookupBankByRoutingNumber', metadata: { error: data.error } });
         return null;
       }
 
       return { bank_name: data.bank_name };
     } catch (error) {
-      console.error('Failed to lookup bank:', error);
+      logger.error('Failed to lookup bank', error as Error, { componentName: 'PayoutService', operationName: 'lookupBankByRoutingNumber' });
       return null;
     }
   }
@@ -275,12 +276,12 @@ class PayoutService {
     });
 
     if (error) {
-      console.error('Edge function invocation error:', error);
+      logger.error('Edge function invocation error', error as Error, { componentName: 'PayoutService', operationName: 'addBankAccount' });
       throw new Error(error.message || 'Failed to add bank account');
     }
 
     if (data.error) {
-      console.error('Edge function returned error:', data.error);
+      logger.error('Edge function returned error', new Error(data.error), { componentName: 'PayoutService', operationName: 'addBankAccount' });
       throw new Error(data.error);
     }
 
@@ -348,24 +349,26 @@ class PayoutService {
    * This is the SINGLE SOURCE OF TRUTH for user earnings
    */
   async getUserEarnings(userId: string): Promise<UserEarnings> {
+    const ctx = { componentName: 'PayoutService', operationName: 'getUserEarnings', userId };
+    
     try {
-      console.log('[PayoutService] Fetching earnings for user:', userId);
+      logger.debug('Fetching earnings for user', ctx);
       
       // Make direct RPC call - bypass caching layer
       const { data, error } = await supabase.rpc('get_user_earnings', {
         _user_id: userId,
       });
 
-      console.log('[PayoutService] RPC Response:', { data, error });
+      logger.debug('RPC Response received', { ...ctx, metadata: { hasData: !!data, hasError: !!error } });
 
       if (error) {
-        console.error('[PayoutService] RPC Error:', error);
+        logger.error('RPC Error fetching earnings', error as Error, ctx);
         throw new Error(`Failed to fetch earnings: ${error.message}`);
       }
 
       // Handle empty result - user has no earnings yet
       if (!data || data.length === 0) {
-        console.log('[PayoutService] No earnings data found, returning zeros');
+        logger.debug('No earnings data found, returning zeros', ctx);
         return {
           total_earnings: '0.00',
           total_payouts: '0.00',
@@ -380,7 +383,6 @@ class PayoutService {
 
       // Transform the first row with proper decimal formatting
       const row = data[0];
-      console.log('[PayoutService] Raw row data:', row);
 
       const earnings = {
         total_earnings: (Number(row.total_earnings) || 0).toFixed(2),
@@ -393,10 +395,10 @@ class PayoutService {
         donation_count: row.donation_count || 0,
       };
 
-      console.log('[PayoutService] Transformed earnings:', earnings);
+      logger.debug('Transformed earnings', { ...ctx, metadata: { fundraiser_count: earnings.fundraiser_count, donation_count: earnings.donation_count } });
       return earnings;
     } catch (error) {
-      console.error('[PayoutService] getUserEarnings error:', error);
+      logger.error('getUserEarnings failed', error as Error, ctx);
       throw error;
     }
   }
