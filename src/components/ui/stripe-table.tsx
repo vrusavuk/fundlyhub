@@ -36,7 +36,7 @@ const StripeTableBody = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <tbody ref={ref} className={cn("", className)} {...props} />
+  <tbody ref={ref} className={cn("divide-y divide-border", className)} {...props} />
 ));
 StripeTableBody.displayName = "StripeTableBody";
 
