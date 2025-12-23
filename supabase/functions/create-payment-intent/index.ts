@@ -69,13 +69,15 @@ serve(async (req) => {
       }
     }
 
-    // Create PaymentIntent with explicit payment methods
-    // Excludes Klarna, crypto, and other unwanted methods
+    // Create PaymentIntent with automatic payment methods
+    // Only shows payment methods enabled in Stripe Dashboard
     const paymentIntent = await stripe.paymentIntents.create({
       amount: totalAmount,
       currency: currency.toLowerCase(),
       customer: customerId,
-      payment_method_types: ['card', 'paypal', 'venmo', 'us_bank_account', 'link'],
+      automatic_payment_methods: {
+        enabled: true,
+      },
       metadata: {
         fundraiser_id,
         tip_amount: tip_amount.toString(),
