@@ -2,24 +2,16 @@
  * User Detail Page
  * Stripe-inspired detail view for individual users
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { User, Check, XCircle, Ban, UserCheck, UserX } from 'lucide-react';
+import { User, Check, XCircle, Ban, UserCheck, UserX, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { usePagination } from '@/hooks/usePagination';
-import { StripePagination } from '@/components/ui/StripePagination';
 import { formatDistanceToNow } from 'date-fns';
-import {
-  StripeTable,
-  StripeTableHeader,
-  StripeTableBody,
-  StripeTableHead,
-  StripeTableRow,
-  StripeTableCell,
-} from '@/components/ui/stripe-table';
+import { ColumnDef, Row } from '@tanstack/react-table';
 import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
 import {
   DetailPageLayout,
@@ -34,11 +26,17 @@ import { useDetailPageBreadcrumbs } from '@/hooks/useDetailPageBreadcrumbs';
 import { ConfirmActionDialog } from '@/components/admin/dialogs/ConfirmActionDialog';
 import { ReasonInputDialog } from '@/components/admin/dialogs/ReasonInputDialog';
 import { supabase } from '@/integrations/supabase/client';
+import { DataTableExact } from '@/components/admin/data-table-exact';
+import { StripeCardExact } from '@/components/ui/stripe-card-exact';
+import { StripePagination } from '@/components/ui/StripePagination';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { DonationMobileCard } from '@/components/ui/mobile-card';
 
 export default function UserDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [donations, setDonations] = useState<any[]>([]);
@@ -254,6 +252,49 @@ export default function UserDetail() {
     }
   };
 
+  // Column definitions for donation table
+  const donationColumns: ColumnDef<any, any>[] = useMemo(() => [
+    {
+      accessorKey: 'amount',
+      header: 'Amount',
+      cell: ({ row }) => (
+        <span className="font-medium">
+          {MoneyMath.format(MoneyMath.create(row.original.amount, row.original.currency))}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'campaign',
+      header: 'Campaign',
+      cell: ({ row }) => row.original.fundraisers?.title || 'Unknown Campaign',
+    },
+    {
+      accessorKey: 'payment_status',
+      header: 'Status',
+      cell: ({ row }) => (
+        <Badge variant={getStatusVariant(row.original.payment_status) as any}>
+          {getStatusLabel(row.original.payment_status)}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: 'created_at',
+      header: 'Date',
+      cell: ({ row }) => formatDistanceToNow(new Date(row.original.created_at), { addSuffix: true }),
+    },
+    {
+      id: 'actions',
+      header: '',
+      cell: () => (
+        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+      ),
+    },
+  ], []);
+
+  const handleDonationRowClick = (row: Row<any>) => {
+    navigate(`/admin/donations/${row.original.id}`);
+  };
+
   return (
     <>
       <DetailPageLayout
@@ -466,59 +507,30 @@ export default function UserDetail() {
                     No donations yet
                   </p>
                 </div>
-              ) : (
-                <>
-                  <StripeTable>
-                    <StripeTableHeader>
-                      <StripeTableRow density="comfortable">
-                        <StripeTableHead>Amount</StripeTableHead>
-                        <StripeTableHead>Campaign</StripeTableHead>
-                        <StripeTableHead>Status</StripeTableHead>
-                        <StripeTableHead>Date</StripeTableHead>
-                        <StripeTableHead className="text-right">Actions</StripeTableHead>
-                      </StripeTableRow>
-                    </StripeTableHeader>
-                    <StripeTableBody>
-                      {donations.map((donation) => (
-                        <StripeTableRow 
-                          key={donation.id}
-                          density="comfortable"
-                          className="cursor-pointer hover:bg-muted/50"
-                          onClick={() => navigate(`/admin/donations/${donation.id}`)}
-                        >
-                          <StripeTableCell>
-                            <span className="font-medium">
-                              {MoneyMath.format(MoneyMath.create(donation.amount, donation.currency))}
-                            </span>
-                          </StripeTableCell>
-                          <StripeTableCell>
-                            {donation.fundraisers?.title || 'Unknown Campaign'}
-                          </StripeTableCell>
-                          <StripeTableCell>
-                            <Badge variant={getStatusVariant(donation.payment_status) as any}>
-                              {getStatusLabel(donation.payment_status)}
-                            </Badge>
-                          </StripeTableCell>
-                          <StripeTableCell>
-                            {formatDistanceToNow(new Date(donation.created_at), { addSuffix: true })}
-                          </StripeTableCell>
-                          <StripeTableCell className="text-right">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/admin/donations/${donation.id}`);
-                              }}
-                            >
-                              View
-                            </Button>
-                          </StripeTableCell>
-                        </StripeTableRow>
-                      ))}
-                    </StripeTableBody>
-                  </StripeTable>
-                  
+              ) : isMobile ? (
+                // Mobile: Card list
+                <div className="space-y-3 p-4">
+                  {donations.map((donation) => (
+                    <div
+                      key={donation.id}
+                      onClick={() => navigate(`/admin/donations/${donation.id}`)}
+                    >
+                      <DonationMobileCard
+                        donation={{
+                          id: donation.id,
+                          amount: donation.amount,
+                          currency: donation.currency,
+                          payment_status: donation.payment_status,
+                          donor_name: donation.donor_name,
+                          donor_email: donation.donor_email,
+                          is_anonymous: donation.is_anonymous,
+                          tip_amount: donation.tip_amount,
+                          created_at: donation.created_at,
+                          fundraiser: donation.fundraisers ? { title: donation.fundraisers.title } : undefined,
+                        }}
+                      />
+                    </div>
+                  ))}
                   {donationPagination.state.totalPages > 1 && (
                     <StripePagination
                       page={donationPagination.state.page}
@@ -529,7 +541,30 @@ export default function UserDetail() {
                       onPageSizeChange={donationPagination.setPageSize}
                     />
                   )}
-                </>
+                </div>
+              ) : (
+                // Desktop: Borderless table with sticky columns
+                <StripeCardExact noPadding borderless>
+                  <DataTableExact
+                    columns={donationColumns}
+                    data={donations}
+                    onRowClick={handleDonationRowClick}
+                    enableSelection={false}
+                    density="comfortable"
+                    pinFirstColumn={true}
+                    pinLastColumn={true}
+                  />
+                  {donationPagination.state.totalPages > 1 && (
+                    <StripePagination
+                      page={donationPagination.state.page}
+                      pageSize={donationPagination.state.pageSize}
+                      totalItems={totalDonations}
+                      totalPages={donationPagination.state.totalPages}
+                      onPageChange={donationPagination.goToPage}
+                      onPageSizeChange={donationPagination.setPageSize}
+                    />
+                  )}
+                </StripeCardExact>
               )}
             </DetailSection>
           </>
