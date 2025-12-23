@@ -125,6 +125,11 @@ export function AdminHeader() {
             <Settings className="mr-2 h-4 w-4" />
             <span>Admin Settings</span>
           </DropdownMenuItem>
+          {/* Back to Site - visible only on mobile/tablet (hidden on lg+) */}
+          <DropdownMenuItem onClick={handleBackToSite} className="lg:hidden">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            <span>Back to Site</span>
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleSignOut}>
             <LogOut className="mr-2 h-4 w-4" />
