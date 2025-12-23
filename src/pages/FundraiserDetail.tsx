@@ -441,7 +441,7 @@ export default function FundraiserDetail() {
                   <CardContent className="p-4 sm:p-6">
                     <div 
                       className="prose max-w-none"
-                      dangerouslySetInnerHTML={{ __html: sanitizeHTML(fundraiser.story_html) }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHTML(stripMarkdown(fundraiser.story_html)) }}
                     />
                   </CardContent>
                 </Card>
