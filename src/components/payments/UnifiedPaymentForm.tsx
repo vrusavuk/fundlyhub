@@ -22,6 +22,7 @@ interface UnifiedPaymentFormProps {
   amount: number; // in cents
   currency?: string;
   isAnonymous: boolean;
+  isLoggedIn?: boolean;
   donorEmail?: string;
   donorName?: string;
   returnUrl: string;
@@ -55,6 +56,7 @@ export function UnifiedPaymentForm({
   amount,
   currency = 'USD',
   isAnonymous,
+  isLoggedIn = false,
   donorEmail = '',
   donorName = '',
   returnUrl,
@@ -130,9 +132,12 @@ export function UnifiedPaymentForm({
     }).format(amountInCents / 100);
   };
 
+  // Only show input fields for non-anonymous guest users
+  const showDonorInputs = !isAnonymous && !isLoggedIn;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {!isAnonymous && (
+      {showDonorInputs && (
         <>
           <div className="space-y-2">
             <Label htmlFor="donor-name">Name</Label>

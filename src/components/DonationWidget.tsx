@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Heart, Share2, Facebook, Twitter, Copy, Check, Gift, CreditCard, Wallet, ChevronLeft, EyeOff, Users } from 'lucide-react';
+import { Heart, Share2, Facebook, Twitter, Copy, Check, Gift, CreditCard, Wallet, ChevronLeft, EyeOff, Users, User } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
 import { Elements } from '@stripe/react-stripe-js';
@@ -15,6 +15,7 @@ import { useStripePayment } from '@/hooks/useStripePayment';
 import { logger } from '@/lib/services/logger.service';
 import { useTipFeedback } from '@/hooks/useTipFeedback';
 import { TipFeedbackMessage } from '@/components/TipFeedbackMessage';
+import { useAuth } from '@/hooks/useAuth';
 
 const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 if (!stripePublishableKey) {
@@ -103,9 +104,26 @@ export function DonationWidget({
   const [donorName, setDonorName] = useState('');
   const { toast } = useToast();
   const { createPaymentIntent, isLoading } = useStripePayment();
+  const { user } = useAuth();
   
   // Track the amount used when PaymentIntent was created
   const paymentIntentAmountRef = useRef<number | null>(null);
+  
+  // Auto-populate donor info for logged-in users
+  useEffect(() => {
+    if (user && !isAnonymous) {
+      const userName = user.user_metadata?.name || user.email?.split('@')[0] || '';
+      const userEmail = user.email || '';
+      setDonorName(userName);
+      setDonorEmail(userEmail);
+    } else if (user && isAnonymous) {
+      // Clear donor info when logged-in user chooses anonymous
+      setDonorName('');
+      setDonorEmail('');
+    }
+  }, [user, isAnonymous]);
+  
+  const isLoggedIn = !!user;
 
   const formatAmount = (amount: number) => new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -357,7 +375,24 @@ export function DonationWidget({
 
               {!showPaymentForm ? (
                 <>
-                  {!isAnonymous && (
+                  {/* Show donor confirmation for logged-in non-anonymous users */}
+                  {!isAnonymous && isLoggedIn && (
+                    <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user?.user_metadata?.avatar_url} />
+                        <AvatarFallback>
+                          <User className="h-4 w-4" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="text-sm">
+                        <span className="text-muted-foreground">Donating as </span>
+                        <span className="font-medium">{donorName || user?.email}</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Only show input fields for non-anonymous guest users */}
+                  {!isAnonymous && !isLoggedIn && (
                     <>
                       <div className="space-y-2">
                         <Input
@@ -412,6 +447,7 @@ export function DonationWidget({
                       amount={Math.round(totalAmount * 100)}
                       currency={currency}
                       isAnonymous={isAnonymous}
+                      isLoggedIn={isLoggedIn}
                       donorEmail={donorEmail}
                       donorName={donorName}
                       returnUrl={`${window.location.origin}/payment/complete?return_to=${encodeURIComponent(`/fundraiser/${fundraiserId}`)}`}
@@ -752,7 +788,24 @@ export function DonationWidget({
                   
                   {!showPaymentForm ? (
                     <>
-                      {!isAnonymous && (
+                      {/* Show donor confirmation for logged-in non-anonymous users */}
+                      {!isAnonymous && isLoggedIn && (
+                        <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={user?.user_metadata?.avatar_url} />
+                            <AvatarFallback>
+                              <User className="h-4 w-4" />
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="text-sm">
+                            <span className="text-muted-foreground">Donating as </span>
+                            <span className="font-medium">{donorName || user?.email}</span>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Only show input fields for non-anonymous guest users */}
+                      {!isAnonymous && !isLoggedIn && (
                         <>
                           <div className="space-y-2">
                             <label className="block text-sm font-medium">Name</label>
@@ -810,6 +863,7 @@ export function DonationWidget({
                           amount={Math.round(totalAmount * 100)}
                           currency={currency}
                           isAnonymous={isAnonymous}
+                          isLoggedIn={isLoggedIn}
                           donorEmail={donorEmail}
                           donorName={donorName}
                           returnUrl={`${window.location.origin}/payment/complete?return_to=${encodeURIComponent(`/fundraiser/${fundraiserId}`)}`}
