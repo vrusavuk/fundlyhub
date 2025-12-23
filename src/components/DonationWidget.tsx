@@ -304,7 +304,7 @@ export function DonationWidget({
                     placeholder="Enter tip amount"
                     value={customTipValue}
                     onChange={(e) => setCustomTipValue(e.target.value)}
-                    className="h-8 text-sm"
+                    className="h-10 sm:h-8 text-base sm:text-sm"
                     min="0"
                     step="0.01"
                   />
@@ -684,7 +684,7 @@ export function DonationWidget({
                       placeholder="Enter custom tip amount"
                       value={customTipValue}
                       onChange={(e) => setCustomTipValue(e.target.value)}
-                      className="h-8 text-sm"
+                      className="h-10 sm:h-8 text-base sm:text-sm"
                       min="0"
                       step="0.01"
                     />
