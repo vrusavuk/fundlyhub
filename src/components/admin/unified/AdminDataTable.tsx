@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import { 
   ColumnDef, 
   Row, 
@@ -12,9 +12,9 @@ import { StripePagination } from '@/components/ui/StripePagination';
 import { AdminTableControls, BulkAction, TableAction } from './AdminTableControls';
 import { AdminContentContainer } from './AdminContentContainer';
 import { TableSkeleton } from '@/components/admin/TableSkeleton';
-import { UserMobileCard, CampaignMobileCard, OrganizationMobileCard } from '@/components/ui/mobile-card';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export interface ServerPaginationState {
   page: number;
@@ -53,8 +53,10 @@ interface AdminDataTableProps<TData, TValue> {
   enableFiltering?: boolean;
   enableColumnVisibility?: boolean;
   enablePagination?: boolean;
-  // Mobile card renderer
-  mobileCardType?: 'user' | 'campaign' | 'organization';
+  
+  // Mobile card renderer - render custom card for each data item on mobile
+  mobileCardRenderer?: (item: TData, index: number) => ReactNode;
+  
   className?: string;
   density?: 'compact' | 'comfortable' | 'spacious';
   
@@ -70,6 +72,33 @@ interface AdminDataTableProps<TData, TValue> {
   paginationState?: ServerPaginationState;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
+}
+
+// Mobile card list skeleton
+function MobileCardListSkeleton({ count = 5 }: { count?: number }) {
+  return (
+    <div className="space-y-3">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="border border-border/50 rounded-lg p-4">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-10 w-10 rounded-full shrink-0" />
+            <div className="flex-1 space-y-2">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-4 w-16" />
+              </div>
+              <Skeleton className="h-3 w-48" />
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-5 w-16 rounded-full" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            </div>
+            <Skeleton className="h-5 w-5 shrink-0" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function AdminDataTable<TData, TValue>({
@@ -93,7 +122,7 @@ export function AdminDataTable<TData, TValue>({
   enableFiltering = true,
   enableColumnVisibility = true,
   enablePagination = true,
-  mobileCardType,
+  mobileCardRenderer,
   className,
   density = 'comfortable',
   pinFirstColumn = false,
@@ -139,9 +168,91 @@ export function AdminDataTable<TData, TValue>({
     const selectedData = data.filter((_, index) => selectedRowIds[String(index)]);
     handleSelectionChange(selectedData);
   };
+
+  // Handle mobile card click - create a pseudo-row object
+  const handleMobileCardClick = (item: TData, index: number) => {
+    if (onRowClick) {
+      // Create a minimal Row object for compatibility
+      const pseudoRow = {
+        original: item,
+        index,
+        id: String(index),
+      } as Row<TData>;
+      onRowClick(pseudoRow);
+    }
+  };
   
+  // Render mobile card list
+  const renderMobileCards = () => {
+    if (loading) {
+      return <MobileCardListSkeleton count={5} />;
+    }
+
+    if (data.length === 0) {
+      return null; // Let AdminContentContainer handle empty state
+    }
+
+    return (
+      <div className="space-y-3">
+        {data.map((item, index) => (
+          <div
+            key={index}
+            onClick={() => handleMobileCardClick(item, index)}
+          >
+            {mobileCardRenderer!(item, index)}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Mobile view with cards
+  if (isMobile && mobileCardRenderer) {
+    return (
+      <AdminContentContainer
+        loading={false}
+        error={error}
+        empty={!loading && !error && data.length === 0}
+        emptyTitle={emptyStateTitle}
+        emptyDescription={emptyStateDescription}
+        retry={retry}
+        className={cn('w-full', className)}
+      >
+        <div className="space-y-4 w-full">
+          {/* Table Controls - simplified for mobile */}
+          <AdminTableControls
+            title={title}
+            selectedCount={currentSelection.length}
+            totalCount={paginationState?.totalCount || data.length}
+            actions={actions}
+            bulkActions={bulkActions}
+            onBulkAction={handleBulkAction}
+            onClearSelection={clearSelection}
+            loading={loading}
+          />
+          
+          {/* Mobile Card List */}
+          {renderMobileCards()}
+
+          {/* Pagination Controls */}
+          {enablePagination && paginationState && onPageChange && onPageSizeChange && paginationState.totalPages && paginationState.totalPages > 1 && (
+            <div className="border-t border-border pt-4">
+              <StripePagination
+                page={paginationState.page}
+                pageSize={paginationState.pageSize}
+                totalItems={paginationState.totalCount || 0}
+                totalPages={paginationState.totalPages}
+                onPageChange={onPageChange}
+                onPageSizeChange={onPageSizeChange}
+              />
+            </div>
+          )}
+        </div>
+      </AdminContentContainer>
+    );
+  }
   
-  // Show loading skeleton
+  // Desktop view with table - Show loading skeleton
   if (loading) {
     return (
       <div className={cn('space-y-4 w-full max-w-full', className)}>

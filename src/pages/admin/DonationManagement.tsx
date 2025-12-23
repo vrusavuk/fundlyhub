@@ -27,6 +27,7 @@ import { createDonationColumns, DonationData } from '@/lib/data-table/donation-c
 import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
 import { exportDonationsCSV } from '@/lib/utils/exportDonations';
 import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
+import { DonationMobileCard } from '@/components/ui/mobile-card';
 import { DensityToggle, Density } from '@/components/admin/DensityToggle';
 import { 
   AdminPageLayout, 
@@ -467,6 +468,10 @@ export function DonationManagement() {
         actions={tableActions}
         bulkActions={bulkActions}
         onBulkAction={handleBulkActionClick}
+        onRowClick={(row) => handleViewDetails(row.original)}
+        mobileCardRenderer={(donation) => (
+          <DonationMobileCard donation={donation} />
+        )}
         enableSelection={true}
         enableSorting={true}
         enableColumnVisibility={true}

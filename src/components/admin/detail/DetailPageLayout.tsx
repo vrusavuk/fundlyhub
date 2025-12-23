@@ -1,9 +1,14 @@
 /**
  * Stripe-inspired Detail Page Layout
  * Provides consistent structure for entity detail pages
+ * Responsive: stacks on mobile, 2-column on desktop
  */
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface DetailPageLayoutProps {
   // Header section
@@ -16,6 +21,10 @@ interface DetailPageLayoutProps {
   mainContent: React.ReactNode;
   sidebar: React.ReactNode;
   
+  // Navigation
+  backUrl?: string;
+  backLabel?: string;
+  
   className?: string;
 }
 
@@ -26,49 +35,75 @@ export function DetailPageLayout({
   actions,
   mainContent,
   sidebar,
+  backUrl,
+  backLabel = 'Back',
   className,
 }: DetailPageLayoutProps) {
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
+
+  const handleBack = () => {
+    if (backUrl) {
+      navigate(backUrl);
+    } else {
+      navigate(-1);
+    }
+  };
+
   return (
     <div className={cn("bg-background w-full", className)}>
       {/* Header Section */}
-      <div className="border-b border-border bg-card px-8 py-6">
-        <div className="flex items-start justify-between gap-4">
+      <div className="border-b border-border bg-card px-4 md:px-8 py-4 md:py-6">
+        {/* Back button for mobile */}
+        {isMobile && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={handleBack}
+            className="mb-3 -ml-2 text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            {backLabel}
+          </Button>
+        )}
+        
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 md:gap-4">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2 md:gap-3 flex-wrap">
               {typeof title === 'string' ? (
-                <h1 className="text-[32px] font-semibold text-foreground leading-tight">
+                <h1 className="text-xl md:text-[32px] font-semibold text-foreground leading-tight">
                   {title}
                 </h1>
               ) : (
-                <div className="text-[32px] font-semibold text-foreground leading-tight">
+                <div className="text-xl md:text-[32px] font-semibold text-foreground leading-tight">
                   {title}
                 </div>
               )}
               {status && <div className="shrink-0">{status}</div>}
             </div>
             {subtitle && (
-              <div className="text-[14px] text-muted-foreground mt-1">
+              <div className="text-xs md:text-[14px] text-muted-foreground mt-1">
                 {subtitle}
               </div>
             )}
           </div>
           {actions && (
-            <div className="shrink-0 flex items-center gap-2">
+            <div className="shrink-0 flex items-center gap-2 flex-wrap">
               {actions}
             </div>
           )}
         </div>
       </div>
 
-      {/* Content Section - Two Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-8">
-        {/* Main Content - 2/3 width */}
-        <div className="lg:col-span-2 space-y-6">
+      {/* Content Section - Stacked on mobile, 2-column on desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 p-4 md:p-8">
+        {/* Main Content - Full width on mobile, 2/3 on desktop */}
+        <div className="lg:col-span-2 space-y-4 md:space-y-6 order-1">
           {mainContent}
         </div>
 
-        {/* Sidebar - 1/3 width */}
-        <div className="lg:col-span-1 space-y-6">
+        {/* Sidebar - Full width on mobile (below main), 1/3 on desktop */}
+        <div className="lg:col-span-1 space-y-4 md:space-y-6 order-2">
           {sidebar}
         </div>
       </div>
