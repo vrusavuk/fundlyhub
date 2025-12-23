@@ -56,3 +56,6 @@ verify_jwt = true
 
 [functions.gofundme-import]
 verify_jwt = true
+
+[functions.send-receipt-email]
+verify_jwt = false
