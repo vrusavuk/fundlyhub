@@ -11,6 +11,8 @@ interface DetailSectionProps {
   actions?: React.ReactNode;
   className?: string;
   noPadding?: boolean;
+  /** Removes the outer card border/background so the section can blend into the page (useful for tables) */
+  borderless?: boolean;
 }
 
 export function DetailSection({
@@ -19,22 +21,27 @@ export function DetailSection({
   actions,
   className,
   noPadding,
+  borderless,
 }: DetailSectionProps) {
   return (
-    <div className={cn("bg-card border border-border rounded-lg", className)}>
-      <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+    <section
+      className={cn(
+        borderless ? 'bg-transparent' : 'bg-card border border-border rounded-lg',
+        className
+      )}
+    >
+      <header
+        className={cn(
+          'flex items-center justify-between',
+          borderless ? 'px-0 py-0 mb-3' : 'px-6 py-4 border-b border-border'
+        )}
+      >
         <h2 className="text-[14px] font-semibold uppercase tracking-[0.5px] text-muted-foreground">
           {title}
         </h2>
         {actions && <div className="flex items-center gap-2">{actions}</div>}
-      </div>
-      {noPadding ? (
-        children
-      ) : (
-        <div className="px-6 py-5">
-          {children}
-        </div>
-      )}
-    </div>
+      </header>
+      {noPadding ? children : <div className={borderless ? 'px-0 py-0' : 'px-6 py-5'}>{children}</div>}
+    </section>
   );
 }

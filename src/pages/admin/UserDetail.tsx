@@ -488,6 +488,7 @@ export default function UserDetail() {
             <DetailSection 
               title="Donation History"
               noPadding
+              borderless
               actions={
                 totalDonations > 0 && (
                   <span className="text-[12px] text-muted-foreground">
@@ -544,13 +545,13 @@ export default function UserDetail() {
                   )}
                 </div>
               ) : (
-                // Desktop: Borderless table with sticky columns
+                // Desktop: Borderless table with sticky checkbox + actions columns
                 <StripeCardExact noPadding borderless>
                   <DataTableExact
                     columns={donationColumns}
                     data={donations}
                     onRowClick={handleDonationRowClick}
-                    enableSelection={false}
+                    enableSelection={true}
                     density="comfortable"
                     pinFirstColumn={true}
                     pinLastColumn={true}
