@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowLeft, ExternalLink, Check, Clock, TrendingUp, Pencil, X, Save, Loader2 } from 'lucide-react';
+import { ExternalLink, Check, Clock, TrendingUp, Pencil, X, Save, Loader2, Play, Pause, XCircle, Trash2, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -47,6 +47,7 @@ import { ImageUpload } from '@/components/ui/ImageUpload';
 import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AdminEventService } from '@/lib/services/AdminEventService';
+import { ConfirmActionDialog } from '@/components/admin/dialogs/ConfirmActionDialog';
 
 export default function CampaignDetail() {
   const { id } = useParams<{ id: string }>();
@@ -60,6 +61,13 @@ export default function CampaignDetail() {
   const [isEditing, setIsEditing] = useState(() => editParam === '1');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadedCoverImageId, setUploadedCoverImageId] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  
+  // Dialog states
+  const [showApproveDialog, setShowApproveDialog] = useState(false);
+  const [showPauseDialog, setShowPauseDialog] = useState(false);
+  const [showCloseDialog, setShowCloseDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   useEffect(() => {
     // Keep UI state in sync with URL (?edit=1)
@@ -274,7 +282,80 @@ export default function CampaignDetail() {
     setUploadedCoverImageId(null);
     setIsEditing(false);
     setSearchParams({});
-      setSearchParams({});
+  };
+
+  const fetchCampaignData = async () => {
+    if (!id) return;
+    const campaignData = await adminDataService.fetchCampaignById(id);
+    setCampaign(campaignData);
+  };
+
+  const handleStatusChange = async (newStatus: string) => {
+    if (!campaign || !id) return;
+    
+    setActionLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      await AdminEventService.updateCampaign(
+        campaign.id,
+        user?.id || 'system',
+        { status: newStatus }
+      );
+      
+      toast({
+        title: 'Status Updated',
+        description: `Campaign has been ${newStatus === 'active' ? 'activated' : newStatus}.`,
+      });
+      
+      await fetchCampaignData();
+    } catch (error: any) {
+      toast({
+        title: 'Update Failed',
+        description: error.message || 'Failed to update status',
+        variant: 'destructive',
+      });
+    } finally {
+      setActionLoading(false);
+      setShowApproveDialog(false);
+      setShowPauseDialog(false);
+      setShowCloseDialog(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!campaign || !id) return;
+    
+    setActionLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { error } = await supabase
+        .from('fundraisers')
+        .update({ 
+          deleted_at: new Date().toISOString(),
+          deleted_by: user?.id
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      toast({
+        title: 'Campaign Deleted',
+        description: 'Campaign has been soft deleted.',
+      });
+      
+      navigate('/admin/campaigns');
+    } catch (error: any) {
+      toast({
+        title: 'Delete Failed',
+        description: error.message || 'Failed to delete campaign',
+        variant: 'destructive',
+      });
+    } finally {
+      setActionLoading(false);
+      setShowDeleteDialog(false);
+    }
   };
 
   if (loading) {
@@ -293,6 +374,7 @@ export default function CampaignDetail() {
   const totalRaised = campaign.stats?.total_raised || 0;
   const goalAmount = campaign.goal_amount || 0;
   const progressPercentage = goalAmount > 0 ? Math.min((totalRaised / goalAmount) * 100, 100) : 0;
+  const currentStatus = campaign.status || 'draft';
 
   const statusConfig = {
     active: { label: 'Active', variant: 'default' as const, icon: Check },
@@ -399,7 +481,7 @@ export default function CampaignDetail() {
             )
           }
           actions={
-            <>
+            <div className="flex flex-wrap gap-2">
               {isEditing ? (
                 <>
                   <Button
@@ -427,16 +509,65 @@ export default function CampaignDetail() {
                 </>
               ) : (
                 <>
+                  {/* Quick Status Actions */}
+                  {(currentStatus === 'pending' || currentStatus === 'draft') && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => setShowApproveDialog(true)}
+                      disabled={actionLoading}
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Activate
+                    </Button>
+                  )}
+                  {currentStatus === 'active' && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowPauseDialog(true)}
+                      disabled={actionLoading}
+                    >
+                      <Pause className="h-4 w-4 mr-2" />
+                      Pause
+                    </Button>
+                  )}
+                  {currentStatus === 'paused' && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => setShowApproveDialog(true)}
+                      disabled={actionLoading}
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Resume
+                    </Button>
+                  )}
+                  {currentStatus !== 'closed' && currentStatus !== 'ended' && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowCloseDialog(true)}
+                      disabled={actionLoading}
+                    >
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Close
+                    </Button>
+                  )}
+                  
+                  {/* Core Actions */}
                   <Button
                     type="button"
-                    variant="default"
+                    variant="outline"
                     size="sm"
                     onClick={() => {
                       setSearchParams({ edit: '1' });
                     }}
                   >
                     <Pencil className="h-4 w-4 mr-2" />
-                    Edit Campaign
+                    Edit
                   </Button>
                   <Button
                     type="button"
@@ -447,9 +578,21 @@ export default function CampaignDetail() {
                     <ExternalLink className="h-4 w-4 mr-2" />
                     View Public
                   </Button>
+                  
+                  {/* Delete Action */}
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setShowDeleteDialog(true)}
+                    disabled={actionLoading}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </Button>
                 </>
               )}
-            </>
+            </div>
           }
           backUrl="/admin/campaigns"
           backLabel="Campaigns"
@@ -847,6 +990,52 @@ export default function CampaignDetail() {
           }
         />
       </form>
+
+      {/* Activate/Resume Dialog */}
+      <ConfirmActionDialog
+        open={showApproveDialog}
+        onOpenChange={setShowApproveDialog}
+        title="Activate Campaign"
+        description={`Are you sure you want to activate "${campaign?.title}"? It will become publicly visible.`}
+        confirmLabel="Activate"
+        isLoading={actionLoading}
+        onConfirm={() => handleStatusChange('active')}
+      />
+
+      {/* Pause Dialog */}
+      <ConfirmActionDialog
+        open={showPauseDialog}
+        onOpenChange={setShowPauseDialog}
+        title="Pause Campaign"
+        description={`Are you sure you want to pause "${campaign?.title}"? It will temporarily stop accepting donations.`}
+        confirmLabel="Pause"
+        isLoading={actionLoading}
+        onConfirm={() => handleStatusChange('paused')}
+      />
+
+      {/* Close Dialog */}
+      <ConfirmActionDialog
+        open={showCloseDialog}
+        onOpenChange={setShowCloseDialog}
+        title="Close Campaign"
+        description={`Are you sure you want to close "${campaign?.title}"? This will end the campaign permanently.`}
+        confirmLabel="Close Campaign"
+        variant="destructive"
+        isLoading={actionLoading}
+        onConfirm={() => handleStatusChange('closed')}
+      />
+
+      {/* Delete Dialog */}
+      <ConfirmActionDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title="Delete Campaign"
+        description={`Are you sure you want to delete "${campaign?.title}"? This action can be reversed by an administrator.`}
+        confirmLabel="Delete"
+        variant="destructive"
+        isLoading={actionLoading}
+        onConfirm={handleDelete}
+      />
     </Form>
   );
 }
