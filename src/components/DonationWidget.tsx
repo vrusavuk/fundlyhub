@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -102,8 +103,10 @@ export function DonationWidget({
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [donorEmail, setDonorEmail] = useState('');
   const [donorName, setDonorName] = useState('');
+  const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
   const { toast } = useToast();
   const { createPaymentIntent, isLoading } = useStripePayment();
+  const navigate = useNavigate();
   const { user } = useAuth();
   
   // Track the amount used when PaymentIntent was created
@@ -196,15 +199,26 @@ export function DonationWidget({
 
     if (response?.client_secret) {
       setClientSecret(response.client_secret);
+      setPaymentIntentId(response.payment_intent_id);
       paymentIntentAmountRef.current = totalInCents;
       setShowPaymentForm(true);
     }
   };
 
   const handlePaymentSuccess = () => {
+    // Navigate to thank you page with payment details
+    const params = new URLSearchParams({
+      payment_intent: paymentIntentId || '',
+      payment_intent_client_secret: clientSecret || '',
+      redirect_status: 'succeeded',
+      return_to: `/fundraiser/${fundraiserId}`,
+    });
+    
+    // Clear state before navigating
     setShowPaymentForm(false);
     setShowDonationForm(false);
     setClientSecret(null);
+    setPaymentIntentId(null);
     paymentIntentAmountRef.current = null;
     setSelectedAmount(null);
     setCustomAmount('');
@@ -214,10 +228,10 @@ export function DonationWidget({
     setIsAnonymous(false);
     setDonorEmail('');
     setDonorName('');
-    toast({
-      title: 'Thank you!',
-      description: 'Your donation has been processed successfully.',
-    });
+    
+    // Navigate to thank you page
+    navigate(`/payment/complete?${params.toString()}`);
+    
     onSuccess?.();
   };
 
