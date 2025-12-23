@@ -409,7 +409,9 @@ export default function CampaignDetail() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSave)}>
-        <DetailPageLayout
+         <DetailPageLayout
+          backUrl="/admin/campaigns"
+          backLabel="Campaigns"
           title={
             isEditing ? (
               <FormField
@@ -594,8 +596,6 @@ export default function CampaignDetail() {
               )}
             </div>
           }
-          backUrl="/admin/campaigns"
-          backLabel="Campaigns"
           mainContent={
             <>
               {/* Edit Mode Banner */}

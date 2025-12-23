@@ -43,10 +43,14 @@ export function DetailPageLayout({
   const isMobile = useIsMobile();
 
   const handleBack = () => {
-    if (backUrl) {
+    // Always use browser history first for proper back navigation
+    // Only fall back to backUrl when there's no history (e.g., direct link access)
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else if (backUrl) {
       navigate(backUrl);
     } else {
-      navigate(-1);
+      navigate('/admin');
     }
   };
 
