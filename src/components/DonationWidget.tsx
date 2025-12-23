@@ -306,11 +306,13 @@ export function DonationWidget({
                   />
                 </div>
               )}
-              {tipAmount > 0 && (
+              {tipAmount > 0 ? (
                 <div className="flex items-center gap-2 text-sm text-primary mt-2 bg-primary/10 rounded-md p-2">
                   <Heart className="h-4 w-4 fill-primary" />
-                  <span>Thank you for supporting our mission! 💚</span>
+                  <span>Thank you for supporting our mission!</span>
                 </div>
+              ) : tipPercentage === 0 && (
+                <p className="text-xs text-muted-foreground mt-2">No worries — 100% of your donation goes to the cause.</p>
               )}
             </div>
           )}
@@ -691,11 +693,13 @@ export function DonationWidget({
                     />
                   )}
                   
-                  {tipAmount > 0 && (
+                  {tipAmount > 0 ? (
                     <div className="flex items-center gap-2 text-sm text-primary mt-3 bg-primary/10 rounded-md p-2 animate-fade-in">
                       <Heart className="h-4 w-4 fill-primary" />
-                      <span>Thank you for supporting our mission! 💚</span>
+                      <span>Thank you for supporting our mission!</span>
                     </div>
+                  ) : tipPercentage === 0 && (
+                    <p className="text-xs text-muted-foreground mt-3 animate-fade-in">No worries — 100% of your donation goes to the cause.</p>
                   )}
                 </div>
               )}
