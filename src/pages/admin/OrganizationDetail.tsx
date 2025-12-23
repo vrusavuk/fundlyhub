@@ -104,21 +104,13 @@ export default function OrganizationDetail() {
     <DetailPageLayout
       title={organization.legal_name}
       subtitle={organization.dba_name || 'No DBA name'}
+      backUrl="/admin/organizations"
+      backLabel="Organizations"
       status={
         <Badge variant={verification.variant} className="gap-1">
           <VerificationIcon className="h-3 w-3" />
           {verification.label}
         </Badge>
-      }
-      actions={
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate('/admin/organizations')}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Organizations
-        </Button>
       }
       mainContent={
         <>

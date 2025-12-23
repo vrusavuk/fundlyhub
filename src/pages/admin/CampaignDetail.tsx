@@ -429,15 +429,6 @@ export default function CampaignDetail() {
                 <>
                   <Button
                     type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate('/admin/campaigns')}
-                  >
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back
-                  </Button>
-                  <Button
-                    type="button"
                     variant="default"
                     size="sm"
                     onClick={() => {
@@ -460,6 +451,8 @@ export default function CampaignDetail() {
               )}
             </>
           }
+          backUrl="/admin/campaigns"
+          backLabel="Campaigns"
           mainContent={
             <>
               {/* Edit Mode Banner */}

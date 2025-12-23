@@ -203,21 +203,13 @@ export default function UserDetail() {
         </div>
       }
       subtitle={user.email}
+      backUrl="/admin/users"
+      backLabel="Users"
       status={
         <Badge variant={status.variant} className="gap-1">
           <StatusIcon className="h-3 w-3" />
           {status.label}
         </Badge>
-      }
-      actions={
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate('/admin/users')}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Users
-        </Button>
       }
       mainContent={
         <>

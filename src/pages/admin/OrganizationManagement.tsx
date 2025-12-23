@@ -23,6 +23,7 @@ import { AdminEventService } from '@/lib/services/AdminEventService';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { createOrganizationColumns, OrganizationData } from '@/lib/data-table/organization-columns';
 import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
+import { OrganizationMobileCard } from '@/components/ui/mobile-card';
 import {
   AdminPageLayout, 
   AdminFilters, 
@@ -357,6 +358,22 @@ export function OrganizationManagement() {
         loading={loading}
         selectedRows={selectedOrgs}
         onSelectionChange={setSelectedOrgs}
+        onRowClick={(row) => navigate(`/admin/organizations/${row.original.id}`)}
+        mobileCardRenderer={(org) => (
+          <OrganizationMobileCard 
+            organization={{
+              id: org.id,
+              legal_name: org.legal_name,
+              dba_name: org.dba_name || undefined,
+              verification_status: org.verification_status || undefined,
+              created_at: org.created_at,
+              member_count: org.member_count,
+              campaign_count: org.campaign_count,
+              total_raised: org.total_raised,
+            }}
+            showActions={false}
+          />
+        )}
         actions={tableActions}
         bulkActions={bulkActions}
         onBulkAction={handleBulkActionClick}

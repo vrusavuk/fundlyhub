@@ -31,6 +31,7 @@ import {
 import { createUserColumns, UserData as UserColumnData } from '@/lib/data-table/user-columns';
 import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { UserMobileCard } from '@/components/ui/mobile-card';
 import {
   AdminPageLayout, 
   AdminFilters, 
@@ -551,6 +552,23 @@ export function UserManagement() {
         selectedRows={selectedUsers}
         onSelectionChange={setSelectedUsers}
         onRowClick={(row) => navigate(`/admin/users/${row.original.id}`)}
+        mobileCardRenderer={(user) => (
+          <UserMobileCard 
+            user={{
+              id: user.id,
+              name: user.name || undefined,
+              email: user.email || undefined,
+              avatar: user.avatar || undefined,
+              role: user.role,
+              account_status: user.account_status,
+              created_at: user.created_at,
+              campaign_count: user.campaign_count,
+              total_funds_raised: user.total_funds_raised,
+              follower_count: user.follower_count,
+            }}
+            showActions={false}
+          />
+        )}
         actions={tableActions}
         bulkActions={bulkActions}
         onBulkAction={handleBulkAction}
