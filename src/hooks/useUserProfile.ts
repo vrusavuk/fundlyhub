@@ -90,11 +90,16 @@ export function useUserProfile(userId: string): UseUserProfileReturn {
         total_funds_raised: totalFundsRaised = 0
       } = stats || {};
 
+      // For own profile, if DB avatar is missing, fall back to auth metadata (Google picture)
+      const authAvatar = isOwnProfile
+        ? (((user?.user_metadata as any)?.avatar_url as string | undefined) || ((user?.user_metadata as any)?.picture as string | undefined) || null)
+        : null;
+
       setProfile({
         id: profileData.id,
         name: profileData.name,
         email: isOwnProfile ? profileData.email : null, // Only include email for own profile
-        avatar: profileData.avatar,
+        avatar: profileData.avatar || authAvatar,
         bio: profileData.bio || null,
         location: profileData.location || null,
         website: profileData.website || null,
