@@ -574,3 +574,17 @@ body.high-contrast {
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
+
+/* Mobile keyboard-aware sheet - uses visual viewport to stay within bounds */
+@supports (height: 100dvh) {
+  .sheet-keyboard-aware {
+    max-height: 85dvh;
+  }
+}
+
+/* Fallback for browsers without dvh support */
+@supports not (height: 100dvh) {
+  .sheet-keyboard-aware {
+    max-height: 85vh;
+  }
+}

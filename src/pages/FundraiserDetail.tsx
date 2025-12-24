@@ -634,8 +634,11 @@ export default function FundraiserDetail() {
         }}>
           <SheetContent 
             side="bottom" 
-            className="rounded-t-xl overflow-y-auto p-0 transition-[height] duration-300 ease-out"
-            style={{ height: isPaymentFormVisible ? '85vh' : '60vh' }}
+            className="rounded-t-xl overflow-y-auto p-0 transition-[max-height] duration-300 ease-out"
+            style={{ 
+              maxHeight: isPaymentFormVisible ? '85dvh' : '60dvh',
+              height: 'auto'
+            }}
           >
             {/* Drag handle */}
             <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mt-3 mb-2" />
