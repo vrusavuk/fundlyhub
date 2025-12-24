@@ -172,6 +172,7 @@ export function FundraiserGrid({
                 coverImage={fundraiser.cover_image || "/placeholder.svg"}
                 category=""
                 organizationName={fundraiser.profiles?.name || "Anonymous"}
+                avatarUrl={fundraiser.profiles?.avatar || undefined}
                 location={fundraiser.location || undefined}
                 donorCount={fundraiserStats.donorCount || 0}
                 daysLeft={fundraiserStats.daysLeft}

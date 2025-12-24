@@ -17,6 +17,7 @@ export interface UserProfile extends BaseEntity {
   user_id: string;
   name: string;
   email: string;
+  avatar?: string;
   avatar_url?: string;
   bio?: string;
   location?: string;
