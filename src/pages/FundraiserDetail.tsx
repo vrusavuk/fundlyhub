@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { PageContainer } from '@/components/ui/PageContainer';
@@ -19,6 +19,7 @@ import { ScreenReaderOnly } from '@/components/accessibility/ScreenReaderOnly';
 import { LazyImage } from '@/components/lazy/LazyImage';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useVisualViewport } from '@/hooks/useVisualViewport';
 import { supabase } from '@/integrations/supabase/client';
 import { Share2, Calendar, MapPin, Verified, Facebook, Twitter, Copy, Heart } from 'lucide-react';
 import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
@@ -100,6 +101,41 @@ export default function FundraiserDetail() {
   const [showMobileDonation, setShowMobileDonation] = useState(false);
   const [showAllDonors, setShowAllDonors] = useState(false);
   const [isPaymentFormVisible, setIsPaymentFormVisible] = useState(false);
+
+  const { height: visualViewportHeight } = useVisualViewport();
+
+  const sheetHeightPx = useMemo(() => {
+    const base = visualViewportHeight || window.innerHeight;
+    const ratio = isPaymentFormVisible ? 0.85 : 0.6;
+    // keep a tiny buffer so we never exceed visible space
+    return Math.max(320, Math.floor(base * ratio) - 8);
+  }, [visualViewportHeight, isPaymentFormVisible]);
+
+  // Prevent background scrolling/jumping (especially iOS Safari) while the sheet is open
+  useEffect(() => {
+    if (!showMobileDonation) return;
+
+    const scrollY = window.scrollY;
+    const prev = {
+      position: document.body.style.position,
+      top: document.body.style.top,
+      width: document.body.style.width,
+      overflow: document.body.style.overflow,
+    };
+
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.position = prev.position;
+      document.body.style.top = prev.top;
+      document.body.style.width = prev.width;
+      document.body.style.overflow = prev.overflow;
+      window.scrollTo(0, scrollY);
+    };
+  }, [showMobileDonation]);
   
   const { user } = useAuth();
   const { toast } = useToast();
@@ -634,11 +670,8 @@ export default function FundraiserDetail() {
         }}>
           <SheetContent 
             side="bottom" 
-            className="rounded-t-xl overflow-y-auto p-0 transition-[max-height] duration-300 ease-out"
-            style={{ 
-              maxHeight: isPaymentFormVisible ? '85dvh' : '60dvh',
-              height: 'auto'
-            }}
+            className="rounded-t-xl overflow-y-auto overscroll-contain p-0 transition-[height] duration-300 ease-out"
+            style={{ height: `${sheetHeightPx}px`, maxHeight: `${visualViewportHeight || window.innerHeight}px` }}
           >
             {/* Drag handle */}
             <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mt-3 mb-2" />
