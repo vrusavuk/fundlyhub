@@ -397,7 +397,7 @@ export function UnifiedFundraiserCard({
                 <span>{donorCount} supporter{donorCount !== 1 ? 's' : ''}</span>
               </div>
               
-              {daysLeft !== undefined && (
+              {daysLeft != null && (
                 <div className="flex items-center gap-1">
                   <Clock className="h-3 w-3 flex-shrink-0" />
                   <span>
