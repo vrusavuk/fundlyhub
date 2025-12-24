@@ -99,6 +99,7 @@ export default function FundraiserDetail() {
   const [commenting, setCommenting] = useState(false);
   const [showMobileDonation, setShowMobileDonation] = useState(false);
   const [showAllDonors, setShowAllDonors] = useState(false);
+  const [isPaymentFormVisible, setIsPaymentFormVisible] = useState(false);
   
   const { user } = useAuth();
   const { toast } = useToast();
@@ -627,8 +628,16 @@ export default function FundraiserDetail() {
         </div>
 
         {/* Mobile Donation Sheet */}
-        <Sheet open={showMobileDonation} onOpenChange={setShowMobileDonation}>
-          <SheetContent side="bottom" className="h-[60vh] rounded-t-xl overflow-y-auto p-0">
+        <Sheet open={showMobileDonation} onOpenChange={(open) => {
+          setShowMobileDonation(open);
+          if (!open) setIsPaymentFormVisible(false);
+        }}>
+          <SheetContent 
+            side="bottom" 
+            className={`rounded-t-xl overflow-y-auto p-0 transition-all duration-300 ease-out ${
+              isPaymentFormVisible ? 'h-[85vh]' : 'h-[60vh]'
+            }`}
+          >
             {/* Drag handle */}
             <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mt-3 mb-2" />
             
@@ -646,6 +655,7 @@ export default function FundraiserDetail() {
               donations={donations}
               showDonors={true}
               showInSheet={true}
+              onPaymentFormVisibilityChange={setIsPaymentFormVisible}
               onViewAllDonors={() => {
                 setShowMobileDonation(false);
                 setShowAllDonors(true);
