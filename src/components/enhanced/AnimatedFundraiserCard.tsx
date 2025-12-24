@@ -59,6 +59,7 @@ export function AnimatedFundraiserCard({
         coverImage={fundraiser.cover_image || "/placeholder.svg"}
         category=""
         organizationName={fundraiser.profiles?.name || "Anonymous"}
+        avatarUrl={fundraiser.profiles?.avatar || undefined}
         location={fundraiser.location || undefined}
         donorCount={stats?.donorCount || 0}
         daysLeft={stats?.daysLeft}
