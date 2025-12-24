@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { DonationWidget } from '@/components/DonationWidget';
 import { AllDonorsDialog } from '@/components/fundraisers/AllDonorsDialog';
@@ -55,6 +55,7 @@ interface Fundraiser {
   profiles: {
     id: string;
     name: string;
+    avatar?: string | null;
   } | null;
   organizations: {
     id: string;
@@ -140,6 +141,7 @@ export default function FundraiserDetail() {
           (fundraiserData as any).profiles = {
             id: profileData[0].id,
             name: profileData[0].name,
+            avatar: profileData[0].avatar ?? null,
           };
         }
       }
@@ -364,6 +366,10 @@ export default function FundraiserDetail() {
                   className="flex items-center gap-3 hover:bg-muted/50 rounded-lg p-2 transition-colors group"
                 >
                   <Avatar className="h-12 w-12 transition-colors">
+                    <AvatarImage
+                      src={fundraiser.profiles?.avatar ?? undefined}
+                      alt={`${fundraiser.profiles?.name || 'Organizer'} avatar`}
+                    />
                     <AvatarFallback>{fundraiser.profiles?.name?.charAt(0) || 'A'}</AvatarFallback>
                   </Avatar>
                   <div>
