@@ -22,6 +22,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const getAuthAvatarUrl = (u: User | null | undefined): string | null => {
+    if (!u) return null;
+    const md = (u.user_metadata || {}) as Record<string, unknown>;
+    const avatarUrl = (md.avatar_url as string | undefined) || (md.picture as string | undefined);
+    return avatarUrl || null;
+  };
+
+  const syncProfileAvatarFromAuth = async (u: User | null | undefined) => {
+    try {
+      if (!u) return;
+
+      const authAvatar = getAuthAvatarUrl(u);
+      if (!authAvatar) return;
+
+      // Only write if the profile doesn't already have an avatar.
+      const { data: existing, error: readError } = await supabase
+        .from('profiles')
+        .select('avatar')
+        .eq('id', u.id)
+        .maybeSingle();
+
+      if (readError) throw readError;
+      if (existing?.avatar) return;
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar: authAvatar })
+        .eq('id', u.id);
+
+      if (updateError) throw updateError;
+    } catch (error) {
+      // Non-blocking: if RLS prevents this, the app still works.
+      logger.error('Failed to sync profile avatar from auth metadata', error as Error, {
+        componentName: 'useAuth',
+        operationName: 'syncProfileAvatarFromAuth',
+      });
+    }
+  };
+
   useEffect(() => {
     let isMounted = true;
 
@@ -32,6 +71,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setSession(session);
           setUser(session?.user ?? null);
           setLoading(false);
+
+          // Keep avatar as a single source of truth (profiles.avatar)
+          void syncProfileAvatarFromAuth(session?.user);
         }
       }
     );
