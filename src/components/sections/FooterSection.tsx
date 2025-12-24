@@ -4,6 +4,7 @@
  */
 import { Link } from 'react-router-dom';
 import { Heart } from "lucide-react";
+import cytyLogo from '@/assets/cyty-logo.svg';
 
 export function FooterSection() {
   return (
@@ -18,6 +19,10 @@ export function FooterSection() {
             <p className="text-muted-foreground">
               Connecting causes with caring people worldwide
             </p>
+            <div className="flex items-center gap-2 pt-2">
+              <span className="text-xs text-muted-foreground">Powered by</span>
+              <img src={cytyLogo} alt="CYTY Inc." className="h-5 w-auto" />
+            </div>
           </div>
           
           <div>
