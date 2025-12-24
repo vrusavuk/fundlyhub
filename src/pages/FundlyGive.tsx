@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Zap, Shield, Receipt, CheckCircle, CreditCard, Building2, Users, Eye, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { DisplayHeading, Heading, Text, Caption } from "@/components/ui/typography";
+import { FooterSection } from "@/components/sections/FooterSection";
 
 // Partner logos
 import adpLogo from "@/assets/partners/adp-official-logo.png";
@@ -453,6 +454,8 @@ const FundlyGive = () => {
           </div>
         </div>
       </section>
+
+      <FooterSection />
     </div>
   );
 };
