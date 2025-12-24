@@ -46,10 +46,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (readError) throw readError;
       if (existing?.avatar) return;
 
+      // Use the secure RPC to set avatar
       const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ avatar: authAvatar })
-        .eq('id', u.id);
+        .rpc('set_my_profile_avatar', { p_avatar_url: authAvatar });
 
       if (updateError) throw updateError;
     } catch (error) {
