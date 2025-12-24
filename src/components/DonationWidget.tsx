@@ -70,6 +70,7 @@ interface DonationWidgetProps {
   showDonors?: boolean;
   onViewAllDonors?: () => void;
   showInSheet?: boolean;
+  onPaymentFormVisibilityChange?: (isVisible: boolean) => void;
 }
 
 const suggestedAmounts = [25, 50, 100, 250, 500];
@@ -90,6 +91,7 @@ export function DonationWidget({
   showDonors = false,
   onViewAllDonors,
   showInSheet = false,
+  onPaymentFormVisibilityChange,
 }: DonationWidgetProps) {
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState('');
@@ -155,6 +157,11 @@ export function DonationWidget({
       }
     }
   }, [totalAmount, showPaymentForm]);
+
+  // Notify parent when payment form visibility changes
+  useEffect(() => {
+    onPaymentFormVisibilityChange?.(showPaymentForm);
+  }, [showPaymentForm, onPaymentFormVisibilityChange]);
 
   const handleAmountSelect = (amount: number) => {
     setSelectedAmount(amount);
