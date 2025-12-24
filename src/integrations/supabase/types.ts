@@ -3711,6 +3711,10 @@ export type Database = {
           synced_count: number
         }[]
       }
+      set_my_profile_avatar: {
+        Args: { p_avatar_url: string }
+        Returns: undefined
+      }
       update_campaign_analytics_safe: {
         Args: { p_amount: number; p_campaign_id: string; p_donor_id: string }
         Returns: undefined
