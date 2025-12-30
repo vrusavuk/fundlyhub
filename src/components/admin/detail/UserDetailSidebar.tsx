@@ -5,10 +5,27 @@ import React from 'react';
 import { DetailSidebarSection } from './DetailSidebar';
 import { DetailKeyValue } from './DetailKeyValue';
 import { Badge } from '@/components/ui/badge';
+import { Shield } from 'lucide-react';
+
+interface UserRole {
+  role_id: string;
+  roles: {
+    name: string;
+    display_name: string;
+    hierarchy_level: number;
+  };
+}
 
 interface UserDetailSidebarProps {
   user: any;
 }
+
+const getHierarchyBadgeVariant = (level: number) => {
+  if (level >= 90) return 'destructive';
+  if (level >= 70) return 'default';
+  if (level >= 50) return 'secondary';
+  return 'outline';
+};
 
 export function UserDetailSidebar({ user }: UserDetailSidebarProps) {
   const statusColors = {
@@ -18,8 +35,32 @@ export function UserDetailSidebar({ user }: UserDetailSidebarProps) {
     deleted: 'outline',
   } as const;
 
+  // Extract roles from user data
+  const userRoles: UserRole[] = user.user_role_assignments || [];
+
   return (
     <>
+      {/* Roles Section */}
+      {userRoles.length > 0 && (
+        <DetailSidebarSection title="Roles">
+          <div className="flex items-center gap-1.5 mb-2 text-muted-foreground">
+            <Shield className="h-3.5 w-3.5" />
+            <span className="text-xs">Assigned Roles</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {userRoles.map((assignment) => (
+              <Badge 
+                key={assignment.role_id}
+                variant={getHierarchyBadgeVariant(assignment.roles?.hierarchy_level || 0) as any}
+                className="text-xs"
+              >
+                {assignment.roles?.display_name || assignment.roles?.name || 'Unknown'}
+              </Badge>
+            ))}
+          </div>
+        </DetailSidebarSection>
+      )}
+
       {/* User Details */}
       <DetailSidebarSection title="Details">
         <DetailKeyValue

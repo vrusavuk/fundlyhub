@@ -102,13 +102,16 @@ globalEventBus.subscribe('campaign.created', campaignRoleProcessor);
 
 // Register role management processors
 import { RoleAssignmentWriteProcessor } from './processors/RoleAssignmentWriteProcessor';
+import { RoleRevocationWriteProcessor } from './processors/RoleRevocationWriteProcessor';
 import { RoleCreatedProcessor, RolePermissionsUpdatedProcessor } from './processors/RoleCRUDProcessor';
 
 const roleAssignmentProcessor = new RoleAssignmentWriteProcessor();
+const roleRevocationProcessor = new RoleRevocationWriteProcessor();
 const roleCreatedProcessor = new RoleCreatedProcessor();
 const rolePermissionsProcessor = new RolePermissionsUpdatedProcessor();
 
 globalEventBus.subscribe('admin.user.role_assigned', roleAssignmentProcessor);
+globalEventBus.subscribe('admin.user.role_revoked', roleRevocationProcessor);
 globalEventBus.subscribe('admin.role.created', roleCreatedProcessor);
 globalEventBus.subscribe('admin.role.permissions_updated', rolePermissionsProcessor);
 

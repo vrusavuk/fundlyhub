@@ -32,12 +32,15 @@ import { StripeCardExact } from '@/components/ui/stripe-card-exact';
 import { StripePagination } from '@/components/ui/StripePagination';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { DonationMobileCard } from '@/components/ui/mobile-card';
+import { UserRoleManager } from '@/components/admin/UserRoleManager';
+import { useRBAC } from '@/contexts/RBACContext';
 
 export default function UserDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const { isSuperAdmin } = useRBAC();
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [donations, setDonations] = useState<any[]>([]);
@@ -515,6 +518,17 @@ export default function UserDetail() {
                 )}
               </div>
             </DetailSection>
+
+            {/* Roles & Permissions - Only visible to super admins */}
+            {isSuperAdmin() && (
+              <DetailSection title="Roles & Permissions">
+                <UserRoleManager
+                  userId={user.id}
+                  userName={user.name || user.email}
+                  onRolesChange={fetchUser}
+                />
+              </DetailSection>
+            )}
 
             {/* Donation History */}
             <DetailSection 
