@@ -238,7 +238,7 @@ export function UnifiedFundraiserCard({
             <Button
               size="sm"
               variant="secondary"
-              className="bg-white/90 hover:bg-white text-foreground shadow-lg backdrop-blur-sm"
+              className="bg-card/90 hover:bg-card text-foreground shadow-lg backdrop-blur-sm"
               onClick={handleShare}
             >
               <Share2 className="h-4 w-4" />
@@ -246,7 +246,7 @@ export function UnifiedFundraiserCard({
             <Button
               size="sm"
               variant="secondary"
-              className="bg-white/90 hover:bg-white text-foreground shadow-lg backdrop-blur-sm"
+              className="bg-card/90 hover:bg-card text-foreground shadow-lg backdrop-blur-sm"
               onClick={handleBookmark}
             >
               <BookmarkPlus className={cn(
