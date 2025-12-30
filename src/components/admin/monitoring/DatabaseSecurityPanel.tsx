@@ -136,7 +136,7 @@ export function DatabaseSecurityPanel() {
       </div>
 
       {/* Database Section */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -203,7 +203,7 @@ export function DatabaseSecurityPanel() {
       </div>
 
       {/* Security Section */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

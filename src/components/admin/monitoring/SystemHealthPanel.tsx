@@ -152,7 +152,7 @@ export function SystemHealthPanel() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             {Object.entries(health).map(([key, value]) => (
               <div
                 key={key}
@@ -178,7 +178,7 @@ export function SystemHealthPanel() {
       </Card>
 
       {/* System Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           title="CPU Usage"
           value={`${metrics.cpu.toFixed(1)}%`}
