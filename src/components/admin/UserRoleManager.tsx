@@ -111,10 +111,25 @@ export function UserRoleManager({ userId, userName, onRolesChange }: UserRoleMan
   const handleAssignRole = async () => {
     if (!selectedRoleId || !user) return;
 
+    // Security: Prevent self-elevation 
+    if (userId === user.id) {
+      toast({
+        title: 'Not Allowed',
+        description: 'You cannot assign roles to yourself',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setAssigning(true);
     try {
       const role = assignableRoles.find(r => r.id === selectedRoleId);
       if (!role) throw new Error('Role not found');
+
+      // Security: Verify hierarchy level client-side (server also validates)
+      if (role.hierarchy_level > adminHierarchyLevel && !isSuperAdmin()) {
+        throw new Error('Cannot assign role with higher hierarchy level');
+      }
 
       const event = createUserRoleAssignedEvent({
         userId,
@@ -142,7 +157,7 @@ export function UserRoleManager({ userId, userName, onRolesChange }: UserRoleMan
       console.error('Failed to assign role:', error);
       toast({
         title: 'Error',
-        description: 'Failed to assign role',
+        description: error instanceof Error ? error.message : 'Failed to assign role',
         variant: 'destructive',
       });
     } finally {
@@ -152,6 +167,30 @@ export function UserRoleManager({ userId, userName, onRolesChange }: UserRoleMan
 
   const handleRevokeRole = async () => {
     if (!roleToRevoke || !user) return;
+
+    // Security: Prevent revoking your own super_admin role
+    if (userId === user.id && roleToRevoke.role_name === 'super_admin') {
+      toast({
+        title: 'Not Allowed',
+        description: 'You cannot revoke your own super_admin role',
+        variant: 'destructive',
+      });
+      setRevokeDialogOpen(false);
+      setRoleToRevoke(null);
+      return;
+    }
+
+    // Security: Verify hierarchy level client-side (server also validates)
+    if (roleToRevoke.hierarchy_level > adminHierarchyLevel && !isSuperAdmin()) {
+      toast({
+        title: 'Not Allowed',
+        description: 'Cannot revoke role with higher hierarchy level',
+        variant: 'destructive',
+      });
+      setRevokeDialogOpen(false);
+      setRoleToRevoke(null);
+      return;
+    }
 
     setRevoking(true);
     try {
@@ -181,7 +220,7 @@ export function UserRoleManager({ userId, userName, onRolesChange }: UserRoleMan
       console.error('Failed to revoke role:', error);
       toast({
         title: 'Error',
-        description: 'Failed to revoke role',
+        description: error instanceof Error ? error.message : 'Failed to revoke role',
         variant: 'destructive',
       });
     } finally {
