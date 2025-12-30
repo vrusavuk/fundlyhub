@@ -806,6 +806,74 @@ class AdminDataService {
   }
 
   /**
+   * Fetch role assignments for a specific user
+   */
+  async fetchUserRoleAssignments(userId: string) {
+    const cacheKey = `user-role-assignments:${userId}`;
+    
+    return this.cache.getOrSet(cacheKey, async () => {
+      const { data, error } = await supabase
+        .from('user_role_assignments')
+        .select(`
+          id,
+          role_id,
+          context_type,
+          context_id,
+          assigned_at,
+          roles!inner(
+            name,
+            display_name,
+            hierarchy_level,
+            is_system_role
+          )
+        `)
+        .eq('user_id', userId)
+        .eq('is_active', true);
+
+      if (error) throw error;
+
+      // Transform to flat structure
+      return (data || []).map((assignment: any) => ({
+        id: assignment.id,
+        role_id: assignment.role_id,
+        role_name: assignment.roles.name,
+        display_name: assignment.roles.display_name,
+        hierarchy_level: assignment.roles.hierarchy_level,
+        is_system_role: assignment.roles.is_system_role,
+        assigned_at: assignment.assigned_at,
+        context_type: assignment.context_type,
+        context_id: assignment.context_id,
+      }));
+    }, { ttl: 10000 }); // 10 second cache
+  }
+
+  /**
+   * Fetch roles that can be assigned by an admin with a given hierarchy level
+   */
+  async fetchAssignableRoles(adminHierarchyLevel: number) {
+    const cacheKey = `assignable-roles:${adminHierarchyLevel}`;
+    
+    return this.cache.getOrSet(cacheKey, async () => {
+      // Super admins (level 100) can assign any role
+      // Others can only assign roles at or below their level
+      let query = supabase
+        .from('roles')
+        .select('id, name, display_name, hierarchy_level, is_system_role')
+        .order('hierarchy_level', { ascending: false });
+
+      // If not super admin, filter by hierarchy level
+      if (adminHierarchyLevel < 100) {
+        query = query.lte('hierarchy_level', adminHierarchyLevel);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+      return data || [];
+    }, { ttl: 30000 }); // 30 second cache
+  }
+
+  /**
    * Clear cache for specific resource type
    */
   invalidateCache(resource: 'users' | 'organizations' | 'campaigns' | 'roles' | 'dashboard' | 'donations' | 'all') {
