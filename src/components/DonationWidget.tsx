@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,6 +17,7 @@ import { logger } from '@/lib/services/logger.service';
 import { useTipFeedback } from '@/hooks/useTipFeedback';
 import { TipFeedbackMessage } from '@/components/TipFeedbackMessage';
 import { useAuth } from '@/hooks/useAuth';
+import { useDarkMode } from '@/hooks/useDarkMode';
 
 const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 if (!stripePublishableKey) {
@@ -27,18 +28,31 @@ if (!stripePublishableKey) {
 }
 const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
 
-// Stripe Elements appearance for unified styling
-const stripeAppearance: Appearance = {
-  theme: 'stripe',
+// Stripe Elements appearance factory for theme-aware styling
+const getStripeAppearance = (isDark: boolean): Appearance => ({
+  theme: isDark ? 'night' : 'stripe',
   variables: {
     colorPrimary: 'hsl(var(--primary))',
-    colorBackground: 'hsl(var(--background))',
-    colorText: 'hsl(var(--foreground))',
+    colorBackground: isDark ? 'hsl(222, 47%, 11%)' : 'hsl(0, 0%, 100%)',
+    colorText: isDark ? 'hsl(210, 40%, 98%)' : 'hsl(222, 47%, 11%)',
     colorDanger: 'hsl(var(--destructive))',
     fontFamily: 'inherit',
     borderRadius: '8px',
   },
-};
+  rules: {
+    '.Label': {
+      color: isDark ? 'hsl(215, 20%, 65%)' : 'hsl(215, 16%, 47%)',
+    },
+    '.Input': {
+      backgroundColor: isDark ? 'hsl(222, 47%, 15%)' : 'hsl(0, 0%, 100%)',
+      borderColor: isDark ? 'hsl(217, 33%, 25%)' : 'hsl(214, 32%, 91%)',
+      color: isDark ? 'hsl(210, 40%, 98%)' : 'hsl(222, 47%, 11%)',
+    },
+    '.Input:focus': {
+      borderColor: 'hsl(var(--primary))',
+    },
+  },
+});
 
 interface Donation {
   id: string;
@@ -110,7 +124,10 @@ export function DonationWidget({
   const { createPaymentIntent, isLoading } = useStripePayment();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const isDark = useDarkMode();
   
+  // Memoize Stripe appearance based on theme
+  const stripeAppearance = useMemo(() => getStripeAppearance(isDark), [isDark]);
   // Track the amount used when PaymentIntent was created
   const paymentIntentAmountRef = useRef<number | null>(null);
   
