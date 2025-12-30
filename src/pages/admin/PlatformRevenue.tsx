@@ -303,9 +303,9 @@ export default function PlatformRevenue() {
       />
 
       {/* Main Content Grid */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
         {/* Tips Table */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 order-2 lg:order-1">
           <AdminDataTable
             columns={columns}
             data={tips}
@@ -329,7 +329,7 @@ export default function PlatformRevenue() {
         </div>
 
         {/* Creator Leaderboard */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 order-1 lg:order-2">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-base">
