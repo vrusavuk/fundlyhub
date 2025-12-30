@@ -33,8 +33,9 @@ import {
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AdminPageLayout, PageSection } from '@/components/admin/unified';
+import { RoleMobileCard } from '@/components/admin/RoleMobileCard';
 
-interface Role {
+export interface Role {
   id: string;
   name: string;
   display_name: string;
@@ -483,88 +484,112 @@ export function RoleManagement() {
         </>
       }
     >
-      {/* Roles Table */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Shield className="mr-2 h-4 w-4" />
-            Platform Roles
-          </CardTitle>
-          <CardDescription>
-            Manage roles and their associated permissions
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Role</TableHead>
-                <TableHead>Users</TableHead>
-                <TableHead>Permissions</TableHead>
-                <TableHead>Hierarchy</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {roles.map((role) => (
-                <TableRow key={role.id}>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{role.display_name}</div>
-                      <div className="text-sm text-muted-foreground">{role.name}</div>
-                      {role.description && (
-                        <div className="text-xs text-muted-foreground mt-1">
-                          {role.description}
-                        </div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">
-                      <Users className="mr-1 h-3 w-3" />
-                      {role.user_count || 0}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">
-                      {getRolePermissions(role.id).length} permissions
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={role.hierarchy_level > 50 ? 'destructive' : 'default'}>
-                      Level {role.hierarchy_level}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setSelectedRole(role);
-                          setEditingRole(role);
-                          setShowRoleDialog(true);
-                        }}
-                      >
-                        <Edit className="h-3 w-3" />
-                      </Button>
-                      {!role.is_system_role && (
+      {/* Roles Table - Desktop */}
+      {!isMobile ? (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Shield className="mr-2 h-4 w-4" />
+              Platform Roles
+            </CardTitle>
+            <CardDescription>
+              Manage roles and their associated permissions
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Users</TableHead>
+                  <TableHead>Permissions</TableHead>
+                  <TableHead>Hierarchy</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {roles.map((role) => (
+                  <TableRow key={role.id}>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{role.display_name}</div>
+                        <div className="text-sm text-muted-foreground">{role.name}</div>
+                        {role.description && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {role.description}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">
+                        <Users className="mr-1 h-3 w-3" />
+                        {role.user_count || 0}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {getRolePermissions(role.id).length} permissions
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={role.hierarchy_level > 50 ? 'destructive' : 'default'}>
+                        Level {role.hierarchy_level}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => deleteRole(role.id)}
+                          onClick={() => {
+                            setSelectedRole(role);
+                            setEditingRole(role);
+                            setShowRoleDialog(true);
+                          }}
                         >
-                          <Trash2 className="h-3 w-3" />
+                          <Edit className="h-3 w-3" />
                         </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                        {!role.is_system_role && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => deleteRole(role.id)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      ) : (
+        /* Roles Cards - Mobile */
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 mb-4">
+            <Shield className="h-4 w-4 text-muted-foreground" />
+            <h2 className="font-semibold">Platform Roles</h2>
+            <Badge variant="secondary" className="ml-auto">{roles.length}</Badge>
+          </div>
+          {roles.map((role) => (
+            <RoleMobileCard
+              key={role.id}
+              role={role}
+              permissionCount={getRolePermissions(role.id).length}
+              onEdit={(r) => {
+                setSelectedRole(r);
+                setEditingRole(r);
+                setShowRoleDialog(true);
+              }}
+              onDelete={deleteRole}
+            />
+          ))}
+        </div>
+      )}
     </AdminPageLayout>
   );
 }
