@@ -57,6 +57,14 @@ export class FundraiserMutationService {
       // Generate temporary campaign ID for event
       const campaignId = crypto.randomUUID();
 
+      // Transform milestones to match event schema (camelCase)
+      const transformedMilestones = input.milestones?.map(m => ({
+        title: m.title,
+        description: m.description,
+        targetAmount: m.target_amount,
+        dueDate: m.due_date,
+      }));
+
       // Publish event with complete payload - CampaignWriteProcessor handles DB operations
       const event = createCampaignCreatedEvent({
         campaignId,
@@ -78,7 +86,7 @@ export class FundraiserMutationService {
         status,
         isProject: input.isProject || false,
         isDiscoverable: true,
-        milestones: input.milestones,
+        milestones: transformedMilestones,
       });
       
       // Wait for event processing (DB write happens in processor)
@@ -143,6 +151,14 @@ export class FundraiserMutationService {
 
       if (fetchError) throw fetchError;
 
+      // Transform milestones to match event schema (camelCase)
+      const transformedMilestones = input.milestones?.map(m => ({
+        title: m.title,
+        description: m.description,
+        targetAmount: m.target_amount,
+        dueDate: m.due_date,
+      }));
+
       // Publish event with complete payload - CampaignWriteProcessor handles updates
       const event = createCampaignCreatedEvent({
         campaignId: response.campaign_id,
@@ -164,7 +180,7 @@ export class FundraiserMutationService {
         status: campaign?.status || 'active',
         isProject: input.isProject || false,
         isDiscoverable: input.visibility !== 'private',
-        milestones: input.milestones,
+        milestones: transformedMilestones,
         allowlistEmails: allowlistEmails,
         passcode: input.passcode,
         linkToken: response.link_token,
