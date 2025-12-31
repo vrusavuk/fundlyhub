@@ -3620,6 +3620,7 @@ export type Database = {
           storage: string
         }[]
       }
+      get_user_display_role: { Args: { _user_id: string }; Returns: string }
       get_user_earnings: {
         Args: { _user_id: string }
         Returns: {
@@ -3645,6 +3646,14 @@ export type Database = {
           follower_count: number
           following_count: number
           total_funds_raised: number
+        }[]
+      }
+      get_user_role_info: {
+        Args: { _user_id: string }
+        Returns: {
+          display_name: string
+          hierarchy_level: number
+          role_name: string
         }[]
       }
       get_user_roles: {

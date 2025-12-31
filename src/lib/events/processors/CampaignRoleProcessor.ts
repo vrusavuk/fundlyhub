@@ -1,10 +1,15 @@
 /**
  * Campaign Role Processor
- * Updates user role to 'creator' when they create their first campaign
+ * 
+ * NOTE: Role updates are now handled by the database trigger `sync_user_role_from_activity`
+ * which automatically promotes users to 'creator' role via RBAC when they create a campaign.
+ * 
+ * This processor is kept for backward compatibility to update the legacy profiles.role column
+ * until it is fully deprecated and removed.
  */
 
 import { supabase } from '@/integrations/supabase/client';
-import type { DomainEvent, EventHandler } from '../types';
+import type { EventHandler } from '../types';
 import type { CampaignCreatedEvent } from '../domain/CampaignEvents';
 import { eventIdempotency } from '../EventIdempotency';
 
@@ -21,26 +26,9 @@ export class CampaignRoleProcessor implements EventHandler<CampaignCreatedEvent>
     try {
       const { userId } = event.payload;
 
-      // Check current user role
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userId)
-        .single();
-
-      // Only promote if user is currently a visitor
-      if (profile?.role === 'visitor') {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ role: 'creator' })
-          .eq('id', userId);
-
-        if (error) {
-          console.error('[CampaignRoleProcessor] Failed to update role:', error);
-        } else {
-          console.log(`[CampaignRoleProcessor] Promoted user ${userId} to creator`);
-        }
-      }
+      // Role updates are now handled by the database trigger `sync_user_role_from_activity`
+      // This processor just logs the event for backward compatibility
+      console.log(`[CampaignRoleProcessor] Campaign created by user ${userId} - role sync handled by database trigger`);
 
       await eventIdempotency.markComplete(event.id, 'CampaignRoleProcessor');
     } catch (error) {

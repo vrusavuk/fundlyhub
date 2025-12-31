@@ -1,5 +1,11 @@
 /**
  * User domain types
+ * 
+ * NOTE: User roles are now managed exclusively through the RBAC system
+ * (user_role_assignments + roles tables). The role property on profiles
+ * is for display purposes only and is populated from RBAC.
+ * 
+ * For authorization checks, always use the useRBAC hook.
  */
 import type { BaseEntity } from './fundraiser';
 
@@ -9,7 +15,7 @@ export interface Profile {
   name: string;
   email?: string;
   avatar?: string;
-  role?: 'visitor' | 'user' | 'admin';
+  role?: string; // RBAC role name (display only, not for authorization)
 }
 
 // Enhanced user profile
@@ -22,5 +28,5 @@ export interface UserProfile extends BaseEntity {
   bio?: string;
   location?: string;
   verified: boolean;
-  role?: 'visitor' | 'user' | 'admin';
+  role?: string; // RBAC role name (display only, not for authorization)
 }

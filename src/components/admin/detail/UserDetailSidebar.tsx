@@ -35,18 +35,21 @@ export function UserDetailSidebar({ user }: UserDetailSidebarProps) {
     deleted: 'outline',
   } as const;
 
-  // Extract roles from user data
+  // Extract roles from user data (RBAC - single source of truth)
   const userRoles: UserRole[] = user.user_role_assignments || [];
+
+  // Show "No roles assigned" message if no RBAC roles exist
+  const hasRoles = userRoles.length > 0;
 
   return (
     <>
-      {/* Roles Section */}
-      {userRoles.length > 0 && (
-        <DetailSidebarSection title="Roles">
-          <div className="flex items-center gap-1.5 mb-2 text-muted-foreground">
-            <Shield className="h-3.5 w-3.5" />
-            <span className="text-xs">Assigned Roles</span>
-          </div>
+      {/* Roles Section - Always show, even if empty */}
+      <DetailSidebarSection title="Roles">
+        <div className="flex items-center gap-1.5 mb-2 text-muted-foreground">
+          <Shield className="h-3.5 w-3.5" />
+          <span className="text-xs">Assigned Roles</span>
+        </div>
+        {hasRoles ? (
           <div className="flex flex-wrap gap-1.5">
             {userRoles.map((assignment) => (
               <Badge 
@@ -58,8 +61,10 @@ export function UserDetailSidebar({ user }: UserDetailSidebarProps) {
               </Badge>
             ))}
           </div>
-        </DetailSidebarSection>
-      )}
+        ) : (
+          <p className="text-xs text-muted-foreground italic">No roles assigned</p>
+        )}
+      </DetailSidebarSection>
 
       {/* User Details */}
       <DetailSidebarSection title="Details">

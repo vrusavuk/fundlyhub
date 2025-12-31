@@ -107,6 +107,10 @@ export class UserSearchProjectionProcessor implements EventHandler<UserEvent> {
       trigrams.push(nameLower.substring(i, i + 3));
     }
 
+    // Fetch role from RBAC (single source of truth)
+    const { data: roleData } = await supabase
+      .rpc('get_user_display_role', { _user_id: profile.id });
+
     const projectionData = {
       user_id: profile.id,
       name: profile.name || '',
@@ -128,8 +132,8 @@ export class UserSearchProjectionProcessor implements EventHandler<UserEvent> {
       name_metaphone: null,
       name_dmetaphone: null,
       
-      // Metadata
-      role: profile.role,
+      // Metadata - use RBAC role
+      role: roleData || 'visitor',
       profile_visibility: profile.profile_visibility,
       account_status: profile.account_status,
       is_verified: profile.is_verified || false,
@@ -144,7 +148,7 @@ export class UserSearchProjectionProcessor implements EventHandler<UserEvent> {
 
     const { error } = await supabase
       .from('user_search_projection')
-      .upsert(projectionData, {
+      .upsert(projectionData as any, {
         onConflict: 'user_id',
       });
 
