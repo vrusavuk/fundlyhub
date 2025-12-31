@@ -50,7 +50,7 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
               {/* SECURITY WARNING: profile.role is for display only */}
               {/* For authorization checks, always use useRBAC hook and RBAC functions */}
               <UserRoleBadge
-                role={profile.role as 'visitor' | 'creator' | 'org_admin' | 'admin'} 
+                role={profile.role} 
                 className="mt-2"
               />
             </div>

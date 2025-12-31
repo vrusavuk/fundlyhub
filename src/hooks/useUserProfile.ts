@@ -69,6 +69,10 @@ export function useUserProfile(userId: string): UseUserProfileReturn {
         return;
       }
 
+      // Fetch user's role from RBAC (single source of truth)
+      const { data: roleData } = await supabase
+        .rpc('get_user_display_role', { _user_id: userId });
+
       // Get all stats in a single optimized RPC call
       const { data: stats, error: statsError } = await supabase
         .rpc('get_user_profile_stats', { target_user_id: userId })
@@ -105,7 +109,7 @@ export function useUserProfile(userId: string): UseUserProfileReturn {
         website: profileData.website || null,
         social_links: (profileData.social_links as Record<string, any>) || {},
         profile_visibility: profileData.profile_visibility || 'public',
-        role: profileData.role || 'visitor',
+        role: roleData || 'visitor', // Use RBAC role instead of profiles.role
         campaign_count: campaignCount || 0,
         total_funds_raised: totalFundsRaised,
         follower_count: followerCount || 0,

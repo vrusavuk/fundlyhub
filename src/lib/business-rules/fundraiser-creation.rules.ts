@@ -48,13 +48,16 @@ export class FundraiserCreationRules {
   }
 
   /**
-   * Determine initial status based on user role
+   * Determine initial status based on user role (uses RBAC role names)
+   * Hierarchy: super_admin (1000) > platform_admin (90) > org_admin (80) > creator (0) > visitor (1)
    */
   static determineInitialStatus(userRole: string): 'draft' | 'pending' | 'active' {
-    if (userRole === 'admin' || userRole === 'creator') {
+    // Admins and verified creators can publish directly
+    const autoApproveRoles = ['super_admin', 'platform_admin', 'org_admin', 'creator', 'admin'];
+    if (autoApproveRoles.includes(userRole)) {
       return 'active';
     }
-    return 'pending'; // New users need approval
+    return 'pending'; // New users (visitor, user) need approval
   }
 
   /**
