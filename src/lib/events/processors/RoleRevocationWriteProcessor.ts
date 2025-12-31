@@ -65,17 +65,17 @@ export class RoleRevocationWriteProcessor implements EventHandler {
         throw new Error('Target role not found');
       }
 
-      // Security: Check if revoker is a super admin OR has a higher/equal level
-      const isSuperAdmin = (revokerRoles || []).some((r: any) => r.roles?.name === 'super_admin');
+      // Security: Check if revoker has highest hierarchy level (100+) OR has a higher/equal level than target
+      const revokerHasMaxPrivilege = revokerMaxLevel >= 100;
       
-      if (!isSuperAdmin && targetRole.hierarchy_level > revokerMaxLevel) {
+      if (!revokerHasMaxPrivilege && targetRole.hierarchy_level > revokerMaxLevel) {
         throw new Error('Insufficient privileges: Cannot revoke role with higher hierarchy level');
       }
 
-      // Security: Prevent super admins from removing their own super_admin role
-      // (would lock them out, requires another super admin)
-      if (userId === revokedBy && targetRole.name === 'super_admin') {
-        throw new Error('Cannot revoke your own super_admin role');
+      // Security: Prevent users from removing their own highest-level role (self-lockout protection)
+      // Check if this is the revoker's highest role by hierarchy level
+      if (userId === revokedBy && targetRole.hierarchy_level >= 100) {
+        throw new Error('Cannot revoke your own highest-level admin role');
       }
 
       // Find and deactivate the assignment

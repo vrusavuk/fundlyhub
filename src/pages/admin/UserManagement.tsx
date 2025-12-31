@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRBAC } from '@/contexts/RBACContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -32,6 +32,7 @@ import { createUserColumns, UserData as UserColumnData } from '@/lib/data-table/
 import { useOptimisticUpdates, OptimisticUpdateIndicator } from '@/components/admin/OptimisticUpdates';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { UserMobileCard } from '@/components/ui/mobile-card';
+import { useRoles } from '@/hooks/useRoles';
 import {
   AdminPageLayout, 
   AdminFilters, 
@@ -335,15 +336,12 @@ export function UserManagement() {
     return <StripeBadgeExact variant="success">Active</StripeBadgeExact>;
   };
 
+  // Use roles from database - single source of truth
+  const { getRoleBadgeVariant, formatRoleName, getRoleFilterOptions } = useRoles();
+
   const getRoleBadge = (role: string) => {
-    const variants: Record<string, "success" | "neutral" | "error" | "warning" | "info"> = {
-      'super_admin': 'error',
-      'platform_admin': 'warning',
-      'moderator': 'info',
-      'creator': 'success',
-      'visitor': 'neutral'
-    };
-    return <StripeBadgeExact variant={variants[role] || 'neutral'}>{role.replace('_', ' ')}</StripeBadgeExact>;
+    const variant = getRoleBadgeVariant(role);
+    return <StripeBadgeExact variant={variant}>{formatRoleName(role)}</StripeBadgeExact>;
   };
 
   if (!hasPermission('view_all_users')) {
@@ -357,7 +355,9 @@ export function UserManagement() {
     );
   }
 
-  // Define filter configuration
+  // Define filter configuration - roles are fetched dynamically
+  const roleFilterOptions = getRoleFilterOptions();
+  
   const filterConfig: FilterConfig[] = [
     {
       key: 'search',
@@ -379,13 +379,7 @@ export function UserManagement() {
       key: 'role',
       label: 'Role', 
       type: 'select',
-      options: [
-        { value: 'visitor', label: 'Visitor' },
-        { value: 'creator', label: 'Creator' },
-        { value: 'moderator', label: 'Moderator' },
-        { value: 'platform_admin', label: 'Platform Admin' },
-        { value: 'super_admin', label: 'Super Admin' }
-      ]
+      options: roleFilterOptions
     }
   ];
 

@@ -66,15 +66,15 @@ export class RoleAssignmentWriteProcessor implements EventHandler {
         throw new Error('Target role not found');
       }
 
-      // Security: Check if assigner is a super admin (level 100) OR has a higher/equal level
-      const isSuperAdmin = (assignerRoles || []).some((r: any) => r.roles?.name === 'super_admin');
+      // Security: Check if assigner has highest hierarchy level (100+) OR has a higher/equal level than target
+      const assignerHasMaxPrivilege = assignerMaxLevel >= 100;
       
-      if (!isSuperAdmin && targetRole.hierarchy_level > assignerMaxLevel) {
+      if (!assignerHasMaxPrivilege && targetRole.hierarchy_level > assignerMaxLevel) {
         throw new Error('Insufficient privileges: Cannot assign role with higher hierarchy level');
       }
 
-      // Security: Prevent self-elevation (non-super-admins can't give themselves higher roles)
-      if (userId === assignedBy && !isSuperAdmin && targetRole.hierarchy_level >= assignerMaxLevel) {
+      // Security: Prevent self-elevation (users without max privilege can't give themselves higher roles)
+      if (userId === assignedBy && !assignerHasMaxPrivilege && targetRole.hierarchy_level >= assignerMaxLevel) {
         throw new Error('Cannot elevate own privileges');
       }
 

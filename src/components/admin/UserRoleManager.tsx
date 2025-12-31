@@ -168,11 +168,12 @@ export function UserRoleManager({ userId, userName, onRolesChange }: UserRoleMan
   const handleRevokeRole = async () => {
     if (!roleToRevoke || !user) return;
 
-    // Security: Prevent revoking your own super_admin role
-    if (userId === user.id && roleToRevoke.role_name === 'super_admin') {
+    // Security: Prevent revoking your own highest-level role (self-lockout protection)
+    // Server-side validation is the source of truth, this is just UX
+    if (userId === user.id && roleToRevoke.hierarchy_level >= 100) {
       toast({
         title: 'Not Allowed',
-        description: 'You cannot revoke your own super_admin role',
+        description: 'You cannot revoke your own highest-level admin role',
         variant: 'destructive',
       });
       setRevokeDialogOpen(false);

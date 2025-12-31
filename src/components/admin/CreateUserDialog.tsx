@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -39,11 +39,17 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from 'lucide-react';
+import { useRoles } from '@/hooks/useRoles';
+import { useAuth } from '@/hooks/useAuth';
+import { useRBAC } from '@/contexts/RBACContext';
+import { useEventPublisher } from '@/hooks/useEventBus';
+import { createUserRoleAssignedEvent } from '@/lib/events/domain/AdminEvents';
 
+// Base schema without role enum - role is validated dynamically
 const userSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100),
   email: z.string().email('Invalid email address'),
-  role: z.enum(['visitor', 'creator', 'moderator', 'platform_admin']),
+  roleId: z.string().uuid('Please select a role'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
@@ -59,38 +65,81 @@ export function CreateUserDialog({ open, onOpenChange, onSuccess }: CreateUserDi
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<any>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { isSuperAdmin, getHighestRole } = useRBAC();
+  const { publish } = useEventPublisher();
+  const { roles, isLoading: rolesLoading, getAssignableRoles } = useRoles();
+  
+  // Get the highest hierarchy level of the current admin
+  const adminHighestRole = getHighestRole();
+  const adminHierarchyLevel = adminHighestRole?.hierarchy_level ?? 0;
+  
+  // Filter roles that this admin can assign
+  const assignableRoles = getAssignableRoles(adminHierarchyLevel, isSuperAdmin());
 
   const form = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
     defaultValues: {
       name: '',
       email: '',
-      role: 'visitor',
+      roleId: '',
       password: '',
     },
   });
 
+  // Reset form when dialog opens
+  useEffect(() => {
+    if (open) {
+      form.reset();
+      setSubmitError(null);
+    }
+  }, [open, form]);
+
   const onSubmit = async (data: UserFormData) => {
+    if (!user) return;
+    
     try {
       setIsSubmitting(true);
+      setSubmitError(null);
 
-      // Create user via Supabase Auth Admin API
+      // Find the selected role
+      const selectedRole = roles.find(r => r.id === data.roleId);
+      if (!selectedRole) {
+        throw new Error('Selected role not found');
+      }
+
+      // Security: Verify hierarchy level
+      if (selectedRole.hierarchy_level > adminHierarchyLevel && !isSuperAdmin()) {
+        throw new Error('Cannot assign role with higher hierarchy level');
+      }
+
+      // Create user via Supabase Auth Admin API (without role in metadata)
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email: data.email,
         password: data.password,
         email_confirm: true,
         user_metadata: {
           name: data.name,
-          role: data.role,
+          // Note: Role is NOT stored here - it's assigned via event system
         },
       });
 
       if (authError) throw authError;
+      if (!authData.user) throw new Error('User creation failed');
 
-      setSubmitError(null);
+      // Assign role via pub/sub event system (single source of truth)
+      const roleEvent = createUserRoleAssignedEvent({
+        userId: authData.user.id,
+        roleId: data.roleId,
+        roleName: selectedRole.name,
+        assignedBy: user.id,
+      });
+
+      await publish(roleEvent);
+
       toast({
         title: 'User Created',
-        description: `${data.name} has been successfully created.`,
+        description: `${data.name} has been successfully created with the ${selectedRole.display_name} role.`,
       });
 
       form.reset();
@@ -197,23 +246,31 @@ export function CreateUserDialog({ open, onOpenChange, onSuccess }: CreateUserDi
 
             <FormField
               control={form.control}
-              name="role"
+              name="roleId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Role</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    value={field.value}
+                    disabled={rolesLoading}
+                  >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a role" />
+                        <SelectValue placeholder={rolesLoading ? "Loading roles..." : "Select a role"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="visitor">Visitor</SelectItem>
-                      <SelectItem value="creator">Creator</SelectItem>
-                      <SelectItem value="moderator">Moderator</SelectItem>
-                      <SelectItem value="platform_admin">Platform Admin</SelectItem>
+                      {assignableRoles.map((role) => (
+                        <SelectItem key={role.id} value={role.id}>
+                          {role.display_name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
+                  <FormDescription>
+                    You can only assign roles at or below your hierarchy level
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -228,7 +285,7 @@ export function CreateUserDialog({ open, onOpenChange, onSuccess }: CreateUserDi
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting || rolesLoading}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create User
               </Button>
