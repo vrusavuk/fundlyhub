@@ -325,7 +325,11 @@ export function createDonationColumns(
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    onClick={() => onReallocate(donation)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onReallocate(donation);
+                    }}
                     className="text-primary"
                   >
                     <ArrowRightLeft className="mr-2 h-4 w-4" />
