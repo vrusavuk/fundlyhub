@@ -210,6 +210,9 @@ class AdminDataService {
       const enrichedData = data?.map(campaign => ({
         ...campaign,
         owner_profile: campaign.profiles || null, // Map profiles to owner_profile
+        owner_name: campaign.profiles?.name || null,
+        owner_avatar: campaign.profiles?.avatar || null,
+        owner_email: campaign.profiles?.email || null,
         profiles: undefined, // Remove original profiles field
         stats: statsMap.get(campaign.id) || {
           total_raised: 0,
@@ -621,6 +624,9 @@ class AdminDataService {
       return {
         ...data,
         owner_profile: data.profiles,
+        owner_name: data.profiles?.name || null,
+        owner_avatar: data.profiles?.avatar || null,
+        owner_email: data.profiles?.email || null,
         profiles: undefined,
         stats: statsMap.get(campaignId) || {
           total_raised: 0,
