@@ -279,8 +279,8 @@ export function DonationManagement() {
 
   // Reallocation handlers
   const handleReallocate = (donation: DonationData) => {
-    setDonationsToReallocate([donation]);
-    setShowReallocationDialog(true);
+    // Navigate to donation detail page with reallocation dialog open
+    navigate(`/admin/donations/${donation.id}?action=reallocate`);
   };
 
   const handleBulkReallocate = () => {

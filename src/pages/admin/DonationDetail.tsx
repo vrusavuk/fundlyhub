@@ -3,7 +3,7 @@
  * Stripe-inspired detail view for individual donations
  */
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Check, XCircle, Clock, RefreshCw, ExternalLink, Eye, RotateCcw, ArrowRightLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +28,7 @@ import { useRBAC } from '@/contexts/RBACContext';
 export default function DonationDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const { isSuperAdmin } = useRBAC();
   const [donation, setDonation] = useState<DonationData | null>(null);
@@ -35,6 +36,16 @@ export default function DonationDetail() {
   const [showRefundDialog, setShowRefundDialog] = useState(false);
   const [showReallocationDialog, setShowReallocationDialog] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Open reallocation dialog if action=reallocate is in URL
+  useEffect(() => {
+    if (searchParams.get('action') === 'reallocate' && donation && !loading) {
+      setShowReallocationDialog(true);
+      // Clear the action param from URL
+      searchParams.delete('action');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, donation, loading, setSearchParams]);
 
   // Set dynamic breadcrumbs
   useDetailPageBreadcrumbs(
