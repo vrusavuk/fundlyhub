@@ -4,7 +4,7 @@
  */
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, X } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 import { DetailSidebarSection } from './DetailSidebar';
 import { DetailKeyValue } from './DetailKeyValue';
@@ -23,6 +23,7 @@ import {
   FormLabel,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import type { CampaignEditData } from '@/lib/validation/campaignEdit.schema';
 
 interface CampaignDetailSidebarProps {
@@ -128,14 +129,28 @@ export function CampaignDetailSidebar({ campaign, isEditing = false, form }: Cam
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs text-muted-foreground">End Date</FormLabel>
-                <FormControl>
-                  <Input 
-                    {...field} 
-                    value={field.value || ''} 
-                    type="date" 
-                    className="h-8"
-                  />
-                </FormControl>
+                <div className="flex items-center gap-1">
+                  <FormControl>
+                    <Input 
+                      {...field} 
+                      value={field.value || ''} 
+                      type="date" 
+                      className="h-8 flex-1"
+                    />
+                  </FormControl>
+                  {field.value && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 shrink-0"
+                      onClick={() => field.onChange(null)}
+                      title="Clear end date"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </FormItem>
             )}
           />
