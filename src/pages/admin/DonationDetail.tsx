@@ -2,7 +2,7 @@
  * Donation Detail Page
  * Stripe-inspired detail view for individual donations
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Check, XCircle, Clock, RefreshCw, ExternalLink, Eye, RotateCcw, ArrowRightLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -37,17 +37,29 @@ export default function DonationDetail() {
   const [showReallocationDialog, setShowReallocationDialog] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Open reallocation dialog if action=reallocate is in URL
+  const initialActionRef = useRef<string | null>(null);
+
+  // Capture initial action from URL once (before we potentially mutate search params)
   useEffect(() => {
-    const action = searchParams.get('action');
-    if (action === 'reallocate' && donation && !loading) {
+    if (initialActionRef.current === null) {
+      initialActionRef.current = searchParams.get('action');
+    }
+  }, [searchParams]);
+
+  // Open reallocation dialog if action=reallocate was present on entry
+  useEffect(() => {
+    if (initialActionRef.current === 'reallocate' && donation && !loading) {
       setShowReallocationDialog(true);
-      // Clear the action param from URL without triggering re-render loop
+
+      // Clear the action param from URL
       const newParams = new URLSearchParams(searchParams);
       newParams.delete('action');
       setSearchParams(newParams, { replace: true });
+
+      // Prevent re-trigger on future renders
+      initialActionRef.current = null;
     }
-  }, [searchParams, donation, loading, setSearchParams]);
+  }, [donation, loading, searchParams, setSearchParams]);
 
   // Set dynamic breadcrumbs
   useDetailPageBreadcrumbs(
