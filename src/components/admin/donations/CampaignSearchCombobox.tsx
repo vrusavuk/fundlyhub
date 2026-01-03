@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Check, ChevronsUpDown, Search } from 'lucide-react';
+import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -41,7 +41,7 @@ export function CampaignSearchCombobox({
   value,
   onChange,
   excludeCampaignId,
-  placeholder = 'Select campaign...',
+  placeholder = 'Search and select a campaign...',
   disabled = false,
 }: CampaignSearchComboboxProps) {
   const [open, setOpen] = useState(false);
@@ -50,37 +50,29 @@ export function CampaignSearchCombobox({
   const [search, setSearch] = useState('');
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
 
-  // Fetch campaigns on search - use fundraisers with stats projection for total_raised
+  // Fetch campaigns - use campaign_summary_projection as source of truth
   useEffect(() => {
     const fetchCampaigns = async () => {
+      if (!open) return; // Only fetch when dropdown is open
+      
       setLoading(true);
       try {
-        // Query fundraisers with campaign_stats_projection for total_raised
+        // Use campaign_summary_projection as single source of truth (admin RLS policy now allows access)
         let query = supabase
-          .from('fundraisers')
-          .select(`
-            id, 
-            title, 
-            slug, 
-            status, 
-            goal_amount,
-            owner_user_id,
-            profiles!fundraisers_owner_user_id_fkey(name),
-            campaign_stats_projection(total_donations)
-          `)
+          .from('campaign_summary_projection')
+          .select('campaign_id, title, slug, status, goal_amount, total_raised, owner_name')
           .eq('status', 'active')
-          .is('deleted_at', null)
           .order('title', { ascending: true })
           .limit(50);
 
         // Filter by search term
-        if (search) {
-          query = query.ilike('title', `%${search}%`);
+        if (search.trim()) {
+          query = query.ilike('title', `%${search.trim()}%`);
         }
 
         // Exclude current campaign
         if (excludeCampaignId) {
-          query = query.neq('id', excludeCampaignId);
+          query = query.neq('campaign_id', excludeCampaignId);
         }
 
         const { data, error } = await query;
@@ -89,13 +81,13 @@ export function CampaignSearchCombobox({
 
         setCampaigns(
           (data || []).map((c) => ({
-            id: c.id,
+            id: c.campaign_id,
             title: c.title,
             slug: c.slug,
             status: c.status || 'active',
             goal_amount: c.goal_amount,
-            total_raised: c.campaign_stats_projection?.total_donations || 0,
-            owner_name: c.profiles?.name || null,
+            total_raised: c.total_raised || 0,
+            owner_name: c.owner_name || null,
           }))
         );
       } catch (error) {
@@ -106,35 +98,27 @@ export function CampaignSearchCombobox({
     };
 
     fetchCampaigns();
-  }, [search, excludeCampaignId]);
+  }, [search, excludeCampaignId, open]);
 
   // Fetch selected campaign details when value changes
   useEffect(() => {
     if (value && !selectedCampaign) {
       const fetchSelected = async () => {
         const { data } = await supabase
-          .from('fundraisers')
-          .select(`
-            id, 
-            title, 
-            slug, 
-            status, 
-            goal_amount,
-            profiles!fundraisers_owner_user_id_fkey(name),
-            campaign_stats_projection(total_donations)
-          `)
-          .eq('id', value)
+          .from('campaign_summary_projection')
+          .select('campaign_id, title, slug, status, goal_amount, total_raised, owner_name')
+          .eq('campaign_id', value)
           .single();
 
         if (data) {
           setSelectedCampaign({
-            id: data.id,
+            id: data.campaign_id,
             title: data.title,
             slug: data.slug,
             status: data.status || 'active',
             goal_amount: data.goal_amount,
-            total_raised: data.campaign_stats_projection?.total_donations || 0,
-            owner_name: data.profiles?.name || null,
+            total_raised: data.total_raised || 0,
+            owner_name: data.owner_name || null,
           });
         }
       };
@@ -154,6 +138,13 @@ export function CampaignSearchCombobox({
     return variants[status] || 'neutral';
   };
 
+  const handleSelect = (campaign: Campaign) => {
+    setSelectedCampaign(campaign);
+    onChange(campaign.id, campaign);
+    setOpen(false);
+    setSearch('');
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -161,72 +152,74 @@ export function CampaignSearchCombobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between"
+          className="w-full justify-between h-auto min-h-10 py-2"
           disabled={disabled}
         >
           {selectedCampaign ? (
-            <span className="truncate">{selectedCampaign.title}</span>
+            <span className="truncate text-left">{selectedCampaign.title}</span>
           ) : (
             <span className="text-muted-foreground">{placeholder}</span>
           )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[400px] p-0" align="start">
+      <PopoverContent 
+        className="w-[calc(100vw-2rem)] sm:w-[400px] p-0 bg-popover z-50" 
+        align="start"
+        sideOffset={4}
+      >
         <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search campaigns..."
             value={search}
             onValueChange={setSearch}
           />
-          <CommandList>
+          <CommandList className="max-h-[300px]">
             {loading ? (
               <div className="py-6 text-center text-sm text-muted-foreground">
                 Loading campaigns...
               </div>
             ) : campaigns.length === 0 ? (
-              <CommandEmpty>No campaigns found.</CommandEmpty>
+              <CommandEmpty>
+                {search.trim() ? 'No campaigns found.' : 'No active campaigns available.'}
+              </CommandEmpty>
             ) : (
               <CommandGroup>
                 {campaigns.map((campaign) => (
                   <CommandItem
                     key={campaign.id}
                     value={campaign.title}
-                    onSelect={() => {
-                      setSelectedCampaign(campaign);
-                      onChange(campaign.id, campaign);
-                      setOpen(false);
-                    }}
+                    onSelect={() => handleSelect(campaign)}
                     className="flex flex-col items-start gap-1 py-3 cursor-pointer"
                   >
-                    <div className="flex w-full items-center justify-between">
-                      <div className="flex items-center gap-2">
+                    <div className="flex w-full items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
                         <Check
                           className={cn(
-                            'h-4 w-4',
+                            'h-4 w-4 shrink-0',
                             value === campaign.id ? 'opacity-100' : 'opacity-0'
                           )}
                         />
-                        <span className="font-medium truncate max-w-[250px]">
+                        <span className="font-medium truncate">
                           {campaign.title}
                         </span>
                       </div>
-                      <StripeBadgeExact variant={getStatusBadge(campaign.status)}>
+                      <StripeBadgeExact variant={getStatusBadge(campaign.status)} className="shrink-0">
                         {campaign.status}
                       </StripeBadgeExact>
                     </div>
-                    <div className="ml-6 flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="ml-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
                       <span>
                         {MoneyMath.format(MoneyMath.create(campaign.total_raised, 'USD'))} raised
                       </span>
-                      <span>•</span>
+                      <span className="hidden sm:inline">•</span>
                       <span>
                         Goal: {MoneyMath.format(MoneyMath.create(campaign.goal_amount, 'USD'))}
                       </span>
                       {campaign.owner_name && (
                         <>
-                          <span>•</span>
-                          <span>by {campaign.owner_name}</span>
+                          <span className="hidden sm:inline">•</span>
+                          <span className="hidden sm:inline">by {campaign.owner_name}</span>
                         </>
                       )}
                     </div>
