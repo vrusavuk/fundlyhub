@@ -469,34 +469,66 @@ export function EditCampaignDialog({
                         <FormLabel>Cover Image</FormLabel>
                         <FormControl>
                           <div className="space-y-4">
-                            {/* Upload Option - pass empty value when URL is present so uploads are always allowed */}
+                            {/* Current Cover Image Preview */}
+                            {campaign?.cover_image && !uploadedCoverImageId && (
+                              <div className="space-y-2">
+                                <p className="text-sm text-muted-foreground">Current cover image:</p>
+                                <div className="relative rounded-lg overflow-hidden border bg-muted">
+                                  <img 
+                                    src={campaign.cover_image} 
+                                    alt="Current cover" 
+                                    className="w-full h-48 object-cover"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Upload New Image Section */}
                             <ImageUpload
                               value={uploadedCoverImageId ? [form.watch('cover_image')] : []}
                               onChange={(url) => {
-                                // Handle both string and array types
                                 const imageUrl = typeof url === 'string' ? url : (Array.isArray(url) ? url[0] : '');
                                 if (imageUrl) {
-                                  // Clear any existing URL when a new image is uploaded
                                   field.onChange(imageUrl);
                                 }
                               }}
                               onImageIdChange={(ids) => {
-                                // Handle both string and array types (string when maxFiles=1)
                                 const imageId = typeof ids === 'string' ? ids : (Array.isArray(ids) ? ids[0] : '');
                                 if (imageId) {
                                   setUploadedCoverImageId(imageId);
                                   form.setValue('coverImageId', imageId);
-                                  // Clear the URL input when a new image is uploaded
                                   form.setValue('cover_image', '');
                                 }
                               }}
                               maxFiles={1}
                               bucket="fundraiser-images"
                               isDraft={false}
-                              label="Upload New Cover Image"
-                              description="Upload a new image or enter a URL below"
+                              label={campaign?.cover_image ? "Replace Cover Image" : "Upload Cover Image"}
+                              description={campaign?.cover_image ? "Upload a new image to replace the current one" : "Drag & drop or click to upload"}
                               showPreview={true}
                             />
+
+                            {/* Pending Upload Indicator */}
+                            {uploadedCoverImageId && (
+                              <Alert className="border-primary/50 bg-primary/5">
+                                <AlertDescription className="flex items-center justify-between">
+                                  <span>New image will replace the current cover when you save.</span>
+                                  <Button 
+                                    type="button"
+                                    variant="ghost" 
+                                    size="sm"
+                                    onClick={() => {
+                                      setUploadedCoverImageId(null);
+                                      setUploadedCoverImagePath(null);
+                                      form.setValue('coverImageId', null);
+                                      form.setValue('cover_image', campaign?.cover_image || '');
+                                    }}
+                                  >
+                                    Cancel
+                                  </Button>
+                                </AlertDescription>
+                              </Alert>
+                            )}
                             
                             {/* OR URL Input (for backward compatibility) */}
                             <div className="relative">
@@ -517,14 +549,6 @@ export function EditCampaignDialog({
                               placeholder="https://example.com/image.jpg"
                               disabled={!!uploadedCoverImageId}
                             />
-                            
-                            {uploadedCoverImageId && (
-                              <Alert>
-                                <AlertDescription>
-                                  Uploaded image will replace any existing cover image when you save.
-                                </AlertDescription>
-                              </Alert>
-                            )}
                           </div>
                         </FormControl>
                         <FormDescription>
