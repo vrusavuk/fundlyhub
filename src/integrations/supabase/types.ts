@@ -3783,6 +3783,10 @@ export type Database = {
         Args: { p_avatar_url: string }
         Returns: undefined
       }
+      sync_campaign_summary_totals: {
+        Args: { p_campaign_id: string }
+        Returns: undefined
+      }
       update_campaign_analytics_safe: {
         Args: { p_amount: number; p_campaign_id: string; p_donor_id: string }
         Returns: undefined

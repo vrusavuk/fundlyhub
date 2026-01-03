@@ -58,6 +58,15 @@ export class DonationProjectionProcessor implements EventHandler {
       if (analyticsError) {
         console.error('[DonationProjectionProcessor] Campaign analytics error:', analyticsError);
       }
+
+      // Sync campaign_summary_projection totals to keep them accurate
+      const { error: syncError } = await supabase.rpc('sync_campaign_summary_totals', {
+        p_campaign_id: campaignId,
+      });
+
+      if (syncError) {
+        console.error('[DonationProjectionProcessor] Campaign summary sync error:', syncError);
+      }
     }
 
     // Update donor history projection
@@ -103,6 +112,15 @@ export class DonationProjectionProcessor implements EventHandler {
 
       if (analyticsError) {
         console.error('[DonationProjectionProcessor] Campaign analytics revert error:', analyticsError);
+      }
+
+      // Sync campaign_summary_projection totals after refund
+      const { error: syncError } = await supabase.rpc('sync_campaign_summary_totals', {
+        p_campaign_id: donation.fundraiser_id,
+      });
+
+      if (syncError) {
+        console.error('[DonationProjectionProcessor] Campaign summary sync error:', syncError);
       }
     }
 

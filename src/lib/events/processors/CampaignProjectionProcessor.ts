@@ -36,7 +36,15 @@ export class CampaignProjectionProcessor implements EventHandler {
   }
 
   private async handleCampaignCreated(event: CampaignCreatedEvent): Promise<void> {
-    // Fetch the full campaign data
+    // Use campaignId from event payload for reliable lookup
+    const campaignId = event.payload.campaignId;
+    
+    if (!campaignId) {
+      console.error('[CampaignProjectionProcessor] No campaignId in event payload');
+      return;
+    }
+    
+    // Fetch the full campaign data by ID
     const { data: campaign, error: fetchError } = await supabase
       .from('fundraisers')
       .select(`
@@ -45,9 +53,7 @@ export class CampaignProjectionProcessor implements EventHandler {
         organization:organizations!org_id(legal_name, dba_name),
         category:categories!category_id(name)
       `)
-      .eq('owner_user_id', event.payload.userId)
-      .order('created_at', { ascending: false })
-      .limit(1)
+      .eq('id', campaignId)
       .maybeSingle();
 
     if (fetchError || !campaign) {
@@ -55,10 +61,10 @@ export class CampaignProjectionProcessor implements EventHandler {
       return;
     }
 
-    // Update campaign summary projection
-    await supabase
+    // Upsert campaign summary projection (progress_percentage is auto-generated)
+    const { error: summaryError } = await supabase
       .from('campaign_summary_projection')
-      .insert({
+      .upsert({
         campaign_id: campaign.id,
         title: campaign.title,
         slug: campaign.slug,
@@ -78,12 +84,16 @@ export class CampaignProjectionProcessor implements EventHandler {
         created_at: campaign.created_at,
         end_date: campaign.end_date,
         days_remaining: campaign.end_date ? Math.max(0, Math.floor((new Date(campaign.end_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : null,
-      });
+      }, { onConflict: 'campaign_id' });
 
-    // Initialize campaign stats projection
-    await supabase
+    if (summaryError) {
+      console.error('[CampaignProjectionProcessor] Summary upsert error:', summaryError);
+    }
+
+    // Upsert campaign stats projection
+    const { error: statsError } = await supabase
       .from('campaign_stats_projection')
-      .insert({
+      .upsert({
         campaign_id: campaign.id,
         total_donations: 0,
         donation_count: 0,
@@ -93,16 +103,21 @@ export class CampaignProjectionProcessor implements EventHandler {
         share_count: 0,
         comment_count: 0,
         update_count: 0,
-      });
+      }, { onConflict: 'campaign_id' });
 
-    // Initialize campaign search projection
-    await supabase
+    if (statsError) {
+      console.error('[CampaignProjectionProcessor] Stats upsert error:', statsError);
+    }
+
+    // Upsert campaign search projection
+    const { error: searchError } = await supabase
       .from('campaign_search_projection')
-      .insert({
+      .upsert({
         campaign_id: campaign.id,
         title: campaign.title,
+        slug: campaign.slug,
         summary: campaign.summary,
-        story_text: campaign.story_html?.replace(/<[^>]*>/g, ' ') || '', // Strip HTML for search
+        story_text: campaign.story_html?.replace(/<[^>]*>/g, ' ') || '',
         beneficiary_name: campaign.beneficiary_name,
         location: campaign.location,
         tags: campaign.tags,
@@ -112,7 +127,11 @@ export class CampaignProjectionProcessor implements EventHandler {
         status: campaign.status,
         visibility: campaign.visibility,
         created_at: campaign.created_at,
-      });
+      }, { onConflict: 'campaign_id' });
+
+    if (searchError) {
+      console.error('[CampaignProjectionProcessor] Search upsert error:', searchError);
+    }
 
     console.log(`[CampaignProjectionProcessor] Created projections for campaign ${campaign.id}`);
   }

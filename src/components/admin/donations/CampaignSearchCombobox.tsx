@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -50,75 +50,130 @@ export function CampaignSearchCombobox({
   const [search, setSearch] = useState('');
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
 
-  // Fetch campaigns - use campaign_summary_projection as source of truth
-  useEffect(() => {
-    const fetchCampaigns = async () => {
-      if (!open) return; // Only fetch when dropdown is open
-      
-      setLoading(true);
-      try {
-        // Use campaign_summary_projection as single source of truth (admin RLS policy now allows access)
-        let query = supabase
-          .from('campaign_summary_projection')
-          .select('campaign_id, title, slug, status, goal_amount, total_raised, owner_name')
-          .eq('status', 'active')
-          .order('title', { ascending: true })
-          .limit(50);
+  // Fetch campaigns from fundraisers (source of truth) + get_fundraiser_totals for accurate totals
+  const fetchCampaigns = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Query fundraisers directly as source of truth
+      let query = supabase
+        .from('fundraisers')
+        .select(`
+          id,
+          title,
+          slug,
+          status,
+          goal_amount,
+          owner:profiles!owner_user_id(name)
+        `)
+        .eq('status', 'active')
+        .is('deleted_at', null)
+        .order('title', { ascending: true })
+        .limit(50);
 
-        // Filter by search term
-        if (search.trim()) {
-          query = query.ilike('title', `%${search.trim()}%`);
-        }
-
-        // Exclude current campaign
-        if (excludeCampaignId) {
-          query = query.neq('campaign_id', excludeCampaignId);
-        }
-
-        const { data, error } = await query;
-
-        if (error) throw error;
-
-        setCampaigns(
-          (data || []).map((c) => ({
-            id: c.campaign_id,
-            title: c.title,
-            slug: c.slug,
-            status: c.status || 'active',
-            goal_amount: c.goal_amount,
-            total_raised: c.total_raised || 0,
-            owner_name: c.owner_name || null,
-          }))
-        );
-      } catch (error) {
-        console.error('Error fetching campaigns:', error);
-      } finally {
-        setLoading(false);
+      // Filter by search term
+      if (search.trim()) {
+        query = query.ilike('title', `%${search.trim()}%`);
       }
-    };
 
-    fetchCampaigns();
-  }, [search, excludeCampaignId, open]);
+      // Exclude current campaign
+      if (excludeCampaignId) {
+        query = query.neq('id', excludeCampaignId);
+      }
+
+      const { data: fundraisers, error } = await query;
+
+      if (error) throw error;
+
+      if (!fundraisers || fundraisers.length === 0) {
+        setCampaigns([]);
+        return;
+      }
+
+      // Get accurate totals using the canonical RPC
+      const campaignIds = fundraisers.map((f) => f.id);
+      const { data: totals } = await supabase.rpc('get_fundraiser_totals', {
+        fundraiser_ids: campaignIds,
+      });
+
+      // Create a map of totals by fundraiser_id
+      const totalsMap = new Map(
+        (totals || []).map((t: { fundraiser_id: string; total_raised: number }) => [
+          t.fundraiser_id,
+          t.total_raised || 0,
+        ])
+      );
+
+      // Merge campaigns with totals
+      setCampaigns(
+        fundraisers.map((f) => ({
+          id: f.id,
+          title: f.title,
+          slug: f.slug,
+          status: f.status || 'active',
+          goal_amount: f.goal_amount,
+          total_raised: totalsMap.get(f.id) || 0,
+          owner_name: (f.owner as { name: string } | null)?.name || null,
+        }))
+      );
+    } catch (error) {
+      console.error('Error fetching campaigns:', error);
+      setCampaigns([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [search, excludeCampaignId]);
+
+  // Fetch campaigns when popover opens or search changes
+  useEffect(() => {
+    if (open) {
+      fetchCampaigns();
+    }
+  }, [open, fetchCampaigns]);
+
+  // Also refetch when search changes (debounced effect handled by dependency)
+  useEffect(() => {
+    if (open && search !== undefined) {
+      const timer = setTimeout(() => {
+        fetchCampaigns();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [search, open, fetchCampaigns]);
 
   // Fetch selected campaign details when value changes
   useEffect(() => {
-    if (value && !selectedCampaign) {
+    if (value && (!selectedCampaign || selectedCampaign.id !== value)) {
       const fetchSelected = async () => {
-        const { data } = await supabase
-          .from('campaign_summary_projection')
-          .select('campaign_id, title, slug, status, goal_amount, total_raised, owner_name')
-          .eq('campaign_id', value)
-          .single();
+        // First get campaign details
+        const { data: campaign } = await supabase
+          .from('fundraisers')
+          .select(`
+            id,
+            title,
+            slug,
+            status,
+            goal_amount,
+            owner:profiles!owner_user_id(name)
+          `)
+          .eq('id', value)
+          .maybeSingle();
 
-        if (data) {
+        if (campaign) {
+          // Get accurate totals
+          const { data: totals } = await supabase.rpc('get_fundraiser_totals', {
+            fundraiser_ids: [campaign.id],
+          });
+
+          const total = totals?.[0]?.total_raised || 0;
+
           setSelectedCampaign({
-            id: data.campaign_id,
-            title: data.title,
-            slug: data.slug,
-            status: data.status || 'active',
-            goal_amount: data.goal_amount,
-            total_raised: data.total_raised || 0,
-            owner_name: data.owner_name || null,
+            id: campaign.id,
+            title: campaign.title,
+            slug: campaign.slug,
+            status: campaign.status || 'active',
+            goal_amount: campaign.goal_amount,
+            total_raised: total,
+            owner_name: (campaign.owner as { name: string } | null)?.name || null,
           });
         }
       };
@@ -145,8 +200,16 @@ export function CampaignSearchCombobox({
     setSearch('');
   };
 
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (isOpen) {
+      // Reset search when opening to show all campaigns
+      setSearch('');
+    }
+  };
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -164,7 +227,7 @@ export function CampaignSearchCombobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-[calc(100vw-2rem)] sm:w-[400px] p-0 bg-popover z-50" 
+        className="w-[var(--radix-popover-trigger-width)] max-w-[calc(100vw-2rem)] p-0 bg-popover z-50" 
         align="start"
         sideOffset={4}
       >
@@ -174,7 +237,7 @@ export function CampaignSearchCombobox({
             value={search}
             onValueChange={setSearch}
           />
-          <CommandList className="max-h-[300px]">
+          <CommandList className="max-h-[40vh] sm:max-h-[300px]">
             {loading ? (
               <div className="py-6 text-center text-sm text-muted-foreground">
                 Loading campaigns...
@@ -188,7 +251,7 @@ export function CampaignSearchCombobox({
                 {campaigns.map((campaign) => (
                   <CommandItem
                     key={campaign.id}
-                    value={campaign.title}
+                    value={campaign.id}
                     onSelect={() => handleSelect(campaign)}
                     className="flex flex-col items-start gap-1 py-3 cursor-pointer"
                   >
@@ -213,7 +276,7 @@ export function CampaignSearchCombobox({
                         {MoneyMath.format(MoneyMath.create(campaign.total_raised, 'USD'))} raised
                       </span>
                       <span className="hidden sm:inline">•</span>
-                      <span>
+                      <span className="hidden sm:inline">
                         Goal: {MoneyMath.format(MoneyMath.create(campaign.goal_amount, 'USD'))}
                       </span>
                       {campaign.owner_name && (
