@@ -422,11 +422,11 @@ export default function CampaignDetail() {
                 control={form.control}
                 name="title"
                 render={({ field }) => (
-                  <FormItem className="w-full max-w-2xl">
+                  <FormItem className="w-full min-w-0">
                     <FormControl>
                       <Input 
                         {...field} 
-                        className="text-2xl font-semibold h-auto py-2 px-3 w-full"
+                        className="text-xl md:text-2xl font-semibold h-auto py-2 px-3 w-full min-w-[300px] md:min-w-[500px] lg:min-w-[600px]"
                         placeholder="Campaign title"
                       />
                     </FormControl>
