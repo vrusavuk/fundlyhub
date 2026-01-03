@@ -12,7 +12,8 @@ import {
   RefreshCw,
   Download,
   ExternalLink,
-  AlertTriangle
+  AlertTriangle,
+  ArrowRightLeft
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRBAC } from '@/contexts/RBACContext';
@@ -40,6 +41,7 @@ import {
 import { StripeStatusTabs, StatusTab } from '@/components/admin/StripeStatusTabs';
 import { StripeInfoBanner } from '@/components/admin/StripeInfoBanner';
 import { StripeActionButtons } from '@/components/admin/StripeActionButtons';
+import { ReallocationDialog } from '@/components/admin/donations/ReallocationDialog';
 
 interface DonationFilters {
   search: string;
@@ -61,6 +63,8 @@ export function DonationManagement() {
   const [selectedDonations, setSelectedDonations] = useState<DonationData[]>([]);
   const [selectedDonation, setSelectedDonation] = useState<DonationData | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [showReallocationDialog, setShowReallocationDialog] = useState(false);
+  const [donationsToReallocate, setDonationsToReallocate] = useState<DonationData[]>([]);
   const [density, setDensity] = useState<Density>('comfortable');
   const [confirmAction, setConfirmAction] = useState<{
     open: boolean;
@@ -273,6 +277,32 @@ export function DonationManagement() {
     });
   };
 
+  // Reallocation handlers
+  const handleReallocate = (donation: DonationData) => {
+    setDonationsToReallocate([donation]);
+    setShowReallocationDialog(true);
+  };
+
+  const handleBulkReallocate = () => {
+    if (selectedDonations.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "No donations selected",
+        description: "Please select at least one donation to reallocate.",
+      });
+      return;
+    }
+    setDonationsToReallocate(selectedDonations);
+    setShowReallocationDialog(true);
+  };
+
+  const handleReallocationSuccess = () => {
+    adminDataService.invalidateCache('donations');
+    fetchDonations();
+    fetchDonationStats();
+    setSelectedDonations([]);
+  };
+
   const handleBulkActionClick = (actionKey: string) => {
     if (selectedDonations.length === 0) {
       toast({
@@ -296,6 +326,9 @@ export function DonationManagement() {
           title: "Not Implemented",
           description: "Receipt resending requires email integration.",
         });
+        break;
+      case 'reallocate':
+        handleBulkReallocate();
         break;
       case 'refund':
         if (!canRefund) {
@@ -328,6 +361,7 @@ export function DonationManagement() {
     handleViewDetails,
     handleViewCampaign,
     handleRefund,
+    handleReallocate,
     {
       canRefund,
       isSuperAdmin: isSuperAdmin()
@@ -414,6 +448,12 @@ export function DonationManagement() {
       icon: Download,
       variant: 'outline'
     },
+    ...(isSuperAdmin() ? [{
+      key: 'reallocate',
+      label: 'Reallocate',
+      icon: ArrowRightLeft,
+      variant: 'outline' as const
+    }] : []),
     ...(canRefund ? [{
       key: 'refund',
       label: 'Refund (Super Admin)',
@@ -502,6 +542,13 @@ export function DonationManagement() {
         description={confirmAction.description}
         onConfirm={confirmAction.action}
         variant={confirmAction.variant}
+      />
+
+      <ReallocationDialog
+        open={showReallocationDialog}
+        onOpenChange={setShowReallocationDialog}
+        donations={donationsToReallocate}
+        onSuccess={handleReallocationSuccess}
       />
 
       <OptimisticUpdateIndicator 
