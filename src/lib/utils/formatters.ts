@@ -32,6 +32,22 @@ export function formatProgress(raised: number, goal: number): number {
 }
 
 /**
+ * Format a progress percentage for display
+ * Shows "< 1%" for small but non-zero progress to avoid misleading "0%"
+ */
+export function formatProgressPercentage(raised: number, goal: number): string {
+  if (goal <= 0 || raised <= 0) return '0';
+  
+  const percentage = (raised / goal) * 100;
+  
+  if (percentage >= 100) return '100';
+  if (percentage >= 1) return Math.round(percentage).toString();
+  
+  // Show "< 1" for non-zero progress under 1%
+  return '< 1';
+}
+
+/**
  * Formats donation count with proper pluralization
  */
 export function formatDonorCount(count: number): string {

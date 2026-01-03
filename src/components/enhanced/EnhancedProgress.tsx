@@ -5,6 +5,7 @@
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import { formatProgressPercentage } from '@/lib/utils/formatters';
 import { TrendingUp, Target, Calendar, Users } from 'lucide-react';
 
 interface EnhancedProgressProps {
@@ -80,7 +81,7 @@ export function EnhancedProgress({
         {label && <span className="font-medium text-foreground">{label}</span>}
         {showPercentage && (
           <span className="text-muted-foreground font-medium">
-            {Math.round(percentage)}%
+            {formatProgressPercentage(raisedAmount, goalAmount)}%
           </span>
         )}
       </div>
@@ -116,7 +117,7 @@ export function EnhancedProgress({
         <div className="flex items-center gap-1">
           <TrendingUp className="h-4 w-4 text-success" />
           <span className="font-bold text-lg text-foreground">
-            {Math.round(percentage)}%
+            {formatProgressPercentage(raisedAmount, goalAmount)}%
           </span>
         </div>
       </div>
@@ -204,7 +205,7 @@ export function EnhancedProgress({
         <div className="flex justify-between items-center text-sm font-medium">
           <span className="text-muted-foreground">0%</span>
           <span className="text-primary text-lg font-bold">
-            {Math.round(percentage)}%
+            {formatProgressPercentage(raisedAmount, goalAmount)}%
           </span>
           <span className="text-muted-foreground">100%</span>
         </div>
@@ -240,7 +241,7 @@ export function EnhancedProgress({
           <span className="text-sm font-medium text-foreground">{label}</span>
           {showPercentage && (
             <span className="text-sm font-bold text-primary">
-              {Math.round(percentage)}%
+              {formatProgressPercentage(raisedAmount, goalAmount)}%
             </span>
           )}
         </div>

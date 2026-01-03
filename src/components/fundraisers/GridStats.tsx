@@ -2,6 +2,7 @@
  * Grid statistics summary component
  */
 import { Card } from '@/components/ui/card';
+import { formatProgressPercentage } from '@/lib/utils/formatters';
 import type { Fundraiser } from '@/types';
 
 interface GridStatsProps {
@@ -17,12 +18,16 @@ export function GridStats({
   featuredCount, 
   trendingCount 
 }: GridStatsProps) {
-  const avgFunded = Math.round(
-    fundraisers.reduce((sum, f) => {
-      const fStats = stats[f.id] || {};
-      return sum + ((fStats.totalRaised || 0) / f.goal_amount) * 100;
-    }, 0) / fundraisers.length
-  );
+  // Calculate average funded percentage properly
+  const totalPercentage = fundraisers.reduce((sum, f) => {
+    const fStats = stats[f.id] || {};
+    const raised = fStats.totalRaised || 0;
+    const percentage = f.goal_amount > 0 ? (raised / f.goal_amount) * 100 : 0;
+    return sum + Math.min(percentage, 100);
+  }, 0);
+  const avgFunded = fundraisers.length > 0 
+    ? formatProgressPercentage(totalPercentage, fundraisers.length * 100)
+    : '0';
 
   return (
     <Card className="p-6 bg-gradient-to-r from-primary/5 to-accent/5">
