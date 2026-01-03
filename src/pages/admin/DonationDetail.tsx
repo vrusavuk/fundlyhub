@@ -4,7 +4,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Check, XCircle, Clock, RefreshCw, ExternalLink, Eye, RotateCcw } from 'lucide-react';
+import { Check, XCircle, Clock, RefreshCw, ExternalLink, Eye, RotateCcw, ArrowRightLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
@@ -22,14 +22,18 @@ import { DonationData } from '@/lib/data-table/donation-columns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDetailPageBreadcrumbs } from '@/hooks/useDetailPageBreadcrumbs';
 import { ConfirmActionDialog } from '@/components/admin/dialogs/ConfirmActionDialog';
+import { ReallocationDialog } from '@/components/admin/donations/ReallocationDialog';
+import { useRBAC } from '@/contexts/RBACContext';
 
 export default function DonationDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isSuperAdmin } = useRBAC();
   const [donation, setDonation] = useState<DonationData | null>(null);
   const [loading, setLoading] = useState(true);
   const [showRefundDialog, setShowRefundDialog] = useState(false);
+  const [showReallocationDialog, setShowReallocationDialog] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
   // Set dynamic breadcrumbs
@@ -140,6 +144,17 @@ export default function DonationDetail() {
     }
   };
 
+  const handleReallocationSuccess = async () => {
+    // Refresh donation data after reallocation
+    if (!id) return;
+    try {
+      const donationData = await adminDataService.fetchDonationById(id);
+      setDonation(donationData);
+    } catch (error) {
+      console.error('Error refreshing donation:', error);
+    }
+  };
+
   return (
     <>
       <DetailPageLayout
@@ -155,6 +170,16 @@ export default function DonationDetail() {
         }
         actions={
           <div className="flex flex-wrap gap-2">
+            {isSuperAdmin() && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowReallocationDialog(true)}
+              >
+                <ArrowRightLeft className="h-4 w-4 mr-2" />
+                Reallocate
+              </Button>
+            )}
             {canRefund && (
               <Button
                 variant="destructive"
@@ -290,6 +315,14 @@ export default function DonationDetail() {
         variant="destructive"
         isLoading={actionLoading}
         onConfirm={handleRefund}
+      />
+
+      {/* Reallocation Dialog */}
+      <ReallocationDialog
+        open={showReallocationDialog}
+        onOpenChange={setShowReallocationDialog}
+        donations={[donation]}
+        onSuccess={handleReallocationSuccess}
       />
     </>
   );
