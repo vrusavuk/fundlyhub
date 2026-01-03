@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { Check, ChevronsUpDown, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,6 +18,8 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { StripeBadgeExact } from '@/components/ui/stripe-badge-exact';
 import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Input } from '@/components/ui/input';
 
 interface Campaign {
   id: string;
@@ -49,6 +51,7 @@ export function CampaignSearchCombobox({
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
+  const isMobile = useIsMobile();
 
   // Fetch campaigns from fundraisers (source of truth) + get_fundraiser_totals for accurate totals
   const fetchCampaigns = useCallback(async () => {
@@ -208,6 +211,90 @@ export function CampaignSearchCombobox({
     }
   };
 
+  // Mobile: Render inline searchable list
+  if (isMobile) {
+    return (
+      <div className="w-full space-y-2">
+        {/* Search input */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search campaigns..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+            disabled={disabled}
+            onFocus={() => {
+              if (!open) {
+                setOpen(true);
+                fetchCampaigns();
+              }
+            }}
+          />
+        </div>
+
+        {/* Campaign list - always visible on mobile when there's content */}
+        {open && (
+          <div className="border rounded-lg bg-background max-h-[200px] overflow-y-auto">
+            {loading ? (
+              <div className="py-4 text-center text-sm text-muted-foreground">
+                Loading campaigns...
+              </div>
+            ) : campaigns.length === 0 ? (
+              <div className="py-4 text-center text-sm text-muted-foreground">
+                {search.trim() ? 'No campaigns found.' : 'No active campaigns available.'}
+              </div>
+            ) : (
+              <div className="divide-y">
+                {campaigns.map((campaign) => (
+                  <div
+                    key={campaign.id}
+                    role="option"
+                    aria-selected={value === campaign.id}
+                    onClick={() => handleSelect(campaign)}
+                    className={cn(
+                      "flex flex-col items-start gap-1 py-3 px-3 cursor-pointer w-full",
+                      "hover:bg-accent hover:text-accent-foreground",
+                      value === campaign.id && "bg-accent text-accent-foreground"
+                    )}
+                  >
+                    <div className="flex w-full items-center justify-between gap-2 min-w-0">
+                      <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
+                        <Check
+                          className={cn(
+                            'h-4 w-4 shrink-0',
+                            value === campaign.id ? 'opacity-100' : 'opacity-0'
+                          )}
+                        />
+                        <span className="font-medium truncate block max-w-full text-sm">
+                          {campaign.title}
+                        </span>
+                      </div>
+                      <StripeBadgeExact variant={getStatusBadge(campaign.status)} className="shrink-0">
+                        {campaign.status}
+                      </StripeBadgeExact>
+                    </div>
+                    <div className="ml-6 text-xs text-muted-foreground">
+                      {MoneyMath.format(MoneyMath.create(campaign.total_raised, 'USD'))} raised
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Selected campaign display */}
+        {selectedCampaign && !open && (
+          <div className="text-sm text-muted-foreground">
+            Selected: <span className="font-medium text-foreground">{selectedCampaign.title}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Desktop: Use popover
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
@@ -239,7 +326,7 @@ export function CampaignSearchCombobox({
             value={search}
             onValueChange={setSearch}
           />
-          <CommandList className="max-h-[40vh] sm:max-h-[300px] overflow-y-auto">
+          <CommandList className="max-h-[300px] overflow-y-auto">
             {loading ? (
               <div className="py-6 text-center text-sm text-muted-foreground">
                 Loading campaigns...
@@ -285,14 +372,14 @@ export function CampaignSearchCombobox({
                       <span className="truncate">
                         {MoneyMath.format(MoneyMath.create(campaign.total_raised, 'USD'))} raised
                       </span>
-                      <span className="hidden sm:inline">•</span>
-                      <span className="hidden sm:inline truncate">
+                      <span>•</span>
+                      <span className="truncate">
                         Goal: {MoneyMath.format(MoneyMath.create(campaign.goal_amount, 'USD'))}
                       </span>
                       {campaign.owner_name && (
                         <>
-                          <span className="hidden sm:inline">•</span>
-                          <span className="hidden sm:inline truncate">by {campaign.owner_name}</span>
+                          <span>•</span>
+                          <span className="truncate">by {campaign.owner_name}</span>
                         </>
                       )}
                     </div>
