@@ -1,33 +1,34 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRBAC } from '@/contexts/RBACContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { useDebounce } from '@/hooks/useDebounce';
+import { ColumnDef } from '@tanstack/react-table';
 import { 
   Activity, 
-  Search, 
-  Filter, 
   Download,
   User,
   AlertTriangle,
   Clock,
   Database,
   Shield,
-  FileText
+  FileText,
+  Calendar
 } from 'lucide-react';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { AdminPageLayout, PageSection } from '@/components/admin/unified';
+import { 
+  AdminPageLayout,
+  AdminFilters,
+  AdminDataTable,
+  FilterConfig
+} from '@/components/admin/unified';
+import { StripeCardExact } from '@/components/ui/stripe-card-exact';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface AuditLog {
   id: string;
@@ -39,26 +40,43 @@ interface AuditLog {
   ip_address: string | null;
   user_agent: string | null;
   created_at: string;
-  actor_profile?: any;
+  actor_profile?: {
+    name?: string;
+    email?: string;
+  };
 }
 
 interface AuditFilters {
   search: string;
   action: string;
   resource_type: string;
-  actor_id: string;
-  date_from: Date | null;
-  date_to: Date | null;
-  limit: number;
 }
 
-const ACTION_CATEGORIES = {
-  user: ['user_created', 'user_updated', 'user_suspended', 'user_unsuspended', 'user_deleted'],
-  role: ['role_created', 'role_updated', 'role_deleted', 'role_assigned', 'role_unassigned'],
-  campaign: ['campaign_created', 'campaign_updated', 'campaign_approved', 'campaign_rejected'],
-  system: ['login', 'logout', 'password_changed', 'settings_updated', 'data_exported'],
-  security: ['failed_login', 'account_locked', 'suspicious_activity', 'ip_blocked']
-};
+const ACTION_OPTIONS = [
+  { value: 'all', label: 'All Actions' },
+  { value: 'user_created', label: 'User Created' },
+  { value: 'user_updated', label: 'User Updated' },
+  { value: 'user_suspended', label: 'User Suspended' },
+  { value: 'role_assigned', label: 'Role Assigned' },
+  { value: 'role_unassigned', label: 'Role Unassigned' },
+  { value: 'campaign_created', label: 'Campaign Created' },
+  { value: 'campaign_updated', label: 'Campaign Updated' },
+  { value: 'donation_reallocated', label: 'Donation Reallocated' },
+  { value: 'settings_updated', label: 'Settings Updated' },
+  { value: 'login', label: 'Login' },
+  { value: 'logout', label: 'Logout' },
+];
+
+const RESOURCE_OPTIONS = [
+  { value: 'all', label: 'All Resources' },
+  { value: 'user', label: 'User' },
+  { value: 'role', label: 'Role' },
+  { value: 'campaign', label: 'Campaign' },
+  { value: 'donation', label: 'Donation' },
+  { value: 'organization', label: 'Organization' },
+  { value: 'system', label: 'System' },
+  { value: 'profile', label: 'Profile' },
+];
 
 export function AuditLogs() {
   const { hasPermission, isSuperAdmin } = useRBAC();
@@ -68,30 +86,26 @@ export function AuditLogs() {
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
+  const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
+  
   const [filters, setFilters] = useState<AuditFilters>({
     search: '',
     action: 'all',
     resource_type: 'all',
-    actor_id: '',
-    date_from: null,
-    date_to: null,
-    limit: 50
   });
 
-  // Debounce search input for better performance
   const debouncedSearch = useDebounce(filters.search, 500);
 
-  const fetchAuditLogs = async () => {
+  const fetchAuditLogs = useCallback(async () => {
     try {
       setLoading(true);
 
       let query = supabase
         .from('audit_logs')
-        .select(`
-          *
-        `, { count: 'exact' });
+        .select('*', { count: 'exact' });
 
-      // Apply filters (using debounced search)
       if (debouncedSearch.trim()) {
         query = query.or(`action.ilike.%${debouncedSearch}%,resource_type.ilike.%${debouncedSearch}%`);
       }
@@ -104,25 +118,20 @@ export function AuditLogs() {
         query = query.eq('resource_type', filters.resource_type);
       }
 
-      if (filters.actor_id.trim()) {
-        query = query.eq('actor_id', filters.actor_id);
+      if (dateFrom) {
+        query = query.gte('created_at', dateFrom.toISOString());
       }
 
-      if (filters.date_from) {
-        query = query.gte('created_at', filters.date_from.toISOString());
-      }
-
-      if (filters.date_to) {
-        const endDate = new Date(filters.date_to);
+      if (dateTo) {
+        const endDate = new Date(dateTo);
         endDate.setHours(23, 59, 59, 999);
         query = query.lte('created_at', endDate.toISOString());
       }
 
-      // Apply pagination
-      const offset = (currentPage - 1) * filters.limit;
+      const offset = (currentPage - 1) * pageSize;
       query = query
         .order('created_at', { ascending: false })
-        .range(offset, offset + filters.limit - 1);
+        .range(offset, offset + pageSize - 1);
 
       const { data, error, count } = await query;
 
@@ -130,14 +139,19 @@ export function AuditLogs() {
 
       // Fetch profile data for actors
       const actorIds = [...new Set(data?.map(log => log.actor_id) || [])];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, name, email')
-        .in('id', actorIds);
+      let profiles: { id: string; name: string; email: string }[] = [];
+      
+      if (actorIds.length > 0) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('id, name, email')
+          .in('id', actorIds);
+        profiles = profileData || [];
+      }
 
       const logsWithProfiles = (data || []).map(log => ({
         ...log,
-        actor_profile: profiles?.find(p => p.id === log.actor_id)
+        actor_profile: profiles.find(p => p.id === log.actor_id)
       }));
 
       setLogs(logsWithProfiles as AuditLog[]);
@@ -152,10 +166,14 @@ export function AuditLogs() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [debouncedSearch, filters.action, filters.resource_type, dateFrom, dateTo, currentPage, pageSize, toast]);
+
+  useEffect(() => {
+    fetchAuditLogs();
+  }, [fetchAuditLogs]);
 
   const exportLogs = async () => {
-    if (!hasPermission('export_audit_logs')) {
+    if (!hasPermission('export_audit_logs') && !isSuperAdmin()) {
       toast({
         title: 'Access Denied',
         description: 'You do not have permission to export audit logs',
@@ -165,47 +183,24 @@ export function AuditLogs() {
     }
 
     try {
-      // For export, get all matching records (up to a reasonable limit)
-      let query = supabase
-        .from('audit_logs')
-        .select(`
-          *
-        `);
+      let query = supabase.from('audit_logs').select('*');
 
-      // Apply same filters as current view
       if (filters.search.trim()) {
         query = query.or(`action.ilike.%${filters.search}%,resource_type.ilike.%${filters.search}%`);
       }
-
-      if (filters.action !== 'all') {
-        query = query.eq('action', filters.action);
-      }
-
-      if (filters.resource_type !== 'all') {
-        query = query.eq('resource_type', filters.resource_type);
-      }
-
-      if (filters.actor_id.trim()) {
-        query = query.eq('actor_id', filters.actor_id);
-      }
-
-      if (filters.date_from) {
-        query = query.gte('created_at', filters.date_from.toISOString());
-      }
-
-      if (filters.date_to) {
-        const endDate = new Date(filters.date_to);
+      if (filters.action !== 'all') query = query.eq('action', filters.action);
+      if (filters.resource_type !== 'all') query = query.eq('resource_type', filters.resource_type);
+      if (dateFrom) query = query.gte('created_at', dateFrom.toISOString());
+      if (dateTo) {
+        const endDate = new Date(dateTo);
         endDate.setHours(23, 59, 59, 999);
         query = query.lte('created_at', endDate.toISOString());
       }
 
-      const { data, error } = await query
-        .order('created_at', { ascending: false })
-        .limit(10000); // Reasonable limit for export
+      const { data, error } = await query.order('created_at', { ascending: false }).limit(10000);
 
       if (error) throw error;
 
-      // Fetch profile data for export
       const actorIds = [...new Set(data?.map(log => log.actor_id) || [])];
       const { data: profiles } = await supabase
         .from('profiles')
@@ -240,14 +235,6 @@ export function AuditLogs() {
       a.click();
       URL.revokeObjectURL(url);
 
-      // Log the export action
-      await supabase.rpc('log_audit_event', {
-        _actor_id: (await supabase.auth.getUser()).data.user?.id,
-        _action: 'audit_logs_exported',
-        _resource_type: 'system',
-        _metadata: { count: csvData.length }
-      });
-
       toast({
         title: 'Export Complete',
         description: `Exported ${csvData.length} audit log entries`
@@ -280,38 +267,169 @@ export function AuditLogs() {
 
   const getActionBadge = (action: string) => {
     if (action.includes('created') || action.includes('approved')) {
-      return <Badge variant="default">Create</Badge>;
+      return <Badge variant="default" className="text-xs">Create</Badge>;
     }
     if (action.includes('updated') || action.includes('modified')) {
-      return <Badge variant="secondary">Update</Badge>;
+      return <Badge variant="secondary" className="text-xs">Update</Badge>;
     }
     if (action.includes('deleted') || action.includes('suspended')) {
-      return <Badge variant="destructive">Delete</Badge>;
+      return <Badge variant="destructive" className="text-xs">Delete</Badge>;
     }
     if (action.includes('failed') || action.includes('blocked')) {
-      return <Badge variant="destructive">Security</Badge>;
+      return <Badge variant="destructive" className="text-xs">Security</Badge>;
     }
-    return <Badge variant="outline">{action}</Badge>;
+    return <Badge variant="outline" className="text-xs">{action.replace(/_/g, ' ')}</Badge>;
   };
 
   const formatMetadata = (metadata: Record<string, any>) => {
-    if (!metadata || Object.keys(metadata).length === 0) return '';
-    
+    if (!metadata || Object.keys(metadata).length === 0) return '-';
     const key = Object.keys(metadata)[0];
     const value = metadata[key];
-    
     if (typeof value === 'string' || typeof value === 'number') {
       return `${key}: ${value}`;
     }
-    
     return `${Object.keys(metadata).length} properties`;
   };
 
-  useEffect(() => {
-    fetchAuditLogs();
-  }, [debouncedSearch, filters.action, filters.resource_type, filters.actor_id, filters.date_from, filters.date_to, currentPage]);
+  // Define columns for the data table
+  const columns: ColumnDef<AuditLog>[] = [
+    {
+      accessorKey: 'created_at',
+      header: 'Time',
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2 text-sm">
+          <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
+          <span className="whitespace-nowrap">{format(new Date(row.original.created_at), 'MMM d, yyyy HH:mm')}</span>
+        </div>
+      ),
+      size: 160,
+    },
+    {
+      accessorKey: 'actor',
+      header: 'Actor',
+      cell: ({ row }) => (
+        <div className="text-sm min-w-0">
+          <div className="font-medium truncate">
+            {row.original.actor_profile?.name || 'Unknown User'}
+          </div>
+          <div className="text-muted-foreground text-xs truncate">
+            {row.original.actor_profile?.email || row.original.actor_id.substring(0, 8) + '...'}
+          </div>
+        </div>
+      ),
+      size: 180,
+    },
+    {
+      accessorKey: 'action',
+      header: 'Action',
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          {getActionIcon(row.original.action)}
+          {getActionBadge(row.original.action)}
+        </div>
+      ),
+      size: 160,
+    },
+    {
+      accessorKey: 'resource_type',
+      header: 'Resource',
+      cell: ({ row }) => (
+        <div>
+          <div className="font-medium text-sm">{row.original.resource_type}</div>
+          {row.original.resource_id && (
+            <div className="text-xs text-muted-foreground">
+              {row.original.resource_id.substring(0, 8)}...
+            </div>
+          )}
+        </div>
+      ),
+      size: 120,
+    },
+    {
+      accessorKey: 'metadata',
+      header: 'Details',
+      cell: ({ row }) => (
+        <div className="text-sm text-muted-foreground max-w-[200px] truncate">
+          {formatMetadata(row.original.metadata)}
+        </div>
+      ),
+      size: 200,
+    },
+    {
+      accessorKey: 'ip_address',
+      header: 'IP Address',
+      cell: ({ row }) => (
+        <div className="text-sm text-muted-foreground">
+          {row.original.ip_address || 'Unknown'}
+        </div>
+      ),
+      size: 120,
+    },
+  ];
 
-  if (!hasPermission('view_audit_logs')) {
+  // Filter configuration
+  const filterConfigs: FilterConfig[] = [
+    {
+      key: 'search',
+      label: 'Search',
+      type: 'search',
+      placeholder: 'Search actions...',
+    },
+    {
+      key: 'action',
+      label: 'Action',
+      type: 'select',
+      options: ACTION_OPTIONS,
+    },
+    {
+      key: 'resource_type',
+      label: 'Resource',
+      type: 'select',
+      options: RESOURCE_OPTIONS,
+    },
+  ];
+
+  const handleFilterChange = (key: string, value: any) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+    setCurrentPage(1);
+  };
+
+  const handleClearFilters = () => {
+    setFilters({ search: '', action: 'all', resource_type: 'all' });
+    setDateFrom(undefined);
+    setDateTo(undefined);
+    setCurrentPage(1);
+  };
+
+  // Mobile card renderer
+  const renderMobileCard = (log: AuditLog) => (
+    <StripeCardExact key={log.id} className="p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          {getActionIcon(log.action)}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              {getActionBadge(log.action)}
+              <span className="text-xs text-muted-foreground">{log.resource_type}</span>
+            </div>
+            <div className="text-sm font-medium mt-1 truncate">
+              {log.actor_profile?.name || 'Unknown User'}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {format(new Date(log.created_at), 'MMM d, yyyy HH:mm')}
+            </div>
+          </div>
+        </div>
+      </div>
+      {log.metadata && Object.keys(log.metadata).length > 0 && (
+        <div className="mt-2 pt-2 border-t text-xs text-muted-foreground">
+          {formatMetadata(log.metadata)}
+        </div>
+      )}
+    </StripeCardExact>
+  );
+
+  if (!hasPermission('view_audit_logs') && !isSuperAdmin()) {
     return (
       <Alert variant="destructive">
         <AlertTriangle className="h-4 w-4" />
@@ -322,223 +440,101 @@ export function AuditLogs() {
     );
   }
 
-  const totalPages = Math.ceil(totalCount / filters.limit);
+  const totalPages = Math.ceil(totalCount / pageSize);
 
   return (
     <AdminPageLayout
       title="Audit Logs"
       description="Track all administrative actions and system events"
       actions={
-        <Button onClick={exportLogs} variant="outline">
+        <Button onClick={exportLogs} variant="outline" size="sm">
           <Download className="mr-2 h-4 w-4" />
           Export
         </Button>
       }
     >
-      {/* Filters */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Filter className="mr-2 h-4 w-4" />
-            Filters
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search actions..."
-                className="pl-10"
-                value={filters.search}
-                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-              />
-            </div>
-            
-            <Select
-              value={filters.action}
-              onValueChange={(value) => setFilters(prev => ({ ...prev, action: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Action" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Actions</SelectItem>
-                {Object.entries(ACTION_CATEGORIES).map(([category, actions]) => (
-                  <div key={category}>
-                    <div className="px-2 py-1 text-xs font-medium text-muted-foreground uppercase">
-                      {category}
-                    </div>
-                    {actions.map(action => (
-                      <SelectItem key={action} value={action}>
-                        {action.replace('_', ' ')}
-                      </SelectItem>
-                    ))}
-                  </div>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={filters.resource_type}
-              onValueChange={(value) => setFilters(prev => ({ ...prev, resource_type: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Resource" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Resources</SelectItem>
-                <SelectItem value="user">User</SelectItem>
-                <SelectItem value="role">Role</SelectItem>
-                <SelectItem value="campaign">Campaign</SelectItem>
-                <SelectItem value="organization">Organization</SelectItem>
-                <SelectItem value="system">System</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Input
-              placeholder="Actor ID"
-              value={filters.actor_id}
-              onChange={(e) => setFilters(prev => ({ ...prev, actor_id: e.target.value }))}
+      {/* Filters Row */}
+      <div className="flex flex-wrap items-center gap-3 mb-6">
+        <AdminFilters
+          filters={filterConfigs}
+          values={filters}
+          onChange={handleFilterChange}
+          onClear={handleClearFilters}
+        />
+        
+        {/* Date From Picker */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="h-9">
+              <Calendar className="mr-2 h-3.5 w-3.5" />
+              {dateFrom ? format(dateFrom, 'MMM d') : 'From'}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0 z-50" align="start">
+            <CalendarComponent
+              mode="single"
+              selected={dateFrom}
+              onSelect={setDateFrom}
+              initialFocus
             />
+          </PopoverContent>
+        </Popover>
 
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  {filters.date_from ? format(filters.date_from, 'MMM dd') : 'From'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={filters.date_from}
-                  onSelect={(date) => setFilters(prev => ({ ...prev, date_from: date }))}
-                />
-              </PopoverContent>
-            </Popover>
+        {/* Date To Picker */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="h-9">
+              <Calendar className="mr-2 h-3.5 w-3.5" />
+              {dateTo ? format(dateTo, 'MMM d') : 'To'}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0 z-50" align="start">
+            <CalendarComponent
+              mode="single"
+              selected={dateTo}
+              onSelect={setDateTo}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
 
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  {filters.date_to ? format(filters.date_to, 'MMM dd') : 'To'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={filters.date_to}
-                  onSelect={(date) => setFilters(prev => ({ ...prev, date_to: date }))}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-        </CardContent>
-      </Card>
+        {(dateFrom || dateTo) && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}
+            className="h-9 text-muted-foreground"
+          >
+            Clear dates
+          </Button>
+        )}
+      </div>
 
-      {/* Logs Table */}
-      <Card className="mb-6">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center">
-              <Activity className="mr-2 h-4 w-4" />
-              Audit Logs ({totalCount})
-            </CardTitle>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(prev => prev - 1)}
-              >
-                Previous
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                Page {currentPage} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage(prev => prev + 1)}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex justify-center py-8">
-              <LoadingSpinner size="lg" />
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Time</TableHead>
-                  <TableHead>Actor</TableHead>
-                  <TableHead>Action</TableHead>
-                  <TableHead>Resource</TableHead>
-                  <TableHead>Details</TableHead>
-                  <TableHead>IP Address</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {logs.map((log) => (
-                  <TableRow key={log.id}>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        <Clock className="h-3 w-3 text-muted-foreground" />
-                        <div className="text-sm">
-                          {new Date(log.created_at).toLocaleString()}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <div className="font-medium">
-                          {(log.actor_profile as any)?.name || 'Unknown User'}
-                        </div>
-                        <div className="text-muted-foreground">
-                          {(log.actor_profile as any)?.email || log.actor_id}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        {getActionIcon(log.action)}
-                        {getActionBadge(log.action)}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{log.resource_type}</div>
-                        {log.resource_id && (
-                          <div className="text-xs text-muted-foreground">
-                            {log.resource_id.substring(0, 8)}...
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm text-muted-foreground max-w-48 truncate">
-                        {formatMetadata(log.metadata)}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm text-muted-foreground">
-                        {log.ip_address || 'Unknown'}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      {/* Data Table */}
+      <AdminDataTable
+        columns={columns}
+        data={logs}
+        loading={loading}
+        title={`Audit Logs (${totalCount})`}
+        enableSelection={false}
+        enableSorting={false}
+        mobileCardRenderer={renderMobileCard}
+        paginationState={{
+          page: currentPage,
+          pageSize,
+          totalCount,
+          totalPages,
+        }}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(1);
+        }}
+        emptyStateTitle="No audit logs found"
+        emptyStateDescription="No activity logs match your current filters."
+        error={null}
+        retry={fetchAuditLogs}
+      />
     </AdminPageLayout>
   );
 }
