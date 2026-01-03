@@ -39,11 +39,13 @@ export default function DonationDetail() {
 
   // Open reallocation dialog if action=reallocate is in URL
   useEffect(() => {
-    if (searchParams.get('action') === 'reallocate' && donation && !loading) {
+    const action = searchParams.get('action');
+    if (action === 'reallocate' && donation && !loading) {
       setShowReallocationDialog(true);
-      // Clear the action param from URL
-      searchParams.delete('action');
-      setSearchParams(searchParams, { replace: true });
+      // Clear the action param from URL without triggering re-render loop
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('action');
+      setSearchParams(newParams, { replace: true });
     }
   }, [searchParams, donation, loading, setSearchParams]);
 
