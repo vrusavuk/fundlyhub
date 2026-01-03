@@ -422,12 +422,13 @@ export default function CampaignDetail() {
                 control={form.control}
                 name="title"
                 render={({ field }) => (
-                  <FormItem className="flex-1">
+                  <FormItem className="flex-1 w-full">
                     <FormControl>
-                      <Input 
+                      <Textarea 
                         {...field} 
-                        className="text-2xl font-semibold h-auto py-1 px-2 -ml-2"
+                        className="text-2xl font-semibold min-h-[60px] py-2 px-3 -ml-2 resize-none w-full"
                         placeholder="Campaign title"
+                        rows={2}
                       />
                     </FormControl>
                     <FormMessage />
