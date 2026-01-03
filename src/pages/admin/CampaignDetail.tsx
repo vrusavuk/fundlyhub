@@ -30,6 +30,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
 import { formatDistanceToNow } from 'date-fns';
+import { formatProgressPercentage } from '@/lib/utils/formatters';
 import {
   DetailPageLayout,
   DetailSection,
@@ -374,6 +375,9 @@ export default function CampaignDetail() {
   const totalRaised = campaign.stats?.total_raised || 0;
   const goalAmount = campaign.goal_amount || 0;
   const progressPercentage = goalAmount > 0 ? Math.min((totalRaised / goalAmount) * 100, 100) : 0;
+  const donorCount = campaign.stats?.donor_count || 0;
+  // Calculate average donation from total raised / donor count if not provided
+  const averageDonation = campaign.stats?.average_donation || (donorCount > 0 ? totalRaised / donorCount : 0);
   const currentStatus = campaign.status || 'draft';
 
   const statusConfig = {
@@ -715,7 +719,7 @@ export default function CampaignDetail() {
                     </div>
                     <div className="text-right">
                       <div className="text-[24px] font-semibold text-foreground">
-                        {progressPercentage.toFixed(0)}%
+                        {formatProgressPercentage(totalRaised, goalAmount)}%
                       </div>
                       <div className="text-[12px] text-muted-foreground">
                         funded
@@ -727,21 +731,19 @@ export default function CampaignDetail() {
                     <div>
                       <div className="text-[12px] text-muted-foreground">Donors</div>
                       <div className="text-[18px] font-semibold text-foreground">
-                        {campaign.stats?.donor_count || 0}
+                        {donorCount}
                       </div>
                     </div>
                     <div>
                       <div className="text-[12px] text-muted-foreground">Unique Donors</div>
                       <div className="text-[18px] font-semibold text-foreground">
-                        {campaign.stats?.unique_donors || 0}
+                        {campaign.stats?.unique_donors || donorCount}
                       </div>
                     </div>
                     <div>
                       <div className="text-[12px] text-muted-foreground">Avg Donation</div>
                       <div className="text-[18px] font-semibold text-foreground">
-                        {campaign.stats?.average_donation 
-                          ? MoneyMath.format(MoneyMath.create(campaign.stats.average_donation, campaign.currency))
-                          : '$0'}
+                        {MoneyMath.format(MoneyMath.create(averageDonation, campaign.currency))}
                       </div>
                     </div>
                   </div>
