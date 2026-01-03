@@ -14,6 +14,7 @@ import { HighlightedTitle, HighlightedDescription, HighlightedLabel } from '@/co
 import { useCategories } from '@/hooks/useCategories';
 import { hapticFeedback } from '@/lib/utils/mobile';
 import { stripMarkdown } from '@/lib/utils/textUtils';
+import { formatProgressPercentage } from '@/lib/utils/formatters';
 import { cn } from '@/lib/utils';
 import { 
   Heart, 
@@ -383,7 +384,7 @@ export function UnifiedFundraiserCard({
             
             <div className="text-right">
               <p className="font-semibold text-sm text-foreground leading-tight">
-                {Math.round(progressPercentage)}%
+                {formatProgressPercentage(raisedAmount, goalAmount)}%
               </p>
               <p className="text-xs text-muted-foreground">funded</p>
             </div>
