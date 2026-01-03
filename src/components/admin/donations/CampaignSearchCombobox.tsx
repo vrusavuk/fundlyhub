@@ -218,16 +218,18 @@ export function CampaignSearchCombobox({
           className="w-full justify-between h-auto min-h-10 py-2"
           disabled={disabled}
         >
-          {selectedCampaign ? (
-            <span className="truncate text-left">{selectedCampaign.title}</span>
-          ) : (
-            <span className="text-muted-foreground">{placeholder}</span>
-          )}
+          <span className="min-w-0 flex-1 text-left">
+            {selectedCampaign ? (
+              <span className="truncate block">{selectedCampaign.title}</span>
+            ) : (
+              <span className="text-muted-foreground truncate block">{placeholder}</span>
+            )}
+          </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-[var(--radix-popover-trigger-width)] min-w-[280px] max-w-[400px] p-0 bg-popover border border-border shadow-lg z-50 overflow-hidden" 
+        className="w-[var(--radix-popover-trigger-width)] min-w-[280px] max-w-[400px] p-0 bg-popover border border-border shadow-lg z-[60] overflow-hidden pointer-events-auto" 
         align="start"
         sideOffset={4}
       >
