@@ -17,6 +17,9 @@ interface DetailPageLayoutProps {
   status?: React.ReactNode;
   actions?: React.ReactNode;
   
+  // Sticky action bar for edit mode
+  stickyActions?: React.ReactNode;
+  
   // Layout
   mainContent: React.ReactNode;
   sidebar: React.ReactNode;
@@ -33,6 +36,7 @@ export function DetailPageLayout({
   subtitle,
   status,
   actions,
+  stickyActions,
   mainContent,
   sidebar,
   backUrl,
@@ -111,6 +115,15 @@ export function DetailPageLayout({
           {sidebar}
         </div>
       </div>
+
+      {/* Sticky Action Bar for Edit Mode */}
+      {stickyActions && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border px-4 py-3 md:px-8 shadow-lg">
+          <div className="flex items-center justify-end gap-2 max-w-7xl mx-auto">
+            {stickyActions}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
