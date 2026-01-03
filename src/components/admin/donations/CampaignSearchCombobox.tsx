@@ -50,16 +50,25 @@ export function CampaignSearchCombobox({
   const [search, setSearch] = useState('');
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
 
-  // Fetch campaigns on search - use fundraisers table directly for admin access
+  // Fetch campaigns on search - use fundraisers with stats projection for total_raised
   useEffect(() => {
     const fetchCampaigns = async () => {
       setLoading(true);
       try {
-        // Use fundraisers table directly - admins have RLS access
+        // Query fundraisers with campaign_stats_projection for total_raised
         let query = supabase
           .from('fundraisers')
-          .select('id, title, slug, status, goal_amount')
-          .eq('status', 'active')  // Only show active campaigns for reallocation
+          .select(`
+            id, 
+            title, 
+            slug, 
+            status, 
+            goal_amount,
+            owner_user_id,
+            profiles!fundraisers_owner_user_id_fkey(name),
+            campaign_stats_projection(total_donations)
+          `)
+          .eq('status', 'active')
           .is('deleted_at', null)
           .order('title', { ascending: true })
           .limit(50);
@@ -78,17 +87,15 @@ export function CampaignSearchCombobox({
 
         if (error) throw error;
 
-        if (error) throw error;
-
         setCampaigns(
           (data || []).map((c) => ({
             id: c.id,
             title: c.title,
             slug: c.slug,
-            status: c.status,
+            status: c.status || 'active',
             goal_amount: c.goal_amount,
-            total_raised: 0, // Not available from fundraisers table
-            owner_name: null, // Not needed for selection
+            total_raised: c.campaign_stats_projection?.total_donations || 0,
+            owner_name: c.profiles?.name || null,
           }))
         );
       } catch (error) {
@@ -107,7 +114,15 @@ export function CampaignSearchCombobox({
       const fetchSelected = async () => {
         const { data } = await supabase
           .from('fundraisers')
-          .select('id, title, slug, status, goal_amount')
+          .select(`
+            id, 
+            title, 
+            slug, 
+            status, 
+            goal_amount,
+            profiles!fundraisers_owner_user_id_fkey(name),
+            campaign_stats_projection(total_donations)
+          `)
           .eq('id', value)
           .single();
 
@@ -116,10 +131,10 @@ export function CampaignSearchCombobox({
             id: data.id,
             title: data.title,
             slug: data.slug,
-            status: data.status,
+            status: data.status || 'active',
             goal_amount: data.goal_amount,
-            total_raised: 0,
-            owner_name: null,
+            total_raised: data.campaign_stats_projection?.total_donations || 0,
+            owner_name: data.profiles?.name || null,
           });
         }
       };
@@ -176,15 +191,13 @@ export function CampaignSearchCombobox({
                 {campaigns.map((campaign) => (
                   <CommandItem
                     key={campaign.id}
-                    value={campaign.id}
+                    value={campaign.title}
                     onSelect={() => {
-                      const newValue = campaign.id === value ? null : campaign.id;
-                      const newCampaign = campaign.id === value ? null : campaign;
-                      setSelectedCampaign(newCampaign);
-                      onChange(newValue, newCampaign);
+                      setSelectedCampaign(campaign);
+                      onChange(campaign.id, campaign);
                       setOpen(false);
                     }}
-                    className="flex flex-col items-start gap-1 py-3"
+                    className="flex flex-col items-start gap-1 py-3 cursor-pointer"
                   >
                     <div className="flex w-full items-center justify-between">
                       <div className="flex items-center gap-2">
