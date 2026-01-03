@@ -50,14 +50,17 @@ export function CampaignSearchCombobox({
   const [search, setSearch] = useState('');
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
 
-  // Fetch campaigns on search
+  // Fetch campaigns on search - use fundraisers table directly for admin access
   useEffect(() => {
     const fetchCampaigns = async () => {
       setLoading(true);
       try {
+        // Use fundraisers table directly - admins have RLS access
         let query = supabase
-          .from('campaign_summary_projection')
-          .select('campaign_id, title, slug, status, goal_amount, total_raised, owner_name')
+          .from('fundraisers')
+          .select('id, title, slug, status, goal_amount')
+          .eq('status', 'active')  // Only show active campaigns for reallocation
+          .is('deleted_at', null)
           .order('title', { ascending: true })
           .limit(50);
 
@@ -68,22 +71,24 @@ export function CampaignSearchCombobox({
 
         // Exclude current campaign
         if (excludeCampaignId) {
-          query = query.neq('campaign_id', excludeCampaignId);
+          query = query.neq('id', excludeCampaignId);
         }
 
         const { data, error } = await query;
 
         if (error) throw error;
 
+        if (error) throw error;
+
         setCampaigns(
           (data || []).map((c) => ({
-            id: c.campaign_id,
+            id: c.id,
             title: c.title,
             slug: c.slug,
             status: c.status,
             goal_amount: c.goal_amount,
-            total_raised: c.total_raised || 0,
-            owner_name: c.owner_name,
+            total_raised: 0, // Not available from fundraisers table
+            owner_name: null, // Not needed for selection
           }))
         );
       } catch (error) {
@@ -101,20 +106,20 @@ export function CampaignSearchCombobox({
     if (value && !selectedCampaign) {
       const fetchSelected = async () => {
         const { data } = await supabase
-          .from('campaign_summary_projection')
-          .select('campaign_id, title, slug, status, goal_amount, total_raised, owner_name')
-          .eq('campaign_id', value)
+          .from('fundraisers')
+          .select('id, title, slug, status, goal_amount')
+          .eq('id', value)
           .single();
 
         if (data) {
           setSelectedCampaign({
-            id: data.campaign_id,
+            id: data.id,
             title: data.title,
             slug: data.slug,
             status: data.status,
             goal_amount: data.goal_amount,
-            total_raised: data.total_raised || 0,
-            owner_name: data.owner_name,
+            total_raised: 0,
+            owner_name: null,
           });
         }
       };
