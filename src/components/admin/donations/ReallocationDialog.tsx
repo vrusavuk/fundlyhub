@@ -76,7 +76,7 @@ export function ReallocationDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             Reallocate {isSingleDonation ? 'Donation' : `${donations.length} Donations`}
@@ -89,20 +89,20 @@ export function ReallocationDialog({
 
         <div className="space-y-4 py-4">
           {/* Current donation info */}
-          <div className="rounded-lg border bg-muted/50 p-4">
-            <div className="text-sm text-muted-foreground mb-1">
+          <div className="rounded-lg border bg-muted/50 p-3 sm:p-4">
+            <div className="text-xs sm:text-sm text-muted-foreground mb-1">
               {isSingleDonation ? 'Donation Details' : 'Selected Donations'}
             </div>
-            <div className="font-semibold text-lg">
+            <div className="font-semibold text-base sm:text-lg">
               {MoneyMath.format(MoneyMath.create(totalAmount, currency))}
             </div>
             {isSingleDonation && donations[0].fundraiser?.title && (
-              <div className="text-sm text-muted-foreground mt-1">
+              <div className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">
                 Currently in: <span className="font-medium">{donations[0].fundraiser.title}</span>
               </div>
             )}
             {!isSingleDonation && (
-              <div className="text-sm text-muted-foreground mt-1">
+              <div className="text-xs sm:text-sm text-muted-foreground mt-1">
                 {donations.length} donations selected
               </div>
             )}
@@ -154,17 +154,19 @@ export function ReallocationDialog({
           </Alert>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
           <Button
             variant="outline"
             onClick={() => handleOpenChange(false)}
             disabled={isLoading}
+            className="w-full sm:w-auto"
           >
             Cancel
           </Button>
           <Button
             onClick={handleConfirm}
             disabled={!targetCampaignId || !reason.trim() || isLoading}
+            className="w-full sm:w-auto"
           >
             {isLoading ? (
               <>
