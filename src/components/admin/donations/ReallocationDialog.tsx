@@ -76,20 +76,20 @@ export function ReallocationDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-[500px] max-h-[90vh] overflow-y-auto overflow-x-hidden">
+        <DialogHeader className="pr-6">
           <DialogTitle>
             Reallocate {isSingleDonation ? 'Donation' : `${donations.length} Donations`}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="break-words">
             Move {isSingleDonation ? 'this donation' : 'these donations'} to a different campaign.
             This action will be logged and cannot be undone.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-4 py-4 w-full min-w-0">
           {/* Current donation info */}
-          <div className="rounded-lg border bg-muted/50 p-3 sm:p-4">
+          <div className="rounded-lg border bg-muted/50 p-3 sm:p-4 w-full min-w-0">
             <div className="text-xs sm:text-sm text-muted-foreground mb-1">
               {isSingleDonation ? 'Donation Details' : 'Selected Donations'}
             </div>
@@ -97,8 +97,8 @@ export function ReallocationDialog({
               {MoneyMath.format(MoneyMath.create(totalAmount, currency))}
             </div>
             {isSingleDonation && donations[0].fundraiser?.title && (
-              <div className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">
-                Currently in: <span className="font-medium">{donations[0].fundraiser.title}</span>
+              <div className="text-xs sm:text-sm text-muted-foreground mt-1 break-words overflow-hidden">
+                Currently in: <span className="font-medium break-words">{donations[0].fundraiser.title}</span>
               </div>
             )}
             {!isSingleDonation && (
@@ -114,22 +114,24 @@ export function ReallocationDialog({
           </div>
 
           {/* Target campaign selector */}
-          <div className="space-y-2">
+          <div className="space-y-2 w-full min-w-0">
             <Label htmlFor="target-campaign">Target Campaign</Label>
-            <CampaignSearchCombobox
-              value={targetCampaignId}
-              onChange={(id, campaign) => {
-                setTargetCampaignId(id);
-                setTargetCampaign(campaign);
-              }}
-              excludeCampaignId={currentCampaignId}
-              placeholder="Search and select a campaign..."
-              disabled={isLoading}
-            />
+            <div className="w-full min-w-0">
+              <CampaignSearchCombobox
+                value={targetCampaignId}
+                onChange={(id, campaign) => {
+                  setTargetCampaignId(id);
+                  setTargetCampaign(campaign);
+                }}
+                excludeCampaignId={currentCampaignId}
+                placeholder="Search and select a campaign..."
+                disabled={isLoading}
+              />
+            </div>
           </div>
 
           {/* Reason input */}
-          <div className="space-y-2">
+          <div className="space-y-2 w-full min-w-0">
             <Label htmlFor="reason">Reason for Reallocation *</Label>
             <Textarea
               id="reason"
@@ -138,6 +140,7 @@ export function ReallocationDialog({
               onChange={(e) => setReason(e.target.value)}
               rows={3}
               disabled={isLoading}
+              className="w-full"
             />
             <p className="text-xs text-muted-foreground">
               This reason will be recorded in the audit log.
@@ -145,9 +148,9 @@ export function ReallocationDialog({
           </div>
 
           {/* Warning */}
-          <Alert variant="destructive" className="bg-destructive/10 border-destructive/20">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
+          <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 w-full">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            <AlertDescription className="break-words">
               This action is permanent and will be logged. Campaign statistics will be updated
               automatically.
             </AlertDescription>

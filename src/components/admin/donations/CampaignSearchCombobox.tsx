@@ -215,12 +215,12 @@ export function CampaignSearchCombobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between h-auto min-h-10 py-2"
+          className="w-full justify-between h-auto min-h-10 py-2 overflow-hidden"
           disabled={disabled}
         >
-          <span className="min-w-0 flex-1 text-left">
+          <span className="min-w-0 flex-1 text-left overflow-hidden">
             {selectedCampaign ? (
-              <span className="truncate block">{selectedCampaign.title}</span>
+              <span className="truncate block max-w-full">{selectedCampaign.title}</span>
             ) : (
               <span className="text-muted-foreground truncate block">{placeholder}</span>
             )}
