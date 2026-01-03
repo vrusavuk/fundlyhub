@@ -227,17 +227,17 @@ export function CampaignSearchCombobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-[var(--radix-popover-trigger-width)] max-w-[calc(100vw-2rem)] p-0 bg-popover z-50" 
+        className="w-[var(--radix-popover-trigger-width)] min-w-[280px] max-w-[400px] p-0 bg-popover border border-border shadow-lg z-50 overflow-hidden" 
         align="start"
         sideOffset={4}
       >
-        <Command shouldFilter={false}>
+        <Command shouldFilter={false} className="w-full">
           <CommandInput
             placeholder="Search campaigns..."
             value={search}
             onValueChange={setSearch}
           />
-          <CommandList className="max-h-[40vh] sm:max-h-[300px]">
+          <CommandList className="max-h-[40vh] sm:max-h-[300px] overflow-y-auto">
             {loading ? (
               <div className="py-6 text-center text-sm text-muted-foreground">
                 Loading campaigns...
@@ -249,21 +249,29 @@ export function CampaignSearchCombobox({
             ) : (
               <CommandGroup>
                 {campaigns.map((campaign) => (
-                  <CommandItem
+                  <div
                     key={campaign.id}
-                    value={campaign.id}
-                    onSelect={() => handleSelect(campaign)}
-                    className="flex flex-col items-start gap-1 py-3 cursor-pointer"
+                    role="option"
+                    aria-selected={value === campaign.id}
+                    onClick={() => handleSelect(campaign)}
+                    onMouseDown={(e) => e.preventDefault()}
+                    className={cn(
+                      "flex flex-col items-start gap-1 py-3 px-2 cursor-pointer w-full",
+                      "hover:bg-accent hover:text-accent-foreground",
+                      "data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground",
+                      value === campaign.id && "bg-accent text-accent-foreground"
+                    )}
+                    data-selected={value === campaign.id}
                   >
-                    <div className="flex w-full items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <div className="flex w-full items-center justify-between gap-2 min-w-0">
+                      <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
                         <Check
                           className={cn(
                             'h-4 w-4 shrink-0',
                             value === campaign.id ? 'opacity-100' : 'opacity-0'
                           )}
                         />
-                        <span className="font-medium truncate">
+                        <span className="font-medium truncate block max-w-full">
                           {campaign.title}
                         </span>
                       </div>
@@ -271,22 +279,22 @@ export function CampaignSearchCombobox({
                         {campaign.status}
                       </StripeBadgeExact>
                     </div>
-                    <div className="ml-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-                      <span>
+                    <div className="ml-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground w-full overflow-hidden">
+                      <span className="truncate">
                         {MoneyMath.format(MoneyMath.create(campaign.total_raised, 'USD'))} raised
                       </span>
                       <span className="hidden sm:inline">•</span>
-                      <span className="hidden sm:inline">
+                      <span className="hidden sm:inline truncate">
                         Goal: {MoneyMath.format(MoneyMath.create(campaign.goal_amount, 'USD'))}
                       </span>
                       {campaign.owner_name && (
                         <>
                           <span className="hidden sm:inline">•</span>
-                          <span className="hidden sm:inline">by {campaign.owner_name}</span>
+                          <span className="hidden sm:inline truncate">by {campaign.owner_name}</span>
                         </>
                       )}
                     </div>
-                  </CommandItem>
+                  </div>
                 ))}
               </CommandGroup>
             )}
