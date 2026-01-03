@@ -18,6 +18,7 @@ import { useTipFeedback } from '@/hooks/useTipFeedback';
 import { TipFeedbackMessage } from '@/components/TipFeedbackMessage';
 import { useAuth } from '@/hooks/useAuth';
 import { useDarkMode } from '@/hooks/useDarkMode';
+import { formatProgressPercentage } from '@/lib/utils/formatters';
 
 const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 if (!stripePublishableKey) {
@@ -587,7 +588,7 @@ export function DonationWidget({
                     <div className="text-muted-foreground">donors</div>
                   </div>
                   <div className="text-center">
-                    <div className="font-semibold text-foreground">{Math.round(progressPercentage)}%</div>
+                    <div className="font-semibold text-foreground">{formatProgressPercentage(raisedAmount, goalAmount)}%</div>
                     <div className="text-muted-foreground">funded</div>
                   </div>
                 </div>
