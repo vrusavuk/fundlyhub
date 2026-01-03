@@ -414,6 +414,7 @@ export default function CampaignDetail() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSave)}>
          <DetailPageLayout
+          className={isEditing ? "pb-20" : undefined}
           backUrl="/admin/campaigns"
           backLabel="Campaigns"
           title={
@@ -467,118 +468,118 @@ export default function CampaignDetail() {
             )
           }
           actions={
-            <div className="flex flex-wrap gap-2">
-              {isEditing ? (
-                <>
+            !isEditing && (
+              <div className="flex flex-wrap gap-2">
+                {/* Quick Status Actions */}
+                {(currentStatus === 'pending' || currentStatus === 'draft') && (
                   <Button
                     type="button"
-                    variant="outline"
                     size="sm"
-                    onClick={handleCancel}
-                    disabled={isSubmitting}
-                  >
-                    <X className="h-4 w-4 mr-2" />
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    size="sm"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Save className="h-4 w-4 mr-2" />
-                    )}
-                    Save Changes
-                  </Button>
-                </>
-              ) : (
-                <>
-                  {/* Quick Status Actions */}
-                  {(currentStatus === 'pending' || currentStatus === 'draft') && (
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() => setShowApproveDialog(true)}
-                      disabled={actionLoading}
-                    >
-                      <Play className="h-4 w-4 mr-2" />
-                      Activate
-                    </Button>
-                  )}
-                  {currentStatus === 'active' && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowPauseDialog(true)}
-                      disabled={actionLoading}
-                    >
-                      <Pause className="h-4 w-4 mr-2" />
-                      Pause
-                    </Button>
-                  )}
-                  {currentStatus === 'paused' && (
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() => setShowApproveDialog(true)}
-                      disabled={actionLoading}
-                    >
-                      <Play className="h-4 w-4 mr-2" />
-                      Resume
-                    </Button>
-                  )}
-                  {currentStatus !== 'closed' && currentStatus !== 'ended' && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowCloseDialog(true)}
-                      disabled={actionLoading}
-                    >
-                      <XCircle className="h-4 w-4 mr-2" />
-                      Close
-                    </Button>
-                  )}
-                  
-                  {/* Core Actions */}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSearchParams({ edit: '1' });
-                    }}
-                  >
-                    <Pencil className="h-4 w-4 mr-2" />
-                    Edit
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.open(`/fundraiser/${campaign.slug}`, '_blank')}
-                  >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    View Public
-                  </Button>
-                  
-                  {/* Delete Action */}
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => setShowDeleteDialog(true)}
+                    onClick={() => setShowApproveDialog(true)}
                     disabled={actionLoading}
                   >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
+                    <Play className="h-4 w-4 mr-2" />
+                    Activate
                   </Button>
-                </>
-              )}
-            </div>
+                )}
+                {currentStatus === 'active' && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowPauseDialog(true)}
+                    disabled={actionLoading}
+                  >
+                    <Pause className="h-4 w-4 mr-2" />
+                    Pause
+                  </Button>
+                )}
+                {currentStatus === 'paused' && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => setShowApproveDialog(true)}
+                    disabled={actionLoading}
+                  >
+                    <Play className="h-4 w-4 mr-2" />
+                    Resume
+                  </Button>
+                )}
+                {currentStatus !== 'closed' && currentStatus !== 'ended' && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowCloseDialog(true)}
+                    disabled={actionLoading}
+                  >
+                    <XCircle className="h-4 w-4 mr-2" />
+                    Close
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setIsEditing(true);
+                    setSearchParams({ edit: '1' });
+                  }}
+                >
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                >
+                  <a href={`/fundraiser/${campaign.slug}`} target="_blank" rel="noopener noreferrer">
+                    <Eye className="h-4 w-4 mr-2" />
+                    View Public
+                  </a>
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowDeleteDialog(true)}
+                  disabled={actionLoading}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              </div>
+            )
+          }
+          stickyActions={
+            isEditing && (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCancel}
+                  disabled={isSubmitting}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
+                  Save Changes
+                </Button>
+              </>
+            )
           }
           mainContent={
             <>
