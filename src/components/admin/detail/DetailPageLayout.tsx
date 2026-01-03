@@ -119,7 +119,7 @@ export function DetailPageLayout({
       {/* Sticky Action Bar for Edit Mode */}
       {stickyActions && (
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border px-4 py-3 md:px-8 shadow-lg">
-          <div className="flex items-center justify-end gap-2 max-w-7xl mx-auto">
+          <div className="flex items-center gap-2 max-w-7xl mx-auto md:justify-end [&>*]:flex-1 md:[&>*]:flex-none">
             {stickyActions}
           </div>
         </div>
