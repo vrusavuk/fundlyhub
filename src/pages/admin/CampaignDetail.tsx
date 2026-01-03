@@ -459,27 +459,7 @@ export default function CampaignDetail() {
             ) : (campaign.summary || 'No summary provided')
           }
           status={
-            isEditing ? (
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger className="w-32 h-8">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="draft">Draft</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="paused">Paused</SelectItem>
-                      <SelectItem value="closed">Closed</SelectItem>
-                      <SelectItem value="ended">Ended</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            ) : (
+            !isEditing && (
               <Badge variant={status.variant} className="gap-1">
                 <StatusIcon className="h-3 w-3" />
                 {status.label}

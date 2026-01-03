@@ -117,10 +117,6 @@ export function CampaignDetailSidebar({ campaign, isEditing = false, form }: Cam
         )}
         
         <DetailKeyValue
-          label="Category"
-          value={campaign.category_name || 'Uncategorized'}
-        />
-        <DetailKeyValue
           label="Created"
           value={new Date(campaign.created_at).toLocaleDateString()}
         />
