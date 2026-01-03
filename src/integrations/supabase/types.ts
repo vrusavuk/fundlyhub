@@ -634,6 +634,57 @@ export type Database = {
           },
         ]
       }
+      donation_reallocations: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string
+          donation_id: string
+          id: string
+          reallocated_by: string
+          reason: string
+          source_fundraiser_id: string
+          target_fundraiser_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string
+          donation_id: string
+          id?: string
+          reallocated_by: string
+          reason: string
+          source_fundraiser_id: string
+          target_fundraiser_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string
+          donation_id?: string
+          id?: string
+          reallocated_by?: string
+          reason?: string
+          source_fundraiser_id?: string
+          target_fundraiser_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "donation_reallocations_donation_id_fkey"
+            columns: ["donation_id"]
+            isOneToOne: false
+            referencedRelation: "donations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "donation_reallocations_target_fundraiser_id_fkey"
+            columns: ["target_fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "fundraisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       donations: {
         Row: {
           amount: number
@@ -3711,6 +3762,14 @@ export type Database = {
       phonetic_match: {
         Args: { text1: string; text2: string }
         Returns: boolean
+      }
+      reallocate_donation: {
+        Args: {
+          p_donation_id: string
+          p_reason: string
+          p_target_fundraiser_id: string
+        }
+        Returns: Json
       }
       refresh_event_statistics: { Args: never; Returns: undefined }
       refresh_searchable_content: { Args: never; Returns: undefined }

@@ -1,5 +1,5 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { Eye, Mail, ExternalLink, RefreshCw, Copy, MoreHorizontal } from "lucide-react";
+import { Eye, Mail, ExternalLink, RefreshCw, Copy, MoreHorizontal, ArrowRightLeft } from "lucide-react";
 
 import { StripeBadgeExact } from "@/components/ui/stripe-badge-exact";
 import { PaymentMethodIcon } from "@/components/admin/PaymentMethodIcon";
@@ -11,6 +11,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
@@ -75,6 +76,7 @@ export function createDonationColumns(
   onViewDetails: (donation: DonationData) => void,
   onViewCampaign: (fundraiserId: string) => void,
   onRefund: (donationId: string) => void,
+  onReallocate: (donation: DonationData) => void,
   permissions: {
     canRefund: boolean;
     isSuperAdmin: boolean;
@@ -294,6 +296,9 @@ export function createDonationColumns(
           });
         }
 
+        // Add reallocate action for super admins
+        const showReallocate = permissions.isSuperAdmin;
+
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -316,6 +321,18 @@ export function createDonationColumns(
                   </DropdownMenuItem>
                 );
               })}
+              {showReallocate && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => onReallocate(donation)}
+                    className="text-primary"
+                  >
+                    <ArrowRightLeft className="mr-2 h-4 w-4" />
+                    Reallocate to Campaign
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         );
