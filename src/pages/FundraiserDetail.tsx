@@ -25,6 +25,7 @@ import { Share2, Calendar, MapPin, Verified, Facebook, Twitter, Copy, Heart } fr
 import { MoneyMath } from '@/lib/enterprise/utils/MoneyMath';
 import { sanitizeHTML } from '@/lib/utils/sanitize';
 import { stripMarkdown } from '@/lib/utils/textUtils';
+import { formatProgressPercentage } from '@/lib/utils/formatters';
 import { FollowButton } from '@/components/profile/FollowButton';
 import { SmartBackButton } from '@/components/navigation/SmartBackButton';
 import { FollowOrganizationButton } from '@/components/profile/FollowOrganizationButton';
@@ -650,7 +651,7 @@ export default function FundraiserDetail() {
           <div className="px-4 py-3 space-y-3">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Progress</span>
-              <span className="font-semibold">{Math.round(progressPercentage)}%</span>
+              <span className="font-semibold">{formatProgressPercentage(totalRaised, fundraiser.goal_amount)}%</span>
             </div>
             <Progress value={progressPercentage} className="h-1.5" />
             <Button 
